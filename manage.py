@@ -2,10 +2,10 @@
 
 from flask.ext.script import Manager
 
-from fbone import create_app
-from fbone.extensions import db
-from fbone.user import User, UserDetail, ADMIN, ACTIVE
-from fbone.utils import MALE
+from ad2web import create_app
+from ad2web.extensions import db
+from ad2web.user import User, UserDetail, ADMIN, ACTIVE
+from ad2web.utils import MALE
 
 
 app = create_app()

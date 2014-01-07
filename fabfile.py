@@ -4,7 +4,7 @@
 
 from fabric.api import *
 
-project = "fbone"
+project = "ad2web"
 
 # the user to use for the remote commands
 env.user = ''

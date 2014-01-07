@@ -7,7 +7,7 @@ from utils import make_dir, INSTANCE_FOLDER_PATH
 
 class BaseConfig(object):
 
-    PROJECT = "fbone"
+    PROJECT = "ad2web"
 
     # Get app root path, also can use flask.root_path.
     # ../../config.py

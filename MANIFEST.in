@@ -5,14 +5,14 @@ include LICENSE
 
 # Including
 # Python source files, test/*.py will be automatically included.
-recursive-include fbone *.py
+recursive-include ad2web *.py
 # Templates
-recursive-include fbone/templates *
+recursive-include ad2web/templates *
 # Static files
-recursive-include fbone/static *
+recursive-include ad2web/static *
 # Translations
-recursive-include fbone/translations *
+recursive-include ad2web/translations *
 
 # Excluding
-recursive-exclude fbone *.pyc
+recursive-exclude ad2web *.pyc
 recursive-exclude tests *.pyc
