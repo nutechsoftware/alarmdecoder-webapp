@@ -12,9 +12,9 @@ from .forms import GenerateCertificateForm
 
 certificate = Blueprint('certificate', __name__, url_prefix='/certificate')
 
-@certificate.route('/', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@certificate.route('/', methods=['GET', 'POST'])
 def index():
     form = GenerateCertificateForm(next=request.args.get('next'))
 
@@ -37,17 +37,17 @@ def index():
 
     return render_template('certificate/index.html', certificates=certificates, form=form)
 
-@certificate.route('/<int:certificate_id>')
 @login_required
 @admin_required
+@certificate.route('/<int:certificate_id>')
 def view(certificate_id):
     cert = Certificate.get_by_id(certificate_id)
 
     return render_template('certificate/view.html', certificate=cert)
 
-@certificate.route('/<int:certificate_id>/download/<download_type>')
 @login_required
 @admin_required
+@certificate.route('/<int:certificate_id>/download/<download_type>')
 def download(certificate_id, download_type):
     cert = Certificate.get_by_id(certificate_id)
     ca = Certificate.query.filter_by(type=CA).first_or_404()
@@ -58,9 +58,9 @@ def download(certificate_id, download_type):
 
     return Response(data, mimetype=mime_type, headers={ 'Content-Type': mime_type, 'Content-Disposition': 'attachment; filename=' + filename })
 
-@certificate.route('/<int:certificate_id>/revoke')
 @login_required
 @admin_required
+@certificate.route('/<int:certificate_id>/revoke')
 def revoke(certificate_id):
     cert = Certificate.get_by_id(certificate_id)
 
