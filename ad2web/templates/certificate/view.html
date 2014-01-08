@@ -1,0 +1,34 @@
+{% set page_title = certificate.name %}
+
+{% extends "layouts/base.html" %}
+
+{% block body %}
+<div>
+    <div>
+        <label for="certificate-id">Certificate ID</label>
+        <span id="certificate-id">{{ certificate.id }}</span>
+    </div>
+    <div>
+        <label for="certificate-name">Certificate Name</label>
+        <span id="certificate-name">{{ certificate.name }}</span>
+    </div>
+    {% if certificate.type == 2 %}
+    <div>
+        Download: <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='pkcs') }}">PKCS12</a>
+        | <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='tgz') }}">TGZ</a>
+        | <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='bks') }}">BKS</a>
+        <br>
+        <a href="{{ url_for('certificate.revoke', certificate_id=certificate.id) }}">Revoke certificate</a>
+    </div>
+    {% endif %}
+    <div>
+        <label for="certificate-cert">Certificate Cert</label>
+        <pre id="certificate-cert">{{ certificate.certificate }}</pre>
+    </div>
+    <div>
+        <label for="certificate-key">Certificate Key</label>
+        <pre id="certificate-key">{{ certificate.key }}</pre>
+    </div>
+</div>
+{% endblock %}
+

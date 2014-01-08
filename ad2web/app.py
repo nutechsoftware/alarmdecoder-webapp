@@ -2,8 +2,10 @@
 
 import os
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, g
 from flask.ext.babel import Babel
+
+from alarmdecoder import AlarmDecoder
 
 from .config import DefaultConfig
 from .user import User, user
@@ -11,9 +13,9 @@ from .settings import settings
 from .frontend import frontend
 from .api import api
 from .admin import admin
+from .certificate import certificate
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
-
 
 # For import *
 __all__ = ['create_app']
@@ -24,8 +26,10 @@ DEFAULT_BLUEPRINTS = (
     settings,
     api,
     admin,
+    certificate,
 )
 
+alarmdecoder = AlarmDecoder(None)
 
 def create_app(config=None, app_name=None, blueprints=None):
     """Create a Flask app."""
@@ -157,7 +161,7 @@ def configure_logging(app):
 def configure_hook(app):
     @app.before_request
     def before_request():
-        pass
+        g.alarmdecoder = alarmdecoder
 
 
 def configure_error_handlers(app):

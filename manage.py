@@ -5,6 +5,7 @@ from flask.ext.script import Manager
 from ad2web import create_app
 from ad2web.extensions import db
 from ad2web.user import User, UserDetail, ADMIN, ACTIVE
+from ad2web.certificate import Certificate
 from ad2web.utils import MALE
 
 
@@ -40,6 +41,16 @@ def initdb():
                 location=u'Hangzhou',
                 bio=u'admin Guy is ... hmm ... just a admin guy.'))
     db.session.add(admin)
+
+    cert = Certificate(
+                name="Testing",
+                serial_number='0001',
+                status=1,
+                type=2,
+                certificate='',
+                key='')
+    db.session.add(cert)
+
     db.session.commit()
 
 

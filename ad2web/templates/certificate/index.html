@@ -1,0 +1,30 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = 'Certificates' %}
+
+{% extends "layouts/base.html" %}
+
+{% block body %}
+<div>
+    <h2>Certificates</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        {% for cert in certificates %}
+        <tr>
+            <td><a href="{{ url_for('certificate.view', certificate_id=cert.id) }}">{{ cert.name }}</a></td>
+            <td>{{ cert.status }}</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+    Generate a new certificate:
+    {{ render_form(url_for('certificate.index'), form) }}
+</div>
+{% endblock %}
