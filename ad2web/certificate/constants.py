@@ -22,3 +22,19 @@ CERTIFICATE_STATUS = {
     ACTIVE: 'active'
 }
 
+# Certificate package types
+TGZ = 0
+PKCS12 = 1
+BKS = 2
+
+PACKAGE_TYPES = {
+    TGZ: 'tgz',
+    PKCS12: 'pkcs12',
+    BKS: 'bks'
+}
+
+PACKAGE_TYPE_LOOKUP = {
+    'tgz': TGZ,
+    'pkcs12': PKCS12,
+    'bks': BKS
+}
