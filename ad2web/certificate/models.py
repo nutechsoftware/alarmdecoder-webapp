@@ -12,6 +12,7 @@ from OpenSSL import crypto, SSL
 from sqlalchemy import Column, orm
 
 from ..extensions import db
+from ..settings.models import Setting
 from .constants import CERTIFICATE_TYPES, CA, SERVER, CLIENT, INTERNAL, \
                         CERTIFICATE_STATUS, REVOKED, ACTIVE, \
                         PACKAGE_TYPES, TGZ, PKCS12, BKS
@@ -57,13 +58,13 @@ class Certificate(db.Model):
         # Generate a serial number
         serial = 1
         if parent:
-            #  TEMP
-            #serial = self._settings.ca_serial + 1
-            serial = 10
+            serial_setting = Setting.get_by_name('serialnumber')
+            serial_setting.value = serial_setting.value + 1
 
-            #self._settings.ca_serial = serial
-            #self._settings.save()
-            # /TEMP
+            db.session.add(serial)
+            db.session.commit()
+
+            serial = serial_setting.value
 
         cert.set_serial_number(serial)
         cert.gmtime_adj_notBefore(0)

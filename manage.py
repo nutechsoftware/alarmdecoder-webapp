@@ -6,6 +6,7 @@ from ad2web import create_app
 from ad2web.extensions import db
 from ad2web.user import User, UserDetail, ADMIN, ACTIVE
 from ad2web.certificate import Certificate
+from ad2web.settings import Setting
 from ad2web.utils import MALE
 
 
@@ -50,6 +51,9 @@ def initdb():
                 certificate='',
                 key='')
     db.session.add(cert)
+
+    sn = Setting(name="serialnumber", value=1)
+    db.session.add(sn)
 
     db.session.commit()
 
