@@ -49,8 +49,6 @@ def view(certificate_id):
 @login_required
 @admin_required
 def download(certificate_id, download_type):
-    print 'download requested', certificate_id, download_type
-
     cert = Certificate.get_by_id(certificate_id)
     ca = Certificate.query.filter_by(type=CA).first_or_404()
 
@@ -70,5 +68,7 @@ def revoke(certificate_id):
 
     db.session.add(cert)
     db.session.commit()
+
+    flash('The certificate has been revoked.', 'success')
 
     return render_template('certificate/view.html', certificate=cert)
