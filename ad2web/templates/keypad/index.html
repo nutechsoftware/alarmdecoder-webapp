@@ -1,0 +1,38 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = 'Keypad' %}
+
+{% extends "layouts/base.html" %}
+
+{% block body %}
+<div>
+    <div id="keypad-line1">line #1</div>
+    <div id="keypad-line2">line #2</div>
+    <div id="keypad-buttons">
+        <div id="keypad-button-row">
+            <input id="button-F1" class="keypad-button" type="button" value="F1"></input>
+            <input id="button-1" class="keypad-button" type="button" value="1"></input>
+            <input id="button-2" class="keypad-button" type="button" value="2"></input>
+            <input id="button-3" class="keypad-button" type="button" value="3"></input>
+        </div>
+        <div id="keypad-button-row">
+            <input id="button-F2" class="keypad-button" type="button" value="F2"></input>
+            <input id="button-4" class="keypad-button" type="button" value="4"></input>
+            <input id="button-5" class="keypad-button" type="button" value="5"></input>
+            <input id="button-6" class="keypad-button" type="button" value="6"></input>
+        </div>
+        <div id="keypad-button-row">
+            <input id="button-F3" class="keypad-button" type="button" value="F3"></input>
+            <input id="button-7" class="keypad-button" type="button" value="7"></input>
+            <input id="button-8" class="keypad-button" type="button" value="8"></input>
+            <input id="button-9" class="keypad-button" type="button" value="9"></input>
+        </div>
+        <div id="keypad-button-row">
+            <input id="button-F4" class="keypad-button" type="button" value="F4"></input>
+            <input id="button-star" class="keypad-button" type="button" value="*"></input>
+            <input id="button-0" class="keypad-button" type="button" value="0"></input>
+            <input id="button-pound" class="keypad-button" type="button" value="#"></input>
+        </div>
+    </div>
+</div>
+{% endblock %}
