@@ -1,0 +1,30 @@
+{% set page_title = "Event Log" %}
+
+{% extends "log/layout.html" %}
+
+{% set tabs = [
+    ("events", url_for('log.events')),
+    ("panel", url_for('log.panel')),
+]%}
+
+{% block body %}
+<div>
+    <h2>Event Log</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Type</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        {% for entry in event_log %}
+            <tr>
+                <td>{{ entry.timestamp }}</td>
+                <td>{{ TYPES[entry.type] }}</td>
+                <td>{{ entry.message }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

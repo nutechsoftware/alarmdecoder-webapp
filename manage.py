@@ -6,6 +6,7 @@ from ad2web import create_app
 from ad2web.extensions import db
 from ad2web.user import User, UserDetail, ADMIN, ACTIVE
 from ad2web.certificate import Certificate
+from ad2web.log import EventLogEntry, PanelLogEntry
 from ad2web.settings import Setting
 from ad2web.utils import MALE
 
@@ -51,6 +52,24 @@ def initdb():
                 type=0)
     cert.generate(common_name='Testing')
     db.session.add(cert)
+
+    entry = PanelLogEntry(message='[0000000100000010----],111,[f700001800110002080200000100ff],"CHECK 111 WIRE  EXPANSION       "')
+    db.session.add(entry)
+    entry = PanelLogEntry(message='[0000000100000010----],041,[f70000871041000208020000000000],"CHECK 41                        "')
+    db.session.add(entry)
+    entry = PanelLogEntry(message='[0000000100000010----],112,[f700001800120002080200000100ff],"CHECK 112 RELAY MODULE          "')
+    db.session.add(entry)
+    entry = PanelLogEntry(message='[0000000100010000----],008,[f70000871008004c08020000000000],"SYSTEM LO BAT                   "')
+    db.session.add(entry)
+
+    entry = EventLogEntry(type=0, message='Panel armed..')
+    db.session.add(entry)
+    entry = EventLogEntry(type=1, message='Panel disarmed..')
+    db.session.add(entry)
+    entry = EventLogEntry(type=3, message='Alarming!  Oh no!')
+    db.session.add(entry)
+    entry = EventLogEntry(type=4, message='Fire!  Oh no!')
+    db.session.add(entry)
 
     sn = Setting(name="serialnumber", value=1)
     db.session.add(sn)

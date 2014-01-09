@@ -1,0 +1,11 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = 'Log' %}
+
+{% extends "layouts/base.html" %}
+
+{% set tabs = [
+    ("events", url_for('log.events')),
+    ("panel", url_for('log.panel')),
+]%}
+

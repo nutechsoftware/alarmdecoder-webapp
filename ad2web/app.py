@@ -14,6 +14,7 @@ from .frontend import frontend
 from .api import api
 from .admin import admin
 from .certificate import certificate
+from .log import log
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
 
@@ -27,6 +28,7 @@ DEFAULT_BLUEPRINTS = (
     api,
     admin,
     certificate,
+    log,
 )
 
 alarmdecoder = AlarmDecoder(None)

@@ -48,6 +48,7 @@
                             {% else %}
                             <li><a href="{{ url_for('user.index') }}">{{ current_user.name }}</a></li>
                             {% endif %}
+                            <li><a href="{{ url_for('log.events') }}">Log</a></li>
                             <li><a href="{{ url_for('certificate.index') }}">Certificates</a></li>
                             <li><a href="{{ url_for('settings.profile') }}">Settings</a></li>
                             <li><a href="{{ url_for('frontend.logout') }}">Log out</a></li>

@@ -1,0 +1,21 @@
+# -*- coding: utf-8 -*-
+
+from sqlalchemy import Column, orm
+
+from ..extensions import db
+from ..settings.models import Setting
+
+class EventLogEntry(db.Model):
+    __tablename__ = 'event_log'
+
+    id = Column(db.Integer, primary_key=True)
+    type = Column(db.SmallInteger, nullable=False)
+    timestamp = Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
+    message = Column(db.Text, nullable=False)
+
+class PanelLogEntry(db.Model):
+    __tablename__ = "panel_log"
+
+    id = Column(db.Integer, primary_key=True)
+    timestamp = Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
+    message = Column(db.Text, nullable=False)
