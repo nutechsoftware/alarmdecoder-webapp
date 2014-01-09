@@ -29,6 +29,7 @@ class Certificate(db.Model):
     key = Column(db.Text, nullable=False)
     created_on = Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
     revoked_on = Column(db.TIMESTAMP)
+    description = Column(db.String(255))
 
     @orm.reconstructor
     def init_on_load(self):
@@ -56,17 +57,17 @@ class Certificate(db.Model):
         cert.get_subject().CN = common_name
 
         # Generate a serial number
-        serial = 1
+        serial_number = 1
         if parent:
             serial_setting = Setting.get_by_name('serialnumber')
             serial_setting.value = serial_setting.value + 1
 
-            db.session.add(serial)
+            db.session.add(serial_setting)
             db.session.commit()
 
-            serial = serial_setting.value
+            serial_number = serial_setting.value
 
-        cert.set_serial_number(serial)
+        cert.set_serial_number(serial_number)
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(20*365*24*60*60)   # 20 years.
 
@@ -96,7 +97,7 @@ class Certificate(db.Model):
             cert.set_issuer(parent.certificate_obj.get_subject())
             cert.sign(parent.key_obj, 'sha1')
 
-        self.serial_number = serial
+        self.serial_number = serial_number
         self.certificate = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
         self.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, key)
         self.certificate_obj = cert

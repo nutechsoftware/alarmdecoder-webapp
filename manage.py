@@ -44,12 +44,11 @@ def initdb():
     db.session.add(admin)
 
     cert = Certificate(
-                name="Testing",
-                serial_number='0001',
+                name="AlarmDecoder CA",
+                serial_number=1,
                 status=1,
-                type=2,
-                certificate='',
-                key='')
+                type=0)
+    cert.generate(common_name='Testing')
     db.session.add(cert)
 
     sn = Setting(name="serialnumber", value=1)
