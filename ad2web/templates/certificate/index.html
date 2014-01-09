@@ -7,18 +7,22 @@
 {% block body %}
 <div>
     <h2>Certificates</h2>
-    <table>
-        <thead>
+    <table style="border: 1px solid black;">
+        <thead style="border: 1px solid black;">
             <tr>
                 <th>Name</th>
+                <th>Type</th>
                 <th>Status</th>
+                <th>Description</th>
             </tr>
         </thead>
 
         {% for cert in certificates %}
         <tr>
             <td><a href="{{ url_for('certificate.view', certificate_id=cert.id) }}">{{ cert.name }}</a></td>
-            <td>{{ cert.status }}</td>
+            <td>{{ TYPES[cert.type] }}</td>
+            <td>{{ STATUS[cert.status] }}</td>
+            <td>{{ cert.description }}</td>
         </tr>
         {% endfor %}
 

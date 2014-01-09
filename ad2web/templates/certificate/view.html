@@ -4,14 +4,6 @@
 
 {% block body %}
 <div>
-    <div>
-        <label for="certificate-id">Certificate ID</label>
-        <span id="certificate-id">{{ certificate.id }}</span>
-    </div>
-    <div>
-        <label for="certificate-name">Certificate Name</label>
-        <span id="certificate-name">{{ certificate.name }}</span>
-    </div>
     {% if certificate.type == 2 %}
     <div>
         Download: <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='pkcs12') }}">PKCS12</a>
@@ -21,6 +13,32 @@
         <a href="{{ url_for('certificate.revoke', certificate_id=certificate.id) }}">Revoke certificate</a>
     </div>
     {% endif %}
+    <div>
+        <label for="certificate-id">Certificate ID</label>
+        <span id="certificate-id">{{ certificate.id }} ({{ TYPES[certificate.type] }})</span>
+    </div>
+    <div>
+        <label for="certificate-status">Status</label>
+        <span id="certificate-status">{{ STATUS[certificate.status] }}</span>
+    </div>
+    <div>
+        <label for="certificate-created">Created on</label>
+        <span id="certificate-created">{{ certificate.created_on|format_date }}</span>
+    </div>
+    {% if certificate.status == 0 %}
+    <div>
+        <label for="certificate-revoked">Revoked on</label>
+        <span id="certificate-revoked">{{ certificate.revoked_on|format_date }}</span>
+    </div>
+    {% endif %}
+    <div>
+        <label for="certificate-name">Certificate Name</label>
+        <span id="certificate-name">{{ certificate.name }}</span>
+    </div>
+    <div>
+        <label for="certificate-description">Description</label>
+        <span id="certificate-description">{{ certificate.description }}</span>
+    </div>
     <div>
         <label for="certificate-cert">Certificate Cert</label>
         <pre id="certificate-cert">{{ certificate.certificate }}</pre>

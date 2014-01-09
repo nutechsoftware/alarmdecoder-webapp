@@ -18,8 +18,8 @@ REVOKED = 0
 ACTIVE = 1
 
 CERTIFICATE_STATUS = {
-    REVOKED: 'revoked',
-    ACTIVE: 'active'
+    REVOKED: 'Revoked',
+    ACTIVE: 'Active'
 }
 
 # Certificate package types

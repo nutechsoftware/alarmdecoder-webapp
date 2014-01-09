@@ -6,11 +6,18 @@ from flask.ext.login import login_required, current_user
 
 from ..extensions import db
 from ..decorators import admin_required
-from .constants import ACTIVE, CLIENT, CA, PACKAGE_TYPE_LOOKUP
+from .constants import ACTIVE, CLIENT, CA, PACKAGE_TYPE_LOOKUP, CERTIFICATE_TYPES, CERTIFICATE_STATUS
 from .models import Certificate, CertificatePackage
 from .forms import GenerateCertificateForm
 
 certificate = Blueprint('certificate', __name__, url_prefix='/certificate')
+
+@certificate.context_processor
+def certificate_context_processor():
+    return {
+        'TYPES': CERTIFICATE_TYPES,
+        'STATUS': CERTIFICATE_STATUS
+    }
 
 @login_required
 @admin_required

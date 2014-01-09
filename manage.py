@@ -45,6 +45,7 @@ def initdb():
 
     cert = Certificate(
                 name="AlarmDecoder CA",
+                description='CA certificate used for authenticating others.',
                 serial_number=1,
                 status=1,
                 type=0)
