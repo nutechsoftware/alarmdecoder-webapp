@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
+from gevent import monkey
+monkey.patch_all()
+
 import os
+import jsonpickle
 
 from flask import Flask, request, render_template, g
 from flask.ext.babel import Babel
 
 from alarmdecoder import AlarmDecoder
+from alarmdecoder.devices import SerialDevice
 
 from .config import DefaultConfig
 from .appsocket import sock
@@ -36,7 +41,30 @@ DEFAULT_BLUEPRINTS = (
     sock,
 )
 
-alarmdecoder = AlarmDecoder(None)
+# Temp
+alarmdecoder = AlarmDecoder(SerialDevice(interface='/dev/ttyUSB2'))
+
+def bind_alarmdecoder_events(appsocket, decoder):
+    def build_event_handler(socket, event_type):
+        def event_handler(sender, *args, **kwargs):
+            try:
+
+                message = kwargs.get('message', None)
+                packet = dict(type="event",
+                                name=event_type,
+                                args=jsonpickle.encode(message, unpicklable=False),
+                                endpoint='/alarmdecoder')
+
+                print 'event', event_type, message
+                for session, sock in socket.sockets.iteritems():
+                    sock.send_packet(packet)
+
+            except Exception, err:
+                print 'errrrr', err
+
+        return event_handler
+
+    decoder.on_message += build_event_handler(appsocket, 'message')
 
 def create_app(config=None, app_name=None, blueprints=None):
     """Create a Flask app."""

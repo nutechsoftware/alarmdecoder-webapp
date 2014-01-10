@@ -13,7 +13,61 @@
 
             socket.on('connect', function() {
                 console.log('wat');
-            })
+
+                socket.on('message', function(msg) {
+                    msg_obj = JSON.parse(msg)
+                    $('#keypad-line1').text(msg_obj.text);
+
+                })
+
+                $('#button-1').on('click', function() {
+                    socket.emit('keypress', '1');
+                });
+
+                $('#button-2').on('click', function() {
+                    socket.emit('keypress', '2');
+                });
+
+                $('#button-3').on('click', function() {
+                    socket.emit('keypress', '3');
+                });
+
+                $('#button-4').on('click', function() {
+                    socket.emit('keypress', '4');
+                });
+
+                $('#button-5').on('click', function() {
+                    socket.emit('keypress', '5');
+                });
+
+                $('#button-6').on('click', function() {
+                    socket.emit('keypress', '6');
+                });
+
+                $('#button-7').on('click', function() {
+                    socket.emit('keypress', '7');
+                });
+
+                $('#button-8').on('click', function() {
+                    socket.emit('keypress', '8');
+                });
+
+                $('#button-9').on('click', function() {
+                    socket.emit('keypress', '9');
+                });
+
+                $('#button-0').on('click', function() {
+                    socket.emit('keypress', '0');
+                });
+
+                $('#button-star').on('click', function() {
+                    socket.emit('keypress', '*');
+                });
+
+                $('#button-pound').on('click', function() {
+                    socket.emit('keypress', '#');
+                });
+            });
         })
     </script>
 {% endblock %}

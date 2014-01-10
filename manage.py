@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from gevent import monkey
-monkey.patch_all()
+#from gevent import monkey
+#monkey.patch_all()
 
 from flask.ext.script import Manager
 
-from ad2web import create_app, create_socket
+from ad2web import create_app, create_socket, bind_alarmdecoder_events
+from ad2web.app import alarmdecoder
 from ad2web.extensions import db
 from ad2web.user import User, UserDetail, ADMIN, ACTIVE
 from ad2web.certificate import Certificate
@@ -18,12 +19,18 @@ app = create_app()
 manager = Manager(app)
 appsocket = create_socket(app)
 
+bind_alarmdecoder_events(appsocket, alarmdecoder)
 
 @manager.command
 def run():
     """Run in local machine."""
 
-    appsocket.serve_forever()
+    try:
+        alarmdecoder.open(baudrate=115200)
+        appsocket.serve_forever()
+
+    finally:
+        alarmdecoder.close()
 
 @manager.command
 def initdb():
