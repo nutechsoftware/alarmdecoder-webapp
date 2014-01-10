@@ -14,15 +14,17 @@ from ad2web.utils import MALE
 
 app = create_app()
 manager = Manager(app)
-decoder.websocket = create_decoder_socket(app)
+appsocket = create_decoder_socket(app)
 
 @manager.command
 def run():
     """Run in local machine."""
 
     try:
+        decoder.websocket = appsocket
         decoder.open()
-        decoder.websocket.serve_forever()
+
+        appsocket.serve_forever()
 
     finally:
         decoder.close()
