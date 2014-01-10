@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from gevent import monkey
+monkey.patch_all()
+
 from flask.ext.script import Manager
 
-from ad2web import create_app
+from ad2web import create_app, create_socket
 from ad2web.extensions import db
 from ad2web.user import User, UserDetail, ADMIN, ACTIVE
 from ad2web.certificate import Certificate
@@ -13,14 +16,14 @@ from ad2web.utils import MALE
 
 app = create_app()
 manager = Manager(app)
+appsocket = create_socket(app)
 
 
 @manager.command
 def run():
     """Run in local machine."""
 
-    app.run(host='0.0.0.0')
-
+    appsocket.serve_forever()
 
 @manager.command
 def initdb():
@@ -75,7 +78,6 @@ def initdb():
     db.session.add(sn)
 
     db.session.commit()
-
 
 manager.add_option('-c', '--config',
                    dest="config",

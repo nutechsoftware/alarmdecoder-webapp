@@ -4,6 +4,20 @@
 
 {% extends "layouts/base.html" %}
 
+{% block pagejs %}
+    <script src="/static/js/vendor/jquery-2.0.3.min.js"></script>
+    <script src="/static/js/vendor/socket.io.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            socket = io.connect('/alarmdecoder')
+
+            socket.on('connect', function() {
+                console.log('wat');
+            })
+        })
+    </script>
+{% endblock %}
+
 {% block body %}
 <div>
     <div id="keypad-line1">line #1</div>

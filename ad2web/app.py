@@ -8,6 +8,7 @@ from flask.ext.babel import Babel
 from alarmdecoder import AlarmDecoder
 
 from .config import DefaultConfig
+from .appsocket import sock
 from .user import User, user
 from .settings import settings
 from .frontend import frontend
@@ -18,6 +19,7 @@ from .log import log
 from .keypad import keypad
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
+
 
 # For import *
 __all__ = ['create_app']
@@ -31,6 +33,7 @@ DEFAULT_BLUEPRINTS = (
     certificate,
     log,
     keypad,
+    sock,
 )
 
 alarmdecoder = AlarmDecoder(None)
