@@ -13,7 +13,7 @@ from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SerialDevice
 
 from .config import DefaultConfig
-from .appsocket import sock
+from .decoder import decoder, decodersocket
 from .user import User, user
 from .settings import settings
 from .frontend import frontend
@@ -38,33 +38,8 @@ DEFAULT_BLUEPRINTS = (
     certificate,
     log,
     keypad,
-    sock,
+    decodersocket,
 )
-
-# Temp
-alarmdecoder = AlarmDecoder(SerialDevice(interface='/dev/ttyUSB2'))
-
-def bind_alarmdecoder_events(appsocket, decoder):
-    def build_event_handler(socket, event_type):
-        def event_handler(sender, *args, **kwargs):
-            try:
-
-                message = kwargs.get('message', None)
-                packet = dict(type="event",
-                                name=event_type,
-                                args=jsonpickle.encode(message, unpicklable=False),
-                                endpoint='/alarmdecoder')
-
-                print 'event', event_type, message
-                for session, sock in socket.sockets.iteritems():
-                    sock.send_packet(packet)
-
-            except Exception, err:
-                print 'errrrr', err
-
-        return event_handler
-
-    decoder.on_message += build_event_handler(appsocket, 'message')
 
 def create_app(config=None, app_name=None, blueprints=None):
     """Create a Flask app."""
@@ -196,7 +171,7 @@ def configure_logging(app):
 def configure_hook(app):
     @app.before_request
     def before_request():
-        g.alarmdecoder = alarmdecoder
+        g.alarmdecoder = decoder
 
 
 def configure_error_handlers(app):

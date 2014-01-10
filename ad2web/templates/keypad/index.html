@@ -15,7 +15,7 @@
                 console.log('wat');
 
                 socket.on('message', function(msg) {
-                    msg_obj = JSON.parse(msg)
+                    msg_obj = JSON.parse(msg);
                     $('#keypad-line1').text(msg_obj.text);
 
                 })
