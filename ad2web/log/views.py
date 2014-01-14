@@ -9,7 +9,7 @@ from ..decorators import admin_required
 from .constants import ARM, DISARM, POWER_CHANGED, ALARM, FIRE, BYPASS, BOOT, \
                         CONFIG_RECEIVED, ZONE_FAULT, ZONE_RESTORE, LOW_BATTERY, \
                         PANIC, RELAY_CHANGED, EVENT_TYPES
-from .models import EventLogEntry, PanelLogEntry
+from .models import EventLogEntry
 
 log = Blueprint('log', __name__, url_prefix='/log')
 
@@ -36,7 +36,7 @@ def log_context_processor():
 @admin_required
 @log.route('/')
 def events():
-    event_log = EventLogEntry.query.all()
+    event_log = EventLogEntry.query.order_by(EventLogEntry.timestamp.desc()).all()
 
     return render_template('log/events.html', event_log=event_log, active='events')
 
@@ -44,6 +44,4 @@ def events():
 @admin_required
 @log.route('/panel')
 def panel():
-    panel_log = PanelLogEntry.query.all()
-
-    return render_template('log/panel.html', panel_log=panel_log, active='panel')
+    return render_template('log/panel.html', active='panel')

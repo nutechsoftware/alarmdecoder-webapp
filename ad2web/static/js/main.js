@@ -9,4 +9,7 @@ $(document).ready(function() {
     //$('#flash_message_container').slideDown(function() {
         //setTimeout(hide_flask_message_container, 3000);
     //});
+    //
+    decoder = new AlarmDecoder();
+    decoder.init();
 })

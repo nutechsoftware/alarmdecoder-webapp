@@ -5,68 +5,58 @@
 {% extends "layouts/base.html" %}
 
 {% block pagejs %}
-    <script src="/static/js/vendor/jquery-2.0.3.min.js"></script>
-    <script src="/static/js/vendor/socket.io.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
-            socket = io.connect('/alarmdecoder')
+            PubSub.subscribe('message', function(type, msg) {
+                $('#keypad-line1').text(msg.text);
+            });
 
-            socket.on('connect', function() {
-                console.log('wat');
+            $('#button-1').on('click', function() {
+                decoder.emit('keypress', '1');
+            });
 
-                socket.on('message', function(msg) {
-                    msg_obj = JSON.parse(msg);
-                    $('#keypad-line1').text(msg_obj.text);
+            $('#button-2').on('click', function() {
+                decoder.emit('keypress', '2');
+            });
 
-                })
+            $('#button-3').on('click', function() {
+                decoder.emit('keypress', '3');
+            });
 
-                $('#button-1').on('click', function() {
-                    socket.emit('keypress', '1');
-                });
+            $('#button-4').on('click', function() {
+                decoder.emit('keypress', '4');
+            });
 
-                $('#button-2').on('click', function() {
-                    socket.emit('keypress', '2');
-                });
+            $('#button-5').on('click', function() {
+                decoder.emit('keypress', '5');
+            });
 
-                $('#button-3').on('click', function() {
-                    socket.emit('keypress', '3');
-                });
+            $('#button-6').on('click', function() {
+                decoder.emit('keypress', '6');
+            });
 
-                $('#button-4').on('click', function() {
-                    socket.emit('keypress', '4');
-                });
+            $('#button-7').on('click', function() {
+                decoder.emit('keypress', '7');
+            });
 
-                $('#button-5').on('click', function() {
-                    socket.emit('keypress', '5');
-                });
+            $('#button-8').on('click', function() {
+                decoder.emit('keypress', '8');
+            });
 
-                $('#button-6').on('click', function() {
-                    socket.emit('keypress', '6');
-                });
+            $('#button-9').on('click', function() {
+                decoder.emit('keypress', '9');
+            });
 
-                $('#button-7').on('click', function() {
-                    socket.emit('keypress', '7');
-                });
+            $('#button-0').on('click', function() {
+                decoder.emit('keypress', '0');
+            });
 
-                $('#button-8').on('click', function() {
-                    socket.emit('keypress', '8');
-                });
+            $('#button-star').on('click', function() {
+                decoder.emit('keypress', '*');
+            });
 
-                $('#button-9').on('click', function() {
-                    socket.emit('keypress', '9');
-                });
-
-                $('#button-0').on('click', function() {
-                    socket.emit('keypress', '0');
-                });
-
-                $('#button-star').on('click', function() {
-                    socket.emit('keypress', '*');
-                });
-
-                $('#button-pound').on('click', function() {
-                    socket.emit('keypress', '#');
-                });
+            $('#button-pound').on('click', function() {
+                decoder.emit('keypress', '#');
             });
         })
     </script>

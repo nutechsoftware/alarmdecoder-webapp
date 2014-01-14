@@ -7,22 +7,35 @@
     ("panel", url_for('log.panel')),
 ]%}
 
+{% block pagejs %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            PubSub.subscribe('message', function(type, msg) {
+                $('#panel-log tbody').prepend('<tr><td>' + msg.timestamp + '</td><td>' + msg.raw + '</td></tr>');
+
+                var log_size = $('#panel-log tbody tr').length;
+                if (log_size > 10) {
+                    var row = $('#panel-log tbody tr:gt(' + (10).toString() + ')');
+
+                    row.slideDown(400, function(){ row.remove(); });
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
 {% block body %}
 <div>
     <h2>Panel Log</h2>
-    <table>
+    <table id='panel-log'>
         <thead>
             <tr>
                 <th>Timestamp</th>
                 <th>Message</th>
             </tr>
         </thead>
-        {% for entry in panel_log %}
-            <tr>
-                <td>{{ entry.timestamp }}</td>
-                <td>{{ entry.message }}</td>
-            </tr>
-        {% endfor %}
+        <tbody>
+        </tbody>
     </table>
 </div>
 {% endblock %}
