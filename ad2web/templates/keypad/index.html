@@ -8,7 +8,18 @@
     <script type="text/javascript">
         $(document).ready(function() {
             PubSub.subscribe('message', function(type, msg) {
-                $('#keypad-line1').text(msg.text);
+                var lines = ['', '']
+
+                if(msg.text.length >= 16) {
+                    lines[0] = msg.text.substring(0, 16);
+                    lines[1] = msg.text.substring(16);
+                }
+                else {
+                    lines[0] = msg.text;
+                }
+
+                $('#keypad-line1').text(lines[0]);
+                $('#keypad-line2').text(lines[1]);
             });
 
             $('#button-1').on('click', function() {
