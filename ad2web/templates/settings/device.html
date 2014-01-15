@@ -1,0 +1,35 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#device_type').on('change', function(o) {
+            console.log(o);
+
+            var n = $(this).val();
+            switch(n) {
+                case '0':
+                    $('div#serial_device').hide();
+                    $('div#network_device').show();
+
+                    break;
+                case '1':
+                    $('div#serial_device').show();
+                    $('div#network_device').hide();
+                    break;
+            }
+        });
+
+        $('#device_type').change();
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <h3>Device Settings</h3>
+    {{ render_form(url_for('settings.device'), form) }}
+</div>
+{% endblock %}

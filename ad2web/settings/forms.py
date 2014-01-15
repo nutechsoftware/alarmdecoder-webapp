@@ -4,8 +4,8 @@ from flask.ext.wtf import Form
 from flask.ext.wtf.html5 import URLField, EmailField, TelField
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,
-        FileField, DecimalField)
-from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange, 
+        FileField, DecimalField, BooleanField, SelectField, FormField)
+from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from flask.ext.login import current_user
 
@@ -13,7 +13,7 @@ from ..user import User
 from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX, AGE_MIN, AGE_MAX, DEPOSIT_MIN, DEPOSIT_MAX
 from ..utils import allowed_file, ALLOWED_AVATAR_EXTENSIONS
 from ..utils import SEX_TYPE
-
+from .constants import NETWORK_DEVICE, SERIAL_DEVICE
 
 class ProfileForm(Form):
     multipart = True
@@ -51,3 +51,21 @@ class PasswordForm(Form):
         user = User.get_by_id(current_user.id)
         if not user.check_password(field.data):
             raise ValidationError("Password is wrong.")
+
+class NetworkDeviceForm(Form):
+    device_address = TextField(u'Address', default=None)
+    device_port = IntegerField(u'Port', default=None)
+    ssl = BooleanField(u'Use SSL?', default=False)
+
+class SerialDeviceForm(Form):
+    device_path = TextField(u'Path', default=None)
+    baudrate = IntegerField(u'Baudrate', default=115200)
+
+class DeviceSettingsForm(Form):
+    next = HiddenField()
+    device_type = SelectField(u'Device Type', choices=[(NETWORK_DEVICE, 'Network'), (SERIAL_DEVICE, 'Serial/USB')], default=NETWORK_DEVICE)
+
+    network_device = FormField(NetworkDeviceForm)
+    serial_device = FormField(SerialDeviceForm)
+
+    submit = SubmitField(u'Save')

@@ -15,7 +15,11 @@ class Setting(db.Model):
 
     @classmethod
     def get_by_name(cls, name):
-        return cls.query.filter_by(name=name).first()
+        setting = cls.query.filter_by(name=name).first()
+        if not setting:
+            setting = Setting(name=name)
+
+        return setting
 
     @property
     def value(self):

@@ -38,7 +38,7 @@ DEFAULT_BLUEPRINTS = (
     certificate,
     log,
     keypad,
-    decodersocket,
+    decodersocket
 )
 
 def create_app(config=None, app_name=None, blueprints=None):
