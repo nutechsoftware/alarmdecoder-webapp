@@ -14,7 +14,7 @@ from ..utils import allowed_file, make_dir
 from ..decorators import admin_required
 from ..settings import Setting
 from .forms import ProfileForm, PasswordForm, DeviceTypeForm, SerialDeviceForm, NetworkDeviceForm
-
+from .constants import NETWORK_DEVICE, SERIAL_DEVICE
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -87,26 +87,46 @@ def password():
 @login_required
 @admin_required
 def device():
-    form = DeviceTypeForm()
+    # This is ugly.. better way to do this?
 
-    # Change the form type depending on what POST vars we get.
-    if request.form.get('device_address', None) is not None:
-        form = NetworkDeviceForm()
-    elif request.form.get('device_path', None) is not None:
-        form = SerialDeviceForm()
+    type_form = DeviceTypeForm(prefix="type")
+    network_form = NetworkDeviceForm(prefix="network")
+    serial_form = SerialDeviceForm(prefix="serial")
+    current_form = type_form
 
-    if form.validate_on_submit():
-        # Check form types, save settings, and set next form if necessary.
-        if type(form) == NetworkDeviceForm:
+    if type_form.submit.data:
+        if type_form.validate_on_submit():
+            # Save type settings.
+            device_type = Setting.get_by_name('device_type')
+            device_type.value = type_form.device_type.data
 
+            db.session.add(device_type)
+            db.session.commit()
+
+            # Type form done.. populate network/serial forms.
+            if device_type.value == NETWORK_DEVICE:
+                network_form.device_address.data = Setting.get_by_name('device_address').value
+                network_form.device_port.data = Setting.get_by_name('device_port').value
+                network_form.ssl.data = Setting.get_by_name('use_ssl').value
+                current_form = network_form
+
+            elif device_type.value == SERIAL_DEVICE:
+                serial_form.device_path.data = Setting.get_by_name('device_path').value
+                serial_form.baudrate.data = Setting.get_by_name('baudrate').value
+                current_form = serial_form
+
+    elif network_form.submit.data:
+        current_form = network_form
+        if network_form.validate_on_submit():
+            # Save network device settings
             device_address = Setting.get_by_name('device_address')
-            device_address.value = form.device_address.data
+            device_address.value = network_form.device_address.data
 
             device_port = Setting.get_by_name('device_port')
-            device_port.value = form.device_port.data
+            device_port.value = network_form.device_port.data
 
             ssl = Setting.get_by_name('use_ssl')
-            ssl.value = form.ssl.data
+            ssl.value = network_form.ssl.data
 
             db.session.add(device_address)
             db.session.add(device_port)
@@ -115,12 +135,15 @@ def device():
 
             flash('Device settings saved.', 'success')
 
-        elif type(form) == SerialDeviceForm:
+    elif serial_form.submit.data:
+        current_form = serial_form
+        if serial_form.validate_on_submit():
+            # Save serial device settings.
             device_path = Setting.get_by_name('device_path')
-            device_path.value = form.device_path.data
+            device_path.value = serial_form.device_path.data
 
             baudrate = Setting.get_by_name('baudrate')
-            baudrate.value = form.baudrate.data
+            baudrate.value = serial_form.baudrate.data
 
             db.session.add(device_path)
             db.session.add(baudrate)
@@ -128,28 +151,8 @@ def device():
 
             flash('Device settings saved.', 'success')
 
-        elif type(form) == DeviceTypeForm:
-            device_type = Setting.get_by_name('device_type')
-            device_type.value = form.device_type.data
-
-            db.session.add(device_type)
-            db.session.commit()
-
-            # Change form to the next in the process.
-            if device_type.value == 0:
-                form = NetworkDeviceForm()
-                form.device_address.data = Setting.get_by_name('device_address').value
-                form.device_port.data = Setting.get_by_name('device_port').value
-                form.ssl.data = Setting.get_by_name('use_ssl').value
-
-            elif device_type.value == 1:
-                form = SerialDeviceForm()
-                form.device_path.data = Setting.get_by_name('device_path').value
-                form.baudrate.data = Setting.get_by_name('baudrate').value
-
     else:
-        # Make sure that the Device Type is populated if our setting is already set.
-        if type(form) == DeviceTypeForm:
-            form.device_type.data = Setting.get_by_name('device_type').value
+        # Populate saved device type if this is a fresh page load.
+        type_form.device_type.data = Setting.get_by_name('device_type').value
 
-    return render_template('settings/device.html', form=form, active='device')
+    return render_template('settings/device.html', form=current_form, active='device')
