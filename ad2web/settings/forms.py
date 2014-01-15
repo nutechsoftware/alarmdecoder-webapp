@@ -2,9 +2,10 @@
 
 from flask.ext.wtf import Form
 from flask.ext.wtf.html5 import URLField, EmailField, TelField
+import wtforms
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,
-        FileField, DecimalField, BooleanField, SelectField, FormField)
+        FileField, DecimalField, BooleanField, SelectField, FormField, FieldList)
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from flask.ext.login import current_user
@@ -52,20 +53,31 @@ class PasswordForm(Form):
         if not user.check_password(field.data):
             raise ValidationError("Password is wrong.")
 
+class DeviceTypeForm(Form):
+    device_next = HiddenField()
+    device_type = SelectField(u'Device Type', choices=[(NETWORK_DEVICE, 'Network'), (SERIAL_DEVICE, 'Serial/USB')], default=NETWORK_DEVICE, coerce=int)
+
+    submit = SubmitField(u'Next')
+
 class NetworkDeviceForm(Form):
-    device_address = TextField(u'Address', default=None)
-    device_port = IntegerField(u'Port', default=None)
-    ssl = BooleanField(u'Use SSL?', default=False)
+    device_address = TextField(u'Address', [Required()])
+    device_port = IntegerField(u'Port', [Required()])
+    ssl = BooleanField(u'Use SSL?')
+
+    submit = SubmitField(u'Save')
 
 class SerialDeviceForm(Form):
-    device_path = TextField(u'Path', default=None)
-    baudrate = IntegerField(u'Baudrate', default=115200)
+    device_path = TextField(u'Path', [Required()])
+    baudrate = IntegerField(u'Baudrate', [Required()], default=115200)
+
+    submit = SubmitField(u'Save')
 
 class DeviceSettingsForm(Form):
-    next = HiddenField()
-    device_type = SelectField(u'Device Type', choices=[(NETWORK_DEVICE, 'Network'), (SERIAL_DEVICE, 'Serial/USB')], default=NETWORK_DEVICE)
+    device_type = SelectField(u'Device Type', choices=[(NETWORK_DEVICE, 'Network'), (SERIAL_DEVICE, 'Serial/USB')], default=NETWORK_DEVICE, coerce=int)
 
-    network_device = FormField(NetworkDeviceForm)
-    serial_device = FormField(SerialDeviceForm)
+    #network_device = FormField(NetworkDeviceForm)
+    #serial_device = FormField(SerialDeviceForm)
+    #
+    #device_data = FieldList(FormField(NetworkDeviceForm), FormField(SerialDeviceForm))
 
     submit = SubmitField(u'Save')
