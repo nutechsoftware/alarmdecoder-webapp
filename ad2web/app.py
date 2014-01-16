@@ -22,6 +22,7 @@ from .admin import admin
 from .certificate import certificate
 from .log import log
 from .keypad import keypad
+from .notifications import notifications
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
 
@@ -38,7 +39,8 @@ DEFAULT_BLUEPRINTS = (
     certificate,
     log,
     keypad,
-    decodersocket
+    decodersocket,
+    notifications,
 )
 
 def create_app(config=None, app_name=None, blueprints=None):

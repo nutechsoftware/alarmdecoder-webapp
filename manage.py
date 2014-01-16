@@ -12,6 +12,7 @@ from ad2web.certificate import Certificate
 from ad2web.log import EventLogEntry
 from ad2web.settings import Setting
 from ad2web.utils import MALE
+from ad2web.notifications import Notification, NotificationSetting
 
 
 app = create_app()
@@ -74,6 +75,11 @@ def initdb():
 
     sn = Setting(name="serialnumber", value=1)
     db.session.add(sn)
+
+    notification = Notification(name='Test Notification')
+    notification_setting = NotificationSetting(name='test', value='test')
+    notification.settings['test'] = notification_setting
+    db.session.add(notification)
 
     db.session.commit()
 

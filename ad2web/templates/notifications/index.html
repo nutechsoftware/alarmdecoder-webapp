@@ -1,0 +1,18 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block pagejs %}
+<script type="text/javascript">
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    {% for notification in notifications %}
+        {{ notification.name }}<br>
+        {{ notification.settings }}<br>
+        {{ notification.settings['test'].value }}
+    {% endfor %}
+</div>
+{% endblock %}
