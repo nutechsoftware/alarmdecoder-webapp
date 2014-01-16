@@ -30,6 +30,33 @@
 {% block body %}
 <div class="settings_wrapper">
     <h3>Device Settings</h3>
-    {{ render_form(url_for('settings.device'), form) }}
+    {% if form_type == 'type' %}
+    <div>First, let's choose how you're connecting to your AlarmDecoder.</div><br>
+    <div>
+        <ul>
+            <li>Network - The device is connected to your network via ser2sock, the AlarmDecoder Keypad, or another IP-to-Serial interface.</li>
+            <li>Local Device - The device is plugged directly into the machine running this software.</li>
+        </ul>
+    </div>
+    {% elif form_type == 'network' %}
+    <div>Great!  Now we need to know where the device is on your network and whether or not to use SSL to connect to it.</div>
+    <br>
+    <div>Please note that SSL is currently only supported if the device is exposed with ser2sock.</div>
+    {% elif form_type == 'serial' %}
+    <div>Great!  Now we need to know where the device is on your filesystem.</div>
+    <br>
+    <div>
+        Typical paths:
+        <ul>
+            <li>Linux/OSX: /dev/tty*</li>
+            <li>Windows: COM*:</li>
+            <li>AD2PI: /dev/ttyAMA0</li>
+        </ul>
+    </div>
+    {% endif %}
+    <br>
+    <div>
+        {{ render_form(url_for('settings.device'), form) }}
+    </div>
 </div>
 {% endblock %}

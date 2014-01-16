@@ -92,7 +92,7 @@ def device():
     type_form = DeviceTypeForm(prefix="type")
     network_form = NetworkDeviceForm(prefix="network")
     serial_form = SerialDeviceForm(prefix="serial")
-    current_form = type_form
+    current_form, form_type = type_form, 'type'
 
     if type_form.submit.data:
         if type_form.validate_on_submit():
@@ -105,18 +105,18 @@ def device():
 
             # Type form done.. populate network/serial forms.
             if device_type.value == NETWORK_DEVICE:
-                network_form.device_address.data = Setting.get_by_name('device_address').value
-                network_form.device_port.data = Setting.get_by_name('device_port').value
-                network_form.ssl.data = Setting.get_by_name('use_ssl').value
-                current_form = network_form
+                network_form.device_address.data = Setting.get_by_name('device_address', network_form.device_address.default).value
+                network_form.device_port.data = Setting.get_by_name('device_port', network_form.device_port.default).value
+                network_form.ssl.data = Setting.get_by_name('use_ssl', network_form.ssl.default).value
+                current_form, form_type = network_form, 'network'
 
             elif device_type.value == SERIAL_DEVICE:
-                serial_form.device_path.data = Setting.get_by_name('device_path').value
-                serial_form.baudrate.data = Setting.get_by_name('baudrate').value
-                current_form = serial_form
+                serial_form.device_path.data = Setting.get_by_name('device_path', serial_form.device_path.default).value
+                serial_form.baudrate.data = Setting.get_by_name('baudrate', serial_form.baudrate.default).value
+                current_form, form_type = serial_form, 'serial'
 
     elif network_form.submit.data:
-        current_form = network_form
+        current_form, form_type = network_form, 'network'
         if network_form.validate_on_submit():
             # Save network device settings
             device_address = Setting.get_by_name('device_address')
@@ -136,7 +136,7 @@ def device():
             flash('Device settings saved.', 'success')
 
     elif serial_form.submit.data:
-        current_form = serial_form
+        current_form, form_type = serial_form, 'serial'
         if serial_form.validate_on_submit():
             # Save serial device settings.
             device_path = Setting.get_by_name('device_path')
@@ -153,6 +153,6 @@ def device():
 
     else:
         # Populate saved device type if this is a fresh page load.
-        type_form.device_type.data = Setting.get_by_name('device_type').value
+        type_form.device_type.data = Setting.get_by_name('device_type', type_form.device_type.default).value
 
-    return render_template('settings/device.html', form=current_form, active='device')
+    return render_template('settings/device.html', form=current_form, active='device', form_type=form_type)

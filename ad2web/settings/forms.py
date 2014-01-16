@@ -54,30 +54,19 @@ class PasswordForm(Form):
             raise ValidationError("Password is wrong.")
 
 class DeviceTypeForm(Form):
-    device_next = HiddenField()
-    device_type = SelectField(u'Device Type', choices=[(NETWORK_DEVICE, 'Network'), (SERIAL_DEVICE, 'Serial/USB')], default=NETWORK_DEVICE, coerce=int)
+    device_type = SelectField(u'Device Type', choices=[(NETWORK_DEVICE, 'Network'), (SERIAL_DEVICE, 'Local Device')], default=NETWORK_DEVICE, coerce=int)
 
     submit = SubmitField(u'Next')
 
 class NetworkDeviceForm(Form):
-    device_address = TextField(u'Address', [Required()])
-    device_port = IntegerField(u'Port', [Required()])
-    ssl = BooleanField(u'Use SSL?')
+    device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
+    device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
+    ssl = BooleanField(u'Use SSL?', description=u'(ser2sock only)')
 
     submit = SubmitField(u'Save')
 
 class SerialDeviceForm(Form):
-    device_path = TextField(u'Path', [Required()])
-    baudrate = IntegerField(u'Baudrate', [Required()], default=115200)
-
-    submit = SubmitField(u'Save')
-
-class DeviceSettingsForm(Form):
-    device_type = SelectField(u'Device Type', choices=[(NETWORK_DEVICE, 'Network'), (SERIAL_DEVICE, 'Serial/USB')], default=NETWORK_DEVICE, coerce=int)
-
-    #network_device = FormField(NetworkDeviceForm)
-    #serial_device = FormField(SerialDeviceForm)
-    #
-    #device_data = FieldList(FormField(NetworkDeviceForm), FormField(SerialDeviceForm))
+    device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Path to your AlarmDecoder', default='/dev/ttyAMA0')
+    baudrate = SelectField(u'Baudrate', choices=[(115200, u'115200 (AD2USB/AD2PI)'), (19200, u'19200 (AD2SERIAL)')], default=115200, coerce=int)
 
     submit = SubmitField(u'Save')

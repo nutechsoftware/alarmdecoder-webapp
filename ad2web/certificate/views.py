@@ -42,7 +42,7 @@ def index():
 
     certificates = Certificate.query.all()
 
-    return render_template('certificate/index.html', certificates=certificates, form=form)
+    return render_template('certificate/index.html', certificates=certificates, form=form, active='certificates')
 
 @login_required
 @admin_required
@@ -50,7 +50,7 @@ def index():
 def view(certificate_id):
     cert = Certificate.get_by_id(certificate_id)
 
-    return render_template('certificate/view.html', certificate=cert)
+    return render_template('certificate/view.html', certificate=cert, active='certificates')
 
 @login_required
 @admin_required

@@ -14,10 +14,12 @@ class Setting(db.Model):
     string_value = Column(db.String(255))
 
     @classmethod
-    def get_by_name(cls, name):
+    def get_by_name(cls, name, default=None):
         setting = cls.query.filter_by(name=name).first()
         if not setting:
             setting = Setting(name=name)
+            if default is not None:
+                setting.value = default
 
         return setting
 
