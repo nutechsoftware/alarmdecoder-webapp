@@ -10,7 +10,8 @@ class Notification(db.Model):
     __tablename__ = 'notifications'
 
     id = Column(db.Integer, primary_key=True, autoincrement=True)
-    name = Column(db.String(32), unique=True, nullable=False)
+    description = Column(db.String(255), nullable=False)
+    type = Column(db.Integer, nullable=False)
 
     settings = db.relationship("NotificationSetting", backref="notification", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
 
@@ -18,7 +19,7 @@ class NotificationSetting(db.Model):
     __tablename__ = 'notification_settings'
 
     id = Column(db.Integer, primary_key=True, autoincrement=True)
-    name = Column(db.String(32), unique=True, nullable=False)
+    name = Column(db.String(32), nullable=False)
 
     notification_id = Column(db.Integer, db.ForeignKey("notifications.id"))
 

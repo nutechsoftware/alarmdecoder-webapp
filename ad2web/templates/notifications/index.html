@@ -9,10 +9,20 @@
 
 {% block body %}
 <div class="settings_wrapper">
-    {% for notification in notifications %}
-        {{ notification.name }}<br>
-        {{ notification.settings }}<br>
-        {{ notification.settings['test'].value }}
-    {% endfor %}
+    <table>
+        <thead>
+            <tr><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+        {% for notification in notifications %}
+            <tr>
+                <td>{{ TYPES[notification.type] }}</td>
+                <td><a href="{{ url_for('notifications.edit', id=notification.id) }}">{{ notification.description }}</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <a href="{{ url_for('notifications.create') }}">New Notification</a>
 </div>
 {% endblock %}

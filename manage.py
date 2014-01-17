@@ -76,9 +76,12 @@ def initdb():
     sn = Setting(name="serialnumber", value=1)
     db.session.add(sn)
 
-    notification = Notification(name='Test Notification')
-    notification_setting = NotificationSetting(name='test', value='test')
-    notification.settings['test'] = notification_setting
+    notification = Notification(description='asdf', type=0)
+    notification.settings['source'] = NotificationSetting(name='source', value='root@localhost')
+    notification.settings['destination'] = NotificationSetting(name='destination', value='asdf')
+    notification.settings['server'] = NotificationSetting(name='server', value='localhost')
+    notification.settings['username'] = NotificationSetting(name='username', value='')
+    notification.settings['password'] = NotificationSetting(name='password', value='')
     db.session.add(notification)
 
     db.session.commit()

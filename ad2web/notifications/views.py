@@ -1,14 +1,28 @@
-from flask import Blueprint, render_template, current_app, request, flash
+from flask import Blueprint, render_template, current_app, request, flash, redirect, url_for, abort
 from flask.ext.login import login_required, current_user
+
+from wtforms import FormField
 
 from ..extensions import db
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import EditNotificationForm
+from .forms import CreateNotificationForm, EditNotificationForm, EmailNotificationForm, GoogleTalkNotificationForm
 from .models import Notification, NotificationSetting
-from .constants import NOTIFICATION_TYPES, EMAIL
+from .constants import NOTIFICATION_TYPES, EMAIL, GOOGLETALK
+
+NOTIFICATION_TYPE_DETAILS = {
+    'email': (EMAIL, EmailNotificationForm),
+    'googletalk': (GOOGLETALK, GoogleTalkNotificationForm),
+}
 
 notifications = Blueprint('notifications', __name__, url_prefix='/notifications')
+
+@notifications.context_processor
+def notifications_context_processor():
+    return {
+        'TYPES': NOTIFICATION_TYPES,
+        'TYPE_DETAILS': NOTIFICATION_TYPE_DETAILS
+    }
 
 @notifications.route('/')
 @login_required
@@ -22,25 +36,56 @@ def index():
 def edit(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
 
-    form = EditNotificationForm(obj=notification)
+    type_id, form_type = NOTIFICATION_TYPE_DETAILS[NOTIFICATION_TYPES[notification.type]]
+    obj = notification
+    if request.method == 'POST':
+        obj = None
+
+    form = form_type(obj=obj)
+
+    if not form.is_submitted():
+        form.populate_from_settings(id)
+
     if form.validate_on_submit():
-        pass
+        form.populate_obj(notification)
+        form.populate_settings(notification.settings, id=id)
 
-    return render_template('notifications/edit.html', form=form, active='notifications')
+        db.session.add(notification)
+        db.session.commit()
 
-@notifications.route('/view/<int:id>')
-@login_required
-def view(id):
-    notification = Notification.query.filter_by(id=id).first_or_404()
+        flash('Notification saved.', 'success')
 
-    return render_template('notifications/view.html', notification=notification, active='notifications')
+    return render_template('notifications/edit.html', form=form, id=id, notification=notification, active='notifications')
 
-@notifications.route('/create')
+@notifications.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
-    form = EditNotificationForm()
+    form = CreateNotificationForm()
 
     if form.validate_on_submit():
-        pass
+        return redirect(url_for('notifications.create_by_type', type=form.type.data))
 
-    return render_template('notifications/edit.html', form=form, active='notifications')
+    return render_template('notifications/create.html', form=form, active='notifications')
+
+@notifications.route('/create/<string:type>', methods=['GET', 'POST'])
+@login_required
+def create_by_type(type):
+    if type not in NOTIFICATION_TYPE_DETAILS.keys():
+        abort(404)
+
+    type_id, form_type = NOTIFICATION_TYPE_DETAILS[type]
+    form = form_type()
+    form.type.data = type_id
+
+    if form.validate_on_submit():
+        obj = Notification()
+
+        form.populate_obj(obj)
+        form.populate_settings(obj.settings)
+
+        db.session.add(obj)
+        db.session.commit()
+
+        flash('Notification created.', 'success')
+
+    return render_template('notifications/create_by_type.html', form=form, type=type, active='notifications')

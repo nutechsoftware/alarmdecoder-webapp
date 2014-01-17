@@ -9,9 +9,6 @@
 
 {% block body %}
 <div class="settings_wrapper">
-    <label for="notification-type">Type</label>
-    <span id="notification-type">{{ TYPES[notification.type]|capitalize }}</span>
-
-    {{ render_form(url_for('notifications.edit', id=id), form) }}
+    {{ render_form(url_for('notifications.create_by_type', type=type), form) }}
 </div>
 {% endblock %}
