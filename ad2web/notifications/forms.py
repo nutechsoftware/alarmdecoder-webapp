@@ -79,14 +79,17 @@ class EmailNotificationForm(EditNotificationForm):
 
 class GoogleTalkNotificationForm(EditNotificationForm):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Messages will originate from this address')
+    password = TextField(u'Password', [Required(), Length(max=255)], description=u'Password for the source account')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Messages will be sent to this address')
 
     submit = SubmitField(u'Save')
 
     def populate_settings(self, settings, id=None):
         settings['source'] = self.populate_setting('source', self.source.data)
+        settings['password'] = self.populate_setting('password', self.password.data)
         settings['destination'] = self.populate_setting('destination', self.destination.data)
 
     def populate_from_settings(self, id):
         self.source.data = self.populate_from_setting(id, 'source')
+        self.password.data = self.populate_from_setting(id, 'password')
         self.destination.data = self.populate_from_setting(id, 'destination')

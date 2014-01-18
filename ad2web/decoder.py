@@ -19,6 +19,7 @@ from alarmdecoder.devices import SocketDevice
 from .log.models import EventLogEntry
 from .log.constants import *
 from .extensions import db
+from .notifications import NotificationFactory
 
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
@@ -105,10 +106,13 @@ class Decoder(object):
             #print ftype, sender, args, kwargs
             self._last_message = time.time()
 
-            if ftype in CRITICAL_EVENTS:
-                print 'critical event!', ftype, kwargs
-
             with self.app.app_context():
+                if ftype in CRITICAL_EVENTS:
+                    print 'critical event!', ftype, kwargs
+                    for id in NotificationFactory.notifications():
+                        notifier = NotificationFactory.create(id)
+                        notifier.send('test {0}'.format(kwargs))
+
                 db.session.add(EventLogEntry(type=ftype, message=EVENT_MESSAGES[ftype]))
                 db.session.commit()
 
