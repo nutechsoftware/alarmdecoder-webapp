@@ -44,14 +44,14 @@ EVENTS = {
 EVENT_MESSAGES = {
     ARM: 'The alarm was armed.',
     DISARM: 'The alarm was disarmed.',
-    POWER_CHANGED: 'Power status has changed.',
+    POWER_CHANGED: 'Power status has changed to {status}',
     ALARM: 'Alarming!  Oh no!',
     FIRE: 'Fire!  Oh no!',
-    BYPASS: 'A zone has been bypassed.',
+    BYPASS: 'Zone {zone} has been bypassed.',
     BOOT: 'The AlarmDecoder has finished booting.',
     CONFIG_RECEIVED: 'AlarmDecoder has been configuratorized.',
-    ZONE_FAULT: 'A zone has been faulted.',
-    ZONE_RESTORE: 'A zone has been restored.',
+    ZONE_FAULT: 'Zone {zone} has been faulted.',
+    ZONE_RESTORE: 'Zone {zone} has been restored.',
     LOW_BATTERY: 'Low battery detected.  You should probably mount it higher.',
     PANIC: 'Panic!  Ants are invading the pantry!',
     RELAY_CHANGED: 'Some relay or another has changed.'
@@ -103,17 +103,16 @@ class Decoder(object):
 
     def _handle_event(self, ftype, sender, *args, **kwargs):
         try:
-            #print ftype, sender, args, kwargs
             self._last_message = time.time()
 
             with self.app.app_context():
+                event_message = EVENT_MESSAGES[ftype].format(**kwargs)
                 if ftype in CRITICAL_EVENTS:
-                    print 'critical event!', ftype, kwargs
                     for id in NotificationFactory.notifications():
                         notifier = NotificationFactory.create(id)
-                        notifier.send('test {0}'.format(kwargs))
+                        notifier.send('AlarmDecoder Event: {0}'.format(event_message))
 
-                db.session.add(EventLogEntry(type=ftype, message=EVENT_MESSAGES[ftype]))
+                db.session.add(EventLogEntry(type=ftype, message=event_message))
                 db.session.commit()
 
             message = jsonpickle.encode(kwargs, unpicklable=False)
