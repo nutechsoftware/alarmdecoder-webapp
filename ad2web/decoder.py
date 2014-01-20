@@ -20,6 +20,7 @@ from .log.models import EventLogEntry
 from .log.constants import *
 from .extensions import db
 from .notifications import NotificationFactory
+from .zones import Zone
 
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
@@ -47,11 +48,11 @@ EVENT_MESSAGES = {
     POWER_CHANGED: 'Power status has changed to {status}.',
     ALARM: 'Alarming!  Oh no!',
     FIRE: 'Fire!  Oh no!',
-    BYPASS: 'Zone {zone} has been bypassed.',
+    BYPASS: '{zone_name} ({zone}) has been bypassed.',
     BOOT: 'The AlarmDecoder has finished booting.',
     CONFIG_RECEIVED: 'AlarmDecoder has been configuratorized.',
-    ZONE_FAULT: 'Zone {zone} has been faulted.',
-    ZONE_RESTORE: 'Zone {zone} has been restored.',
+    ZONE_FAULT: '{zone_name} ({zone}) has been faulted.',
+    ZONE_RESTORE: '{zone_name} ({zone}) has been restored.',
     LOW_BATTERY: 'Low battery detected.  You should probably mount it higher.',
     PANIC: 'Panic!  Ants are invading the pantry!',
     RELAY_CHANGED: 'Some relay or another has changed.'
@@ -106,6 +107,10 @@ class Decoder(object):
             self._last_message = time.time()
 
             with self.app.app_context():
+                if 'zone' in kwargs:
+                    zone_name = Zone.get_name(kwargs['zone'])
+                    kwargs['zone_name'] = zone_name if zone_name else '<unnamed>'
+
                 event_message = EVENT_MESSAGES[ftype].format(**kwargs)
                 if ftype in CRITICAL_EVENTS:
                     for id in NotificationFactory.notifications():

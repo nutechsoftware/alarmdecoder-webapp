@@ -13,6 +13,7 @@ from ad2web.log import EventLogEntry
 from ad2web.settings import Setting
 from ad2web.utils import MALE
 from ad2web.notifications import Notification, NotificationSetting
+from ad2web.zones import Zone
 
 
 app = create_app()
@@ -83,6 +84,9 @@ def initdb():
     notification.settings['username'] = NotificationSetting(name='username', value='')
     notification.settings['password'] = NotificationSetting(name='password', value='')
     db.session.add(notification)
+
+    zone = Zone(zone_id=22, name='Some zone', description='This is some zone.')
+    db.session.add(zone)
 
     db.session.commit()
 

@@ -1,0 +1,28 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block pagejs %}
+<script type="text/javascript">
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Zone Name</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+        {% for zone in zones %}
+            <tr>
+                <td>{{ zone.zone_id }}</td>
+                <td><a href="{{ url_for('zones.edit', id=zone.zone_id) }}">{{ zone.name }}</a></td>
+                <td>{{ zone.description }}</td>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <a href="{{ url_for('zones.create') }}">Create a new zone</a>
+</div>
+{% endblock %}
