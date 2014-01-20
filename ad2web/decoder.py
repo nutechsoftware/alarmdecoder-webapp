@@ -44,7 +44,7 @@ EVENTS = {
 EVENT_MESSAGES = {
     ARM: 'The alarm was armed.',
     DISARM: 'The alarm was disarmed.',
-    POWER_CHANGED: 'Power status has changed to {status}',
+    POWER_CHANGED: 'Power status has changed to {status}.',
     ALARM: 'Alarming!  Oh no!',
     FIRE: 'Fire!  Oh no!',
     BYPASS: 'Zone {zone} has been bypassed.',
