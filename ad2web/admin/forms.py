@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 
 from flask.ext.wtf import Form
-from wtforms import HiddenField, SubmitField, RadioField, DateField
-from wtforms.validators import AnyOf
+from wtforms import HiddenField, SubmitField, RadioField, DateField, TextField, PasswordField
+from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
+        URL, AnyOf, Optional)
 
-from ..user import USER_ROLE, USER_STATUS
+from ..user import USER_ROLE, USER_STATUS, USER, ACTIVE
+from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX
 
 
 class UserForm(Form):
     next = HiddenField()
+    name = TextField(u'Username', [Required()])
+    email = TextField(u'Email', [Required()])
+    password = PasswordField(u'Password', [Required(), Length(PASSWORD_LEN_MIN, PASSWORD_LEN_MAX)])
+    password_again = PasswordField(u'Confirm Password', [Required(), Length(PASSWORD_LEN_MIN, PASSWORD_LEN_MAX), EqualTo('password')])
     role_code = RadioField(u"Role", [AnyOf([str(val) for val in USER_ROLE.keys()])],
-            choices=[(str(val), label) for val, label in USER_ROLE.items()])
+            choices=[(str(val), label) for val, label in USER_ROLE.items()], default=USER)
     status_code = RadioField(u"Status", [AnyOf([str(val) for val in USER_STATUS.keys()])],
-            choices=[(str(val), label) for val, label in USER_STATUS.items()])
-    # A demo of datepicker.
-    created_time = DateField(u'Created time')
+            choices=[(str(val), label) for val, label in USER_STATUS.items()], default=ACTIVE)
+
     submit = SubmitField(u'Save')

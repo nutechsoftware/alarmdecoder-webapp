@@ -2,8 +2,3 @@
 
 {% set page_header = _(active|capitalize) %}
 {% set page_title = page_header %}
-
-{% set tabs = [
-    ("events", url_for('log.events')),
-    ("live", url_for('log.live')),
-]%}

@@ -44,17 +44,17 @@ def initdb():
     admin = User(
             name=u'admin',
             email=u'admin@example.com',
-            password=u'123456',
+            password=u'testing',
             role_code=ADMIN,
-            status_code=ACTIVE,
-            user_detail=UserDetail(
-                sex_code=MALE,
-                age=10,
-                url=u'http://admin.example.com',
-                deposit=100.00,
-                location=u'Hangzhou',
-                bio=u'admin Guy is ... hmm ... just a admin guy.'))
+            status_code=ACTIVE)
     db.session.add(admin)
+
+    user = User(name=u'testing',
+                email=u'test@test.com',
+                password=u'testing',
+                role_code=ADMIN,
+                status_code=ACTIVE)
+    db.session.add(user)
 
     cert = Certificate(
                 name="AlarmDecoder CA",

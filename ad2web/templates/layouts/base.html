@@ -42,7 +42,7 @@
                         <ul class="nav">
                             <li><a href="{{ url_for('keypad.index') }}">Keypad</a></li>
                             <li><a href="{{ url_for('log.events') }}">Log</a></li>
-                            <li><a href="{{ url_for('settings.device') }}">Settings</a></li>
+                            <li><a href="{{ url_for('settings.index') }}">Settings</a></li>
                             <li><a href="{{ url_for('frontend.logout') }}">Log out</a></li>
                         </ul>
                     </div>
@@ -82,10 +82,12 @@
                 {% if tabs %}
                 <div>
                     <ul class="nav nav-tabs">
-                        {% for tab, link in tabs %}
+                        {% for tab, link, admin_required in tabs %}
+                        {% if not admin_required or current_user.is_admin() %}
                         <li class="{% if active == tab %}active{% endif %}">
                             <a href="{{ link }}">{{ tab|capitalize }}</a>
                         </li>
+                        {% endif %}
                         {% endfor %}
                     </ul>
                 </div>

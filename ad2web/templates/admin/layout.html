@@ -4,6 +4,6 @@
 {% set page_title = page_header %}
 
 {% set tabs = [
-    ("index", url_for('admin.index')), 
-    ("users", url_for('admin.users')),
+    ("index", url_for('admin.index'), True),
+    ("users", url_for('admin.users'), True),
 ]%}

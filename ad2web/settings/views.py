@@ -18,6 +18,10 @@ from .constants import NETWORK_DEVICE, SERIAL_DEVICE
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 
+@settings.route('/')
+@login_required
+def index():
+    return render_template('settings/index.html')
 
 @settings.route('/profile', methods=['GET', 'POST'])
 @login_required

@@ -29,19 +29,25 @@ def users():
     return render_template('admin/users.html', users=users, active='users')
 
 
+@admin.route('/user/create', methods=['GET', 'POST'], defaults={'user_id': None})
 @admin.route('/user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def user(user_id):
-    user = User.query.filter_by(id=user_id).first_or_404()
-    form = UserForm(obj=user, next=request.args.get('next'))
+    user = None
+    form = UserForm()
+
+    if user_id is not None:
+        user = User.query.filter_by(id=user_id).first_or_404()
+        form = UserForm(obj=user, next=request.args.get('next'))
 
     if form.validate_on_submit():
+        user = User()
         form.populate_obj(user)
 
         db.session.add(user)
         db.session.commit()
 
-        flash('User updated.', 'success')
+        flash('User created.' if user_id is None else 'User updated.', 'success')
 
-    return render_template('admin/user.html', user=user, form=form)
+    return render_template('admin/user.html', user_id=user_id, form=form)
