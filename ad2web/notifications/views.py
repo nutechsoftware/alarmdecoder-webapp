@@ -15,7 +15,7 @@ NOTIFICATION_TYPE_DETAILS = {
     'googletalk': (GOOGLETALK, GoogleTalkNotificationForm),
 }
 
-notifications = Blueprint('notifications', __name__, url_prefix='/notifications')
+notifications = Blueprint('notifications', __name__, url_prefix='/settings/notifications')
 
 @notifications.context_processor
 def notifications_context_processor():

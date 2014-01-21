@@ -2,15 +2,10 @@
 
 {% extends "log/layout.html" %}
 
-{% set tabs = [
-    ("events", url_for('log.events')),
-    ("panel", url_for('log.panel')),
-]%}
-
 {% block body %}
 <div>
     <h2>Event Log</h2>
-    <table>
+    <table class="table table-bordered table-hover">
         <thead>
             <tr>
                 <th>Timestamp</th>

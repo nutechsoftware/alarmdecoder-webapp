@@ -1,11 +1,6 @@
-{% set page_title = "Panel Log" %}
+{% set page_title = "Live Log" %}
 
 {% extends "log/layout.html" %}
-
-{% set tabs = [
-    ("events", url_for('log.events')),
-    ("panel", url_for('log.panel')),
-]%}
 
 {% block pagejs %}
     <script type="text/javascript">
@@ -27,7 +22,7 @@
 {% block body %}
 <div>
     <h2>Panel Log</h2>
-    <table id='panel-log'>
+    <table id='panel-log' class="table table-bordered table-hover">
         <thead>
             <tr>
                 <th>Timestamp</th>

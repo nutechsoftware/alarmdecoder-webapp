@@ -42,6 +42,6 @@ def events():
 
 @login_required
 @admin_required
-@log.route('/panel')
-def panel():
-    return render_template('log/panel.html', active='panel')
+@log.route('/live')
+def live():
+    return render_template('log/live.html', active='live')

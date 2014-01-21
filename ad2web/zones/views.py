@@ -13,7 +13,7 @@ from ..settings import Setting
 from .forms import ZoneForm
 from .models import Zone
 
-zones = Blueprint('zones', __name__, url_prefix='/zones')
+zones = Blueprint('zones', __name__, url_prefix='/settings/zones')
 
 @zones.route('/')
 @login_required

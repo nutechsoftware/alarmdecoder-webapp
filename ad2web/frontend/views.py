@@ -16,8 +16,8 @@ from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, Chang
 frontend = Blueprint('frontend', __name__)
 
 
-@frontend.route('/login/openid', methods=['GET', 'POST'])
-@oid.loginhandler
+#@frontend.route('/login/openid', methods=['GET', 'POST'])
+#@oid.loginhandler
 def login_openid():
     if current_user.is_authenticated():
         return redirect(url_for('user.index'))
@@ -30,7 +30,7 @@ def login_openid():
     return render_template('frontend/login_openid.html', form=form, error=oid.fetch_error())
 
 
-@oid.after_login
+#@oid.after_login
 def create_or_login(resp):
     user = User.query.filter_by(openid=resp.identity_url).first()
     if user and login_user(user):
@@ -41,7 +41,7 @@ def create_or_login(resp):
             openid=resp.identity_url))
 
 
-@frontend.route('/create_profile', methods=['GET', 'POST'])
+#frontend.route('/create_profile', methods=['GET', 'POST'])
 def create_profile():
     if current_user.is_authenticated():
         return redirect(url_for('user.index'))
@@ -67,14 +67,14 @@ def index():
     current_app.logger.debug('debug')
 
     if current_user.is_authenticated():
-        return redirect(url_for('user.index'))
+        return redirect(url_for('keypad.index'))
 
     page = int(request.args.get('page', 1))
     pagination = User.query.paginate(page=page, per_page=10)
     return render_template('index.html', pagination=pagination)
 
 
-@frontend.route('/search')
+#@frontend.route('/search')
 def search():
     keywords = request.args.get('keywords', '').strip()
     pagination = None
@@ -89,7 +89,7 @@ def search():
 @frontend.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated():
-        return redirect(url_for('user.index'))
+        return redirect(url_for('keypad.index'))
 
     form = LoginForm(login=request.args.get('login', None),
                      next=request.args.get('next', None))
@@ -102,7 +102,7 @@ def login():
             remember = request.form.get('remember') == 'y'
             if login_user(user, remember=remember):
                 flash(_("Logged in"), 'success')
-            return redirect(form.next.data or url_for('user.index'))
+            return redirect(form.next.data or url_for('keypad.index'))
         else:
             flash(_('Sorry, invalid login'), 'error')
 
@@ -135,7 +135,7 @@ def logout():
     return redirect(url_for('frontend.index'))
 
 
-@frontend.route('/signup', methods=['GET', 'POST'])
+#@frontend.route('/signup', methods=['GET', 'POST'])
 def signup():
     if current_user.is_authenticated():
         return redirect(url_for('user.index'))

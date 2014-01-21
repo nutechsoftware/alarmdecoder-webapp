@@ -17,4 +17,4 @@ class ZoneForm(Form):
     name = TextField(u'Name', [Required(), Length(max=32)])
     description = TextField(u'Description', [Required(), Length(max=255)])
 
-    submit = SubmitField(u'Create')
+    submit = SubmitField(u'Save')

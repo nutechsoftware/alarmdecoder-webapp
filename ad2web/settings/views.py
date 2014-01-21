@@ -19,7 +19,7 @@ from .constants import NETWORK_DEVICE, SERIAL_DEVICE
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 
 
-#@settings.route('/profile', methods=['GET', 'POST'])
+@settings.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     user = User.query.filter_by(name=current_user.name).first_or_404()

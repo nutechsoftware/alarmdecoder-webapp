@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
-    <link rel="Shortcut Icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/x-icon">
+    <link rel="Shortcut Icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 
     {% block css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/normalize.css') }}">
@@ -38,16 +38,8 @@
                     <a class='brand' href='{{ url_for('frontend.index') }}'><img src="{{ url_for('static', filename='img/logo.png') }}" /></a>
 
                     {% if current_user.is_authenticated() %}
-                    <form class="navbar-search pull-left" action="{{ url_for('frontend.search') }}">
-                        <input type='text' class="search-query" name='keywords' value='{{ keywords|default('') }}' placeholder='Search' />
-                    </form>
                     <div class="nav-collapse collapse pull-right">
                         <ul class="nav">
-                            {% if current_user.is_admin() %}
-                            <li><a href="{{ url_for('admin.index') }}">{{ current_user.name }}</a></li>
-                            {% else %}
-                            <li><a href="{{ url_for('user.index') }}">{{ current_user.name }}</a></li>
-                            {% endif %}
                             <li><a href="{{ url_for('keypad.index') }}">Keypad</a></li>
                             <li><a href="{{ url_for('log.events') }}">Log</a></li>
                             <li><a href="{{ url_for('settings.device') }}">Settings</a></li>
@@ -57,7 +49,6 @@
                     {% else %}
                     <div class="nav-collapse collapse pull-right">
                         <ul class="nav">
-                            <li><span><a class="btn btn-success" href="{{ url_for('frontend.signup') }}"><strong>Sign up</strong></a></span></li>
                             <li><a href="{{ url_for('frontend.login') }}">Sign in</a></li>
                         </ul>
                     </div>
@@ -111,14 +102,12 @@
 
     <footer id="footer">
         <ul class="footer-links">
-            <li>© 2013</li>
-            <li><a href='https://github.com/imwilsonxu/fbone'>About</a></li>
+            <li>© 2014</li>
+            <li><a href='http://www.alarmdecoder.com/'>AlarmDecoder</a></li>
             <li class="muted">&middot;</li>
             <li><a href='{{ url_for('frontend.help') }}'>Help</a></li>
             <li class="muted">&middot;</li>
-            <li><a href='https://github.com/imwilsonxu/fbone/blob/master/LICENSE'>Terms</a></li>
-            <li class="muted">&middot;</li>
-            <li><a href='http://imwilsonxu.net'>Blog</a></li>
+            <li><a href='https://github.com/nutechsoftware/alarmdecoderweb/blob/master/LICENSE'>Terms</a></li>
         </ul>
     </footer>
 

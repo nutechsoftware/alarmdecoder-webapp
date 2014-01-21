@@ -10,7 +10,7 @@ from .constants import ACTIVE, CLIENT, CA, PACKAGE_TYPE_LOOKUP, CERTIFICATE_TYPE
 from .models import Certificate, CertificatePackage
 from .forms import GenerateCertificateForm
 
-certificate = Blueprint('certificate', __name__, url_prefix='/certificate')
+certificate = Blueprint('certificate', __name__, url_prefix='/settings/certificates')
 
 @certificate.context_processor
 def certificate_context_processor():
