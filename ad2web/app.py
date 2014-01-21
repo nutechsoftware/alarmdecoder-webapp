@@ -24,6 +24,7 @@ from .log import log
 from .keypad import keypad
 from .notifications import notifications
 from .zones import zones
+from .setup import setup
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
 
@@ -43,6 +44,7 @@ DEFAULT_BLUEPRINTS = (
     decodersocket,
     notifications,
     zones,
+    setup,
 )
 
 def create_app(config=None, app_name=None, blueprints=None):

@@ -1,0 +1,14 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'setup/layout.html' %}
+
+{% block pagejs %}
+<script type="text/javascript">
+</script>
+{% endblock %}
+
+{% block body %}
+<div>
+    {{ render_form(url_for('setup.local'), form) }}
+</div>
+{% endblock %}
