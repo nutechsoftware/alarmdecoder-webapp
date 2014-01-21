@@ -35,6 +35,8 @@ def index():
 @login_required
 def edit(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
+    if notification.user != current_user and not current_user.is_admin():
+        abort(403)
 
     type_id, form_type = NOTIFICATION_TYPE_DETAILS[NOTIFICATION_TYPES[notification.type]]
     obj = notification
@@ -81,11 +83,14 @@ def create_by_type(type):
         obj = Notification()
 
         form.populate_obj(obj)
+        obj.user = current_user
         form.populate_settings(obj.settings)
 
         db.session.add(obj)
         db.session.commit()
 
         flash('Notification created.', 'success')
+
+        return redirect(url_for('notifications.index'))
 
     return render_template('notifications/create_by_type.html', form=form, type=type, active='notifications')

@@ -7,7 +7,7 @@ from flask.ext.script import Manager
 from ad2web import create_app, create_decoder_socket
 from ad2web.decoder import Decoder, decoder
 from ad2web.extensions import db
-from ad2web.user import User, UserDetail, ADMIN, ACTIVE
+from ad2web.user import User, UserDetail, ADMIN, USER, ACTIVE
 from ad2web.certificate import Certificate
 from ad2web.log import EventLogEntry
 from ad2web.settings import Setting
@@ -52,7 +52,7 @@ def initdb():
     user = User(name=u'testing',
                 email=u'test@test.com',
                 password=u'testing',
-                role_code=ADMIN,
+                role_code=USER,
                 status_code=ACTIVE)
     db.session.add(user)
 
@@ -62,6 +62,15 @@ def initdb():
                 serial_number=1,
                 status=1,
                 type=0)
+    cert.generate(common_name='Testing')
+    db.session.add(cert)
+    cert = Certificate(
+            name="Test Cert",
+            description='Test Cert',
+            serial_number=2,
+            status=1,
+            type=2,
+            user=user)
     cert.generate(common_name='Testing')
     db.session.add(cert)
 
@@ -77,7 +86,7 @@ def initdb():
     sn = Setting(name="serialnumber", value=1)
     db.session.add(sn)
 
-    notification = Notification(description='Test Email', type=0)
+    notification = Notification(description='Test Email', type=0, user=user)
     notification.settings['source'] = NotificationSetting(name='source', value='root@localhost')
     notification.settings['destination'] = NotificationSetting(name='destination', value='root@localhost')
     notification.settings['server'] = NotificationSetting(name='server', value='localhost')
@@ -97,3 +106,4 @@ manager.add_option('-c', '--config',
 
 if __name__ == "__main__":
     manager.run()
+

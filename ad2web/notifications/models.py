@@ -12,6 +12,7 @@ class Notification(db.Model):
     id = Column(db.Integer, primary_key=True, autoincrement=True)
     description = Column(db.String(255), nullable=False)
     type = Column(db.Integer, nullable=False)
+    user_id = Column(db.Integer, db.ForeignKey('users.id'))
 
     settings = db.relationship("NotificationSetting", backref="notification", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
 

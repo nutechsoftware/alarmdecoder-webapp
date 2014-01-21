@@ -13,17 +13,21 @@
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
+                <th>Owner</th>
                 <th>Description</th>
             </tr>
         </thead>
 
         {% for cert in certificates %}
-        <tr>
-            <td><a href="{{ url_for('certificate.view', certificate_id=cert.id) }}">{{ cert.name }}</a></td>
-            <td>{{ TYPES[cert.type] }}</td>
-            <td>{{ STATUS[cert.status] }}</td>
-            <td>{{ cert.description }}</td>
-        </tr>
+            {% if cert.user == current_user or current_user.is_admin() %}
+            <tr>
+                <td><a href="{{ url_for('certificate.view', certificate_id=cert.id) }}">{{ cert.name }}</a></td>
+                <td>{{ TYPES[cert.type] }}</td>
+                <td>{{ STATUS[cert.status] }}</td>
+                <td>{% if cert.user %}{{ cert.user.name}}{% endif %}</td>
+                <td>{{ cert.description }}</td>
+            </tr>
+            {% endif %}
         {% endfor %}
 
     </table>

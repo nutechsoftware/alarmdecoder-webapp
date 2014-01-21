@@ -79,6 +79,8 @@ class User(db.Model, UserMixin):
     created_time = Column(db.DateTime, default=get_current_time)
 
     avatar = Column(db.String(STRING_LEN))
+    certificates = db.relationship("Certificate", backref="user", cascade='all, delete-orphan')
+    notifications = db.relationship("Notification", backref="user", cascade='all, delete-orphan')
 
     _password = Column('password', db.String(STRING_LEN), nullable=False)
 

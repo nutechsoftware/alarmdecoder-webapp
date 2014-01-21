@@ -19,9 +19,8 @@ def certificate_context_processor():
         'STATUS': CERTIFICATE_STATUS
     }
 
-@login_required
-@admin_required
 @certificate.route('/', methods=['GET', 'POST'])
+@login_required
 def index():
     form = GenerateCertificateForm(next=request.args.get('next'))
 
@@ -34,6 +33,7 @@ def index():
         cert.generate(form.name.data, parent=parent)
         cert.status = ACTIVE
         cert.type = CLIENT
+        cert.user = current_user
 
         db.session.add(cert)
         db.session.commit()
@@ -44,32 +44,35 @@ def index():
 
     return render_template('certificate/index.html', certificates=certificates, form=form, active='certificates')
 
-@login_required
-@admin_required
 @certificate.route('/<int:certificate_id>')
+@login_required
 def view(certificate_id):
     cert = Certificate.get_by_id(certificate_id)
+    if cert.user != current_user and not current_user.is_admin():
+        abort(403)
 
     return render_template('certificate/view.html', certificate=cert, active='certificates')
 
-@login_required
-@admin_required
 @certificate.route('/<int:certificate_id>/download/<download_type>')
+@login_required
 def download(certificate_id, download_type):
     cert = Certificate.get_by_id(certificate_id)
-    ca = Certificate.query.filter_by(type=CA).first_or_404()
+    if cert.user != current_user and not current_user.is_admin():
+        abort(403)
 
+    ca = Certificate.query.filter_by(type=CA).first_or_404()
     package = CertificatePackage(cert, ca)
 
     mime_type, filename, data = package.create(package_type=PACKAGE_TYPE_LOOKUP[download_type])
 
     return Response(data, mimetype=mime_type, headers={ 'Content-Type': mime_type, 'Content-Disposition': 'attachment; filename=' + filename })
 
-@login_required
-@admin_required
 @certificate.route('/<int:certificate_id>/revoke')
+@login_required
 def revoke(certificate_id):
     cert = Certificate.get_by_id(certificate_id)
+    if cert.user != current_user and not current_user.is_admin():
+        abort(403)
 
     cert.revoke()
 
