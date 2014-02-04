@@ -2,16 +2,16 @@
 
 from setuptools import setup
 
-project = "fbone"
+project = "ad2web"
 
 setup(
     name=project,
     version='0.1',
-    url='https://github.com/imwilsonxu/fbone',
-    description='Fbone (Flask bone) is a Flask (Python microframework) template/bootstrap/boilerplate application.',
-    author='Wilson Xu',
-    author_email='imwilsonxu@gmail.com',
-    packages=["fbone"],
+    url='https://github.com/nutechsoftware/ad2web',
+    description='AD2Web is a web interface for your AlarmDecoder device.',
+    author='Scott Petersen',
+    author_email='ad2usb@support.nutech.com',
+    #packages=["ad2web"],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
@@ -26,7 +26,9 @@ setup(
         'Flask-Login',
         'Flask-OpenID',
         'nose',
-        'mysql-python',
+        'alarmdecoder',
+        'pyopenssl',
+        'gevent-socketio'
     ],
     test_suite='tests',
     classifiers=[
