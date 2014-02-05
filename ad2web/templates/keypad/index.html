@@ -9,7 +9,8 @@
         $(document).ready(function() {
             PubSub.subscribe('message', function(type, msg) {
                 var lines = ['', '']
-
+                var armed = msg.armed_away | msg.armed_home;
+                var ready = msg.ready;
                 if(msg.text.length >= 16) {
                     lines[0] = msg.text.substring(0, 16);
                     lines[1] = msg.text.substring(16);
@@ -18,89 +19,258 @@
                     lines[0] = msg.text;
                 }
 
+
+                if( armed )
+                {
+                    $('#status-image1').attr("src", "../static/img/led-on-red.png");
+                }
+                else
+                {
+                    $('#status-image1').attr("src", "../static/img/led-off.png");
+                }
+                if( ready )
+                {
+                    $('#status-image2').attr("src", "../static/img/led-on.png");
+                }
+                else
+                {
+                    $('#status-image2').attr("src", "../static/img/led-off.png");
+                }
                 $('#keypad-line1').text(lines[0]);
-                $('#keypad-line2').text(lines[1]);
+
+//hackery to get page to stop shifting when only 1 line of text present
+                if( lines[1].indexOf('   ') != -1 )
+                    lines[1] = '';
+                if( lines[1].length > 0 )
+                {
+                    $('#keypad-line2').css("color", "black");
+                    $('#keypad-line2').text(lines[1]);
+                }
+                else
+                {
+                    $('#keypad-line2').css("color", "white");
+                    $('#keypad-line2').text('---');
+                }
             });
 
+            $(document).keydown(function(event) {
+                var shiftKey = event.shiftKey;
+                var charCode = (typeof event.which == "number") ? event.which : event.keyCode;
+                var realCharCode = String.fromCharCode(charCode);
+//F1-F4
+                if( charCode == 112 )
+                    decoder.emit('keypress', 1);
+                if( charCode == 113 )
+                    decoder.emit('keypress', 2);
+                if( charCode == 114 )
+                    decoder.emit('keypress', 3);
+                if( charCode == 115 )
+                    decoder.emit('keypress', 4);
+
+//the rest
+                if( charCode == 8 || charCode == 9 || charCode == 46 || charCode == 37 || charCode == 39 || (charCode >= 48 && charCode <= 57) || (charCode >= 96 && charCode <= 105 ))
+                {
+                    if( shiftKey )
+                    {
+                        if(charCode == 56)
+                            decoder.emit('keypress', '*');
+                        if(charCode == 51)
+                            decoder.emit('keypress', '#');
+                    }
+                    else
+                    {
+                        decoder.emit('keypress', realCharCode);
+                    }
+                }
+            });
             $('#button-1').on('click', function() {
                 decoder.emit('keypress', '1');
             });
-
+            $('#button-1').on('mousedown', function() {
+        		$(this).css('background', 'url(../static/img/1-large-on.png) no-repeat');
+	        });
+	        $('#button-1').on('mouseup', function() {
+		        $(this).css('background', 'url(../static/img/1-large.png) no-repeat');
+            });
             $('#button-2').on('click', function() {
                 decoder.emit('keypress', '2');
             });
-
+            $('#button-2').on('mousedown', function() {
+		        $(this).css('background', 'url(../static/img/2-large-on.png) no-repeat');
+            });
+            $('#button-2').on('mouseup', function() {
+		        $(this).css('background', 'url(../static/img/2-large.png) no-repeat');
+            });
             $('#button-3').on('click', function() {
                 decoder.emit('keypress', '3');
+            });
+            $('#button-3').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/3-large-on.png) no-repeat');
+            });
+            $('#button-3').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/3-large.png) no-repeat');
             });
 
             $('#button-4').on('click', function() {
                 decoder.emit('keypress', '4');
             });
+            $('#button-4').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/4-large-on.png) no-repeat');
+            });
+            $('#button-4').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/4-large.png) no-repeat');
+            });
 
             $('#button-5').on('click', function() {
                 decoder.emit('keypress', '5');
+            });
+            $('#button-5').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/5-large-on.png) no-repeat');
+            });
+            $('#button-5').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/5-large.png) no-repeat');
             });
 
             $('#button-6').on('click', function() {
                 decoder.emit('keypress', '6');
             });
+            $('#button-6').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/6-large-on.png) no-repeat');
+            });
+            $('#button-6').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/6-large.png) no-repeat');
+            });
 
             $('#button-7').on('click', function() {
                 decoder.emit('keypress', '7');
+            });
+            $('#button-7').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/7-large-on.png) no-repeat');
+            });
+            $('#button-7').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/7-large.png) no-repeat');
             });
 
             $('#button-8').on('click', function() {
                 decoder.emit('keypress', '8');
             });
+            $('#button-8').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/8-large-on.png) no-repeat');
+            });
+            $('#button-8').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/8-large.png) no-repeat');
+            });
 
             $('#button-9').on('click', function() {
                 decoder.emit('keypress', '9');
+            });
+            $('#button-9').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/9-large-on.png) no-repeat');
+            });
+            $('#button-9').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/9-large.png) no-repeat');
             });
 
             $('#button-0').on('click', function() {
                 decoder.emit('keypress', '0');
             });
+            $('#button-0').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/0-large-on.png) no-repeat');
+            });
+            $('#button-0').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/0-large.png) no-repeat');
+            });
 
             $('#button-star').on('click', function() {
                 decoder.emit('keypress', '*');
+            });
+            $('#button-star').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/star-large-on.png) no-repeat');
+            });
+            $('#button-star').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/star-large.png) no-repeat');
             });
 
             $('#button-pound').on('click', function() {
                 decoder.emit('keypress', '#');
             });
+            $('#button-pound').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/pound-large-on.png) no-repeat');
+            });
+            $('#button-pound').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/pound-large.png) no-repeat');
+            });
+
+	        $('#button-F1').on('click', function() {
+                decoder.emit('keypress', 1);
+            });
+	        $('#button-F1').on('mousedown', function() {
+        		$(this).css('background', 'url(../static/img/f1-fire-on.png) no-repeat');
+    	    });
+            $('#button-F1').on('mouseup', function() {
+	        	$(this).css('background', 'url(../static/img/f1-fire.png) no-repeat');
+            });
+            $('#button-F2').on('click', function() {
+                decoder.emit('keypress', 2);
+            });
+            $('#button-F2').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/f2-police-on.png) no-repeat');
+            });
+            $('#button-F2').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/f2-police.png) no-repeat');
+            });
+            $('#button-F3').on('click', function() {
+                decoder.emit('keypress', 3);
+            });
+            $('#button-F3').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/f3-medical-on.png) no-repeat');
+            });
+            $('#button-F3').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/f3-medical.png) no-repeat');
+            });
+            $('#button-F4').on('click', function() {
+                decoder.emit('keypress', 4);
+            });
+            $('#button-F4').on('mousedown', function() {
+                $(this).css('background', 'url(../static/img/f4-led-text-on.png) no-repeat');
+            });
+            $('#button-F4').on('mouseup', function() {
+                $(this).css('background', 'url(../static/img/f4-led-text.png) no-repeat');
+            });
+
         })
     </script>
 {% endblock %}
 
 {% block body %}
 <div>
+    <div id="status-indicator">Armed: <img id="status-image1" src="../static/img/led-off.png"> Ready: <img id="status-image2" src="../static/img/led-off.png"></div>
     <div id="keypad-line1">line #1</div>
     <div id="keypad-line2">line #2</div>
     <div id="keypad-buttons">
         <div id="keypad-button-row">
-            <input id="button-F1" class="keypad-button" type="button" value="F1"></input>
-            <input id="button-1" class="keypad-button" type="button" value="1"></input>
-            <input id="button-2" class="keypad-button" type="button" value="2"></input>
-            <input id="button-3" class="keypad-button" type="button" value="3"></input>
+            <input id="button-F1" class="keypad-button" type="button" value=""></input>
+            <input id="button-1" class="keypad-button" type="button" value=""></input>
+            <input id="button-2" class="keypad-button" type="button" value=""></input>
+            <input id="button-3" class="keypad-button" type="button" value=""></input>
         </div>
         <div id="keypad-button-row">
-            <input id="button-F2" class="keypad-button" type="button" value="F2"></input>
-            <input id="button-4" class="keypad-button" type="button" value="4"></input>
-            <input id="button-5" class="keypad-button" type="button" value="5"></input>
-            <input id="button-6" class="keypad-button" type="button" value="6"></input>
+            <input id="button-F2" class="keypad-button" type="button" value=""></input>
+            <input id="button-4" class="keypad-button" type="button" value=""></input>
+            <input id="button-5" class="keypad-button" type="button" value=""></input>
+            <input id="button-6" class="keypad-button" type="button" value=""></input>
         </div>
         <div id="keypad-button-row">
-            <input id="button-F3" class="keypad-button" type="button" value="F3"></input>
-            <input id="button-7" class="keypad-button" type="button" value="7"></input>
-            <input id="button-8" class="keypad-button" type="button" value="8"></input>
-            <input id="button-9" class="keypad-button" type="button" value="9"></input>
+            <input id="button-F3" class="keypad-button" type="button" value=""></input>
+            <input id="button-7" class="keypad-button" type="button" value=""></input>
+            <input id="button-8" class="keypad-button" type="button" value=""></input>
+            <input id="button-9" class="keypad-button" type="button" value=""></input>
         </div>
         <div id="keypad-button-row">
-            <input id="button-F4" class="keypad-button" type="button" value="F4"></input>
-            <input id="button-star" class="keypad-button" type="button" value="*"></input>
-            <input id="button-0" class="keypad-button" type="button" value="0"></input>
-            <input id="button-pound" class="keypad-button" type="button" value="#"></input>
+            <input id="button-F4" class="keypad-button" type="button" value=""></input>
+            <input id="button-star" class="keypad-button" type="button" value=""></input>
+            <input id="button-0" class="keypad-button" type="button" value=""></input>
+            <input id="button-pound" class="keypad-button" type="button" value=""></input>
         </div>
     </div>
 </div>

@@ -128,3 +128,16 @@ table .headerSortUp:after {
     border: 0 !important
 }
 
+table.display {
+    margin: 0px auto;
+    width: 100%;
+    clear: both;
+    border-collapse: collapse;
+}
+
+.paging_full_numbers .ui-button {
+padding: 2px 6px;
+margin: 0;
+cursor: pointer;
+* cursor: hand;
+}
