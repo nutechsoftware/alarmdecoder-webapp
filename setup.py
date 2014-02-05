@@ -28,7 +28,9 @@ setup(
         'nose',
         'alarmdecoder',
         'pyopenssl',
-        'gevent-socketio'
+        'gevent-socketio',
+        'jsonpickle',
+        'sleekxmpp'
     ],
     test_suite='tests',
     classifiers=[
