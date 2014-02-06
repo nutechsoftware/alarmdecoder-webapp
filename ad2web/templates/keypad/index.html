@@ -39,7 +39,7 @@
                 $('#keypad-line1').text(lines[0]);
 
 //hackery to get page to stop shifting when only 1 line of text present
-                if( lines[1].indexOf('   ') != -1 )
+                if( lines[1].indexOf('      ') != -1 )
                     lines[1] = '';
                 if( lines[1].length > 0 )
                 {
@@ -53,19 +53,20 @@
                 }
             });
 
-            $(document).keydown(function(event) {
+//lets make the buttons animate when we use keyboard
+            $(document).keyup(function(event) {
                 var shiftKey = event.shiftKey;
                 var charCode = (typeof event.which == "number") ? event.which : event.keyCode;
                 var realCharCode = String.fromCharCode(charCode);
 //F1-F4
                 if( charCode == 112 )
-                    decoder.emit('keypress', 1);
+                    $('#button-F1').trigger('mouseup');
                 if( charCode == 113 )
-                    decoder.emit('keypress', 2);
+                    $('#button-F2').trigger('mouseup');
                 if( charCode == 114 )
-                    decoder.emit('keypress', 3);
+                    $('#button-F3').trigger('mouseup');
                 if( charCode == 115 )
-                    decoder.emit('keypress', 4);
+                    $('#button-F4').trigger('mouseup');
 
 //the rest
                 if( charCode == 8 || charCode == 9 || charCode == 46 || charCode == 37 || charCode == 39 || (charCode >= 48 && charCode <= 57) || (charCode >= 96 && charCode <= 105 ))
@@ -73,12 +74,68 @@
                     if( shiftKey )
                     {
                         if(charCode == 56)
+                        {
+                            $('#button-star').trigger('mouseup');
                             decoder.emit('keypress', '*');
+                        }
                         if(charCode == 51)
+                        {
+                            $('#button-pound').trigger('mouseup');
                             decoder.emit('keypress', '#');
+                        }
                     }
                     else
                     {
+                        $('#button-' + realCharCode).trigger('mouseup');
+                    }
+                }
+
+            });
+            $(document).keydown(function(event) {
+                var shiftKey = event.shiftKey;
+                var charCode = (typeof event.which == "number") ? event.which : event.keyCode;
+                var realCharCode = String.fromCharCode(charCode);
+//F1-F4
+                if( charCode == 112 )
+                {
+                    $('#button-F1').trigger('mousedown');
+                    decoder.emit('keypress', 1);
+                }
+                if( charCode == 113 )
+                {
+                    $('#button-F2').trigger('mousedown');
+                    decoder.emit('keypress', 2);
+                }
+                if( charCode == 114 )
+                {
+                    $('#button-F3').trigger('mousedown');
+                    decoder.emit('keypress', 3);
+                }
+                if( charCode == 115 )
+                {
+                    $('#button-F4').trigger('mousedown');
+                    decoder.emit('keypress', 4);
+                }
+
+//the rest
+                if( charCode == 8 || charCode == 9 || charCode == 46 || charCode == 37 || charCode == 39 || (charCode >= 48 && charCode <= 57) || (charCode >= 96 && charCode <= 105 ))
+                {
+                    if( shiftKey )
+                    {
+                        if(charCode == 56)
+                        {
+                            $('#button-star').trigger('mousedown');
+                            decoder.emit('keypress', '*');
+                        }
+                        if(charCode == 51)
+                        {
+                            $('#button-pound').trigger('mousedown');
+                            decoder.emit('keypress', '#');
+                        }
+                    }
+                    else
+                    {
+                        $('#button-' + realCharCode).trigger('mousedown');
                         decoder.emit('keypress', realCharCode);
                     }
                 }
@@ -244,9 +301,10 @@
 
 {% block body %}
 <div>
-    <div id="status-indicator">Armed: <img id="status-image1" src="../static/img/led-off.png"> Ready: <img id="status-image2" src="../static/img/led-off.png"></div>
     <div id="keypad-line1">line #1</div>
     <div id="keypad-line2">line #2</div>
+    <hr>
+    <div id="status-indicator">Armed: <img id="status-image1" src="../static/img/led-off.png"> Ready: <img id="status-image2" src="../static/img/led-off.png"></div>
     <div id="keypad-buttons">
         <div id="keypad-button-row">
             <input id="button-F1" class="keypad-button" type="button" value=""></input>

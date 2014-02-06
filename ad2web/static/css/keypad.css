@@ -1,23 +1,40 @@
+@font-face {
+    font-family: lcd-font;
+    src: url('../fonts/advanced_led_board-7.ttf');
+}
 #status-indicator
 {
-    float: right;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 #keypad-line1
 {
-    font-size: 30px;
+    font-family: lcd-font;
+    text-align: center;
+    font-size: 70px;
     margin-bottom: 10px;
-    width: 400px !important;
+    width: 100% !important;
+    padding-top: 15px;
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
 #keypad-line2
 {
-    font-size: 30px;
+    font-family: lcd-font;
+    text-align: center;
+    font-size: 70px;
+    padding-top: 35px;
     margin-bottom: 5px !important;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 #keypad-buttons
 {
-    position: relative;
     margin-top: 30px !important;
-    width: 800px;
+    width: 100%;
     margin: 0 auto;
 }
 
