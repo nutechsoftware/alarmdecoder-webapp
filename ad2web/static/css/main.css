@@ -197,3 +197,30 @@ form {
 label {
     font-weight: bold !important;
 }
+
+#faq_accordion>div {
+    background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
+    background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+.ui-accordion-header {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+.ui-accordion-header.ui-state-active {
+    background: -webkit-linear-gradient(left, #CCCCCC, #337FD6);
+    background: -moz-linear-gradient(left, #CCCCCC, #337FD6);
+}

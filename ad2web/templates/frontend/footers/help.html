@@ -1,16 +1,23 @@
 {% extends 'layouts/base.html' %}
-
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#faq_accordion').accordion({
+            "collapsible" : true,
+            "active" : false,
+        });
+    });
+</script>
+{% endblock %}
 {% block body %}
 <h2>Help</h2>
-<div class="accordion" id="accordion2">
+<div id="faq_accordion">
     {% for i in [1, 2, 3] %}
-    <div class="accordion-group">
-        <div class="accordion-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse{{ i }}">Question #{{ i }}</a>
-        </div>
-        <div id="collapse{{ i }}" class="accordion-body collapse">
-            <div class="accordion-inner">Answer #{{ i }}</div>
-        </div>
+    <h3>Question #{{ i }}</h3>
+    <div>
+        <p>
+            Answer #{{ i }}
+        </p>
     </div>
     {% endfor %}
 </div>
