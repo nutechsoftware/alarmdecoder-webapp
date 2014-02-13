@@ -66,7 +66,7 @@ def create_decoder_socket(app):
 class Decoder(object):
     def __init__(self, app, websocket):
         self.app = app
-        self.device = AlarmDecoder(SocketDevice(interface=('10.10.0.10', 10000)))
+        self.device = AlarmDecoder(SocketDevice(interface=('10.10.0.2', 10000)))
         self.websocket = websocket
 
         self._last_message = None
