@@ -4,12 +4,19 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function(){
+        $('#zones-table').dataTable({
+            "bJQueryUI": true,
+            "sPaginationType": "full_numbers",
+            "sDom" : '<"H"lr>t<"F"fip>',
+        });
+    });
 </script>
 {% endblock %}
 
 {% block body %}
 <div class="settings_wrapper">
-    <table class="table table-bordered table-hover">
+    <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="zones-table">
         <thead>
             <tr><th>ID</th><th>Zone Name</th><th>Description</th></tr>
         </thead>

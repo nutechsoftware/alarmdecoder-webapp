@@ -3,11 +3,21 @@
 {% set page_title = 'Certificates' %}
 
 {% extends 'settings/layout.html' %}
-
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#certificate-table').dataTable({
+            "bJQueryUI" : true,
+            "sPaginationType" : "full_numbers",
+            "sDom" : '<"H"lr>t<"F"fip>',
+        });
+    });
+</script>
+{% endblock %}
 {% block body %}
 <div>
     <h2>Certificates</h2>
-    <table class="table table-bordered table-hover">
+    <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="certificate-table">
         <thead>
             <tr>
                 <th>Name</th>

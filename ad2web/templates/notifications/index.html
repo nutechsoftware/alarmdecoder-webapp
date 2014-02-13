@@ -4,12 +4,19 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function(){
+        $('#notifications-table').dataTable({
+            "bJQueryUI":true,
+            "sPaginationType": "full_numbers",
+            "sDom" : '<"H"lr>t<"F"fip>',
+        });
+    });
 </script>
 {% endblock %}
 
 {% block body %}
 <div class="settings_wrapper">
-    <table class="table table-bordered table-hover">
+    <table id="notifications-table" class="display table-hover" border="1" cellpadding="3" bordercolor="EEEEEE">
         <thead>
             <tr><th>Type</th><th>Owner</th><th>Description</th></tr>
         </thead>

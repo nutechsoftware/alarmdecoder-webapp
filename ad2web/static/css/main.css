@@ -128,3 +128,99 @@ table .headerSortUp:after {
     border: 0 !important
 }
 
+//dataTables
+table.display {
+    margin: 0px auto;
+    clear: both;
+    border-collapse: collapse;
+}
+
+table {
+    width: 100% !important;
+}
+.ui-widget-header {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0,0,0,0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+
+.paging_full_numbers .ui-button {
+padding: 2px 6px;
+margin: 0;
+cursor: pointer;
+* cursor: hand;
+}
+
+.dataTables_length {
+    padding-top: 5px;
+    padding-left: 5px;
+}
+
+.dataTables_filter {
+    float: right;
+    padding-right: 10px;
+    padding-top: 5px;
+}
+
+.dataTables_info {
+    padding-left: 5px;
+}
+//forms
+input:focus {
+    border: solid 1px #337FD6;
+}
+
+form {
+    background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
+    background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0,0,0,0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+
+.form-actions {
+    background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
+    background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
+}
+
+label {
+    font-weight: bold !important;
+}
+
+#faq_accordion>div {
+    background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
+    background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+.ui-accordion-header {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+.ui-accordion-header.ui-state-active {
+    background: -webkit-linear-gradient(left, #CCCCCC, #337FD6);
+    background: -moz-linear-gradient(left, #CCCCCC, #337FD6);
+}

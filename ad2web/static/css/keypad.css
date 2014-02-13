@@ -1,0 +1,166 @@
+@font-face {
+    font-family: lcd-font;
+    src: url('../fonts/advanced_led_board-7.ttf');
+}
+#status-indicator
+{
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+#keypad-line1
+{
+    font-family: lcd-font;
+    text-align: center;
+    font-size: 70px;
+    margin-bottom: 10px;
+    width: 100% !important;
+    padding-top: 15px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+#keypad-line2
+{
+    font-family: lcd-font;
+    text-align: center;
+    font-size: 70px;
+    padding-top: 35px;
+    margin-bottom: 5px !important;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+#keypad-buttons
+{
+    margin-top: 30px !important;
+    width: 100%;
+    margin: 0 auto;
+}
+
+#keypad-button-row
+{
+    width: 700px;
+    margin: 0 auto;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.keypad-button
+{
+    width: 150px !important;
+    height: 80px;
+}
+
+#button-0
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/0-large.png') no-repeat;
+}
+#button-1
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/1-large.png') no-repeat;
+}
+#button-2
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/2-large.png') no-repeat;
+}
+#button-3
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/3-large.png') no-repeat;
+}
+#button-4
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/4-large.png') no-repeat;
+}
+#button-5
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/5-large.png') no-repeat;
+}
+#button-6
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/6-large.png') no-repeat;
+}
+#button-7
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/7-large.png') no-repeat;
+}
+#button-8
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/8-large.png') no-repeat;
+}
+#button-9
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/9-large.png') no-repeat;
+}
+#button-F1
+{
+    width:100px;
+    margin:0 auto;
+    border: none;
+    background:url('../img/f1-fire.png') no-repeat;
+}
+#button-F2
+{
+    width:100px;
+    margin: 0 auto;
+    border:none;
+    background:url('../img/f2-police.png') no-repeat;
+}
+#button-F3
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/f3-medical.png') no-repeat;
+}
+#button-F4
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/f4-led-text.png') no-repeat;
+}
+#button-star
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/star-large.png') no-repeat;
+}
+#button-pound
+{
+    width: 100px;
+    margin: 0 auto;
+    border: none;
+    background:url('../img/pound-large.png') no-repeat;
+}

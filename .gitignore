@@ -23,3 +23,5 @@ uploads
 openid
 
 env
+temp
+webapp.sublime-*

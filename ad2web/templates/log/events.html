@@ -2,10 +2,21 @@
 
 {% extends "log/layout.html" %}
 
+{% block pagejs %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#paginateMe').dataTable({
+                "bJQueryUI": true,
+                "sPaginationType": "full_numbers",
+                "sDom" : '<"H"lr>t<"F"fip>',
+            });
+        });
+    </script>
+{% endblock %}
 {% block body %}
 <div>
     <h2>Event Log</h2>
-    <table class="table table-bordered table-hover">
+    <table id="paginateMe" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
         <thead>
             <tr>
                 <th>Timestamp</th>
@@ -21,5 +32,6 @@
             </tr>
         {% endfor %}
     </table>
+    <a href="live">Live Log</a>
 </div>
 {% endblock %}

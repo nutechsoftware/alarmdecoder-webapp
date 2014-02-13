@@ -1,9 +1,20 @@
 {% extends "settings/layout.html" %}
 
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#users-table').dataTable({
+            "bJQueryUI" : true,
+            "sPaginationType": "full_numbers",
+            "sDom" : '<"H"lr>t<"F"fip>',
+        });
+    });
+</script>
+{% endblock %}
 {% block body %}
 <div class="container">
     <h2>Users</h2>
-    <table class='table table-bordered table-hover'>
+    <table class='display table-hover' cellpadding="3" border="1" bordercolor="EEEEEE" id="users-table">
         <thead>
             <tr>
                 <th>Username</th>

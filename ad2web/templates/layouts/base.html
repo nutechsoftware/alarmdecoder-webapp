@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/normalize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/keypad.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
     {% endblock %}
 
     {% block css_style %}
@@ -119,6 +121,8 @@
     <script>window.jQuery || document.write('<script src="{{ jquery_path }}"><\/script>')</script>
     -->
     <script src="{{ url_for('static', filename='js/vendor/jquery-2.0.3.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/plugins.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/bootstrap.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/socket.io.js') }}"></script>

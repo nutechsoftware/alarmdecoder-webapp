@@ -66,7 +66,7 @@ def create_decoder_socket(app):
 class Decoder(object):
     def __init__(self, app, websocket):
         self.app = app
-        self.device = AlarmDecoder(SocketDevice(interface=('localhost', 10000)))
+        self.device = AlarmDecoder(SocketDevice(interface=('10.10.0.2', 10000)))
         self.websocket = websocket
 
         self._last_message = None
@@ -144,8 +144,17 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
         self._alarmdecoder = self.request
 
     def on_keypress(self, key):
-        print 'sending keypress: {0}'.format(key)
-        self._alarmdecoder.device.send(key)
+        print 'sending keypress: {0} type: {1}'.format(key,type(key))
+        if key == 1:
+            self._alarmdecoder.device.send(AlarmDecoder.KEY_F1)
+        elif key == 2:
+            self._alarmdecoder.device.send(AlarmDecoder.KEY_F2)
+        elif key == 3:
+            self._alarmdecoder.device.send(AlarmDecoder.KEY_F3)
+        elif key == 4:
+            self._alarmdecoder.device.send(AlarmDecoder.KEY_F4)
+        else:
+            self._alarmdecoder.device.send(key)
 
 @decodersocket.route('/<path:remaining>')
 def handle_socketio(remaining):

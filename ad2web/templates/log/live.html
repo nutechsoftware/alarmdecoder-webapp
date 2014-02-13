@@ -4,16 +4,26 @@
 
 {% block pagejs %}
     <script type="text/javascript">
+        var giCount = 1;
         $(document).ready(function() {
             PubSub.subscribe('message', function(type, msg) {
-                $('#panel-log tbody').prepend('<tr><td>' + msg.timestamp + '</td><td>' + msg.raw + '</td></tr>');
+                var n = new Date();
+                var day = n.getDay();
+                var month = n.getMonth();
+                var year = n.getYear();
+                var hour = n.getHours();
+                var min = n.getMinutes();
+                var sec = n.getSeconds();
+                var datetime = day + "/" + month + "/" + year + " " + hour + ":" + min + ":" + sec;
 
-                var log_size = $('#panel-log tbody tr').length;
-                if (log_size > 10) {
-                    var row = $('#panel-log tbody tr:gt(' + (10).toString() + ')');
-
-                    row.slideDown(400, function(){ row.remove(); });
-                }
+                $('#panel-log').dataTable().fnAddData([ datetime, msg.raw]);
+            });
+            $('#panel-log').dataTable({
+                "bJQueryUI": true,
+                "sPaginationType": "full_numbers",
+                "bFilter": false,
+                "aaSorting": [[0, "desc" ]],
+                "sDom" : '<"H"lr>t<"F"fip>',
             });
         });
     </script>
@@ -22,15 +32,16 @@
 {% block body %}
 <div>
     <h2>Panel Log</h2>
-    <table id='panel-log' class="table table-bordered table-hover">
+    <table id='panel-log' cellpadding="3" class="display table-hover" border="1" bordercolor="EEEEEE">
         <thead>
             <tr>
-                <th>Timestamp</th>
+                <th width="20%">Timestamp</th>
                 <th>Message</th>
             </tr>
         </thead>
         <tbody>
         </tbody>
     </table>
+    <a href="/log">Event Log</a>
 </div>
 {% endblock %}
