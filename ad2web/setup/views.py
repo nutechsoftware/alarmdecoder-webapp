@@ -139,8 +139,8 @@ def device():
         device_address.value = form.device_address.data
         address_mask.value = form.address_mask.data
         lrr_enabled.value = form.lrr_enabled.data
-        zone_expanders.value = form.zone_expanders.data
-        relay_expanders.value = form.relay_expanders.data
+        zone_expanders.value = ''.join(['Y' if str(x) in form.zone_expanders.data else 'N' for x in xrange(1, 6)])
+        relay_expanders.value = ''.join(['Y' if str(x) in form.relay_expanders.data else 'N' for x in xrange(1, 5)])
         deduplicate.value = form.deduplicate.data
 
         db.session.add(device_address)

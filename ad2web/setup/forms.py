@@ -18,7 +18,7 @@ class MultiCheckboxField(SelectMultipleField):
     Iterating the field will produce subfields, allowing custom rendering of
     the enclosed checkbox fields.
     """
-    widget = ListWidget(prefix_label=False)
+    widget = ListWidget(prefix_label=True)
     option_widget = CheckboxInput()
 
 class DeviceTypeForm(Form):
@@ -45,8 +45,8 @@ class DeviceForm(Form):
     device_address = TextField(u'Keypad Address', [Required()])
     address_mask = TextField(u'Address Mask', [Required(), Length(max=8)])
     lrr_enabled = BooleanField(u'Emulate Long Range Radio?')
-    zone_expanders = MultiCheckboxField(u'Zone expanders', choices=['#1', '#2', '#3', '#4', '#5'])
-    relay_expanders = MultiCheckboxField(u'Relay expanders', choices=['#1', '#2', '#3', '#4', '#5'])
+    zone_expanders = MultiCheckboxField(u'Zone expanders', choices=[('1', 'Zone #1'), ('2', 'Zone #2'), ('3', 'Zone #3'), ('4', 'Zone #4'), ('5', 'Zone #5')])
+    relay_expanders = MultiCheckboxField(u'Relay expanders', choices=[('1', 'Relay #1'), ('2', 'Relay #2'), ('3', 'Relay #3'), ('4', 'Relay #4')])
     deduplicate = BooleanField(u'Deduplicate messages?')
 
     submit = SubmitField(u'Next')
