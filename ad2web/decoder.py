@@ -69,12 +69,15 @@ class Decoder(object):
         self.websocket = websocket
         self.device = None
         self._last_message = None
-
-    def init(self):
         self._device_baudrate = 115200
+        self._device_type = None
+        self._device_location = None
+
+    def open(self):
         self._device_type = Setting.get_by_name('device_type').value
         self._device_location = Setting.get_by_name('device_location').value
 
+        # TODO: make this not ugly.
         interface = ('localhost', 10000)
         devicetype = SocketDevice
         if self._device_location == 'local':
@@ -86,15 +89,12 @@ class Decoder(object):
 
         self.device = AlarmDecoder(devicetype(interface=interface))
 
-    def open(self):
         self.bind_events(self.websocket, self.device)
-        self.device.open(baudrate=115200)
+        self.device.open(baudrate=self._device_baudrate)
 
     def close(self):
-        try:
+        if self.device is not None:
             self.device.close()
-        except Exception:
-            pass
 
     def bind_events(self, appsocket, decoder):
         build_event_handler = lambda ftype: lambda sender, *args, **kwargs: self._handle_event(ftype, sender, *args, **kwargs)
@@ -162,7 +162,6 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
         self._alarmdecoder = self.request
 
     def on_keypress(self, key):
-        print 'sending keypress: {0} type: {1}'.format(key,type(key))
         if key == 1:
             self._alarmdecoder.device.send(AlarmDecoder.KEY_F1)
         elif key == 2:

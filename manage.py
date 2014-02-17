@@ -27,8 +27,6 @@ def run():
     try:
         decoder.app = app
         decoder.websocket = appsocket
-
-        decoder.init()
         decoder.open()
 
         appsocket.serve_forever()
@@ -76,18 +74,6 @@ def initdb():
     cert.generate(common_name='Testing')
     db.session.add(cert)
 
-    entry = EventLogEntry(type=0, message='Panel armed..')
-    db.session.add(entry)
-    entry = EventLogEntry(type=1, message='Panel disarmed..')
-    db.session.add(entry)
-    entry = EventLogEntry(type=3, message='Alarming!  Oh no!')
-    db.session.add(entry)
-    entry = EventLogEntry(type=4, message='Fire!  Oh no!')
-    db.session.add(entry)
-
-    sn = Setting(name="serialnumber", value=1)
-    db.session.add(sn)
-
     notification = Notification(description='Test Email', type=0, user=user)
     notification.settings['source'] = NotificationSetting(name='source', value='root@localhost')
     notification.settings['destination'] = NotificationSetting(name='destination', value='root@localhost')
@@ -96,8 +82,17 @@ def initdb():
     notification.settings['password'] = NotificationSetting(name='password', value='')
     db.session.add(notification)
 
-    zone = Zone(zone_id=22, name='Some zone', description='This is some zone.')
-    db.session.add(zone)
+    db.session.add(Zone(zone_id=22, name='Some zone', description='This is some zone.'))
+    db.session.add(EventLogEntry(type=0, message='Panel armed..'))
+    db.session.add(EventLogEntry(type=1, message='Panel disarmed..'))
+    db.session.add(EventLogEntry(type=3, message='Alarming!  Oh no!'))
+    db.session.add(EventLogEntry(type=4, message='Fire!  Oh no!'))
+
+    db.session.add(Setting(name="serialnumber", value=1))
+    db.session.add(Setting(name='device_type', value='AD2PI'))
+    db.session.add(Setting(name='device_location', value='network'))
+    db.session.add(Setting(name='device_address', value='10.10.0.2'))
+    db.session.add(Setting(name='device_port', value=10000))
 
     db.session.commit()
 

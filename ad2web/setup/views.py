@@ -4,13 +4,14 @@ from flask import Blueprint, render_template, abort, g, request, flash, Response
 from flask import current_app as APP
 from flask.ext.login import login_required, current_user
 
+from ..decoder import decoder
 from ..extensions import db
 from ..decorators import admin_required
 from ..settings.models import Setting
 from .forms import (DeviceTypeForm, NetworkDeviceForm, SerialDeviceForm,
                    DeviceLocationForm, SSLForm, SSLHostForm, DeviceForm)
 from .constants import (STAGES, SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
-                    SETUP_LOCAL, SETUP_COMPLETE)
+                    SETUP_LOCAL, SETUP_DEVICE, SETUP_COMPLETE)
 
 setup = Blueprint('setup', __name__, url_prefix='/setup')
 
@@ -60,7 +61,7 @@ def location():
         set_stage(SETUP_LOCATION)
         db.session.commit()
 
-        return redirect(url_for('setup.{0}'.format(target)))
+        return redirect(url_for('setup.{0}'.format(device_location.value)))
 
     return render_template('setup/location.html', form=form)
 
@@ -72,7 +73,7 @@ def local():
         #
 
         device_path = Setting.get_by_name('device_path')
-        baudrate = Setting.get_by_name('baudrate')
+        baudrate = Setting.get_by_name('device_baudrate')
 
         device_path.value = form.device_path.data
         baudrate.value = form.baudrate.data
@@ -163,10 +164,15 @@ def device():
 
 @setup.route('/test', methods=['GET', 'POST'])
 def test():
-    # do stuff
-    #
+    try:
+        decoder.close()
+        decoder.open()
 
-    #set_stage(SETUP_DEVICE)
-    #db.session.commit()
+        flash('Okay!')
+    except Exception:   # FIXME
+        pass
+
+    set_stage(SETUP_DEVICE)
+    db.session.commit()
 
     return render_template('setup/test.html', form=None)
