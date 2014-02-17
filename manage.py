@@ -27,6 +27,8 @@ def run():
     try:
         decoder.app = app
         decoder.websocket = appsocket
+
+        decoder.init()
         decoder.open()
 
         appsocket.serve_forever()

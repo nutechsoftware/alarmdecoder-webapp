@@ -14,14 +14,14 @@ from flask import Blueprint, Response, request, g, current_app
 import jsonpickle
 
 from alarmdecoder import AlarmDecoder
-from alarmdecoder.devices import SocketDevice
+from alarmdecoder.devices import SocketDevice, SerialDevice
 
 from .log.models import EventLogEntry
 from .log.constants import *
 from .extensions import db
 from .notifications import NotificationFactory
 from .zones import Zone
-
+from .settings.models import Setting
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
@@ -66,17 +66,35 @@ def create_decoder_socket(app):
 class Decoder(object):
     def __init__(self, app, websocket):
         self.app = app
-        self.device = AlarmDecoder(SocketDevice(interface=('10.10.0.2', 10000)))
         self.websocket = websocket
-
+        self.device = None
         self._last_message = None
+
+    def init(self):
+        self._device_baudrate = 115200
+        self._device_type = Setting.get_by_name('device_type').value
+        self._device_location = Setting.get_by_name('device_location').value
+
+        interface = ('localhost', 10000)
+        devicetype = SocketDevice
+        if self._device_location == 'local':
+            devicetype = SerialDevice
+            interface = Setting.get_by_name('device_path').value
+            self._device_baudrate = Setting.get_by_name('device_baudrate').value
+        elif self._device_location == 'network':
+            interface = (Setting.get_by_name('device_address').value, Setting.get_by_name('device_port').value)
+
+        self.device = AlarmDecoder(devicetype(interface=interface))
 
     def open(self):
         self.bind_events(self.websocket, self.device)
         self.device.open(baudrate=115200)
 
     def close(self):
-        self.device.close()
+        try:
+            self.device.close()
+        except Exception:
+            pass
 
     def bind_events(self, appsocket, decoder):
         build_event_handler = lambda ftype: lambda sender, *args, **kwargs: self._handle_event(ftype, sender, *args, **kwargs)

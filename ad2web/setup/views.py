@@ -53,7 +53,9 @@ def location():
         # do stuff
         #
 
-        target = form.device_location.data
+        device_location = Setting.get_by_name('device_location')
+        device_location.value = form.device_location.data
+        db.session.add(device_location)
 
         set_stage(SETUP_LOCATION)
         db.session.commit()
