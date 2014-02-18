@@ -6,7 +6,7 @@
 <script type="text/javascript">
 	$(document).ready(function() {
 		PubSub.subscribe('test', function(type, msg) {
-			$('#test_results').append('div').text(msg.test + ' ' + msg.results);
+			$('#test_results').append($('<div></div>').text(msg.test + ' ' + msg.results));
 		});
 		console.log('starting tests..');
 		decoder.emit('test');

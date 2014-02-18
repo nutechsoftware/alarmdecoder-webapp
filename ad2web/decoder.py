@@ -171,11 +171,10 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             self._alarmdecoder.device.send(key)
 
     def on_test(self, *args):
-        def on_config(device):
-            self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'PASS'})
-
         with self._alarmdecoder.app.app_context():
-            device = self._alarmdecoder.device
+            def on_config(device):
+                self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'PASS'})
+                self._alarmdecoder.device.on_config_received.remove(on_config)
 
             results = 'FAIL'
             try:
@@ -188,8 +187,10 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 self._alarmdecoder.broadcast('test', {'test': 'open', 'results': results})
 
             try:
-                self._alarmdecoder.device.on_config += on_config
-                self._alarmdecoder.device.send('C\r')
+                self._alarmdecoder.device.on_config_received += on_config
+                self._alarmdecoder.device.send("C\r")
+            except Exception, err:
+                current_app.logger.error('Error: %s', err)
 
 @decodersocket.route('/<path:remaining>')
 def handle_socketio(remaining):
