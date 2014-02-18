@@ -190,7 +190,9 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 self._alarmdecoder.device.on_config_received += on_config
                 self._alarmdecoder.device.send("C\r")
             except Exception, err:
+                self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'FAIL'})
                 current_app.logger.error('Error: %s', err)
+
 
 @decodersocket.route('/<path:remaining>')
 def handle_socketio(remaining):
