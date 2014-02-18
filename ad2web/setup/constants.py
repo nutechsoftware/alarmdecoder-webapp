@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from ..settings.constants import BAUDRATES, DEFAULT_BAUDRATES
+
 SETUP_TYPE = 0
 SETUP_LOCATION = 1
 SETUP_NETWORK = 2

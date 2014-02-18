@@ -13,7 +13,7 @@ from ..user import User
 from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX, AGE_MIN, AGE_MAX, DEPOSIT_MIN, DEPOSIT_MAX
 from ..utils import allowed_file, ALLOWED_AVATAR_EXTENSIONS
 from ..utils import SEX_TYPE
-from .constants import NETWORK_DEVICE, SERIAL_DEVICE
+from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES
 
 class ProfileForm(Form):
     multipart = True
@@ -66,6 +66,6 @@ class NetworkDeviceForm(Form):
 
 class SerialDeviceForm(Form):
     device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Path to your AlarmDecoder', default='/dev/ttyAMA0')
-    baudrate = SelectField(u'Baudrate', choices=[(115200, u'115200 (AD2USB/AD2PI)'), (19200, u'19200 (AD2SERIAL)')], default=115200, coerce=int)
+    baudrate = SelectField(u'Baudrate', choices=[(baudrate, str(baudrate)) for baudrate in BAUDRATES], default=115200, coerce=int)
 
     submit = SubmitField(u'Save')

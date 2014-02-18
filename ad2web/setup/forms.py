@@ -23,10 +23,6 @@ class MultiCheckboxField(SelectMultipleField):
 
 class DeviceTypeForm(Form):
     device_type = SelectField(u'Device Type', choices=[('AD2USB', u'AD2USB'), ('AD2PI', u'AD2PI'), ('AD2SERIAL', u'AD2SERIAL')], default='AD2USB')
-
-    submit = SubmitField(u'Next')
-
-class DeviceLocationForm(Form):
     device_location = SelectField(u'Device Location', choices=[('local', 'Local Device'), ('network', 'Network')], default='local')
 
     submit = SubmitField(u'Next')

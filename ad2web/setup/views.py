@@ -9,9 +9,10 @@ from ..extensions import db
 from ..decorators import admin_required
 from ..settings.models import Setting
 from .forms import (DeviceTypeForm, NetworkDeviceForm, SerialDeviceForm,
-                   DeviceLocationForm, SSLForm, SSLHostForm, DeviceForm)
+                   SSLForm, SSLHostForm, DeviceForm)
 from .constants import (STAGES, SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
-                    SETUP_LOCAL, SETUP_DEVICE, SETUP_COMPLETE)
+                    SETUP_LOCAL, SETUP_DEVICE, SETUP_COMPLETE, BAUDRATES,
+                    DEFAULT_BAUDRATES)
 
 setup = Blueprint('setup', __name__, url_prefix='/setup')
 
@@ -39,35 +40,24 @@ def type():
         device_type.value = form.device_type.data
         db.session.add(device_type)
 
-        set_stage(SETUP_TYPE)
-
-        db.session.commit()
-
-        return redirect(url_for('setup.location'))
-
-    return render_template('setup/type.html', form=form)
-
-@setup.route('/location', methods=['GET', 'POST'])
-def location():
-    form = DeviceLocationForm()
-    if form.validate_on_submit():
-        # do stuff
-        #
-
         device_location = Setting.get_by_name('device_location')
         device_location.value = form.device_location.data
         db.session.add(device_location)
 
-        set_stage(SETUP_LOCATION)
+        set_stage(SETUP_TYPE)
+
         db.session.commit()
 
         return redirect(url_for('setup.{0}'.format(device_location.value)))
 
-    return render_template('setup/location.html', form=form)
+    return render_template('setup/type.html', form=form)
 
 @setup.route('/local', methods=['GET', 'POST'])
 def local():
     form = SerialDeviceForm()
+    if not form.is_submitted():
+        form.baudrate.data = DEFAULT_BAUDRATES[Setting.get_by_name('device_type').value]
+
     if form.validate_on_submit():
         # do stuff
         #
