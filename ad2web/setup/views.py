@@ -32,9 +32,6 @@ def index():
 def type():
     form = DeviceTypeForm()
     if form.validate_on_submit():
-        # do stuff
-        #
-
         device_type = Setting.get_by_name('device_type')
         device_type.value = form.device_type.data
         db.session.add(device_type)
@@ -58,9 +55,6 @@ def local():
         form.baudrate.data = DEFAULT_BAUDRATES[Setting.get_by_name('device_type').value]
 
     if form.validate_on_submit():
-        # do stuff
-        #
-
         device_path = Setting.get_by_name('device_path')
         baudrate = Setting.get_by_name('device_baudrate')
 
@@ -122,18 +116,11 @@ def test():
     form = TestDeviceForm()
 
     if not form.is_submitted():
-        try:
-            set_stage(SETUP_DEVICE)
-            db.session.commit()
-
-            APP.decoder.close()
-            APP.decoder.open()
-
-            flash('Okay!')
-        except Exception, err:   # FIXME
-            import traceback
-            traceback.print_exc(err)
+        set_stage(SETUP_DEVICE)
+        db.session.commit()
     else:
+        flash('Setup complete!', 'success')
+
         return redirect(url_for('setup.device'))
 
     return render_template('setup/test.html', form=form)

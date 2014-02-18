@@ -4,12 +4,21 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+	$(document).ready(function() {
+		PubSub.subscribe('test', function(type, msg) {
+			$('#test_results').append('div').text(msg.test + ' ' + msg.results);
+		});
+		console.log('starting tests..');
+		decoder.emit('test');
+	});
 </script>
 {% endblock %}
 
 {% block body %}
 <div>
-    Do test things here.
-    {# {{ render_form(url_for('setup.test'), form) }} #}
+	<div id="test_results">
+	</div>
+
+    {{ render_form(url_for('setup.test'), form) }}
 </div>
 {% endblock %}

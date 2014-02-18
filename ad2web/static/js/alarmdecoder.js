@@ -30,6 +30,14 @@ var AlarmDecoder = function() {
         _socket.on('disconnect', function() {
             console.log('websocket closed');
         });
+
+        _socket.on('test', function(msg) {
+            obj = JSON.parse(msg);
+
+            console.log('test', obj);
+
+            PubSub.publish('test', obj);
+        });
     };
 
     AlarmDecoder.emit = function(type, arg) {

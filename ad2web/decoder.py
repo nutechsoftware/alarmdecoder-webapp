@@ -111,10 +111,7 @@ class Decoder(object):
 
     def _on_message(self, sender, *args, **kwargs):
         try:
-            message = kwargs.get('message', None)
-            packet = self._make_packet('message', jsonpickle.encode(message, unpicklable=False))
-
-            self._broadcast_packet(packet)
+            self.broadcast('message', kwargs.get('message', None))
 
         except Exception, err:
             import traceback
@@ -138,14 +135,17 @@ class Decoder(object):
                 db.session.add(EventLogEntry(type=ftype, message=event_message))
                 db.session.commit()
 
-            message = jsonpickle.encode(kwargs, unpicklable=False)
-            packet = self._make_packet('event', message)
-
-            self._broadcast_packet(packet)
+            self.broadcast('event', kwargs)
 
         except Exception, err:
             import traceback
             traceback.print_exc(err)
+
+    def broadcast(self, channel, data={}):
+        obj = jsonpickle.encode(data, unpicklable=False)
+        packet = self._make_packet(channel, obj)
+
+        self._broadcast_packet(packet)
 
     def _broadcast_packet(self, packet):
         for session, sock in self.websocket.sockets.iteritems():
@@ -169,6 +169,21 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             self._alarmdecoder.device.send(AlarmDecoder.KEY_F4)
         else:
             self._alarmdecoder.device.send(key)
+
+    def on_test(self, *args):
+
+        with self._alarmdecoder.app.app_context():
+            device = self._alarmdecoder.device
+
+            results = 'FAIL'
+            try:
+                self._alarmdecoder.close()
+                self._alarmdecoder.open()
+                results = 'PASS'
+            except Exception, err:
+                current_app.logger.error('Error: %s', err)
+            finally:
+                self._alarmdecoder.broadcast('test', {'test': 'open', 'results': results})
 
 @decodersocket.route('/<path:remaining>')
 def handle_socketio(remaining):
