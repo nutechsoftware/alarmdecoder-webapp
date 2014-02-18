@@ -154,9 +154,6 @@ class Decoder(object):
     def _make_packet(self, channel, data):
         return dict(type='event', name=channel, args=data, endpoint='/alarmdecoder')
 
-
-decoder = Decoder(None, None)
-
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
     def initialize(self):
         self._alarmdecoder = self.request

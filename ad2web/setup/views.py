@@ -4,12 +4,11 @@ from flask import Blueprint, render_template, abort, g, request, flash, Response
 from flask import current_app as APP
 from flask.ext.login import login_required, current_user
 
-from ..decoder import decoder
 from ..extensions import db
 from ..decorators import admin_required
 from ..settings.models import Setting
-from .forms import (DeviceTypeForm, NetworkDeviceForm, SerialDeviceForm,
-                   SSLForm, SSLHostForm, DeviceForm)
+from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
+                   SSLForm, SSLHostForm, DeviceForm, TestDeviceForm)
 from .constants import (STAGES, SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
                     SETUP_LOCAL, SETUP_DEVICE, SETUP_COMPLETE, BAUDRATES,
                     DEFAULT_BAUDRATES)
@@ -54,7 +53,7 @@ def type():
 
 @setup.route('/local', methods=['GET', 'POST'])
 def local():
-    form = SerialDeviceForm()
+    form = LocalDeviceForm()
     if not form.is_submitted():
         form.baudrate.data = DEFAULT_BAUDRATES[Setting.get_by_name('device_type').value]
 
@@ -74,7 +73,7 @@ def local():
         set_stage(SETUP_LOCAL)
         db.session.commit()
 
-        return redirect(url_for('setup.device'))
+        return redirect(url_for('setup.test'))
 
     return render_template('setup/local.html', form=form)
 
@@ -118,6 +117,27 @@ def ssl():
 
     return render_template('setup/ssl.html', form=form)
 
+@setup.route('/test', methods=['GET', 'POST'])
+def test():
+    form = TestDeviceForm()
+
+    if not form.is_submitted():
+        try:
+            set_stage(SETUP_DEVICE)
+            db.session.commit()
+
+            APP.decoder.close()
+            APP.decoder.open()
+
+            flash('Okay!')
+        except Exception, err:   # FIXME
+            import traceback
+            traceback.print_exc(err)
+    else:
+        return redirect(url_for('setup.device'))
+
+    return render_template('setup/test.html', form=form)
+
 @setup.route('/device', methods=['GET', 'POST'])
 def device():
     form = DeviceForm()
@@ -148,21 +168,10 @@ def device():
         set_stage(SETUP_COMPLETE)
         db.session.commit()
 
-        return redirect(url_for('setup.test'))
+        return redirect(url_for('setup.complete'))
 
     return render_template('setup/device.html', form=form)
 
-@setup.route('/test', methods=['GET', 'POST'])
-def test():
-    try:
-        decoder.close()
-        decoder.open()
-
-        flash('Okay!')
-    except Exception:   # FIXME
-        pass
-
-    set_stage(SETUP_DEVICE)
-    db.session.commit()
-
-    return render_template('setup/test.html', form=None)
+@setup.route('/complete', methods=['GET'])
+def complete():
+    return render_template('setup/complete.html')

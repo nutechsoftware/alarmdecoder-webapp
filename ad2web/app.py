@@ -13,7 +13,7 @@ from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SerialDevice
 
 from .config import DefaultConfig
-from .decoder import decoder, decodersocket
+from .decoder import decodersocket
 from .user import User, user
 from .settings import settings
 from .frontend import frontend
@@ -177,7 +177,7 @@ def configure_logging(app):
 def configure_hook(app):
     @app.before_request
     def before_request():
-        g.alarmdecoder = decoder
+        g.alarmdecoder = app.decoder
 
 
 def configure_error_handlers(app):

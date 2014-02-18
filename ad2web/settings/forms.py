@@ -13,7 +13,6 @@ from ..user import User
 from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX, AGE_MIN, AGE_MAX, DEPOSIT_MIN, DEPOSIT_MAX
 from ..utils import allowed_file, ALLOWED_AVATAR_EXTENSIONS
 from ..utils import SEX_TYPE
-from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES
 
 class ProfileForm(Form):
     multipart = True
@@ -51,21 +50,3 @@ class PasswordForm(Form):
         user = User.get_by_id(current_user.id)
         if not user.check_password(field.data):
             raise ValidationError("Password is wrong.")
-
-class DeviceTypeForm(Form):
-    device_type = SelectField(u'Device Type', choices=[(NETWORK_DEVICE, 'Network'), (SERIAL_DEVICE, 'Local Device')], default=NETWORK_DEVICE, coerce=int)
-
-    submit = SubmitField(u'Next')
-
-class NetworkDeviceForm(Form):
-    device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
-    device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
-    ssl = BooleanField(u'Use SSL?', description=u'(ser2sock only)')
-
-    submit = SubmitField(u'Save')
-
-class SerialDeviceForm(Form):
-    device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Path to your AlarmDecoder', default='/dev/ttyAMA0')
-    baudrate = SelectField(u'Baudrate', choices=[(baudrate, str(baudrate)) for baudrate in BAUDRATES], default=115200, coerce=int)
-
-    submit = SubmitField(u'Save')

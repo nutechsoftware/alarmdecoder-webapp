@@ -13,7 +13,8 @@ from ..user import User
 from ..utils import allowed_file, make_dir
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm, DeviceTypeForm, SerialDeviceForm, NetworkDeviceForm
+from .forms import ProfileForm, PasswordForm
+from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
@@ -95,7 +96,7 @@ def device():
 
     type_form = DeviceTypeForm(prefix="type")
     network_form = NetworkDeviceForm(prefix="network")
-    serial_form = SerialDeviceForm(prefix="serial")
+    local_form = LocalDeviceForm(prefix="local")
     current_form, form_type = type_form, 'type'
 
     if type_form.submit.data:
@@ -115,9 +116,9 @@ def device():
                 current_form, form_type = network_form, 'network'
 
             elif device_type.value == SERIAL_DEVICE:
-                serial_form.device_path.data = Setting.get_by_name('device_path', serial_form.device_path.default).value
-                serial_form.baudrate.data = Setting.get_by_name('baudrate', serial_form.baudrate.default).value
-                current_form, form_type = serial_form, 'serial'
+                local_form.device_path.data = Setting.get_by_name('device_path', local_form.device_path.default).value
+                local_form.baudrate.data = Setting.get_by_name('baudrate', local_form.baudrate.default).value
+                current_form, form_type = local_form, 'serial'
 
     elif network_form.submit.data:
         current_form, form_type = network_form, 'network'
@@ -139,15 +140,15 @@ def device():
 
             flash('Device settings saved.', 'success')
 
-    elif serial_form.submit.data:
-        current_form, form_type = serial_form, 'serial'
-        if serial_form.validate_on_submit():
+    elif local_form.submit.data:
+        current_form, form_type = local_form, 'serial'
+        if local_form.validate_on_submit():
             # Save serial device settings.
             device_path = Setting.get_by_name('device_path')
-            device_path.value = serial_form.device_path.data
+            device_path.value = local_form.device_path.data
 
             baudrate = Setting.get_by_name('baudrate')
-            baudrate.value = serial_form.baudrate.data
+            baudrate.value = local_form.baudrate.data
 
             db.session.add(device_path)
             db.session.add(baudrate)

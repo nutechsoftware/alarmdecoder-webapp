@@ -5,7 +5,7 @@ import datetime
 from flask.ext.script import Manager
 
 from ad2web import create_app, create_decoder_socket
-from ad2web.decoder import Decoder, decoder
+from ad2web.decoder import Decoder
 from ad2web.extensions import db
 from ad2web.user import User, UserDetail, ADMIN, USER, ACTIVE
 from ad2web.certificate import Certificate
@@ -15,7 +15,7 @@ from ad2web.utils import MALE
 from ad2web.notifications import Notification, NotificationSetting
 from ad2web.zones import Zone
 
-
+decoder = Decoder(None, None)
 app = create_app()
 manager = Manager(app)
 appsocket = create_decoder_socket(app)
@@ -25,6 +25,7 @@ def run():
     """Run in local machine."""
 
     try:
+        app.decoder = decoder
         decoder.app = app
         decoder.websocket = appsocket
         decoder.open()

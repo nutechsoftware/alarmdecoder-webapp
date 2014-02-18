@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ..settings.constants import BAUDRATES, DEFAULT_BAUDRATES
-
 SETUP_TYPE = 0
 SETUP_LOCATION = 1
 SETUP_NETWORK = 2
@@ -17,4 +15,16 @@ STAGES = {
 	SETUP_DEVICE: 'alarmdecoder_settings',
 
 	SETUP_COMPLETE: 'setup_complete'
+}
+
+NETWORK_DEVICE = 0
+SERIAL_DEVICE = 1
+
+BAUDRATES = [115200, 19200]
+
+DEFAULT_BAUDRATES = {
+	None: 115200,
+	'AD2USB': 115200,
+	'AD2PI': 115200,
+	'AD2SERIAL': 19200
 }

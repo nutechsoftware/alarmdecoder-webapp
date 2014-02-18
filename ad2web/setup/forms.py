@@ -8,8 +8,7 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from wtforms.widgets import ListWidget, CheckboxInput
-from ..settings.forms import NetworkDeviceForm, SerialDeviceForm
-from ..settings.constants import NETWORK_DEVICE, SERIAL_DEVICE
+from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES, DEFAULT_BAUDRATES
 
 class MultiCheckboxField(SelectMultipleField):
     """
@@ -27,6 +26,13 @@ class DeviceTypeForm(Form):
 
     submit = SubmitField(u'Next')
 
+class NetworkDeviceForm(Form):
+    device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
+    device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
+    ssl = BooleanField(u'Use SSL?', description=u'(ser2sock only)')
+
+    submit = SubmitField(u'Next')
+
 class SSLForm(Form):
     cert = FileField(u'Certificate')
 
@@ -35,6 +41,15 @@ class SSLForm(Form):
 class SSLHostForm(Form):
     host = BooleanField(u'Would you like us to make the device available over your network?')
 
+    submit = SubmitField(u'Next')
+
+class LocalDeviceForm(Form):
+    device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Path to your AlarmDecoder', default='/dev/ttyAMA0')
+    baudrate = SelectField(u'Baudrate', choices=[(baudrate, str(baudrate)) for baudrate in BAUDRATES], default=115200, coerce=int)
+
+    submit = SubmitField(u'Next')
+
+class TestDeviceForm(Form):
     submit = SubmitField(u'Next')
 
 class DeviceForm(Form):
