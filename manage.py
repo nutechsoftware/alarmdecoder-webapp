@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import signal
+import sys
 
 from flask.ext.script import Manager
 
@@ -20,21 +22,22 @@ app = create_app()
 manager = Manager(app)
 appsocket = create_decoder_socket(app)
 
+def signal_handler(signal, frame):
+    decoder.close()
+    appsocket.stop()
+
 @manager.command
 def run():
     """Run in local machine."""
 
-    try:
-        app.decoder = decoder
-        decoder.app = app
-        decoder.websocket = appsocket
-        decoder.open()
+    signal.signal(signal.SIGINT, signal_handler)
 
-        appsocket.serve_forever()
+    app.decoder = decoder
+    decoder.app = app
+    decoder.websocket = appsocket
+    decoder.open()
 
-    finally:
-        decoder.close()
-#        del decoder
+    appsocket.serve_forever()
 
 @manager.command
 def initdb():
