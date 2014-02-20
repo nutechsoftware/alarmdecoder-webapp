@@ -30,6 +30,7 @@ class NetworkDeviceForm(Form):
     device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
     device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
     ssl = BooleanField(u'Use SSL?', description=u'(ser2sock only)')
+    local = BooleanField(u'Is the device connected directly to the computer that is running this software?')
 
     submit = SubmitField(u'Next')
 
@@ -39,7 +40,7 @@ class SSLForm(Form):
     submit = SubmitField(u'Next')
 
 class SSLHostForm(Form):
-    host = BooleanField(u'Would you like us to make the device available over your network?')
+    #host = BooleanField(u'Is the device connected directly to the computer that is running this software?')
 
     submit = SubmitField(u'Next')
 

@@ -78,22 +78,25 @@ def network():
         device_address = Setting.get_by_name('device_address')
         device_port = Setting.get_by_name('device_port')
         ssl = Setting.get_by_name('use_ssl')
+        local = Setting.get_by_name('local_ser2sock')
 
         device_address.value = form.device_address.data
         device_port.value = form.device_port.data
         ssl.value = form.ssl.data
+        local.value = form.local.data
 
         db.session.add(device_address)
         db.session.add(device_port)
         db.session.add(ssl)
+        db.session.add(local)
 
         set_stage(SETUP_NETWORK)
         db.session.commit()
 
-        # if form.ssl.data == True:
-        #     return redirect(url_for('setup.ssl'))
-        # else:
-        return redirect(url_for('setup.test'))
+        if form.local.data == True:
+            return redirect(url_for('setup.ssl'))
+        else:
+            return redirect(url_for('setup.test'))
 
     return render_template('setup/network.html', form=form)
 
@@ -101,10 +104,28 @@ def network():
 def ssl():
     form = SSLHostForm()
     if form.validate_on_submit():
-        # do stuff
-        #
+        ca_cert = Certificate(
+                    name="AlarmDecoder CA",
+                    description='CA certificate used for authenticating others.',
+                    serial_number=1,
+                    status=1,
+                    type=0)
+        ca_cert.generate(common_name='AlarmDecoder CA')
+        db.session.add(ca_cert)
+        internal_cert = Certificate(
+                name="AlarmDecoder Internal",
+                description='Internal certificate used to communicate with ser2sock.',
+                serial_number=2,
+                status=1,
+                type=2,
+                user=None)
+        internal_cert.generate(common_name='AlarmDecoder Internal')
+        db.session.add(internal_cert)
 
-        return redirect(url_for('setup.device'))
+        db.session.add(Setting(name='use_ssl', value=True))
+        db.session.commit()
+
+        return redirect(url_for('setup.test'))
 
     return render_template('setup/ssl.html', form=form)
 

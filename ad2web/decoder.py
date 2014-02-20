@@ -22,6 +22,7 @@ from .extensions import db
 from .notifications import NotificationFactory
 from .zones import Zone
 from .settings.models import Setting
+from .certificate.models import Certificate
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
@@ -79,6 +80,7 @@ class Decoder(object):
 
         # TODO: make this not ugly.
         interface = ('localhost', 10000)
+        use_ssl = False
         devicetype = SocketDevice
         if self._device_location == 'local':
             devicetype = SerialDevice
@@ -87,8 +89,21 @@ class Decoder(object):
         elif self._device_location == 'network':
             interface = (Setting.get_by_name('device_address').value, Setting.get_by_name('device_port').value)
 
-        self.device = AlarmDecoder(devicetype(interface=interface))
+            use_ssl = Setting.get_by_name('use_ssl').value
+            if use_ssl is None:
+                use_ssl = False
 
+        device = devicetype(interface=interface)
+        if self._device_location == 'network' and use_ssl:
+            ca_cert = Certificate.query.filter_by(name='AlarmDecoder CA').one()
+            internal_cert = Certificate.query.filter_by(name='AlarmDecoder Internal').one()
+
+            device.ssl = True
+            device.ssl_ca = ca_cert.certificate_obj
+            device.ssl_certificate = internal_cert.certificate_obj
+            device.ssl_key = internal_cert.key_obj
+
+        self.device = AlarmDecoder(device)
         self.bind_events(self.websocket, self.device)
         self.device.open(baudrate=self._device_baudrate)
 

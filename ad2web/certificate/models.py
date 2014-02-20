@@ -8,6 +8,8 @@ import time
 import tempfile
 import subprocess
 
+from flask import current_app
+
 from OpenSSL import crypto, SSL
 from sqlalchemy import Column, orm
 
@@ -101,6 +103,7 @@ class Certificate(db.Model):
         self.serial_number = serial_number
         self.certificate = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
         self.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, key)
+
         self.certificate_obj = cert
         self.key_obj = key
 
