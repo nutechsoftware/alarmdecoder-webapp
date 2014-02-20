@@ -35,12 +35,15 @@ class NetworkDeviceForm(Form):
     submit = SubmitField(u'Next')
 
 class SSLForm(Form):
+    ca_cert = FileField(u'Certificate Authority')
     cert = FileField(u'Certificate')
+    key = FileField(u'Key')
 
     submit = SubmitField(u'Next')
 
 class SSLHostForm(Form):
-    #host = BooleanField(u'Is the device connected directly to the computer that is running this software?')
+    confirm_management = BooleanField(u'Would you like this application to manage your ser2sock config?')
+    config_path = TextField(u'Path to ser2sock directory')
 
     submit = SubmitField(u'Next')
 

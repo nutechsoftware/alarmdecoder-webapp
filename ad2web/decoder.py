@@ -103,6 +103,8 @@ class Decoder(object):
             device.ssl_certificate = internal_cert.certificate_obj
             device.ssl_key = internal_cert.key_obj
 
+        current_app.logger.debug('ssl_ca=%s, ssl_cert=%s, ssl_key=%s', device.ssl_ca, device.ssl_certificate, device.ssl_key)
+
         self.device = AlarmDecoder(device)
         self.bind_events(self.websocket, self.device)
         self.device.open(baudrate=self._device_baudrate)

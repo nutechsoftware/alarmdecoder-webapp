@@ -7,6 +7,7 @@ from flask.ext.login import login_required, current_user
 from ..extensions import db
 from ..decorators import admin_required
 from ..settings.models import Setting
+from ..certificate.models import Certificate
 from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
                    SSLForm, SSLHostForm, DeviceForm, TestDeviceForm)
 from .constants import (STAGES, SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
@@ -94,36 +95,70 @@ def network():
         db.session.commit()
 
         if form.local.data == True:
-            return redirect(url_for('setup.ssl'))
+            return redirect(url_for('setup.sslserver'))
         else:
-            return redirect(url_for('setup.test'))
+            if form.ssl.data == True:
+                return redirect(url_for('setup.sslclient'))
+            else:
+                return redirect(url_for('setup.test'))
 
     return render_template('setup/network.html', form=form)
 
-@setup.route('/ssl', methods=['GET', 'POST'])
-def ssl():
-    form = SSLHostForm()
+@setup.route('/sslclient', methods=['GET', 'POST'])
+def sslclient():
+    form = SSLForm()
+    form.multipart = True
     if form.validate_on_submit():
-        ca_cert = Certificate(
-                    name="AlarmDecoder CA",
-                    description='CA certificate used for authenticating others.',
-                    serial_number=1,
-                    status=1,
-                    type=0)
-        ca_cert.generate(common_name='AlarmDecoder CA')
+        current_app.logger.debug('meh %s -> %s', form.ca_cert.data, request.files)
+
+        ca_cert_data = form.ca_cert.data.stream.read()
+        cert_data = form.cert.data.stream.read()
+        key_data = form.key.data.stream.read()
+
+        # TODO: Fix one()
+        ca_cert = Certificate.query.filter_by(name='AlarmDecoder CA').one()
+        ca_cert.certificate = ca_cert_data
+        ca_cert.key = ''
         db.session.add(ca_cert)
-        internal_cert = Certificate(
-                name="AlarmDecoder Internal",
-                description='Internal certificate used to communicate with ser2sock.',
-                serial_number=2,
-                status=1,
-                type=2,
-                user=None)
-        internal_cert.generate(common_name='AlarmDecoder Internal')
+
+        # TODO: Fix one()
+        internal_cert = Certificate.query.filter_by(name='AlarmDecoder Internal').one()
+        internal_cert.certificate = cert_data
+        internal_cert.key = key_data
         db.session.add(internal_cert)
 
-        db.session.add(Setting(name='use_ssl', value=True))
+        use_ssl = Setting.get_by_name('use_ssl')
+        use_ssl.value = True
+        db.session.add(use_ssl)
         db.session.commit()
+
+        return redirect(url_for('setup.test'))
+
+    return render_template('setup/sslclient.html', form=form)
+
+@setup.route('/sslserver', methods=['GET', 'POST'])
+def sslserver():
+    form = SSLHostForm()
+    if form.validate_on_submit():
+        if form.confirm_management.value == True:
+            ca_cert = Certificate(
+                        name="AlarmDecoder CA",
+                        description='CA certificate used for authenticating others.',
+                        status=1,
+                        type=0)
+            ca_cert.generate(common_name='AlarmDecoder CA')
+            db.session.add(ca_cert)
+
+            internal_cert = Certificate(
+                    name="AlarmDecoder Internal",
+                    description='Internal certificate used to communicate with ser2sock.',
+                    status=1,
+                    type=2)
+            internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
+            db.session.add(internal_cert)
+
+            db.session.add(Setting(name='use_ssl', value=True))
+            db.session.commit()
 
         return redirect(url_for('setup.test'))
 

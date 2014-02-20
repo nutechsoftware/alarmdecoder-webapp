@@ -28,7 +28,7 @@ class Certificate(db.Model):
     status = Column(db.SmallInteger, nullable=False)
     type = Column(db.SmallInteger, nullable=False)
     certificate = Column(db.Text, nullable=False)
-    key = Column(db.Text, nullable=False)
+    key = Column(db.Text, nullable=True)
     created_on = Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
     revoked_on = Column(db.TIMESTAMP)
     description = Column(db.String(255))
@@ -38,10 +38,12 @@ class Certificate(db.Model):
     def init_on_load(self):
         try:
             self.key_obj = crypto.load_privatekey(crypto.FILETYPE_PEM, self.key)
-            self.certificate_obj = crypto.load_certificate(crypto.FILETYPE_PEM, self.certificate)
-
         except crypto.Error, err:
             self.key_obj = None
+
+        try:
+            self.certificate_obj = crypto.load_certificate(crypto.FILETYPE_PEM, self.certificate)
+        except crypto.Error, err:
             self.certificate_obj = None
 
     @classmethod
