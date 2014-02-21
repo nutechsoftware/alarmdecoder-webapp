@@ -129,10 +129,23 @@ class Decoder(object):
         self.device.on_rfx_message += self._on_message
         self.device.on_expander_message += self._on_message
 
+        self.device.on_open += self._on_device_open
+        self.device.on_close += self._on_device_close
+
         # Bind the event handler to all of our events.
         for event, device_event_name in EVENTS.iteritems():
             device_handler = getattr(self.device, device_event_name)
             device_handler += build_event_handler(event)
+
+    def _on_device_open(self, sender):
+        self.app.logger.debug('device_open')
+        self.broadcast('device_open')
+
+    def _on_device_close(self, sender):
+        self.app.logger.debug('device_close')
+        self.broadcast('device_close')
+
+        # TODO: try to reopen
 
     def _on_message(self, sender, *args, **kwargs):
         try:

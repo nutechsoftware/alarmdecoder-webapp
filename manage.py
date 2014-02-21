@@ -39,7 +39,7 @@ def run():
         decoder.websocket = appsocket
 
         decoder.open()
-        
+
         appsocket.serve_forever()
 
     except Exception, err:
@@ -137,7 +137,7 @@ F6F8aKjZ3Ze8mGhApbGXFwo=
             serial_number=2,
             status=1,
             type=2)
-    cert.generate(common_name='AlarmDecoder Internal')#, parent=ca_cert)
+    cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
     db.session.add(cert)
 
     notification = Notification(description='Test Email', type=0, user=user)

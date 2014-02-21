@@ -38,6 +38,20 @@ var AlarmDecoder = function() {
 
             PubSub.publish('test', obj);
         });
+
+        _socket.on('device_open', function(msg) {
+            obj = JSON.parse(msg)
+
+            console.log('device opened.');
+            PubSub.publish('device_open', obj);
+        });
+
+        _socket.on('device_close', function(msg) {
+            obj = JSON.parse(msg)
+
+            console.log('device closed.');
+            PubSub.publish('device_close', obj);
+        });
     };
 
     AlarmDecoder.emit = function(type, arg) {
