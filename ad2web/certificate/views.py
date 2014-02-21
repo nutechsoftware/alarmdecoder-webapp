@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Blueprint, render_template, abort, g, request, flash, Response
+from flask import Blueprint, render_template, abort, g, request, flash, Response, redirect, url_for
 from flask import current_app as APP
 from flask.ext.login import login_required, current_user
 
@@ -22,6 +22,13 @@ def certificate_context_processor():
 @certificate.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
+    certificates = Certificate.query.all()
+
+    return render_template('certificate/index.html', certificates=certificates, active='certificates')
+
+@certificate.route('/generate', methods=['GET', 'POST'])
+@login_required
+def generate():
     form = GenerateCertificateForm(next=request.args.get('next'))
 
     if form.validate_on_submit():
@@ -40,9 +47,10 @@ def index():
 
         flash('Certificate created.', 'success')
 
-    certificates = Certificate.query.all()
+        return redirect(url_for('certificate.index'))
 
-    return render_template('certificate/index.html', certificates=certificates, form=form, active='certificates')
+    return render_template('certificate/generate.html', form=form, active='certificates')
+
 
 @certificate.route('/<int:certificate_id>')
 @login_required

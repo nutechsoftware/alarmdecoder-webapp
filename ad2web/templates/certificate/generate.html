@@ -1,0 +1,21 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = 'Certificates' %}
+
+{% extends 'settings/layout.html' %}
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#certificate-table').dataTable({
+            "bJQueryUI" : true,
+            "sPaginationType" : "full_numbers",
+            "sDom" : '<"H"lr>t<"F"fip>',
+        });
+    });
+</script>
+{% endblock %}
+{% block body %}
+<div>
+    {{ render_form(url_for('certificate.generate'), form) }}
+</div>
+{% endblock %}

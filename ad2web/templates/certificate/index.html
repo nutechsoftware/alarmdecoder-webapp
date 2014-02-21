@@ -41,8 +41,7 @@
         {% endfor %}
 
     </table>
-
-    Generate a new certificate:
-    {{ render_form(url_for('certificate.index'), form) }}
+    <br>
+    <a href="{{ url_for('certificate.generate') }}">Generate a new certificate</a>
 </div>
 {% endblock %}
