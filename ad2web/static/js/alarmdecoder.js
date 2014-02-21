@@ -7,7 +7,11 @@ var AlarmDecoder = function() {
     };
 
     AlarmDecoder.connect = function(namespace) {
-        _socket = io.connect(namespace);
+        _socket = io.connect(namespace, {
+            'reconnect': true,
+            'reconnection delay': 500,
+            'max reconnection attempts': Infinity,
+        });
 
         _socket.on('connect', function() {
             console.log('websocket opened');
