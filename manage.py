@@ -155,7 +155,10 @@ F6F8aKjZ3Ze8mGhApbGXFwo=
     db.session.add(EventLogEntry(type=4, message='Fire!  Oh no!'))
 
     db.session.add(Setting(name='device_type', value='AD2PI'))
-    db.session.add(Setting(name='device_location', value='network'))
+    db.session.add(Setting(name='device_location', value='local'))
+    #db.session.add(Setting(name='device_location', value='network'))
+    db.session.add(Setting(name='device_path', value='/dev/ttyUSB0'))
+    db.session.add(Setting(name='device_baudrate', value=115200))
     db.session.add(Setting(name='device_address', value='localhost'))
     db.session.add(Setting(name='device_port', value=10000))
     db.session.add(Setting(name='use_ssl', value=True))

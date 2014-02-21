@@ -117,7 +117,7 @@ def device():
 
             elif device_type.value == SERIAL_DEVICE:
                 local_form.device_path.data = Setting.get_by_name('device_path', local_form.device_path.default).value
-                local_form.baudrate.data = Setting.get_by_name('baudrate', local_form.baudrate.default).value
+                local_form.baudrate.data = Setting.get_by_name('device_baudrate', local_form.baudrate.default).value
                 current_form, form_type = local_form, 'serial'
 
     elif network_form.submit.data:
