@@ -4,6 +4,7 @@ from gevent import monkey
 monkey.patch_all()
 
 import time
+import traceback
 
 from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
@@ -16,7 +17,7 @@ import jsonpickle
 from OpenSSL import SSL
 from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SocketDevice, SerialDevice
-from alarmdecoder.util import NoDeviceError
+from alarmdecoder.util import NoDeviceError, CommError
 
 from .log.models import EventLogEntry
 from .log.constants import *
@@ -111,11 +112,11 @@ class Decoder(object):
             self.device.open(baudrate=self._device_baudrate)
 
         except NoDeviceError, err:
-            self.app.logger.warning('Open failed: %s', err[0])
+            self.app.logger.warning('Open failed: %s', err[0], exc_info=True)
 
         except SSL.Error, err:
             source, fn, message = err[0][0]
-            self.app.logger.warning('SSL connection failed: %s - %s', fn, message)
+            self.app.logger.warning('SSL connection failed: %s - %s', fn, message, exc_info=True)
 
     def close(self):
         if self.device is not None:
@@ -152,8 +153,7 @@ class Decoder(object):
             self.broadcast('message', kwargs.get('message', None))
 
         except Exception, err:
-            import traceback
-            traceback.print_exc(err)
+            self.app.logger.error('Error while broadcasting message.', exc_info=True)
 
     def _handle_event(self, ftype, sender, *args, **kwargs):
         try:
@@ -176,8 +176,7 @@ class Decoder(object):
             self.broadcast('event', kwargs)
 
         except Exception, err:
-            import traceback
-            traceback.print_exc(err)
+            self.app.logger.error('Error while broadcasting event.', exc_info=True)
 
     def broadcast(self, channel, data={}):
         obj = jsonpickle.encode(data, unpicklable=False)
@@ -197,16 +196,20 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
         self._alarmdecoder = self.request
 
     def on_keypress(self, key):
-        if key == 1:
-            self._alarmdecoder.device.send(AlarmDecoder.KEY_F1)
-        elif key == 2:
-            self._alarmdecoder.device.send(AlarmDecoder.KEY_F2)
-        elif key == 3:
-            self._alarmdecoder.device.send(AlarmDecoder.KEY_F3)
-        elif key == 4:
-            self._alarmdecoder.device.send(AlarmDecoder.KEY_F4)
-        else:
-            self._alarmdecoder.device.send(key)
+        with self._alarmdecoder.app.app_context():
+            try:
+                if key == 1:
+                    self._alarmdecoder.device.send(AlarmDecoder.KEY_F1)
+                elif key == 2:
+                    self._alarmdecoder.device.send(AlarmDecoder.KEY_F2)
+                elif key == 3:
+                    self._alarmdecoder.device.send(AlarmDecoder.KEY_F3)
+                elif key == 4:
+                    self._alarmdecoder.device.send(AlarmDecoder.KEY_F4)
+                else:
+                    self._alarmdecoder.device.send(key)
+            except CommError, err:
+                self.app.logger.error('Error sending keypress to device', exc_info=True)
 
     def on_test(self, *args):
         with self._alarmdecoder.app.app_context():
@@ -220,7 +223,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 self._alarmdecoder.open()
                 results = 'PASS'
             except Exception, err:
-                current_app.logger.error('Error: %s', err)
+                self.app.logger.error('Error while testing device open.', exc_info=True)
             finally:
                 self._alarmdecoder.broadcast('test', {'test': 'open', 'results': results})
 
@@ -228,9 +231,8 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 self._alarmdecoder.device.on_config_received += on_config
                 self._alarmdecoder.device.send("C\r")
             except Exception, err:
+                self.app.logger.error('Error while testing device config.', exc_info=True)
                 self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'FAIL'})
-                current_app.logger.error('Error: %s', err)
-
 
 @decodersocket.route('/<path:remaining>')
 def handle_socketio(remaining):
@@ -238,7 +240,6 @@ def handle_socketio(remaining):
         socketio_manage(request.environ, {'/alarmdecoder': DecoderNamespace}, g.alarmdecoder)
 
     except Exception, err:
-        from flask import current_app
         current_app.logger.error("Exception while handling socketio connection", exc_info=True)
 
     return Response()

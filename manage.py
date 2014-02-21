@@ -43,8 +43,7 @@ def run():
         appsocket.serve_forever()
 
     except Exception, err:
-        import traceback
-        app.logger.error("Error - %s\n%s", type(err), str(traceback.format_exc()))
+        app.logger.error("Error", exc_info=True)
 
 @manager.command
 def initdb():
@@ -172,4 +171,3 @@ manager.add_option('-c', '--config',
 
 if __name__ == "__main__":
     manager.run()
-
