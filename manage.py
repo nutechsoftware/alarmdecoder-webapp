@@ -6,6 +6,7 @@ import sys
 
 from flask.ext.script import Manager
 
+from alarmdecoder.util import NoDeviceError
 from ad2web import create_app, create_decoder_socket
 from ad2web.decoder import Decoder
 from ad2web.extensions import db
@@ -30,14 +31,20 @@ def signal_handler(signal, frame):
 def run():
     """Run in local machine."""
 
-    signal.signal(signal.SIGINT, signal_handler)
+    try:
+        signal.signal(signal.SIGINT, signal_handler)
 
-    app.decoder = decoder
-    decoder.app = app
-    decoder.websocket = appsocket
-    decoder.open()
+        app.decoder = decoder
+        decoder.app = app
+        decoder.websocket = appsocket
 
-    appsocket.serve_forever()
+        decoder.open()
+        
+        appsocket.serve_forever()
+
+    except Exception, err:
+        import traceback
+        app.logger.error("Error - %s\n%s", type(err), str(traceback.format_exc()))
 
 @manager.command
 def initdb():
@@ -130,7 +137,7 @@ F6F8aKjZ3Ze8mGhApbGXFwo=
             serial_number=2,
             status=1,
             type=2)
-    cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
+    cert.generate(common_name='AlarmDecoder Internal')#, parent=ca_cert)
     db.session.add(cert)
 
     notification = Notification(description='Test Email', type=0, user=user)

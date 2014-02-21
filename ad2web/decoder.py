@@ -13,8 +13,10 @@ from socketio.server import SocketIOServer
 from flask import Blueprint, Response, request, g, current_app
 import jsonpickle
 
+from OpenSSL import SSL
 from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SocketDevice, SerialDevice
+from alarmdecoder.util import NoDeviceError
 
 from .log.models import EventLogEntry
 from .log.constants import *
@@ -93,21 +95,27 @@ class Decoder(object):
             if use_ssl is None:
                 use_ssl = False
 
-        device = devicetype(interface=interface)
-        if self._device_location == 'network' and use_ssl:
-            ca_cert = Certificate.query.filter_by(name='AlarmDecoder CA').one()
-            internal_cert = Certificate.query.filter_by(name='AlarmDecoder Internal').one()
+        try:
+            device = devicetype(interface=interface)
+            if self._device_location == 'network' and use_ssl:
+                ca_cert = Certificate.query.filter_by(name='AlarmDecoder CA').one()
+                internal_cert = Certificate.query.filter_by(name='AlarmDecoder Internal').one()
 
-            device.ssl = True
-            device.ssl_ca = ca_cert.certificate_obj
-            device.ssl_certificate = internal_cert.certificate_obj
-            device.ssl_key = internal_cert.key_obj
+                device.ssl = True
+                device.ssl_ca = ca_cert.certificate_obj
+                device.ssl_certificate = internal_cert.certificate_obj
+                device.ssl_key = internal_cert.key_obj
 
-        current_app.logger.debug('ssl_ca=%s, ssl_cert=%s, ssl_key=%s', device.ssl_ca, device.ssl_certificate, device.ssl_key)
+            self.device = AlarmDecoder(device)
+            self.bind_events(self.websocket, self.device)
+            self.device.open(baudrate=self._device_baudrate)
 
-        self.device = AlarmDecoder(device)
-        self.bind_events(self.websocket, self.device)
-        self.device.open(baudrate=self._device_baudrate)
+        except NoDeviceError, err:
+            self.app.logger.warning('Open failed: %s', err[0])
+
+        except SSL.Error, err:
+            source, fn, message = err[0][0]
+            self.app.logger.warning('SSL connection failed: %s - %s', fn, message)
 
     def close(self):
         if self.device is not None:
