@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 from flask import Blueprint, render_template, abort, g, request, flash, Response, redirect, url_for
 from flask import current_app
 from flask.ext.login import login_required, current_user
@@ -8,11 +10,13 @@ from ..extensions import db
 from ..decorators import admin_required
 from ..settings.models import Setting
 from ..certificate.models import Certificate
+from ..certificate.constants import CA, SERVER, CLIENT, INTERNAL, ACTIVE
 from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
                    SSLForm, SSLHostForm, DeviceForm, TestDeviceForm)
 from .constants import (STAGES, SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
                     SETUP_LOCAL, SETUP_DEVICE, SETUP_COMPLETE, BAUDRATES,
                     DEFAULT_BAUDRATES)
+from ..ser2sock import ser2sock
 
 setup = Blueprint('setup', __name__, url_prefix='/setup')
 
@@ -109,8 +113,6 @@ def sslclient():
     form = SSLForm()
     form.multipart = True
     if form.validate_on_submit():
-        current_app.logger.debug('meh %s -> %s', form.ca_cert.data, request.files)
-
         ca_cert_data = form.ca_cert.data.stream.read()
         cert_data = form.cert.data.stream.read()
         key_data = form.key.data.stream.read()
@@ -140,29 +142,77 @@ def sslclient():
 def sslserver():
     form = SSLHostForm()
     if form.validate_on_submit():
-        if form.confirm_management.value == True:
+        if form.confirm_management.data == True:
             ca_cert = Certificate(
                         name="AlarmDecoder CA",
                         description='CA certificate used for authenticating others.',
-                        status=1,
-                        type=0)
+                        status=ACTIVE,
+                        type=CA)
             ca_cert.generate(common_name='AlarmDecoder CA')
             db.session.add(ca_cert)
+
+            server_cert = Certificate(
+                    name="AlarmDecoder Server",
+                    description='Server certificate used by ser2sock.',
+                    status=ACTIVE,
+                    type=SERVER)
+            server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
+            db.session.add(server_cert)
 
             internal_cert = Certificate(
                     name="AlarmDecoder Internal",
                     description='Internal certificate used to communicate with ser2sock.',
-                    status=1,
-                    type=2)
+                    status=ACTIVE,
+                    type=INTERNAL)
             internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
             db.session.add(internal_cert)
 
-            db.session.add(Setting(name='use_ssl', value=True))
+            use_ssl = Setting.get_by_name('use_ssl')
+            use_ssl.value = True
+            db.session.add(use_ssl)
+
+            config_path = Setting.get_by_name('ser2sock_config_path')
+            config_path.value = form.config_path.data
+            db.session.add(config_path)
+
+            manage_ser2sock = Setting.get_by_name('manage_ser2sock')
+            manage_ser2sock.value = True
+            db.session.add(manage_ser2sock)
+
             db.session.commit()
+
+            _update_ser2sock_config(config_path.value)
 
         return redirect(url_for('setup.test'))
 
     return render_template('setup/ssl.html', form=form)
+
+def _update_ser2sock_config(path):
+    config = ser2sock.read_config(os.path.join(path, 'ser2sock.conf'))
+
+    config_values = {}
+    for k, v in config.items('ser2sock'):
+        config_values[k] = v
+
+    config_values['device'] = Setting.get_by_name('device_path').value
+    config_values['baudrate'] = Setting.get_by_name('device_baudrate').value
+    config_values['port'] = Setting.get_by_name('device_port').value
+    config_values['encrypted'] = Setting.get_by_name('use_ssl').value
+    if config_values['encrypted'] == 1:
+        ca = Certificate.query.filter_by(type=CA).first()
+        server_cert = Certificate.query.filter_by(type=SERVER).first()
+
+        ca.export(os.path.join(path, 'certs'))
+        server_cert.export(os.path.join(path, 'certs'))
+
+        config_values['ca_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(ca.name))
+        config_values['ssl_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(server_cert.name))
+        config_values['ssl_key'] = os.path.join(path, 'certs', '{0}.key'.format(server_cert.name))
+
+    ser2sock.save_config(os.path.join(path, 'ser2sock.conf'), config_values)
+    ser2sock.save_certificate_index(path)
+    ser2sock.save_revocation_list(path)
+    ser2sock.hup()
 
 @setup.route('/test', methods=['GET', 'POST'])
 def test():

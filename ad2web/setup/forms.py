@@ -29,7 +29,7 @@ class DeviceTypeForm(Form):
 class NetworkDeviceForm(Form):
     device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
     device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
-    ssl = BooleanField(u'Use SSL?', description=u'(ser2sock only)')
+    ssl = BooleanField(u'Use SSL?')
     local = BooleanField(u'Is the device connected directly to the computer that is running this software?')
 
     submit = SubmitField(u'Next')
@@ -43,12 +43,12 @@ class SSLForm(Form):
 
 class SSLHostForm(Form):
     confirm_management = BooleanField(u'Would you like this application to manage your ser2sock config?')
-    config_path = TextField(u'Path to ser2sock directory')
+    config_path = TextField(u'Path to ser2sock directory', default='/etc/ser2sock')
 
     submit = SubmitField(u'Next')
 
 class LocalDeviceForm(Form):
-    device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Path to your AlarmDecoder', default='/dev/ttyAMA0')
+    device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Examples: /dev/ttyUSB0 (Linux), COM1: (Windows)', default='/dev/ttyAMA0')
     baudrate = SelectField(u'Baudrate', choices=[(baudrate, str(baudrate)) for baudrate in BAUDRATES], default=115200, coerce=int)
 
     submit = SubmitField(u'Next')

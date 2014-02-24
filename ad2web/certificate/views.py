@@ -83,6 +83,8 @@ def revoke(certificate_id):
         abort(403)
 
     cert.revoke()
+    Certificate.save_certificate_index()
+    Certificate.save_revocation_list()
 
     db.session.add(cert)
     db.session.commit()

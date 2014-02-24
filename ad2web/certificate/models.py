@@ -7,6 +7,7 @@ import io
 import time
 import tempfile
 import subprocess
+import OpenSSL.crypto
 
 from flask import current_app
 
@@ -16,8 +17,8 @@ from sqlalchemy import Column, orm
 from ..extensions import db
 from ..settings.models import Setting
 from .constants import CERTIFICATE_TYPES, CA, SERVER, CLIENT, INTERNAL, \
-                        CERTIFICATE_STATUS, REVOKED, ACTIVE, \
-                        PACKAGE_TYPES, TGZ, PKCS12, BKS
+                        CERTIFICATE_STATUS, REVOKED, ACTIVE, EXPIRED, \
+                        PACKAGE_TYPES, TGZ, PKCS12, BKS, CRL_CODE
 
 class Certificate(db.Model):
     __tablename__ = 'certificates'
@@ -49,6 +50,59 @@ class Certificate(db.Model):
     @classmethod
     def get_by_id(cls, user_id):
         return cls.query.filter_by(id=user_id).first_or_404()
+
+    @classmethod
+    def save_certificate_index(cls):
+        ser2sock_config_path = Setting.get_by_name('ser2sock_config_path')
+        if ser2sock_config_path.value is None:
+            raise ValueError('ser2sock_config_path is not set.')
+
+        path = os.path.join(ser2sock_config_path.value, 'certs', 'certindex')
+
+        with open(path, 'w') as cert_index:
+            for cert in cls.query.all():
+                if cert.type != CA:
+                    revoked_time = ''
+                    if cert.revoked_on:
+                        revoked_time = time.strftime('%y%m%d%H%M%SZ', cert.revoked_on.utctimetuple())
+
+                    subject = '/'.join(['='.join(t) for t in [()] + cert.certificate_obj.get_subject().get_components()])
+                    cert_index.write("\t".join([
+                        CRL_CODE[cert.status],
+                        cert.certificate_obj.get_notAfter()[2:],    # trim off the first two characters in the year.
+                        revoked_time,
+                        cert.serial_number.zfill(2),
+                        'unknown',
+                        subject
+                    ]) + "\n")
+
+    @classmethod
+    def save_revocation_list(cls):
+        ser2sock_config_path = Setting.get_by_name('ser2sock_config_path')
+        if ser2sock_config_path.value is None:
+            raise ValueError('ser2sock_config_path is not set.')
+
+        path = os.path.join(ser2sock_config_path.value, 'ser2sock.crl')
+
+        ca_cert = cls.query.filter_by(type=CA).first()
+
+        with open(path, 'w') as crl_file:
+            crl = crypto.CRL()
+
+            for cert in cls.query.all():
+                if cert.type != CA:
+                    if cert.status == REVOKED:
+                        revoked = crypto.Revoked()
+
+                        revoked.set_reason(None)
+                        # NOTE: crypto.Revoked() expects YYYY instead of YY as needed by the cert index above.
+                        revoked.set_rev_date(time.strftime('%Y%m%d%H%M%SZ', cert.revoked_on.utctimetuple()))
+                        revoked.set_serial(cert.serial_number)
+
+                        crl.add_revoked(revoked)
+
+            crl_data = crl.export(ca_cert.certificate_obj, ca_cert.key_obj)
+            crl_file.write(crl_data)
 
     def revoke(self):
         self.status = REVOKED
@@ -108,6 +162,10 @@ class Certificate(db.Model):
 
         self.certificate_obj = cert
         self.key_obj = key
+
+    def export(self, path):
+        open(os.path.join(path, '{0}.key'.format(self.name)), 'w').write(self.key)
+        open(os.path.join(path, '{0}.pem'.format(self.name)), 'w').write(self.certificate)
 
 class CertificatePackage(object):
     def __init__(self, certificate, ca):

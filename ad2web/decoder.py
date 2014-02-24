@@ -113,10 +113,12 @@ class Decoder(object):
 
         except NoDeviceError, err:
             self.app.logger.warning('Open failed: %s', err[0], exc_info=True)
+            raise
 
         except SSL.Error, err:
             source, fn, message = err[0][0]
             self.app.logger.warning('SSL connection failed: %s - %s', fn, message, exc_info=True)
+            raise
 
     def close(self):
         if self.device is not None:
@@ -223,7 +225,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 self._alarmdecoder.open()
                 results = 'PASS'
             except Exception, err:
-                self.app.logger.error('Error while testing device open.', exc_info=True)
+                current_app.logger.error('Error while testing device open.', exc_info=True)
             finally:
                 self._alarmdecoder.broadcast('test', {'test': 'open', 'results': results})
 
@@ -231,7 +233,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 self._alarmdecoder.device.on_config_received += on_config
                 self._alarmdecoder.device.send("C\r")
             except Exception, err:
-                self.app.logger.error('Error while testing device config.', exc_info=True)
+                current_app.logger.error('Error while testing device config.', exc_info=True)
                 self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'FAIL'})
 
 @decodersocket.route('/<path:remaining>')

@@ -16,10 +16,18 @@ CERTIFICATE_TYPES = {
 # Certificate status
 REVOKED = 0
 ACTIVE = 1
+EXPIRED = 2
 
 CERTIFICATE_STATUS = {
     REVOKED: 'Revoked',
-    ACTIVE: 'Active'
+    ACTIVE: 'Active',
+    EXPIRED: 'Expired'
+}
+
+CRL_CODE = {
+    REVOKED: 'R',
+    ACTIVE: 'V',
+    EXPIRED: 'E'
 }
 
 # Certificate package types
