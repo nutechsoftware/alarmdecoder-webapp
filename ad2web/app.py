@@ -6,7 +6,7 @@ monkey.patch_all()
 import os
 import jsonpickle
 
-from flask import Flask, request, render_template, g
+from flask import Flask, request, render_template, g, redirect, url_for
 from flask.ext.babel import Babel
 
 from alarmdecoder import AlarmDecoder
@@ -24,6 +24,8 @@ from .log import log
 from .keypad import keypad
 from .notifications import notifications
 from .zones import zones
+from .settings.models import Setting
+from .setup.constants import SETUP_COMPLETE
 from .setup import setup
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
@@ -175,8 +177,15 @@ def configure_logging(app):
 
 
 def configure_hook(app):
+    safe_blueprints = ['setup', 'sock', None]   # None = static content.
+
     @app.before_request
     def before_request():
+        if not request.blueprint in safe_blueprints:
+            setup_stage = Setting.get_by_name('setup_stage')
+            if setup_stage is not None and setup_stage.value != SETUP_COMPLETE:
+                return redirect(url_for('setup.index'))
+
         g.alarmdecoder = app.decoder
 
 

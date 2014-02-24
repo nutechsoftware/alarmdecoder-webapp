@@ -69,9 +69,7 @@ def index():
     if current_user.is_authenticated():
         return redirect(url_for('keypad.index'))
 
-    page = int(request.args.get('page', 1))
-    pagination = User.query.paginate(page=page, per_page=10)
-    return render_template('index.html', pagination=pagination)
+    return render_template('index.html')
 
 
 #@frontend.route('/search')
