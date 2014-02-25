@@ -34,19 +34,24 @@ class NetworkDeviceForm(Form):
     submit = SubmitField(u'Next')
 
 class SSLForm(Form):
-    ca_cert = FileField(u'Certificate Authority')
-    cert = FileField(u'Certificate')
-    key = FileField(u'Key')
+    ca_cert = FileField(u'CA Certificate', [Required()], description=u'CA certificate created for the AlarmDecoder to authorize clients.')
+    cert = FileField(u'Certificate', [Required()], description=u'Client certificate used by this webapp.')
+    key = FileField(u'Key', [Required()], description=u'Client certificate key used by this webapp.')
 
     submit = SubmitField(u'Next')
 
 class SSLHostForm(Form):
-    config_path = TextField(u'Path to ser2sock directory', default='/etc/ser2sock')
+    config_path = TextField(u'SER2SOCK Configuration Path', default='/etc/ser2sock')
+    # TODO: network settings here
+
+    device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
+    device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
+    ssl = BooleanField(u'Use SSL?')
 
     submit = SubmitField(u'Next')
 
 class LocalDeviceForm(Form):
-    device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Examples: /dev/ttyUSB0 (Linux), COM1: (Windows)', default='/dev/ttyAMA0')
+    device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Filesystem path to your AlarmDecoder.', default='/dev/ttyAMA0')
     baudrate = SelectField(u'Baudrate', choices=[(baudrate, str(baudrate)) for baudrate in BAUDRATES], default=115200, coerce=int)
 
     confirm_management = BooleanField(u'Share AlarmDecoder on your network?', description='This setting serves the AlarmDecoder on your network with ser2sock and allows other software (Software keypad, etc.) to use it in conjunction with this webapp.')

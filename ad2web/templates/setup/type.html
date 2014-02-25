@@ -9,6 +9,18 @@
 
 {% block body %}
 <div>
+	<h3>Device Type Settings</h3>
+	<div>
+		<p>
+		Please select which type of device you have as well as it's current location in relation to the machine that this webapp is running on.
+
+		<ul>
+			<li>Local Device: the device is directly connected to this computer.</li>
+			<li>Network: the device is already exposed on your network with ser2sock or another IP-to-Serial interface.</li>
+		</ul>
+		</p>
+	</div>
+	<br>
     {{ render_form(url_for('setup.type'), form) }}
 </div>
 {% endblock %}

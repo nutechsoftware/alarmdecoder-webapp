@@ -6,7 +6,12 @@
 <script type="text/javascript">
 	$(document).ready(function() {
 		PubSub.subscribe('test', function(type, msg) {
-			$('#test_results').append($('<div></div>').text(msg.test + ' ' + msg.results));
+			result_text = { 
+				'PASS': '<span style="color:green">&#10004;</span>', 
+				'FAIL': '<span style="color:red">&#10008;</span>' 
+			};
+
+			$('#test_results tr#test-' + msg.test + ' td:eq(1)').html(result_text[msg.results]);
 		});
 		console.log('starting tests..');
 		decoder.emit('test');
@@ -16,9 +21,21 @@
 
 {% block body %}
 <div>
+	<h3>Device Testing</h3>
+	
 	<div id="test_results">
+		<table>
+			<tr id='test-open'><td>Opening device</td><td><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td></tr>
+			<tr id='test-config'><td>Retrieving device configuration</td><td><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td></tr>
+		</table>
 	</div>
 
+	<div>
+		<p>
+
+		</p>
+	</div>
+	<br>
     {{ render_form(url_for('setup.test'), form) }}
 </div>
 {% endblock %}

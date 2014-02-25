@@ -9,6 +9,13 @@
 
 {% block body %}
 <div>
+	<h3>Network Host Settings</h3>
+	<div>
+		<p>
+			We need a few more settings in order to share your AlarmDecoder on the network.  If you select to use SSL we will also take this opportunity to generate certificates.
+		</p>
+	</div>
+	<br>
     {{ render_form(url_for('setup.sslserver'), form) }}
 </div>
 {% endblock %}

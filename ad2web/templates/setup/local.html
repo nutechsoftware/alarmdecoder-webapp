@@ -9,6 +9,17 @@
 
 {% block body %}
 <div>
+	<h3>Local Device Settings</h3>
+	<div>
+		<p>
+			Now we need to know exactly where your device exists at.  Based on your answer to previous questions we've provided the default baudrate for your device as well as an example path to it.
+		</p>
+
+		<p>
+			Please note that the path may vary on all but the AD2PI, which is fixed.  If you're running Linux or OSX your path likely is something similar to '/dev/ttyUSB0', and if it's Windows it will be something similar to 'COM3:'. (The trailing colon is required.)
+		</p>
+	</div>
+	<br>
     {{ render_form(url_for('setup.local'), form) }}
 </div>
 {% endblock %}
