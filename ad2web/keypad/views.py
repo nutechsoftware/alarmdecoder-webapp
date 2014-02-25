@@ -16,7 +16,7 @@ def keypad_context_processor():
 
     }
 
-@login_required
 @keypad.route('/')
+@login_required
 def index():
     return render_template('keypad/index.html')
