@@ -39,7 +39,7 @@
                 $('#keypad-line1').text(lines[0]);
 
 //hackery to get page to stop shifting when only 1 line of text present
-                if( lines[1].indexOf('      ') != -1 )
+                if( lines[1].match(/ /g).length == 16 )
                     lines[1] = '';
                 if( lines[1].length > 0 )
                 {
