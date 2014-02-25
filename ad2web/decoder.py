@@ -219,6 +219,15 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'PASS'})
                 self._alarmdecoder.device.on_config_received.remove(on_config)
 
+            def on_sending(device, status, message):
+                results = 'PASS' if status == True else 'FAIL'
+                self._alarmdecoder.broadcast('test', {'test': 'send', 'results': results })
+                self._alarmdecoder.device.on_sending_received.remove(on_sending)
+
+            def on_message(device, message):
+                self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'PASS'})
+                self._alarmdecoder.device.on_message.remove(on_message)
+
             results = 'FAIL'
             try:
                 self._alarmdecoder.close()
@@ -235,6 +244,16 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             except Exception, err:
                 current_app.logger.error('Error while testing device config.', exc_info=True)
                 self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'FAIL'})
+
+            try:
+                self._alarmdecoder.device.on_message += on_message
+                self._alarmdecoder.device.on_sending_received += on_sending
+                self._alarmdecoder.device.send("*\r")
+            except Exception, err:
+                current_app.logger.error('Error while testing keypad communication.', exc_info=True)
+                self._alarmdecoder.broadcast('test', {'test': 'send', 'results': 'FAIL'})
+                self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'FAIL'})
+
 
 @decodersocket.route('/<path:remaining>')
 def handle_socketio(remaining):
