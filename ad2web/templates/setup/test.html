@@ -11,7 +11,7 @@
 				'FAIL': '<span style="color:red">&#10008;</span>' 
 			};
 
-			$('#test_results tr#test-' + msg.test + ' td:eq(1)').html(result_text[msg.results]);
+			$('table#test_results tr#test-' + msg.test + ' td:eq(1)').html(result_text[msg.results]);
 		});
 		console.log('starting tests..');
 		decoder.emit('test');
@@ -23,8 +23,8 @@
 <div>
 	<h3>Device Testing</h3>
 	
-	<div id="test_results">
-		<table>
+	<div>
+		<table id="test_results">
 			<tr id='test-open'><td>Opening device</td><td><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td></tr>
 			<tr id='test-config'><td>Retrieving device configuration</td><td><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td></tr>
 		</table>

@@ -224,3 +224,7 @@ label {
     background: -webkit-linear-gradient(left, #CCCCCC, #337FD6);
     background: -moz-linear-gradient(left, #CCCCCC, #337FD6);
 }
+
+table#test_results {
+    width: 30% !important;
+}
