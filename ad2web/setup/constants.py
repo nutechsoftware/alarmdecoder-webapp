@@ -22,6 +22,13 @@ SERIAL_DEVICE = 1
 
 BAUDRATES = [115200, 19200]
 
+DEFAULT_PATHS = {
+	None: '/dev/ttyUSB0',
+	'AD2USB': '/dev/ttyUSB0',
+	'AD2PI': '/dev/ttyAMA0',
+	'AD2SERIAL': '/dev/ttyS0'
+}
+
 DEFAULT_BAUDRATES = {
 	None: 115200,
 	'AD2USB': 115200,

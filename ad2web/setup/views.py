@@ -15,7 +15,7 @@ from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
                    SSLForm, SSLHostForm, DeviceForm, TestDeviceForm)
 from .constants import (STAGES, SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
                     SETUP_LOCAL, SETUP_DEVICE, SETUP_COMPLETE, BAUDRATES,
-                    DEFAULT_BAUDRATES)
+                    DEFAULT_BAUDRATES, DEFAULT_PATHS)
 from ..ser2sock import ser2sock
 
 setup = Blueprint('setup', __name__, url_prefix='/setup')
@@ -57,22 +57,30 @@ def type():
 def local():
     form = LocalDeviceForm()
     if not form.is_submitted():
-        form.baudrate.data = DEFAULT_BAUDRATES[Setting.get_by_name('device_type').value]
+        device_type = Setting.get_by_name('device_type').value
+        form.device_path.data = DEFAULT_PATHS[device_type]
+        form.baudrate.data = DEFAULT_BAUDRATES[device_type]
 
     if form.validate_on_submit():
         device_path = Setting.get_by_name('device_path')
         baudrate = Setting.get_by_name('device_baudrate')
+        managed = Setting.get_by_name('managed_ser2sock')
 
         device_path.value = form.device_path.data
         baudrate.value = form.baudrate.data
+        managed.value = form.confirm_management.data
 
         db.session.add(device_path)
         db.session.add(baudrate)
+        db.session.add(managed)
 
         set_stage(SETUP_LOCAL)
         db.session.commit()
 
-        return redirect(url_for('setup.test'))
+        if form.confirm_management.data == True:
+            return redirect(url_for('setup.sslserver'))
+        else:
+            return redirect(url_for('setup.test'))
 
     return render_template('setup/local.html', form=form)
 
@@ -83,28 +91,22 @@ def network():
         device_address = Setting.get_by_name('device_address')
         device_port = Setting.get_by_name('device_port')
         ssl = Setting.get_by_name('use_ssl')
-        local = Setting.get_by_name('local_ser2sock')
 
         device_address.value = form.device_address.data
         device_port.value = form.device_port.data
         ssl.value = form.ssl.data
-        local.value = form.local.data
 
         db.session.add(device_address)
         db.session.add(device_port)
         db.session.add(ssl)
-        db.session.add(local)
 
         set_stage(SETUP_NETWORK)
         db.session.commit()
 
-        if form.local.data == True:
-            return redirect(url_for('setup.sslserver'))
+        if form.ssl.data == True:
+            return redirect(url_for('setup.sslclient'))
         else:
-            if form.ssl.data == True:
-                return redirect(url_for('setup.sslclient'))
-            else:
-                return redirect(url_for('setup.test'))
+            return redirect(url_for('setup.test'))
 
     return render_template('setup/network.html', form=form)
 
@@ -142,46 +144,45 @@ def sslclient():
 def sslserver():
     form = SSLHostForm()
     if form.validate_on_submit():
-        if form.confirm_management.data == True:
-            ca_cert = Certificate(
-                        name="AlarmDecoder CA",
-                        description='CA certificate used for authenticating others.',
-                        status=ACTIVE,
-                        type=CA)
-            ca_cert.generate(common_name='AlarmDecoder CA')
-            db.session.add(ca_cert)
-
-            server_cert = Certificate(
-                    name="AlarmDecoder Server",
-                    description='Server certificate used by ser2sock.',
+        ca_cert = Certificate(
+                    name="AlarmDecoder CA",
+                    description='CA certificate used for authenticating others.',
                     status=ACTIVE,
-                    type=SERVER)
-            server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
-            db.session.add(server_cert)
+                    type=CA)
+        ca_cert.generate(common_name='AlarmDecoder CA')
+        db.session.add(ca_cert)
 
-            internal_cert = Certificate(
-                    name="AlarmDecoder Internal",
-                    description='Internal certificate used to communicate with ser2sock.',
-                    status=ACTIVE,
-                    type=INTERNAL)
-            internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
-            db.session.add(internal_cert)
+        server_cert = Certificate(
+                name="AlarmDecoder Server",
+                description='Server certificate used by ser2sock.',
+                status=ACTIVE,
+                type=SERVER)
+        server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
+        db.session.add(server_cert)
 
-            use_ssl = Setting.get_by_name('use_ssl')
-            use_ssl.value = True
-            db.session.add(use_ssl)
+        internal_cert = Certificate(
+                name="AlarmDecoder Internal",
+                description='Internal certificate used to communicate with ser2sock.',
+                status=ACTIVE,
+                type=INTERNAL)
+        internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
+        db.session.add(internal_cert)
 
-            config_path = Setting.get_by_name('ser2sock_config_path')
-            config_path.value = form.config_path.data
-            db.session.add(config_path)
+        use_ssl = Setting.get_by_name('use_ssl')
+        use_ssl.value = True
+        db.session.add(use_ssl)
 
-            manage_ser2sock = Setting.get_by_name('manage_ser2sock')
-            manage_ser2sock.value = True
-            db.session.add(manage_ser2sock)
+        config_path = Setting.get_by_name('ser2sock_config_path')
+        config_path.value = form.config_path.data
+        db.session.add(config_path)
 
-            db.session.commit()
+        manage_ser2sock = Setting.get_by_name('manage_ser2sock')
+        manage_ser2sock.value = True
+        db.session.add(manage_ser2sock)
 
-            _update_ser2sock_config(config_path.value)
+        db.session.commit()
+
+        _update_ser2sock_config(config_path.value)
 
         return redirect(url_for('setup.test'))
 
