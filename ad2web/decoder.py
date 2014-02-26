@@ -5,6 +5,7 @@ monkey.patch_all()
 
 import time
 import traceback
+import threading
 
 from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
@@ -215,45 +216,104 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 
     def on_test(self, *args):
         with self._alarmdecoder.app.app_context():
-            def on_config(device):
-                self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'PASS'})
-                self._alarmdecoder.device.on_config_received.remove(on_config)
+            try:
+                self._test_open()
+                self._test_config()
+                self._test_send()
+                self._test_receive()
 
-            def on_sending(device, status, message):
-                results = 'PASS' if status == True else 'FAIL'
-                self._alarmdecoder.broadcast('test', {'test': 'send', 'results': results })
-                self._alarmdecoder.device.on_sending_received.remove(on_sending)
+            except Exception:
+                current_app.logger.error('Error running device tests.', exc_info=True)
 
-            def on_message(device, message):
-                self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'PASS'})
-                self._alarmdecoder.device.on_message.remove(on_message)
+    def _test_open(self):
+        results = 'PASS'
+        details = ''
 
+        try:
+            self._alarmdecoder.close()
+            self._alarmdecoder.open()
+
+        except Exception, err:
             results = 'FAIL'
-            try:
-                self._alarmdecoder.close()
-                self._alarmdecoder.open()
-                results = 'PASS'
-            except Exception, err:
-                current_app.logger.error('Error while testing device open.', exc_info=True)
-            finally:
-                self._alarmdecoder.broadcast('test', {'test': 'open', 'results': results})
+            details = 'Failed to open the device.'
+            current_app.logger.error('Error while testing device open.', exc_info=True)
 
-            try:
-                self._alarmdecoder.device.on_config_received += on_config
-                self._alarmdecoder.device.send("C\r")
-            except Exception, err:
-                current_app.logger.error('Error while testing device config.', exc_info=True)
-                self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'FAIL'})
+        finally:
+            self._alarmdecoder.broadcast('test', {'test': 'open', 'results': results, 'details': details})
 
-            try:
-                self._alarmdecoder.device.on_message += on_message
-                self._alarmdecoder.device.on_sending_received += on_sending
-                self._alarmdecoder.device.send("*\r")
-            except Exception, err:
-                current_app.logger.error('Error while testing keypad communication.', exc_info=True)
-                self._alarmdecoder.broadcast('test', {'test': 'send', 'results': 'FAIL'})
-                self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'FAIL'})
+    def _test_config(self):
+        def on_config_received(device):
+            timer.cancel()
+            self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'PASS', 'details': ''})
+            self._alarmdecoder.device.on_config_received.remove(on_config_received)
 
+        def on_timeout():
+            self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'TIMEOUT', 'details': 'Test timed out.'})
+            self._alarmdecoder.device.on_config_received.remove(on_config_received)
+
+        timer = threading.Timer(10, on_timeout)
+        timer.start()
+
+        try:
+            self._alarmdecoder.device.on_config_received += on_config_received
+            self._alarmdecoder.device.send("C\r")
+
+        except Exception, err:
+            timer.cancel()
+            self._alarmdecoder.device.on_config_received.remove(on_config_received)
+            self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
+            current_app.logger.error('Error while testing device config.', exc_info=True)
+
+    def _test_send(self):
+        def on_sending_received(device, status, message):
+            timer.cancel()
+            self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
+
+            results, details = 'PASS', ''
+            if status != True:
+                results, details = 'FAIL', 'Check wiring and that the correct keypad address is being used.'
+
+            self._alarmdecoder.broadcast('test', {'test': 'send', 'results': results, 'details': details})
+
+        def on_timeout():
+            self._alarmdecoder.broadcast('test', {'test': 'send', 'results': 'TIMEOUT', 'details': 'Test timed out.'})
+            self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
+
+        timer = threading.Timer(10, on_timeout)
+        timer.start()
+
+        try:
+            self._alarmdecoder.device.on_sending_received += on_sending_received
+            self._alarmdecoder.device.send("*\r")
+
+        except Exception, err:
+            timer.cancel()
+            self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
+            self._alarmdecoder.broadcast('test', {'test': 'send', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
+            current_app.logger.error('Error while testing keypad communication.', exc_info=True)
+
+    def _test_receive(self):
+        def on_message(device, message):
+            timer.cancel()
+            self._alarmdecoder.device.on_message.remove(on_message)
+            self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'PASS', 'details': ''})
+
+        def on_timeout():
+            self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'TIMEOUT', 'details': 'Test timed out.'})
+            self._alarmdecoder.device.on_message.remove(on_message)
+
+        timer = threading.Timer(10, on_timeout)
+        timer.start()
+
+        try:
+            self._alarmdecoder.device.on_message += on_message
+            self._alarmdecoder.device.send("*\r")
+
+        except Exception, err:
+            timer.cancel()
+            self._alarmdecoder.device.on_message.remove(on_message)
+            self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
+            current_app.logger.error('Error while testing keypad communication.', exc_info=True)
 
 @decodersocket.route('/<path:remaining>')
 def handle_socketio(remaining):

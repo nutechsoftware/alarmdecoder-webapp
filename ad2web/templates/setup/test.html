@@ -8,10 +8,14 @@
 		PubSub.subscribe('test', function(type, msg) {
 			result_text = { 
 				'PASS': '<span style="color:green">&#10004;</span>', 
-				'FAIL': '<span style="color:red">&#10008;</span>' 
+				'FAIL': '<span style="color:red">&#10008;</span>',
+				'TIMEOUT': '<span style="color:orange">&#9888;</span>'
 			};
 
-			$('table#test_results tr#test-' + msg.test + ' td:eq(1)').html(result_text[msg.results]);
+			test_results = $('table#test_results tr#test-' + msg.test);
+
+			$(test_results).children('td:eq(1)').html(result_text[msg.results]);
+			$(test_results).children('td:eq(2)').html(msg.details);
 		});
 		console.log('starting tests..');
 		decoder.emit('test');
@@ -25,10 +29,26 @@
 	
 	<div>
 		<table id="test_results">
-			<tr id='test-open'><td>Opening device</td><td><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td></tr>
-			<tr id='test-config'><td>Retrieving device configuration</td><td><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td></tr>
-			<tr id='test-send'><td>Keypad communication (Send)</td><td><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
-			<tr id='test-recv'><td>Keypad communication (Receive)</td><td><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
+			<tr id='test-open'>
+				<td class='test-description'>Opening device</td>
+				<td class='test-results'><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
+				<td class='details'></td>
+			</tr>
+			<tr id='test-config'>
+				<td class='test-description'>Retrieving device configuration</td>
+				<td class='test-results'><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
+				<td class='details'></td>
+			</tr>
+			<tr id='test-send'>
+				<td class='test-description'>Keypad communication (Send)</td>
+				<td class='test-results'><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
+				<td class='details'></td>
+			</tr>
+			<tr id='test-recv'>
+				<td class='test-description'>Keypad communication (Receive)</td>
+				<td class='test-results'><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
+				<td class='details'></td>
+			</tr>
 		</table>
 	</div>
 

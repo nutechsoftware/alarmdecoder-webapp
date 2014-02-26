@@ -225,6 +225,15 @@ label {
     background: -moz-linear-gradient(left, #CCCCCC, #337FD6);
 }
 
-table#test_results {
-    width: 30% !important;
+/* setup.test */
+table#test_results td.test-description {
+    width: 30%;
+}
+
+table#test_results td.test-results {
+    width: 5%;
+}
+
+table#test_results td.details {
+    width: 65%;
 }
