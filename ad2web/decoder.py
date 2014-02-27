@@ -256,7 +256,25 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 
         try:
             self._alarmdecoder.device.on_config_received += on_config_received
-            self._alarmdecoder.device.send("C\r")
+
+            keypad_address = Setting.get_by_name('keypad_address')
+            address_mask = Setting.get_by_name('address_mask')
+            lrr_enabled = Setting.get_by_name('lrr_enabled')
+            zone_expanders = Setting.get_by_name('emulate_zone_expanders')
+            relay_expanders = Setting.get_by_name('emulate_relay_expanders')
+            deduplicate = Setting.get_by_name('deduplicate')
+
+            zx = [x == u'True' for x in zone_expanders.value.split(',')]
+            rx = [x == u'True' for x in relay_expanders.value.split(',')]
+
+            self._alarmdecoder.device.address = keypad_address.value
+            self._alarmdecoder.device.address_mask = int(address_mask.value, 16)
+            self._alarmdecoder.device.emulate_zone = zx
+            self._alarmdecoder.device.emulate_relay = rx
+            self._alarmdecoder.device.emulate_lrr = lrr_enabled.value
+            self._alarmdecoder.device.deduplicate = deduplicate.value
+
+            self._alarmdecoder.device.save_config()
 
         except Exception, err:
             timer.cancel()

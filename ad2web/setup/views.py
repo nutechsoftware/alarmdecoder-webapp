@@ -80,7 +80,7 @@ def local():
         if form.confirm_management.data == True:
             return redirect(url_for('setup.sslserver'))
         else:
-            return redirect(url_for('setup.test'))
+            return redirect(url_for('setup.device'))
 
     return render_template('setup/local.html', form=form)
 
@@ -106,7 +106,7 @@ def network():
         if form.ssl.data == True:
             return redirect(url_for('setup.sslclient'))
         else:
-            return redirect(url_for('setup.test'))
+            return redirect(url_for('setup.device'))
 
     return render_template('setup/network.html', form=form)
 
@@ -136,7 +136,7 @@ def sslclient():
         db.session.add(use_ssl)
         db.session.commit()
 
-        return redirect(url_for('setup.test'))
+        return redirect(url_for('setup.device'))
 
     return render_template('setup/sslclient.html', form=form)
 
@@ -172,7 +172,7 @@ def sslserver():
 
         db.session.commit()
 
-        return redirect(url_for('setup.test'))
+        return redirect(url_for('setup.device'))
 
     return render_template('setup/ssl.html', form=form)
 
@@ -237,7 +237,8 @@ def test():
         set_stage(SETUP_DEVICE)
         db.session.commit()
     else:
-        return redirect(url_for('setup.device'))
+        flash('Setup complete!', 'success')
+        return redirect(url_for('setup.complete'))
 
     return render_template('setup/test.html', form=form)
 
@@ -245,7 +246,7 @@ def test():
 def device():
     form = DeviceForm()
     if not form.is_submitted():
-        form.device_address.data = current_app.decoder.device.address
+        form.keypad_address.data = current_app.decoder.device.address
         form.address_mask.data = '{0:x}'.format(current_app.decoder.device.address_mask)
         form.lrr_enabled.data = current_app.decoder.device.emulate_lrr
         form.deduplicate.data = current_app.decoder.device.deduplicate
@@ -253,7 +254,7 @@ def device():
         form.relay_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_relay)]
     else:
         if form.validate_on_submit():
-            device_address = Setting.get_by_name('device_address')
+            keypad_address = Setting.get_by_name('keypad_address')
             address_mask = Setting.get_by_name('address_mask')
             lrr_enabled = Setting.get_by_name('lrr_enabled')
             zone_expanders = Setting.get_by_name('emulate_zone_expanders')
@@ -263,33 +264,32 @@ def device():
             zx = [True if str(x) in form.zone_expanders.data else False for x in xrange(1, 6)]
             rx = [True if str(x) in form.relay_expanders.data else False for x in xrange(1, 5)]
 
-            device_address.value = form.device_address.data
+            keypad_address.value = form.keypad_address.data
             address_mask.value = form.address_mask.data
             lrr_enabled.value = form.lrr_enabled.data
             zone_expanders.value = ','.join([str(x) for x in zx])
             relay_expanders.value = ','.join([str(x) for x in rx])
             deduplicate.value = form.deduplicate.data
 
-            db.session.add(device_address)
+            db.session.add(keypad_address)
             db.session.add(address_mask)
             db.session.add(lrr_enabled)
             db.session.add(zone_expanders)
             db.session.add(relay_expanders)
             db.session.add(deduplicate)
 
-            current_app.decoder.device.address = device_address.value
-            current_app.decoder.device.address_mask = int(address_mask.value, 16)
-            current_app.decoder.device.emulate_zone = zx
-            current_app.decoder.device.emulate_relay = rx
-            current_app.decoder.device.emulate_lrr = lrr_enabled.value
-            current_app.decoder.device.deduplicate = deduplicate.value
-            current_app.decoder.device.save_config()
+            # current_app.decoder.device.address = keypad_address.value
+            # current_app.decoder.device.address_mask = int(address_mask.value, 16)
+            # current_app.decoder.device.emulate_zone = zx
+            # current_app.decoder.device.emulate_relay = rx
+            # current_app.decoder.device.emulate_lrr = lrr_enabled.value
+            # current_app.decoder.device.deduplicate = deduplicate.value
+            # current_app.decoder.device.save_config()
 
             set_stage(SETUP_COMPLETE)
             db.session.commit()
 
-            flash('Setup complete!', 'success')
-            return redirect(url_for('setup.complete'))
+            return redirect(url_for('setup.test'))
 
     return render_template('setup/device.html', form=form)
 

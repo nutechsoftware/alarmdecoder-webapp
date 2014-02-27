@@ -62,7 +62,7 @@ class TestDeviceForm(Form):
     submit = SubmitField(u'Next')
 
 class DeviceForm(Form):
-    device_address = TextField(u'Keypad Address', [Required()])
+    keypad_address = TextField(u'Keypad Address', [Required()])
     address_mask = TextField(u'Address Mask', [Required(), Length(max=8)])
     lrr_enabled = BooleanField(u'Emulate Long Range Radio?')
     zone_expanders = MultiCheckboxField(u'Zone expanders', choices=[('1', 'Zone #1'), ('2', 'Zone #2'), ('3', 'Zone #3'), ('4', 'Zone #4'), ('5', 'Zone #5')])
