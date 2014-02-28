@@ -1,14 +1,34 @@
 # -*- coding: utf-8 -*-
 
+from flask import Markup
 from flask.ext.wtf import Form
 from flask.ext.wtf.html5 import URLField, EmailField, TelField
-from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
+from wtforms import (Field, ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,
         FileField, DecimalField, SelectField, BooleanField, SelectMultipleField)
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
-from wtforms.widgets import ListWidget, CheckboxInput
+from wtforms.widgets import ListWidget, CheckboxInput, html_params
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES, DEFAULT_BAUDRATES
+
+class BackButtonWidget(object):
+    html_params = staticmethod(html_params)
+
+    def __init__(self, text=''):
+        self.text = text
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+
+        return Markup('<button type="button" onclick="history.back();" {0}>{1}</button>'.format(self.html_params(name=field.name, **kwargs), self.text))
+
+class BackButtonField(Field):
+    widget = BackButtonWidget()
+
+    def __init__(self, label='', validators=None, **kwargs):
+        super(BackButtonField, self).__init__('', validators, **kwargs)
+
+        self.widget = BackButtonWidget(text=label)
 
 class MultiCheckboxField(SelectMultipleField):
     """
@@ -31,6 +51,7 @@ class NetworkDeviceForm(Form):
     device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
     ssl = BooleanField(u'Use SSL?')
 
+    previous = BackButtonField(u'Previous')
     submit = SubmitField(u'Next')
 
 class SSLForm(Form):
@@ -38,6 +59,7 @@ class SSLForm(Form):
     cert = FileField(u'Certificate', [Required()], description=u'Client certificate used by this webapp.')
     key = FileField(u'Key', [Required()], description=u'Client certificate key used by this webapp.')
 
+    previous = BackButtonField(u'Previous')
     submit = SubmitField(u'Next')
 
 class SSLHostForm(Form):
@@ -48,6 +70,7 @@ class SSLHostForm(Form):
     device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
     ssl = BooleanField(u'Use SSL?')
 
+    previous = BackButtonField(u'Previous')
     submit = SubmitField(u'Next')
 
 class LocalDeviceForm(Form):
@@ -56,9 +79,11 @@ class LocalDeviceForm(Form):
 
     confirm_management = BooleanField(u'Share AlarmDecoder on your network?', description='This setting serves the AlarmDecoder on your network with ser2sock and allows other software (Software keypad, etc.) to use it in conjunction with this webapp.')
 
+    previous = BackButtonField(u'Previous')
     submit = SubmitField(u'Next')
 
 class TestDeviceForm(Form):
+    previous = BackButtonField(u'Previous')
     submit = SubmitField(u'Next')
 
 class DeviceForm(Form):
@@ -69,4 +94,5 @@ class DeviceForm(Form):
     relay_expanders = MultiCheckboxField(u'Relay expanders', choices=[('1', 'Relay #1'), ('2', 'Relay #2'), ('3', 'Relay #3'), ('4', 'Relay #4')])
     deduplicate = BooleanField(u'Deduplicate messages?')
 
+    previous = BackButtonField(u'Previous')
     submit = SubmitField(u'Next')
