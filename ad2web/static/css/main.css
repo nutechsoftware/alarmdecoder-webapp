@@ -225,12 +225,20 @@ label {
     background: -moz-linear-gradient(left, #CCCCCC, #337FD6);
 }
 
+div#buttons, div#buttons > div > span {
+    margin-bottom: 0;
+}
+
+.form-actions {
+    margin-top: 10px;
+}
+
 /* setup */
-span#previous-group {
+span#buttons-previous-group {
     float: left;
 }
 
-span#next-group {
+span#buttons-next-group {
     float: right;
 }
 
