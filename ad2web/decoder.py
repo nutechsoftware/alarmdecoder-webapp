@@ -218,6 +218,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
         with self._alarmdecoder.app.app_context():
             try:
                 self._test_open()
+                time.sleep(0.5)
                 self._test_config()
                 self._test_send()
                 self._test_receive()
@@ -255,8 +256,6 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
         timer.start()
 
         try:
-            self._alarmdecoder.device.on_config_received += on_config_received
-
             keypad_address = Setting.get_by_name('keypad_address')
             address_mask = Setting.get_by_name('address_mask')
             lrr_enabled = Setting.get_by_name('lrr_enabled')
@@ -274,6 +273,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             self._alarmdecoder.device.emulate_lrr = lrr_enabled.value
             self._alarmdecoder.device.deduplicate = deduplicate.value
 
+            self._alarmdecoder.device.on_config_received += on_config_received
             self._alarmdecoder.device.save_config()
 
         except Exception, err:
