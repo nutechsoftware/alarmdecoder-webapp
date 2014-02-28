@@ -118,8 +118,11 @@ class Certificate(db.Model):
         # Generate a serial number
         serial_number = 1
         if parent:
-            serial_setting = Setting.get_by_name('serialnumber')
-            serial_setting.value = serial_setting.value + 1
+            serial_setting = Setting.get_by_name('ssl_serial_number')
+            if serial_setting.value is None:
+                serial_setting.value = 1
+            else:
+                serial_setting.value = serial_setting.value + 1
 
             db.session.add(serial_setting)
             db.session.commit()
