@@ -84,7 +84,9 @@ class LocalDeviceForm(Form):
     buttons = FormField(SetupButtonForm)
 
 class TestDeviceForm(Form):
-    buttons = FormField(SetupButtonForm)
+    # NOTE: Not using SetupButtonForm because of excess padding with no actual for elements.
+    previous = BackButtonField(u'Previous')
+    next = SubmitField(u'Next')
 
 class DeviceForm(Form):
     keypad_address = TextField(u'Keypad Address', [Required()], default=18)

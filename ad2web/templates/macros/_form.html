@@ -90,7 +90,12 @@
 {% macro render_action(field) %}
 <span id="{{ field.name }}-group" class="control-group">
     <span class="form-actions">
-        {{ field(class_="btn btn-primary") }}
+        {% set classes = "btn" %}
+        {% if field.type == "SubmitField" %}
+            {% set classes = "btn btn-primary" %}
+        {% endif %}
+
+        {{ field(class_=classes) }}
     </span>
 </span>
 {% endmacro %}
