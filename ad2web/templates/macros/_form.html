@@ -88,11 +88,11 @@
 {% endmacro %}
 
 {% macro render_action(field) %}
-<div class="control-group">
-    <div class="form-actions">
+<span id="{{ field.name }}-group" class="control-group">
+    <span class="form-actions">
         {{ field(class_="btn btn-primary") }}
-    </div>
-</div>
+    </span>
+</span>
 {% endmacro %}
 
 {% macro render_formfield(form) %}

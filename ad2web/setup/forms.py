@@ -44,7 +44,7 @@ class DeviceTypeForm(Form):
     device_type = SelectField(u'Device Type', choices=[('AD2USB', u'AD2USB'), ('AD2PI', u'AD2PI'), ('AD2SERIAL', u'AD2SERIAL')], default='AD2USB')
     device_location = SelectField(u'Device Location', choices=[('local', 'Local Device'), ('network', 'Network')], default='local')
 
-    submit = SubmitField(u'Next')
+    next = SubmitField(u'Next')
 
 class NetworkDeviceForm(Form):
     device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
@@ -52,7 +52,7 @@ class NetworkDeviceForm(Form):
     ssl = BooleanField(u'Use SSL?')
 
     previous = BackButtonField(u'Previous')
-    submit = SubmitField(u'Next')
+    next = SubmitField(u'Next')
 
 class SSLForm(Form):
     ca_cert = FileField(u'CA Certificate', [Required()], description=u'CA certificate created for the AlarmDecoder to authorize clients.')
@@ -60,7 +60,7 @@ class SSLForm(Form):
     key = FileField(u'Key', [Required()], description=u'Client certificate key used by this webapp.')
 
     previous = BackButtonField(u'Previous')
-    submit = SubmitField(u'Next')
+    next = SubmitField(u'Next')
 
 class SSLHostForm(Form):
     config_path = TextField(u'SER2SOCK Configuration Path', default='/etc/ser2sock')
@@ -71,7 +71,7 @@ class SSLHostForm(Form):
     ssl = BooleanField(u'Use SSL?')
 
     previous = BackButtonField(u'Previous')
-    submit = SubmitField(u'Next')
+    next = SubmitField(u'Next')
 
 class LocalDeviceForm(Form):
     device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Filesystem path to your AlarmDecoder.', default='/dev/ttyAMA0')
@@ -80,11 +80,11 @@ class LocalDeviceForm(Form):
     confirm_management = BooleanField(u'Share AlarmDecoder on your network?', description='This setting serves the AlarmDecoder on your network with ser2sock and allows other software (Software keypad, etc.) to use it in conjunction with this webapp.')
 
     previous = BackButtonField(u'Previous')
-    submit = SubmitField(u'Next')
+    next = SubmitField(u'Next')
 
 class TestDeviceForm(Form):
     previous = BackButtonField(u'Previous')
-    submit = SubmitField(u'Next')
+    next = SubmitField(u'Next')
 
 class DeviceForm(Form):
     keypad_address = TextField(u'Keypad Address', [Required()], default=18)
@@ -95,4 +95,4 @@ class DeviceForm(Form):
     deduplicate = BooleanField(u'Deduplicate messages?')
 
     previous = BackButtonField(u'Previous')
-    submit = SubmitField(u'Next')
+    next = SubmitField(u'Next')
