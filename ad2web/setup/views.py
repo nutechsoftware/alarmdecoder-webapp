@@ -150,6 +150,7 @@ def sslserver():
         device_address = Setting.get_by_name('device_address')
         device_port = Setting.get_by_name('device_port')
         device_location = Setting.get_by_name('device_location')
+        serial_number = Setting.get_by_name
 
         manage_ser2sock.value = True
         use_ssl.value = form.ssl.data
@@ -238,6 +239,9 @@ def test():
         set_stage(SETUP_DEVICE)
         db.session.commit()
     else:
+        set_stage(SETUP_COMPLETE)
+        db.session.commit()
+
         flash('Setup complete!', 'success')
         return redirect(url_for('setup.complete'))
 
@@ -280,15 +284,6 @@ def device():
             db.session.add(relay_expanders)
             db.session.add(deduplicate)
 
-            # current_app.decoder.device.address = keypad_address.value
-            # current_app.decoder.device.address_mask = int(address_mask.value, 16)
-            # current_app.decoder.device.emulate_zone = zx
-            # current_app.decoder.device.emulate_relay = rx
-            # current_app.decoder.device.emulate_lrr = lrr_enabled.value
-            # current_app.decoder.device.deduplicate = deduplicate.value
-            # current_app.decoder.device.save_config()
-
-            set_stage(SETUP_COMPLETE)
             db.session.commit()
 
             return redirect(url_for('setup.test'))
