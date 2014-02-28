@@ -165,11 +165,12 @@ def sslserver():
         db.session.add(device_port)
         db.session.add(device_location)
 
+        db.session.commit()
+
         if form.ssl.data == True:
             _generate_certs()
 
         _update_ser2sock_config(config_path.value)
-
         db.session.commit()
 
         return redirect(url_for('setup.device'))
@@ -246,12 +247,13 @@ def test():
 def device():
     form = DeviceForm()
     if not form.is_submitted():
-        form.keypad_address.data = current_app.decoder.device.address
-        form.address_mask.data = '{0:x}'.format(current_app.decoder.device.address_mask)
-        form.lrr_enabled.data = current_app.decoder.device.emulate_lrr
-        form.deduplicate.data = current_app.decoder.device.deduplicate
-        form.zone_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_zone)]
-        form.relay_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_relay)]
+        if current_app.decoder.device is not None:
+            form.keypad_address.data = current_app.decoder.device.address
+            form.address_mask.data = '{0:x}'.format(current_app.decoder.device.address_mask)
+            form.lrr_enabled.data = current_app.decoder.device.emulate_lrr
+            form.deduplicate.data = current_app.decoder.device.deduplicate
+            form.zone_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_zone)]
+            form.relay_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_relay)]
     else:
         if form.validate_on_submit():
             keypad_address = Setting.get_by_name('keypad_address')

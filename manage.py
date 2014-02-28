@@ -38,7 +38,9 @@ def run():
         decoder.app = app
         decoder.websocket = appsocket
 
-        decoder.open()
+        device_type = Setting.get_by_name('device_type')
+        if device_type.value is not None:
+            decoder.open()
 
         appsocket.serve_forever()
 
@@ -60,16 +62,16 @@ def initdb():
             status_code=ACTIVE)
     db.session.add(admin)
 
-    user = User(name=u'testing',
-                email=u'test@test.com',
-                password=u'testing',
-                role_code=USER,
-                status_code=ACTIVE)
-    db.session.add(user)
+    # user = User(name=u'testing',
+    #             email=u'test@test.com',
+    #             password=u'testing',
+    #             role_code=USER,
+    #             status_code=ACTIVE)
+    # db.session.add(user)
 
 
-    db.session.add(Setting(name="serialnumber", value=1))
-    db.session.commit()
+    # db.session.add(Setting(name="serialnumber", value=1))
+    # db.session.commit()
 
 #     ca_cert = Certificate(
 #                 name="AlarmDecoder CA",
@@ -139,28 +141,28 @@ def initdb():
 #     cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
 #     db.session.add(cert)
 
-    notification = Notification(description='Test Email', type=0, user=user)
-    notification.settings['source'] = NotificationSetting(name='source', value='root@localhost')
-    notification.settings['destination'] = NotificationSetting(name='destination', value='root@localhost')
-    notification.settings['server'] = NotificationSetting(name='server', value='localhost')
-    notification.settings['username'] = NotificationSetting(name='username', value='')
-    notification.settings['password'] = NotificationSetting(name='password', value='')
-    db.session.add(notification)
+    # notification = Notification(description='Test Email', type=0, user=user)
+    # notification.settings['source'] = NotificationSetting(name='source', value='root@localhost')
+    # notification.settings['destination'] = NotificationSetting(name='destination', value='root@localhost')
+    # notification.settings['server'] = NotificationSetting(name='server', value='localhost')
+    # notification.settings['username'] = NotificationSetting(name='username', value='')
+    # notification.settings['password'] = NotificationSetting(name='password', value='')
+    # db.session.add(notification)
 
-    db.session.add(Zone(zone_id=22, name='Some zone', description='This is some zone.'))
-    db.session.add(EventLogEntry(type=0, message='Panel armed..'))
-    db.session.add(EventLogEntry(type=1, message='Panel disarmed..'))
-    db.session.add(EventLogEntry(type=3, message='Alarming!  Oh no!'))
-    db.session.add(EventLogEntry(type=4, message='Fire!  Oh no!'))
+    # db.session.add(Zone(zone_id=22, name='Some zone', description='This is some zone.'))
+    # db.session.add(EventLogEntry(type=0, message='Panel armed..'))
+    # db.session.add(EventLogEntry(type=1, message='Panel disarmed..'))
+    # db.session.add(EventLogEntry(type=3, message='Alarming!  Oh no!'))
+    # db.session.add(EventLogEntry(type=4, message='Fire!  Oh no!'))
 
-    db.session.add(Setting(name='device_type', value='AD2PI'))
-    db.session.add(Setting(name='device_location', value='local'))
-    #db.session.add(Setting(name='device_location', value='network'))
-    db.session.add(Setting(name='device_path', value='/dev/ttyUSB0'))
-    db.session.add(Setting(name='device_baudrate', value=115200))
-    db.session.add(Setting(name='device_address', value='localhost'))
-    db.session.add(Setting(name='device_port', value=10000))
-    db.session.add(Setting(name='use_ssl', value=True))
+    # db.session.add(Setting(name='device_type', value='AD2PI'))
+    # db.session.add(Setting(name='device_location', value='local'))
+    # #db.session.add(Setting(name='device_location', value='network'))
+    # db.session.add(Setting(name='device_path', value='/dev/ttyUSB0'))
+    # db.session.add(Setting(name='device_baudrate', value=115200))
+    # db.session.add(Setting(name='device_address', value='localhost'))
+    # db.session.add(Setting(name='device_port', value=10000))
+    # db.session.add(Setting(name='use_ssl', value=True))
 
     db.session.commit()
 
