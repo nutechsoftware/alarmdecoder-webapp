@@ -68,8 +68,6 @@ class SSLForm(Form):
 
 class SSLHostForm(Form):
     config_path = TextField(u'SER2SOCK Configuration Path', default='/etc/ser2sock')
-    # TODO: network settings here
-
     device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
     device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
     ssl = BooleanField(u'Use SSL?')
@@ -84,7 +82,7 @@ class LocalDeviceForm(Form):
     buttons = FormField(SetupButtonForm)
 
 class TestDeviceForm(Form):
-    # NOTE: Not using SetupButtonForm because of excess padding with no actual for elements.
+    # NOTE: Not using SetupButtonForm because of excess padding with no actual form elements.
     previous = BackButtonField(u'Previous')
     next = SubmitField(u'Next')
 
