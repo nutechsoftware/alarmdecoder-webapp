@@ -37,6 +37,7 @@
                     $('#status-image2').attr("src", "../static/img/led-off.png");
                 }
                 $('#keypad-line1').text(lines[0]);
+                $('#keypad-line1').css("color", "black");
 
 //hackery to get page to stop shifting when only 1 line of text present
                 if( lines[1].match(/ /g).length == 16 )
@@ -301,8 +302,8 @@
 
 {% block body %}
 <div>
-    <div id="keypad-line1">line #1</div>
-    <div id="keypad-line2">line #2</div>
+    <div id="keypad-line1" style="color: white;">---</div>
+    <div id="keypad-line2" style="color: white;">---</div>
     <hr>
     <div id="status-indicator">Armed: <img id="status-image1" src="../static/img/led-off.png"> Ready: <img id="status-image2" src="../static/img/led-off.png"></div>
     <div id="keypad-buttons">
