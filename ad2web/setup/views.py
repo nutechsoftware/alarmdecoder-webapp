@@ -7,7 +7,7 @@ from flask import current_app
 from flask.ext.login import login_required, current_user
 
 from ..extensions import db
-from ..decorators import admin_required
+from ..decorators import admin_required, admin_or_first_run_required
 from ..settings.models import Setting
 from ..certificate.models import Certificate
 from ..certificate.constants import CA, SERVER, CLIENT, INTERNAL, ACTIVE
@@ -30,6 +30,7 @@ def setup_context_processor():
     return { }
 
 @setup.route('/')
+@admin_or_first_run_required
 def index():
     return render_template('setup/index.html')
 
@@ -54,6 +55,7 @@ def type():
     return render_template('setup/type.html', form=form)
 
 @setup.route('/local', methods=['GET', 'POST'])
+@admin_or_first_run_required
 def local():
     form = LocalDeviceForm()
     if not form.is_submitted():
@@ -85,6 +87,7 @@ def local():
     return render_template('setup/local.html', form=form)
 
 @setup.route('/network', methods=['GET', 'POST'])
+@admin_or_first_run_required
 def network():
     form = NetworkDeviceForm()
     if form.validate_on_submit():
@@ -111,6 +114,7 @@ def network():
     return render_template('setup/network.html', form=form)
 
 @setup.route('/sslclient', methods=['GET', 'POST'])
+@admin_or_first_run_required
 def sslclient():
     form = SSLForm()
     form.multipart = True
@@ -141,6 +145,7 @@ def sslclient():
     return render_template('setup/sslclient.html', form=form)
 
 @setup.route('/sslserver', methods=['GET', 'POST'])
+@admin_or_first_run_required
 def sslserver():
     form = SSLHostForm()
     if form.validate_on_submit():
@@ -232,6 +237,7 @@ def _update_ser2sock_config(path):
     ser2sock.hup()
 
 @setup.route('/test', methods=['GET', 'POST'])
+@admin_or_first_run_required
 def test():
     form = TestDeviceForm()
 
@@ -239,7 +245,12 @@ def test():
         set_stage(SETUP_DEVICE)
         db.session.commit()
     else:
+        setup_complete = Setting.get_by_name('setup_complete')
+        setup_complete.value = True
+
+        db.session.add(setup_complete)
         set_stage(SETUP_COMPLETE)
+
         db.session.commit()
 
         flash('Setup complete!', 'success')
@@ -248,6 +259,7 @@ def test():
     return render_template('setup/test.html', form=form)
 
 @setup.route('/device', methods=['GET', 'POST'])
+@admin_or_first_run_required
 def device():
     form = DeviceForm()
     if not form.is_submitted():
