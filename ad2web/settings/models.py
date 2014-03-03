@@ -40,3 +40,17 @@ class Setting(db.Model):
         else:
             self.string_value = str(value)
             self.int_value = None
+
+    def __eq__(self, other):
+        val = other
+        if isinstance(other, Setting):
+            val = other.value
+
+        return self.value == val
+
+    def __ne__(self, other):
+        val = other
+        if isinstance(other, Setting):
+            val = other.value
+
+        return self.value != val
