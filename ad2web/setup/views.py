@@ -15,7 +15,7 @@ from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
                    SSLForm, SSLHostForm, DeviceForm, TestDeviceForm)
 from .constants import (STAGES, SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
                     SETUP_LOCAL, SETUP_DEVICE, SETUP_COMPLETE, BAUDRATES,
-                    DEFAULT_BAUDRATES, DEFAULT_PATHS)
+                    DEFAULT_BAUDRATES, DEFAULT_PATHS, SETUP_ENDPOINT_STAGE)
 from ..ser2sock import ser2sock
 
 setup = Blueprint('setup', __name__, url_prefix='/setup')
@@ -46,11 +46,12 @@ def type():
         device_location.value = form.device_location.data
         db.session.add(device_location)
 
-        set_stage(SETUP_TYPE)
+        next_stage = 'setup.{0}'.format(device_location.value)
+        set_stage(SETUP_ENDPOINT_STAGE[next_stage])
 
         db.session.commit()
 
-        return redirect(url_for('setup.{0}'.format(device_location.value)))
+        return redirect(url_for(next_stage))
 
     return render_template('setup/type.html', form=form)
 
@@ -76,13 +77,14 @@ def local():
         db.session.add(baudrate)
         db.session.add(managed)
 
-        set_stage(SETUP_LOCAL)
+        next_stage = 'setup.device'
+        if form.confirm_management.data == True:
+            next_stage = 'setup.sslserver'
+
+        set_stage(SETUP_ENDPOINT_STAGE[next_stage])
         db.session.commit()
 
-        if form.confirm_management.data == True:
-            return redirect(url_for('setup.sslserver'))
-        else:
-            return redirect(url_for('setup.device'))
+        return redirect(url_for(next_stage))
 
     return render_template('setup/local.html', form=form)
 
@@ -103,13 +105,14 @@ def network():
         db.session.add(device_port)
         db.session.add(ssl)
 
-        set_stage(SETUP_NETWORK)
+        next_stage = 'setup.device'
+        if form.ssl.data == True:
+            next_stage = 'setup.sslclient'
+
+        set_stage(SETUP_ENDPOINT_STAGE[next_stage])
         db.session.commit()
 
-        if form.ssl.data == True:
-            return redirect(url_for('setup.sslclient'))
-        else:
-            return redirect(url_for('setup.device'))
+        return redirect(url_for(next_stage))
 
     return render_template('setup/network.html', form=form)
 
@@ -138,9 +141,12 @@ def sslclient():
         use_ssl = Setting.get_by_name('use_ssl')
         use_ssl.value = True
         db.session.add(use_ssl)
+
+        next_stage = 'setup.device'
+        set_stage(SETUP_ENDPOINT_STAGE[next_stage])
         db.session.commit()
 
-        return redirect(url_for('setup.device'))
+        return redirect(url_for(next_stage))
 
     return render_template('setup/sslclient.html', form=form)
 
@@ -171,6 +177,8 @@ def sslserver():
         db.session.add(device_port)
         db.session.add(device_location)
 
+        next_stage = 'setup.device'
+        set_stage(SETUP_ENDPOINT_STAGE[next_stage])
         db.session.commit()
 
         if form.ssl.data == True:
@@ -179,7 +187,7 @@ def sslserver():
         _update_ser2sock_config(config_path.value)
         db.session.commit()
 
-        return redirect(url_for('setup.device'))
+        return redirect(url_for(next_stage))
 
     return render_template('setup/ssl.html', form=form)
 
@@ -249,12 +257,14 @@ def test():
         setup_complete.value = True
 
         db.session.add(setup_complete)
-        set_stage(SETUP_COMPLETE)
+
+        next_stage = 'setup.complete'
+        set_stage(SETUP_ENDPOINT_STAGE[next_stage])
 
         db.session.commit()
 
         flash('Setup complete!', 'success')
-        return redirect(url_for('setup.complete'))
+        return redirect(url_for(next_stage))
 
     return render_template('setup/test.html', form=form)
 
