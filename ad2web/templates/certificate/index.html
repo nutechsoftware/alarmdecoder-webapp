@@ -6,10 +6,27 @@
 {% block pagejs %}
 <script type="text/javascript">
     $(document).ready(function(){
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+        $('#loading').spin('flower');
         $('#certificate-table').dataTable({
             "bJQueryUI" : true,
             "sPaginationType" : "full_numbers",
             "sDom" : '<"H"lr>t<"F"fip>',
+            "oLanguage": {
+                "sInfoFiltered": "",
+            },
+            "fnInitComplete": function() {
+                $('#loading').stop();
+                $('#loading').hide();
+                $('#datatable').show();
+                this.fnAdjustColumnSizing();
+            },
         });
     });
 </script>
@@ -17,30 +34,33 @@
 {% block body %}
 <div>
     <h2>Certificates</h2>
-    <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="certificate-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Owner</th>
-                <th>Description</th>
-            </tr>
-        </thead>
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="certificate-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
 
-        {% for cert in certificates %}
-            {% if cert.user == current_user or current_user.is_admin() %}
-            <tr>
-                <td><a href="{{ url_for('certificate.view', certificate_id=cert.id) }}">{{ cert.name }}</a></td>
-                <td>{{ TYPES[cert.type] }}</td>
-                <td>{{ STATUS[cert.status] }}</td>
-                <td>{% if cert.user %}{{ cert.user.name}}{% endif %}</td>
-                <td>{{ cert.description }}</td>
-            </tr>
-            {% endif %}
-        {% endfor %}
+            {% for cert in certificates %}
+                {% if cert.user == current_user or current_user.is_admin() %}
+                <tr>
+                    <td><a href="{{ url_for('certificate.view', certificate_id=cert.id) }}">{{ cert.name }}</a></td>
+                    <td>{{ TYPES[cert.type] }}</td>
+                    <td>{{ STATUS[cert.status] }}</td>
+                    <td>{% if cert.user %}{{ cert.user.name}}{% endif %}</td>
+                    <td>{{ cert.description }}</td>
+                </tr>
+                {% endif %}
+            {% endfor %}
 
-    </table>
+        </table>
+    </div>
     <br>
     <a href="{{ url_for('certificate.generate') }}">Generate a new certificate</a>
 </div>

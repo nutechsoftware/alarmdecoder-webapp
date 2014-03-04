@@ -5,10 +5,27 @@
 {% block pagejs %}
 <script type="text/javascript">
     $(document).ready(function(){
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+        $('#loading').spin('flower');
         $('#zones-table').dataTable({
             "bJQueryUI": true,
             "sPaginationType": "full_numbers",
             "sDom" : '<"H"lr>t<"F"fip>',
+            "oLanguage": {
+                "sInfoFiltered": "",
+            },
+            "fnInitComplete": function() {
+                $('#loading').stop();
+                $('#loading').hide();
+                $('#datatable').show();
+                this.fnAdjustColumnSizing();
+            },
         });
     });
 </script>
@@ -16,19 +33,22 @@
 
 {% block body %}
 <div class="settings_wrapper">
-    <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="zones-table">
-        <thead>
-            <tr><th>ID</th><th>Zone Name</th><th>Description</th></tr>
-        </thead>
-        <tbody>
-        {% for zone in zones %}
-            <tr>
-                <td>{{ zone.zone_id }}</td>
-                <td><a href="{{ url_for('zones.edit', id=zone.zone_id) }}">{{ zone.name }}</a></td>
-                <td>{{ zone.description }}</td>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="zones-table">
+            <thead>
+                <tr><th>ID</th><th>Zone Name</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+            {% for zone in zones %}
+                <tr>
+                    <td>{{ zone.zone_id }}</td>
+                    <td><a href="{{ url_for('zones.edit', id=zone.zone_id) }}">{{ zone.name }}</a></td>
+                    <td>{{ zone.description }}</td>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
     <br>
     <a href="{{ url_for('zones.create') }}">Create a new zone</a>
 </div>

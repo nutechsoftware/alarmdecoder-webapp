@@ -260,3 +260,50 @@ table#test_results td.test-results {
 table#test_results td.details {
     width: 65%;
 }
+
+.ui-widget-header {
+    height: 31px !important;
+}
+
+.dataTables_filter {
+    position: relative;
+    top: -3px;
+}
+
+.dataTables_filter label {
+    position: relative;
+    top: -8px;
+}
+
+.dataTables_filter label input {
+    position: relative;
+    top: 8px;
+    height: 15px;
+}
+.dataTables_length {
+    position: relative;
+    top: -3px;
+}
+
+.dataTables_length label {
+    position: relative;
+    top: -8px;
+}
+
+.dataTables_length label select {
+    position: relative;
+    top: 8px !important;
+    height: 25px;
+}
+
+.dataTables_info {
+    padding-top: 5px;
+    position: relative;
+    top: -4px;
+}
+
+.dataTables_paginate {
+    position: relative;
+    top: -23px;
+    left: 270px;
+}

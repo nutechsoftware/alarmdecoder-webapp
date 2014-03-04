@@ -18,12 +18,29 @@
 
                 $('#panel-log').dataTable().fnAddData([ datetime, msg.raw]);
             });
+            $.fn.spin.presets.flower = {
+                lines: 13,
+                length: 30,
+                width: 10,
+                radius: 30,
+                className: 'spinner',
+            }
+            $('#loading').spin('flower');
             $('#panel-log').dataTable({
                 "bJQueryUI": true,
                 "sPaginationType": "full_numbers",
                 "bFilter": false,
                 "aaSorting": [[0, "desc" ]],
                 "sDom" : '<"H"lr>t<"F"fip>',
+                "oLanguage": {
+                    "sInfoFiltered": "",
+                },
+                "fnInitComplete": function() {
+                    $('#loading').stop();
+                    $('#loading').hide();
+                    $('#datatable').show();
+                    this.fnAdjustColumnSizing();
+                },
             });
         });
     </script>
@@ -32,16 +49,19 @@
 {% block body %}
 <div>
     <h2>Panel Log</h2>
-    <table id='panel-log' cellpadding="3" class="display table-hover" border="1" bordercolor="EEEEEE">
-        <thead>
-            <tr>
-                <th width="20%">Timestamp</th>
-                <th>Message</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table id='panel-log' cellpadding="3" class="display table-hover" border="1" bordercolor="EEEEEE">
+            <thead>
+                <tr>
+                    <th width="20%">Timestamp</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
     <a href="/log">Event Log</a>
 </div>
 {% endblock %}

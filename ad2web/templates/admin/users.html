@@ -3,10 +3,28 @@
 {% block pagejs %}
 <script type="text/javascript">
     $(document).ready(function() {
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+        $('#loading').spin('flower');
+
         $('#users-table').dataTable({
             "bJQueryUI" : true,
             "sPaginationType": "full_numbers",
             "sDom" : '<"H"lr>t<"F"fip>',
+            "oLanguage": {
+                "sInfoFiltered": "",
+            },
+            "fnInitComplete": function() {
+                $('#loading').stop();
+                $('#loading').hide();
+                $('#datatable').show();
+                this.fnAdjustColumnSizing();
+            },
         });
     });
 </script>
@@ -14,27 +32,29 @@
 {% block body %}
 <div class="container">
     <h2>Users</h2>
-    <table class='display table-hover' cellpadding="3" border="1" bordercolor="EEEEEE" id="users-table">
-        <thead>
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table class='display table-hover' cellpadding="3" border="1" bordercolor="EEEEEE" id="users-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Status</th>
+                    <th>Role</th>
+                    <th>Created Time</th>
+                    <th></th>
+                </tr>
+            </thead>
+            {% for user in users %}
             <tr>
-                <th>Username</th>
-                <th>Status</th>
-                <th>Role</th>
-                <th>Created Time</th>
-                <th></th>
+                <td>{{ user.name }}</td>
+                <td>{{ user.status }}</td>
+                <td>{{ user.role }}</td>
+                <td>{{ user.created_time|format_date }}</td>
+                <td><a href="{{ url_for('admin.user', user_id=user.id) }}">Edit</a></td>
             </tr>
-        </thead>
-        {% for user in users %}
-        <tr>
-            <td>{{ user.name }}</td>
-            <td>{{ user.status }}</td>
-            <td>{{ user.role }}</td>
-            <td>{{ user.created_time|format_date }}</td>
-            <td><a href="{{ url_for('admin.user', user_id=user.id) }}">Edit</a></td>
-        </tr>
-        {% endfor %}
-    </table>
-
+            {% endfor %}
+        </table>
+    </div>
     <a href="{{ url_for('admin.user') }}">Create a new user</a>
 </div>
 {% endblock %}

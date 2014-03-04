@@ -14,7 +14,7 @@
     font-family: lcd-font;
     text-align: center;
     font-size: 70px;
-    margin-bottom: 10px;
+    margin-bottom: 19px;
     width: 100% !important;
     padding-top: 15px;
     margin-left: auto !important;
@@ -127,28 +127,28 @@
     width:100px;
     margin:0 auto;
     border: none;
-    background:url('../img/f1-fire.png') no-repeat;
+    background:url('../img/f1-fire.png') no-repeat 65% center;
 }
 #button-F2
 {
     width:100px;
     margin: 0 auto;
     border:none;
-    background:url('../img/f2-police.png') no-repeat;
+    background:url('../img/f2-police.png') no-repeat 65% center;
 }
 #button-F3
 {
     width: 100px;
     margin: 0 auto;
     border: none;
-    background:url('../img/f3-medical.png') no-repeat;
+    background:url('../img/f3-medical.png') no-repeat 65% center;
 }
 #button-F4
 {
     width: 100px;
     margin: 0 auto;
     border: none;
-    background:url('../img/f4-led-text.png') no-repeat;
+    background:url('../img/f4-led-text.png') no-repeat 65% center;
 }
 #button-star
 {
