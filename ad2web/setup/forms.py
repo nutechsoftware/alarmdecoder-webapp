@@ -89,9 +89,9 @@ class TestDeviceForm(Form):
 class DeviceForm(Form):
     keypad_address = TextField(u'Keypad Address', [Required()], default=18)
     address_mask = TextField(u'Address Mask', [Required(), Length(max=8)], default=u'ffffffff')
+    zone_expanders = MultiCheckboxField(u'Zone Expanders', choices=[('1', 'Emulate zone expander #1?'), ('2', 'Emulate zone expander #2?'), ('3', 'Emulate zone expander #3?'), ('4', 'Emulate zone expander #4?'), ('5', 'Emulate zone expander #5?')])
+    relay_expanders = MultiCheckboxField(u'Relay Expanders', choices=[('1', 'Emulate relay expander #1?'), ('2', 'Emulate relay expander #2?'), ('3', 'Emulate relay expander #3?'), ('4', 'Emulate relay expander #4?')])
     lrr_enabled = BooleanField(u'Emulate Long Range Radio?')
-    zone_expanders = MultiCheckboxField(u'Zone expanders', choices=[('1', 'Zone #1'), ('2', 'Zone #2'), ('3', 'Zone #3'), ('4', 'Zone #4'), ('5', 'Zone #5')])
-    relay_expanders = MultiCheckboxField(u'Relay expanders', choices=[('1', 'Relay #1'), ('2', 'Relay #2'), ('3', 'Relay #3'), ('4', 'Relay #4')])
     deduplicate = BooleanField(u'Deduplicate messages?')
 
     buttons = FormField(SetupButtonForm)

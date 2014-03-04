@@ -248,27 +248,23 @@ span#buttons-next-group, span#next-group {
     margin-bottom: 0;
 }
 
-div.control-group > div.controls > ul {
+div#zone_expanders ul, div#relay_expanders ul {
     list-style-type: none;
 }
 
-div.control-group > div.controls > ul > li > span > label {
-    float: right;
-    width: 100%;
-}
-
-div.control-group > div.controls > ul > li > span {
-    display: block;
-    overflow: hidden;
-}
-
-div.control-group > div.controls > ul > li > input {
+div#zone_expanders input, div#relay_expanders input {
     float: left;
     margin-right: 10px;
 }
 
-div.clearem {
-    clear: both;
+div#zone_expanders span, div#relay_expanders span {
+    display: block;
+    overflow: hidden;
+}
+
+div#zone_expanders span label, div#relay_expanders span label {
+    float: right;
+    width: 100%;
 }
 
 /* setup.test */
