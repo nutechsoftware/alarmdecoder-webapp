@@ -38,6 +38,7 @@
         // Default options
         var settings = $.extend({
             text: "Are you sure?",
+            title: "Confirmation Required",
             confirmButton: "Yes",
             cancelButton: "Cancel",
             post: false,
@@ -57,13 +58,18 @@
         }, options);
 
         // Modal
+        var modalHeader = '<div class="modal-header">' + '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>' + '<h4 class="modal-title">' + settings.title + '</h4>' + '</div>';
         var buttons = '<button class="confirm btn btn-primary" type="button" data-dismiss="modal">'
             + settings.confirmButton + '</button>'
             + '<button class="cancel btn" type="button" data-dismiss="modal">'
             + settings.cancelButton + '</button>';
         var modalHTML = '<div class="confirmation-modal modal hide fade" tabindex="-1" role="dialog">'
+            + '<div class="modal-dialog">'
+            + '<div class="modal-content">'
+            + modalHeader
             + '<div class="modal-body">' + settings.text + '</div>'
             + '<div class="modal-footer">' + buttons + '</div>'
+            + '</div></div>'
             + '</div>';
 
         var modal = $(modalHTML);
