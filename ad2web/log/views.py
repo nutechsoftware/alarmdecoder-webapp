@@ -32,16 +32,15 @@ def log_context_processor():
         'TYPES': EVENT_TYPES
     }
 
-@login_required
-@admin_required
 @log.route('/')
+@login_required
 def events():
     event_log = EventLogEntry.query.order_by(EventLogEntry.timestamp.desc()).all()
 
     return render_template('log/events.html', event_log=event_log, active='events')
 
+@log.route('/live')
 @login_required
 @admin_required
-@log.route('/live')
 def live():
     return render_template('log/live.html', active='live')
