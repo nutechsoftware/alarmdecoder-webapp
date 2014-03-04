@@ -328,5 +328,9 @@ table#test_results td.details {
 .dataTables_paginate {
     position: relative;
     top: -23px;
-    left: 270px;
+    left: 280px;
+}
+
+.css_right {
+    float: right;
 }
