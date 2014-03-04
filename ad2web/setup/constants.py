@@ -13,8 +13,25 @@ STAGES = {
 	SETUP_NETWORK: 'network_device_settings',
 	SETUP_LOCAL: 'local_device_settings',
 	SETUP_DEVICE: 'alarmdecoder_settings',
-
 	SETUP_COMPLETE: 'setup_complete'
+}
+
+SETUP_STAGE_ENDPOINT = {
+	SETUP_TYPE: 'setup.type',
+	SETUP_LOCATION: 'setup.location',
+	SETUP_NETWORK: 'setup.network',
+	SETUP_LOCAL: 'setup.local',
+	SETUP_DEVICE: 'setup.device',
+	SETUP_COMPLETE: 'setup.complete'
+}
+
+SETUP_ENDPOINT_STAGE = {
+	'setup.type': SETUP_TYPE,
+	'setup.location': SETUP_LOCATION,
+	'setup.network': SETUP_NETWORK,
+	'setup.local': SETUP_LOCAL,
+	'setup.device': SETUP_DEVICE,
+	'setup.complete': SETUP_COMPLETE
 }
 
 NETWORK_DEVICE = 0
