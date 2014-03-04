@@ -5,10 +5,25 @@
 {% block pagejs %}
 <script type="text/javascript">
     $(document).ready(function(){
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+        $('#loading').spin('flower');
         $('#notifications-table').dataTable({
             "bJQueryUI":true,
             "sPaginationType": "full_numbers",
             "sDom" : '<"H"lr>t<"F"fip>',
+            "fnInitComplete": function() {
+                $('#loading').stop();
+                $('#loading').hide();
+                $('#datatable').show();
+                this.fnAdjustColumnSizing();
+            },
+
         });
     });
 </script>
@@ -16,24 +31,27 @@
 
 {% block body %}
 <div class="settings_wrapper">
-    <table id="notifications-table" class="display table-hover" border="1" cellpadding="3" bordercolor="EEEEEE">
-        <thead>
-            <tr><th>Type</th><th>Owner</th><th>Description</th></tr>
-        </thead>
-        <tbody>
-        {% for notification in notifications %}
-            {% if notification.user == current_user or current_user.is_admin() %}
-            <tr>
-                <td>{{ TYPES[notification.type] }}</td>
-                <td>{{ notification.user.name }}</td>
-                <td>
-                    <a href="{{ url_for('notifications.edit', id=notification.id) }}">{{ notification.description }}</a>
-                </td>
-            </tr>
-            {% endif %}
-        {% endfor %}
-        </tbody>
-    </table>
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table id="notifications-table" class="display table-hover" border="1" cellpadding="3" bordercolor="EEEEEE">
+            <thead>
+                <tr><th>Type</th><th>Owner</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+            {% for notification in notifications %}
+                {% if notification.user == current_user or current_user.is_admin() %}
+                <tr>
+                    <td>{{ TYPES[notification.type] }}</td>
+                    <td>{{ notification.user.name }}</td>
+                    <td>
+                        <a href="{{ url_for('notifications.edit', id=notification.id) }}">{{ notification.description }}</a>
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
     <br>
     <a href="{{ url_for('notifications.create') }}">New Notification</a>
 </div>

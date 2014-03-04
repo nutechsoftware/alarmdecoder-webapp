@@ -5,10 +5,24 @@
 {% block pagejs %}
     <script type="text/javascript">
         $(document).ready(function() {
+            $.fn.spin.presets.flower = {
+                lines: 13,
+                length: 30,
+                width: 10,
+                radius: 30,
+                className: 'spinner',
+            }
+            $('#loading').spin('flower');
             $('#paginateMe').dataTable({
                 "bJQueryUI": true,
                 "sPaginationType": "full_numbers",
                 "sDom" : '<"H"lr>t<"F"fip>',
+                "fnInitComplete": function() {
+                    $('#loading').stop();
+                    $('#loading').hide();
+                    $('#datatable').show();
+                    this.fnAdjustColumnSizing();
+                },
             });
         });
     </script>
@@ -16,22 +30,25 @@
 {% block body %}
 <div>
     <h2>Event Log</h2>
-    <table id="paginateMe" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
-        <thead>
-            <tr>
-                <th>Timestamp</th>
-                <th>Type</th>
-                <th>Message</th>
-            </tr>
-        </thead>
-        {% for entry in event_log %}
-            <tr>
-                <td>{{ entry.timestamp }}</td>
-                <td>{{ TYPES[entry.type] }}</td>
-                <td>{{ entry.message }}</td>
-            </tr>
-        {% endfor %}
-    </table>
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table id="paginateMe" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Type</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            {% for entry in event_log %}
+                <tr>
+                    <td>{{ entry.timestamp }}</td>
+                    <td>{{ TYPES[entry.type] }}</td>
+                    <td>{{ entry.message }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
     <a href="live">Live Log</a>
 </div>
 {% endblock %}
