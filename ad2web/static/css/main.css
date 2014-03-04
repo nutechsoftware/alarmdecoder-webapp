@@ -248,6 +248,29 @@ span#buttons-next-group, span#next-group {
     margin-bottom: 0;
 }
 
+div.control-group > div.controls > ul {
+    list-style-type: none;
+}
+
+div.control-group > div.controls > ul > li > span > label {
+    float: right;
+    width: 100%;
+}
+
+div.control-group > div.controls > ul > li > span {
+    display: block;
+    overflow: hidden;
+}
+
+div.control-group > div.controls > ul > li > input {
+    float: left;
+    margin-right: 10px;
+}
+
+div.clearem {
+    clear: both;
+}
+
 /* setup.test */
 table#test_results td.test-description {
     width: 30%;
