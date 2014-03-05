@@ -311,3 +311,87 @@ table#test_results td.details {
 .css_right {
     float: right;
 }
+
+#cert_info {
+    background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
+    background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0,0,0,0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+
+#cert_download {
+    position: relative;
+    text-align: center;
+    float: right;
+}
+
+#cert_cert_cert {
+    position: relative;
+    top: -180px;
+    left: -80px;
+    float: right;
+    text-align: center;
+}
+
+#cert_cert_key {
+    position: relative;
+    float: right;
+    top: -120px;
+    left: -30px;
+    text-align: center;
+}
+
+#cert_id {
+    margin-bottom: 10px;
+}
+
+#cert_id label {
+    margin-bottom: -2px;
+}
+
+#cert_status {
+    margin-bottom: 10px;
+}
+
+#cert_status label {
+    margin-bottom: -2px;
+}
+
+#cert_created {
+    margin-bottom: 10px;
+}
+
+#cert_created label {
+    margin-bottom: -2px;
+}
+
+#cert_revoked {
+    margin-bottom: 10px;
+}
+
+#cert_revoked label {
+    margin-bottom: -2px;
+}
+
+#cert_name {
+    margin-bottom: 10px;
+}
+
+#cert_name label {
+    margin-bottom: -2px;
+}
+
+#cert_desc {
+    margin-bottom: 10px;
+}
+
+#cert_desc label {
+    margin-bottom: -2px;
+}

@@ -1,11 +1,104 @@
 {% set page_title = certificate.name %}
 
 {% extends 'settings/layout.html' %}
+{% block pagejs %}
+<style type="text/css">
+textarea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0 none transparent;
+    margin: 0;
+    padding: 0;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    font-family: inherit;
+    font-size: 1em;
+}
+</style>
+<script type="text/javascript">
+$(document).ready(function() {
+    var cert_text = null;
+    var cert_key = null;
+    $('#cert').on('click', function() {
+        var original = $('#cert_input')[0];
+        var clone = $(original).clone().attr('id', 'cert_input_clone');
+        var saveHtml = $(original).html();
+        $(original).html('');
+        $(clone).dialog({
+            title: "Certificate Cert: Hit Ctrl-C to Copy",
+            width: 800,
+            height: 550,
+            modal: true,
+            open: function(event, ui) {
+                cert_text = $(saveHtml).text();
+                $('<textarea id="tmp"/>').appendTo($(this)).val(cert_text).focus().select();
+            },
+            close: function(event, ui) {
+                $('#tmp').remove();
+                $(clone).remove();
+                $(original).html(saveHtml);
+            },
+            buttons: [
+            {
+                text: 'Ok',
+                click: function() {
+                    $(this).dialog("close");
+                },
+                class: 'btn btn-primary',
+            }],
+        }).keyup(function(e) {
+            if( e.keyCode == 67 && e.ctrlKey )
+            {
+                $(this).dialog("close");
+            }
+        });
+    });
 
+    $('#key').on('click', function() {
+        var original = $('#cert_key')[0];
+        var clone = $(original).clone().attr('id', 'cert_key_clone');
+        var saveHtml = $(original).html();
+        $(original).html('');
+        $(clone).dialog({
+            title: "Certificate Key: Hit Ctrl-C to Copy",
+            width: 800,
+            height: 680,
+            modal: true,
+            open: function(event, ui) {
+                cert_key = $(saveHtml).text();
+                $('<textarea id="tmp"/>').appendTo($(this)).val(cert_key).focus().select();
+            },
+            close: function(event, ui) {
+                $('#tmp').remove();
+                $(clone).remove();
+                $(original).html(saveHtml);
+            },
+            buttons: [
+            {
+                text: 'Ok',
+                click: function() {
+                    $(this).dialog("close");
+                },
+                class: 'btn btn-primary', 
+            }],
+        }).keyup(function(e) {
+            if( e.keyCode == 67 && e.ctrlKey )
+            {
+                $(this).dialog("close");
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
 {% block body %}
-<div>
+<div id="cert_info">
     {% if certificate.type == 2 %}
-    <div>
+    <div id="cert_download">
         Download: <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='pkcs12') }}">PKCS12</a>
         | <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='tgz') }}">TGZ</a>
         | <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='bks') }}">BKS</a>
@@ -13,39 +106,39 @@
         <a href="{{ url_for('certificate.revoke', certificate_id=certificate.id) }}">Revoke certificate</a>
     </div>
     {% endif %}
-    <div>
+    <div id="cert_id">
         <label for="certificate-id">Certificate ID</label>
         <span id="certificate-id">{{ certificate.id }} ({{ TYPES[certificate.type] }})</span>
     </div>
-    <div>
+    <div id="cert_status">
         <label for="certificate-status">Status</label>
         <span id="certificate-status">{{ STATUS[certificate.status] }}</span>
     </div>
-    <div>
+    <div id="cert_created">
         <label for="certificate-created">Created on</label>
         <span id="certificate-created">{{ certificate.created_on|format_date }}</span>
     </div>
     {% if certificate.status == 0 %}
-    <div>
+    <div id="cert_revoked">
         <label for="certificate-revoked">Revoked on</label>
         <span id="certificate-revoked">{{ certificate.revoked_on|format_date }}</span>
     </div>
     {% endif %}
-    <div>
+    <div id="cert_name">
         <label for="certificate-name">Certificate Name</label>
         <span id="certificate-name">{{ certificate.name }}</span>
     </div>
-    <div>
+    <div id="cert_desc">
         <label for="certificate-description">Description</label>
         <span id="certificate-description">{{ certificate.description }}</span>
     </div>
-    <div>
-        <label for="certificate-cert">Certificate Cert</label>
-        <pre id="certificate-cert">{{ certificate.certificate }}</pre>
+    <div id="cert_cert_cert">
+        <button id="cert" name="cert" type="button" value="Cert" class="btn btn-primary">Cert</button>
+        <div id="cert_input" style="display:none;"><p>{{ certificate.certificate }}</p></div>
     </div>
-    <div>
-        <label for="certificate-key">Certificate Key</label>
-        <pre id="certificate-key">{{ certificate.key }}</pre>
+    <div id="cert_cert_key">
+        <button id="key" name="key" type="button" value="Key" class="btn btn-primary">Key</button>
+        <div id="cert_key" style="display:none;"><p>{{ certificate.key }}</p></div>
     </div>
 </div>
 {% endblock %}
