@@ -4,7 +4,9 @@ SETUP_TYPE = 0
 SETUP_LOCATION = 1
 SETUP_NETWORK = 2
 SETUP_LOCAL = 3
-SETUP_DEVICE = 4
+SETUP_SSLCLIENT = 4
+SETUP_SSLSERVER = 5
+SETUP_DEVICE = 6
 SETUP_COMPLETE = 100
 
 STAGES = {
@@ -12,6 +14,8 @@ STAGES = {
 	SETUP_LOCATION: 'device_location',
 	SETUP_NETWORK: 'network_device_settings',
 	SETUP_LOCAL: 'local_device_settings',
+	SETUP_SSLCLIENT: 'ssl_client_settings',
+	SETUP_SSLSERVER: 'ssl_server_settings',
 	SETUP_DEVICE: 'alarmdecoder_settings',
 	SETUP_COMPLETE: 'setup_complete'
 }
@@ -20,6 +24,8 @@ SETUP_STAGE_ENDPOINT = {
 	SETUP_TYPE: 'setup.type',
 	SETUP_LOCATION: 'setup.location',
 	SETUP_NETWORK: 'setup.network',
+	SETUP_SSLCLIENT: 'setup.sslclient',
+	SETUP_SSLSERVER: 'setup.sslserver',
 	SETUP_LOCAL: 'setup.local',
 	SETUP_DEVICE: 'setup.device',
 	SETUP_COMPLETE: 'setup.complete'
@@ -29,6 +35,8 @@ SETUP_ENDPOINT_STAGE = {
 	'setup.type': SETUP_TYPE,
 	'setup.location': SETUP_LOCATION,
 	'setup.network': SETUP_NETWORK,
+	'setup.sslclient': SETUP_SSLCLIENT,
+	'setup.sslserver': SETUP_SSLSERVER,
 	'setup.local': SETUP_LOCAL,
 	'setup.device': SETUP_DEVICE,
 	'setup.complete': SETUP_COMPLETE
