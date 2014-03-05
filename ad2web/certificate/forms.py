@@ -10,7 +10,7 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
 
 class GenerateCertificateForm(Form):
     next = HiddenField()
-    name = TextField(u'Name', [Length(max=32)])
+    name = TextField(u'Name', [Required(), Length(max=32)])
     description = TextField(u'Description', [Length(max=255)])
 
     submit = SubmitField(u'Generate')

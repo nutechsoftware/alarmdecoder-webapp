@@ -248,6 +248,25 @@ span#buttons-next-group, span#next-group {
     margin-bottom: 0;
 }
 
+div#zone_expanders ul, div#relay_expanders ul {
+    list-style-type: none;
+}
+
+div#zone_expanders input, div#relay_expanders input {
+    float: left;
+    margin-right: 10px;
+}
+
+div#zone_expanders span, div#relay_expanders span {
+    display: block;
+    overflow: hidden;
+}
+
+div#zone_expanders span label, div#relay_expanders span label {
+    float: right;
+    width: 100%;
+}
+
 /* setup.test */
 table#test_results td.test-description {
     width: 30%;

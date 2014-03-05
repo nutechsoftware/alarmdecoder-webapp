@@ -53,7 +53,7 @@ EVENT_MESSAGES = {
     POWER_CHANGED: 'Power status has changed to {status}.',
     ALARM: 'Alarming!  Oh no!',
     FIRE: 'Fire!  Oh no!',
-    BYPASS: '{zone_name} ({zone}) has been bypassed.',
+    BYPASS: 'A zone has been bypassed.',
     BOOT: 'The AlarmDecoder has finished booting.',
     CONFIG_RECEIVED: 'AlarmDecoder has been configuratorized.',
     ZONE_FAULT: '{zone_name} ({zone}) has been faulted.',
@@ -142,11 +142,9 @@ class Decoder(object):
             device_handler += build_event_handler(event)
 
     def _on_device_open(self, sender):
-        self.app.logger.debug('device_open')
         self.broadcast('device_open')
 
     def _on_device_close(self, sender):
-        self.app.logger.debug('device_close')
         self.broadcast('device_close')
 
         # TODO: try to reopen

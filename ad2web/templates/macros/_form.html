@@ -140,6 +140,30 @@
 </div>
 {% endmacro %}
 
+{% macro render_multicheckbox(form) %}
+<div class="control-group{% if form.errors %} error{% endif %}" id="{{ form.id }}">
+    <div class="controls">
+        {{ form.label }}
+        <ul>
+        {% for field in form %}
+            <li>
+                {{ field }}
+                <span>{{ field.label }}</span>
+                <div class="clear"></div>
+            </li>
+        {% endfor %}
+        </ul>
+
+        <span class="help-inline">{{ form.description }}</span>
+        {% if form.errors -%}
+            {% for error in form.errors -%}
+            <span class="help-block error">{{ error }}</span>
+            {%- endfor %}
+        {%- endif %}
+    </div>
+</div>
+{% endmacro %}
+
 {% macro render_form(url, form, horizontal=False, legend=None, confirm_msg=None, formid=None) %}
 {% set idattr = "id=" + formid if formid else "" %}
 <form {{idattr}} class="{% if horizontal %}form-horizontal{% endif %}" method="POST" action="{{ url }}"
@@ -172,6 +196,8 @@
                     {% endif %}
                 {% elif field.type == "FormField" %}
                     {{ render_formfield(field) }}
+                {% elif field.type == "MultiCheckboxField" %}
+                    {{ render_multicheckbox(field) }}
                 {% else %}
                     {{ render_input(field) }}
                 {% endif %}
