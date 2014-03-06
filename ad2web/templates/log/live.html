@@ -20,12 +20,12 @@
             };
             PubSub.subscribe('message', function(type, msg) {
                 var n = new Date();
-                var day = n.getDay();
-                var month = n.getMonth();
-                var year = n.getYear();
-                var hour = n.getHours();
-                var min = n.getMinutes();
-                var sec = n.getSeconds();
+                var day = ('0' + (n.getDay())).slice(-2);
+                var month = ('0' + (n.getMonth() + 1)).slice(-2);
+                var year = n.getFullYear();
+                var hour = ('0' + (n.getHours())).slice(-2);
+                var min = ('0' + (n.getMinutes())).slice(-2);
+                var sec = ('0' + (n.getSeconds())).slice(-2);
                 var datetime = day + "/" + month + "/" + year + " " + hour + ":" + min + ":" + sec;
 
                 $('#panel-log').dataTable().fnAddData([ datetime, msg.raw], false);
