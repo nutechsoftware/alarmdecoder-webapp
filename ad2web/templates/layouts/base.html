@@ -61,20 +61,20 @@
         {% endblock %}
 
         {% block flash_message %}
-            {% with messages = get_flashed_messages(with_categories=True) %}
-                {% if messages %}
                 <div class="container">
                     <div id='flash_message_container'>
-                        {% for category, msg in messages %}
-                            <div class="alert alert-{{ category }}">
-                                <button type="button" class="close" data-dismiss="alert">×</button>
-                                {{ msg }}
-                            </div>
-                        {% endfor %}
+                        {% with messages = get_flashed_messages(with_categories=True) %}
+                            {% if messages %}
+                                {% for category, msg in messages %}
+                                    <div class="alert alert-{{ category }}">
+                                        <button type="button" class="close" data-dismiss="alert">×</button>
+                                        {{ msg }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
                     </div>
                 </div>
-                {% endif %}
-            {% endwith %}
         {% endblock %}
 
         {% block container %}
