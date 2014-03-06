@@ -6,6 +6,18 @@
     <script type="text/javascript">
         var giCount = 1;
         $(document).ready(function() {
+            $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
+                if( oSettings.oFeatures.bServerSide === false )
+                {
+                    //what page were we looking at?
+                    var before = oSettings._iDisplayStart;
+                    oSettings.oApi._fnReDraw(oSettings);
+                    //set the display start to what page we were looking at before
+                    oSettings._iDisplayStart = before;
+                    oSettings.oApi._fnCalculateEnd(oSettings);
+                }
+                oSettings.oApi._fnDraw(oSettings);
+            };
             PubSub.subscribe('message', function(type, msg) {
                 var n = new Date();
                 var day = n.getDay();
@@ -16,7 +28,8 @@
                 var sec = n.getSeconds();
                 var datetime = day + "/" + month + "/" + year + " " + hour + ":" + min + ":" + sec;
 
-                $('#panel-log').dataTable().fnAddData([ datetime, msg.raw]);
+                $('#panel-log').dataTable().fnAddData([ datetime, msg.raw], false);
+                $('#panel-log').dataTable().fnStandingRedraw();
             });
             $.fn.spin.presets.flower = {
                 lines: 13,
@@ -34,6 +47,8 @@
                 "sDom" : '<"H"lr>t<"F"fip>',
                 "oLanguage": {
                     "sInfoFiltered": "",
+                    "sInfo": "_START_ to _END_ of _TOTAL_",
+                    "sInfoEmpty": "No Results",
                 },
                 "fnInitComplete": function() {
                     $('#loading').stop();
