@@ -103,7 +103,7 @@ $(document).ready(function() {
         | <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='tgz') }}">TGZ</a>
         | <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='bks') }}">BKS</a>
         <br>
-        <a href="{{ url_for('certificate.revoke', certificate_id=certificate.id) }}">Revoke certificate</a>
+        <a style="margin-top: 3px;" class="btn btn-primary" href="{{ url_for('certificate.revoke', certificate_id=certificate.id) }}">Revoke certificate</a>
     </div>
     {% endif %}
     <div id="cert_id">
