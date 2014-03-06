@@ -53,7 +53,14 @@ $(document).ready(function() {
         }).keyup(function(e) {
             if( e.keyCode == 67 && e.ctrlKey )
             {
-                $(this).dialog("close");
+                if( isTextSelected($('#tmp')[0]) )
+                {
+                    $(this).dialog("close");
+                }
+                else
+                {
+                    alert("Please select the text.");
+                }
             }
         });
     });
@@ -88,7 +95,14 @@ $(document).ready(function() {
         }).keyup(function(e) {
             if( e.keyCode == 67 && e.ctrlKey )
             {
-                $(this).dialog("close");
+                if( isTextSelected($('#tmp')[0]) )
+                {
+                    $(this).dialog("close");
+                }
+                else
+                {
+                    alert("Please select the text.");
+                }
             }
         });
     });
