@@ -28,7 +28,10 @@
                 var sec = ('0' + (n.getSeconds())).slice(-2);
                 var datetime = day + "/" + month + "/" + year + " " + hour + ":" + min + ":" + sec;
 
-                $('#panel-log').dataTable().fnAddData([ msg.timestamp, msg.raw], false);
+                //remove microseconds
+                var timestamp = msg.timestamp.slice(0, msg.timestamp.indexOf("."));;
+
+                $('#panel-log').dataTable().fnAddData([ timestamp, msg.raw], false);
                 $('#panel-log').dataTable().fnStandingRedraw();
             });
             $.fn.spin.presets.flower = {
