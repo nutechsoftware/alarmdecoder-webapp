@@ -11,14 +11,18 @@
                 var lines = ['', '']
                 var armed = msg.armed_away | msg.armed_home;
                 var ready = msg.ready;
-                if(msg.text.length >= 16) {
-                    lines[0] = msg.text.substring(0, 16);
-                    lines[1] = msg.text.substring(16);
-                }
-                else {
-                    lines[0] = msg.text;
-                }
 
+                // every once in a while msg.text is undefined, we handle this
+                if(msg.text)
+                {
+                    if(msg.text.length >= 16) {
+                        lines[0] = msg.text.substring(0, 16);
+                        lines[1] = msg.text.substring(16);
+                    }
+                    else {
+                        lines[0] = msg.text;
+                    }
+                }
 
                 if( armed )
                 {
@@ -36,21 +40,24 @@
                 {
                     $('#status-image2').attr("src", "../static/img/led-off.png");
                 }
-                $('#keypad-line1').text(lines[0]);
-                $('#keypad-line1').css("color", "black");
+                if( lines[0] != '' )
+                {
+                    $('#keypad-line1').text(lines[0]);
+                    $('#keypad-line1').css("color", "black");
 
-//hackery to get page to stop shifting when only 1 line of text present
-                if( lines[1].match(/ /g).length == 16 )
-                    lines[1] = '';
-                if( lines[1].length > 0 )
-                {
-                    $('#keypad-line2').css("color", "black");
-                    $('#keypad-line2').text(lines[1]);
-                }
-                else
-                {
-                    $('#keypad-line2').css("color", "white");
-                    $('#keypad-line2').text('---');
+                    //hackery to get page to stop shifting when only 1 line of text present
+                    if( lines[1].match(/ /g).length == 16 )
+                        lines[1] = '';
+                    if( lines[1].length > 0 )
+                    {
+                        $('#keypad-line2').css("color", "black");
+                        $('#keypad-line2').text(lines[1]);
+                    }
+                    else
+                    {
+                        $('#keypad-line2').css("color", "white");
+                        $('#keypad-line2').text('---');
+                    }
                 }
             });
 
@@ -395,8 +402,8 @@
 
 {% block body %}
 <div>
-    <div id="keypad-line1" style="color: white;">---</div>
-    <div id="keypad-line2" style="color: white;">---</div>
+    <div id="keypad-line1">Please Wait</div>
+    <div id="keypad-line2">Loading...</div>
     <hr>
     <div id="status-indicator">Armed: <img id="status-image1" src="../static/img/led-off.png"> Ready: <img id="status-image2" src="../static/img/led-off.png"></div>
     <div id="keypad-buttons">
