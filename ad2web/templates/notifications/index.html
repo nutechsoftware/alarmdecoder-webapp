@@ -40,7 +40,14 @@
     <div id="datatable" style="display: none;">
         <table id="notifications-table" class="display table-hover" border="1" cellpadding="3" bordercolor="EEEEEE">
             <thead>
-                <tr><th>Type</th><th>Owner</th><th>Description</th><th>Remove</th></tr>
+                <tr>
+                    <th>Type</th>
+                    <th>Owner</th>
+                    <th>Description</th>
+                {% if notifications %}
+                    <th>Remove</th>
+                {% endif %}
+                </tr>
             </thead>
             <tbody>
             {% for notification in notifications %}
