@@ -40,7 +40,7 @@
     <div id="datatable" style="display: none;">
         <table id="notifications-table" class="display table-hover" border="1" cellpadding="3" bordercolor="EEEEEE">
             <thead>
-                <tr><th>Type</th><th>Owner</th><th>Description</th></tr>
+                <tr><th>Type</th><th>Owner</th><th>Description</th><th>Remove</th></tr>
             </thead>
             <tbody>
             {% for notification in notifications %}
@@ -51,6 +51,7 @@
                     <td>
                         <a href="{{ url_for('notifications.edit', id=notification.id) }}">{{ notification.description }}</a>
                     </td>
+                    <td><a href="{{ url_for('notifications.remove', id=notification.id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="../../static/img/red_x.png"/></a></td>
                 </tr>
                 {% endif %}
             {% endfor %}

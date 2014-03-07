@@ -94,3 +94,16 @@ def create_by_type(type):
         return redirect(url_for('notifications.index'))
 
     return render_template('notifications/create_by_type.html', form=form, type=type, active='notifications')
+
+@notifications.route('/remove/<int:id>', methods=['GET', 'POST'])
+@login_required
+def remove(id):
+    notification = Notification.query.filter_by(id=id).first_or_404()
+    if notification.user != current_user and not current_user.is_admin():
+        abort(403)
+
+    db.session.delete(notification)
+    db.session.commit()
+
+    flash('Notification deleted.', 'success')
+    return redirect(url_for('notifications.index'))

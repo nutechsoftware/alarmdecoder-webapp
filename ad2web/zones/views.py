@@ -58,3 +58,15 @@ def edit(id):
         flash('Zone updated.', 'success')
 
     return render_template('zones/edit.html', form=form, id=id, active="zones")
+
+@zones.route('/remove/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def remove(id):
+    zone = Zone.query.filter_by(zone_id=id).first_or_404()
+    db.session.delete(zone)
+    db.session.commit();
+    
+    flash('Zone deleted.', 'success')
+
+    return redirect(url_for('zones.index'))
