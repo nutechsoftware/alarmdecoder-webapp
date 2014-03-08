@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Blueprint, render_template, request, flash
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask.ext.login import login_required
 
 from ..extensions import db
@@ -51,3 +51,16 @@ def user(user_id):
         flash('User created.' if user_id is None else 'User updated.', 'success')
 
     return render_template('admin/user.html', user_id=user_id, form=form)
+
+@admin.route('/user/remove/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def remove(user_id):
+    user = User.query.filter_by(id=user_id).first_or_404()
+    users = User.query.all()
+    if user_id != 1:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted.', 'success')
+
+    return redirect(url_for('admin.users'))

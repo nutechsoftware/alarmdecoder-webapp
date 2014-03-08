@@ -43,6 +43,9 @@
                     <th>Status</th>
                     <th>Role</th>
                     <th>Created Time</th>
+                {% if users %}
+                    <th>Remove</th>
+                {% endif %}
                 </tr>
             </thead>
             {% for user in users %}
@@ -51,6 +54,7 @@
                 <td>{{ user.status }}</td>
                 <td>{{ user.role }}</td>
                 <td>{{ user.created_time|format_date }}</td>
+                <td><a href="{{ url_for('admin.remove', user_id=user.id)}}"><img style="text-align: center; float: right; margin-right: 15px;" src="../../static/img/red_x.png"/></a></td>
             </tr>
             {% endfor %}
         </table>
