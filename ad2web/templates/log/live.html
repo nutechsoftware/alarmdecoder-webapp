@@ -4,7 +4,7 @@
 
 {% block pagejs %}
     <script type="text/javascript">
-        var giCount = 1;
+        var bPaused = false;
         $(document).ready(function() {
             $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
                 if( oSettings.oFeatures.bServerSide === false )
@@ -31,8 +31,11 @@
                 //remove microseconds
                 var timestamp = msg.timestamp.slice(0, msg.timestamp.indexOf("."));;
 
-                $('#panel-log').dataTable().fnAddData([ timestamp, msg.raw], false);
-                $('#panel-log').dataTable().fnStandingRedraw();
+                if( !bPaused )
+                {
+                    $('#panel-log').dataTable().fnAddData([ timestamp, msg.raw], false);
+                    $('#panel-log').dataTable().fnStandingRedraw();
+                }
             });
             $.fn.spin.presets.flower = {
                 lines: 13,
@@ -42,7 +45,7 @@
                 className: 'spinner',
             }
             $('#loading').spin('flower');
-            $('#panel-log').dataTable({
+            var oTable = $('#panel-log').dataTable({
                 "bJQueryUI": true,
                 "sPaginationType": "full_numbers",
                 "bFilter": false,
@@ -58,8 +61,20 @@
                     $('#loading').stop();
                     $('#loading').hide();
                     $('#datatable').show();
+                    $('#clear').css('display', 'block');
                     this.fnAdjustColumnSizing();
                 },
+            });
+            $('#clearbutton').on('click', function() {
+                oTable.fnClearTable();
+            });
+            $('#pausebutton').on('click', function() {
+                bPaused = !bPaused;
+
+                if( !bPaused )
+                    $('#pausebutton').text("Pause");
+                else
+                    $('#pausebutton').text("Unpause");
             });
         });
     </script>
@@ -67,7 +82,6 @@
 
 {% block body %}
 <div>
-    <h2>Panel Log</h2>
     <div id="loading"></div>
     <div id="datatable" style="display: none;">
         <table id='panel-log' cellpadding="3" class="display table-hover" border="1" bordercolor="EEEEEE">
@@ -80,6 +94,10 @@
             <tbody>
             </tbody>
         </table>
+    </div>
+    <div id="clear" style="display: none; margin-top: 10px;">
+        <button type="button" name="clearbutton" id="clearbutton" class="btn btn-primary">Clear</button>
+        <button type="button" name="pausebutton" id="pausebutton" class="btn btn-primary">Pause</button>
     </div>
 </div>
 {% endblock %}

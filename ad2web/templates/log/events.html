@@ -13,7 +13,7 @@
                 className: 'spinner',
             }
             $('#loading').spin('flower');
-            $('#paginateMe').dataTable({
+            var oTable = $('#paginateMe').dataTable({
                 "bJQueryUI": true,
                 "sPaginationType": "full_numbers",
                 "sDom" : '<"H"lr>t<"F"fip>',
@@ -27,15 +27,18 @@
                     $('#loading').stop();
                     $('#loading').hide();
                     $('#datatable').show();
+                    $('#clear').css('display', 'block');
                     this.fnAdjustColumnSizing();
                 },
+            });
+            $('#clearbutton').on('click', function() {
+                oTable.fnClearTable();
             });
         });
     </script>
 {% endblock %}
 {% block body %}
 <div>
-    <h2>Event Log</h2>
     <div id="loading"></div>
     <div id="datatable" style="display: none;">
         <table id="paginateMe" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
@@ -54,6 +57,9 @@
                 </tr>
             {% endfor %}
         </table>
+    </div>
+    <div id="clear" style="display: none;">
+        <button type="button" class="btn btn-primary" name="clearbutton" id="clearbutton">Clear</button>
     </div>
 </div>
 {% endblock %}
