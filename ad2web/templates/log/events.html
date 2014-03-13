@@ -32,7 +32,18 @@
                 },
             });
             $('#clearbutton').on('click', function() {
-                oTable.fnClearTable();
+                $.confirm({
+                    text: "Are you sure?",
+                    title: "Clear Event Log",
+                    confirm: function(button) {
+                        oTable.fnClearTable();
+                    },
+                    cancel: function(button) {
+                    },
+                    confirmButton: "Yes",
+                    cancelButton: "No",
+                    post: false,
+                });
             });
         });
     </script>
@@ -58,7 +69,7 @@
             {% endfor %}
         </table>
     </div>
-    <div id="clear" style="display: none;">
+    <div id="clear" style="display: none; margin-top: 10px;">
         <button type="button" class="btn btn-primary" name="clearbutton" id="clearbutton">Clear</button>
     </div>
 </div>
