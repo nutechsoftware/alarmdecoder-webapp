@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Blueprint, render_template, abort, g, request, flash, Response
+from flask import Blueprint, render_template, abort, g, request, flash, Response, url_for, redirect
 from flask import current_app as APP
 from flask.ext.login import login_required, current_user
 
@@ -44,3 +44,11 @@ def events():
 @admin_required
 def live():
     return render_template('log/live.html', active='live')
+
+@log.route('/delete')
+@login_required
+@admin_required
+def delete():
+    events = EventLogEntry.query.delete()
+    db.session.commit()
+    return redirect(url_for('log.events'))

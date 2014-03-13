@@ -36,7 +36,11 @@
                     text: "Are you sure?",
                     title: "Clear Event Log",
                     confirm: function(button) {
-                        oTable.fnClearTable();
+                        $.ajax({
+                            url: "/log/delete",
+                        }).done( function( data ) {
+                            oTable.fnClearTable();
+                        });
                     },
                     cancel: function(button) {
                     },
