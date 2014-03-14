@@ -13,7 +13,7 @@
                 className: 'spinner',
             }
             $('#loading').spin('flower');
-            var oTable = $('#paginateMe').dataTable({
+            var oTable = $('#events-table').dataTable({
                 "bJQueryUI": true,
                 "sPaginationType": "full_numbers",
                 "sDom" : '<"H"lr>t<"F"fip>',
@@ -56,7 +56,7 @@
 <div>
     <div id="loading"></div>
     <div id="datatable" style="display: none;">
-        <table id="paginateMe" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
+        <table id="events-table" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
             <thead>
                 <tr>
                     <th>Timestamp</th>
