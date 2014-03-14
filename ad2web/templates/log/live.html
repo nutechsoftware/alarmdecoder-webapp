@@ -42,6 +42,7 @@
                         for( i = 0; i < messagesBacklog.length; i++ )
                         {
                             $('#panel-log').dataTable().fnAddData([messagesBacklog[i].tstamp, messagesBacklog[i].message], false);
+                            $('#panel-log').dataTable().fnStandingRedraw();
                         }
                         //empty the backlog array as we've added the contents to the table already
                         messagesBacklog = [];
