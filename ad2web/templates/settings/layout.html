@@ -4,7 +4,7 @@
 {% set page_title = page_header %}
 
 {% set tabs = [
-    ("device", url_for('settings.device'), True),
+    ("device", url_for('setup.index'), True),
     ("notifications", url_for('notifications.index'), False),
     ("zones", url_for('zones.index'), True),
     ("certificates", url_for('certificate.index'), False),
