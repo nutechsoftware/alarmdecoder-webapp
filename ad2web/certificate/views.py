@@ -23,8 +23,8 @@ def certificate_context_processor():
 @login_required
 def index():
     certificates = Certificate.query.all()
-
-    return render_template('certificate/index.html', certificates=certificates, active='certificates')
+    ca_cert = Certificate.query.filter_by(type=CA).first()
+    return render_template('certificate/index.html', certificates=certificates, ca_cert=ca_cert, active='certificates')
 
 @certificate.route('/generate', methods=['GET', 'POST'])
 @login_required
@@ -92,3 +92,9 @@ def revoke(certificate_id):
     flash('The certificate has been revoked.', 'success')
 
     return render_template('certificate/view.html', certificate=cert)
+
+@certificate.route('/generateCA')
+@login_required
+@admin_required
+def generateCA():
+    return redirect(url_for('certificate.index'))
