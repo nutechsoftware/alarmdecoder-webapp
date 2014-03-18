@@ -3,6 +3,7 @@
 {% set page_header = _(active|capitalize) %}
 {% set page_title = page_header %}
 
+{% if ssl == True %}
 {% set tabs = [
     ("device", url_for('setup.index'), True),
     ("notifications", url_for('notifications.index'), False),
@@ -11,3 +12,12 @@
     ("users", url_for('admin.users'), True),
     ("password", url_for('settings.password'), False),
 ]%}
+{% else %}
+{% set tabs = [
+    ("device", url_for('setup.index'), True),
+    ("notifications", url_for('notifications.index'), False),
+    ("zones", url_for('zones.index'), True),
+    ("users", url_for('admin.users'), True),
+    ("password", url_for('settings.password'), False),
+]%}
+{% endif %}
