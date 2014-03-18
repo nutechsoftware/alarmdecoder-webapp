@@ -171,12 +171,12 @@
 }
 .panic-button {
     position: relative;
-    left: 30px;
+    left: 34px;
     top: 10px;
-    height: 100px;
+    height: 60px;
     width: 460px;
     background-color: red;
-    font-size: 72px;
+    font-size: 54px;
     font-family: inherit;
     color: black !important;
     border: 1px solid;
