@@ -65,6 +65,9 @@
     {% if not ca_cert and current_user.is_admin() %}
         <a style="margin-top: 5px;" class='btn btn-primary' href="{{ url_for('certificate.generateCA') }}">Generate CA</a>
     {% endif %}
+    {% if ca_cert and current_user.is_admin() %}
+        <a style="margin-top: 5px;" class='btn btn-primary' href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
+    {% endif %}
     <br>
     <a style="margin-top: 5px;" class="btn btn-primary" href="{{ url_for('certificate.generate') }}">New Certificate</a>
 </div>

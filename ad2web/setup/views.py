@@ -10,7 +10,7 @@ from ..extensions import db
 from ..decorators import admin_required, admin_or_first_run_required
 from ..settings.models import Setting
 from ..certificate.models import Certificate
-from ..certificate.constants import CA, SERVER, CLIENT, INTERNAL, ACTIVE
+from ..certificate.constants import CA, SERVER, CLIENT, INTERNAL, ACTIVE, REVOKED
 from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
                    SSLForm, SSLHostForm, DeviceForm, TestDeviceForm)
 from .constants import (STAGES, SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
@@ -199,12 +199,14 @@ def _generate_certs():
                 type=CA)
     ca_cert.generate(common_name='AlarmDecoder CA')
     db.session.add(ca_cert)
+    db.session.commit()
 
     server_cert = Certificate(
             name="AlarmDecoder Server",
             description='Server certificate used by ser2sock.',
             status=ACTIVE,
-            type=SERVER)
+            type=SERVER,
+            ca_id=ca_cert.id)
     server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
     db.session.add(server_cert)
 
@@ -212,37 +214,43 @@ def _generate_certs():
             name="AlarmDecoder Internal",
             description='Internal certificate used to communicate with ser2sock.',
             status=ACTIVE,
-            type=INTERNAL)
+            type=INTERNAL,
+            ca_id=ca_cert.id)
     internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
     db.session.add(internal_cert)
 
 def _update_ser2sock_config(path):
-    config = ser2sock.read_config(os.path.join(path, 'ser2sock.conf'))
+    if path is not None:
+        config = ser2sock.read_config(os.path.join(path, 'ser2sock.conf'))
+    else:
+        config = None
 
-    config_values = {}
-    for k, v in config.items('ser2sock'):
-        config_values[k] = v
+    if config is not None:
+        config_values = {}
+        for k, v in config.items('ser2sock'):
+            config_values[k] = v
 
-    config_values['device'] = Setting.get_by_name('device_path').value
-    config_values['baudrate'] = Setting.get_by_name('device_baudrate').value
-    config_values['port'] = Setting.get_by_name('device_port').value
-    config_values['encrypted'] = Setting.get_by_name('use_ssl').value
-    if config_values['encrypted'] == 1:
-        ca = Certificate.query.filter_by(type=CA).first()
-        server_cert = Certificate.query.filter_by(type=SERVER).first()
+        config_values['device'] = Setting.get_by_name('device_path').value
+        config_values['baudrate'] = Setting.get_by_name('device_baudrate').value
+        config_values['port'] = Setting.get_by_name('device_port').value
+        config_values['encrypted'] = Setting.get_by_name('use_ssl').value
+        if config_values['encrypted'] == 1:
+            ca = Certificate.query.filter_by(type=CA).first()
+            server_cert = Certificate.query.filter_by(type=SERVER).first()
 
-        ca.export(os.path.join(path, 'certs'))
-        server_cert.export(os.path.join(path, 'certs'))
+            if ca is not None and server_cert is not None:
+                ca.export(os.path.join(path, 'certs'))
+                server_cert.export(os.path.join(path, 'certs'))
 
-        config_values['ca_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(ca.name))
-        config_values['ssl_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(server_cert.name))
-        config_values['ssl_key'] = os.path.join(path, 'certs', '{0}.key'.format(server_cert.name))
+                config_values['ca_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(ca.name))
+                config_values['ssl_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(server_cert.name))
+                config_values['ssl_key'] = os.path.join(path, 'certs', '{0}.key'.format(server_cert.name))
 
-        ser2sock.save_certificate_index(path)
-        ser2sock.save_revocation_list(path)
+                ser2sock.save_certificate_index(path)
+                ser2sock.save_revocation_list(path)
 
-    ser2sock.save_config(os.path.join(path, 'ser2sock.conf'), config_values)
-    ser2sock.hup()
+        ser2sock.save_config(os.path.join(path, 'ser2sock.conf'), config_values)
+        ser2sock.hup()
 
 @setup.route('/test', methods=['GET', 'POST'])
 @admin_or_first_run_required

@@ -34,6 +34,7 @@ class Certificate(db.Model):
     revoked_on = Column(db.TIMESTAMP)
     description = Column(db.String(255))
     user_id = Column(db.Integer, db.ForeignKey("users.id"))
+    ca_id = Column(db.Integer)
 
     @orm.reconstructor
     def init_on_load(self):
