@@ -14,6 +14,22 @@
             className: 'spinner',
         }
         $('#loading').spin('flower');
+        if( $('#generateca').length )
+        {
+            $('#generateca').confirm({
+                title: 'Generate CA?',
+                text: 'Are you sure?',
+            });
+        }
+        if( $('#revokeca').length )
+        {
+            $('#revokeca').confirm({
+                title: 'Revoke CA?',
+                text: 'Are you sure?',
+                
+            });
+        }
+
         $('#certificate-table').dataTable({
             "bJQueryUI" : true,
             "sPaginationType" : "full_numbers",
@@ -63,10 +79,10 @@
         </table>
     </div>
     {% if not ca_cert and current_user.is_admin() %}
-        <a style="margin-top: 5px;" class='btn btn-primary' href="{{ url_for('certificate.generateCA') }}">Generate CA</a>
+        <a style="margin-top: 5px;" id="generateca" class='btn btn-primary' href="{{ url_for('certificate.generateCA') }}">Generate CA</a>
     {% endif %}
     {% if ca_cert and current_user.is_admin() %}
-        <a style="margin-top: 5px;" class='btn btn-primary' href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
+        <a style="margin-top: 5px;" id="revokeca" class='btn btn-primary' href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
     {% endif %}
     <br>
     <a style="margin-top: 5px;" class="btn btn-primary" href="{{ url_for('certificate.generate') }}">New Certificate</a>
