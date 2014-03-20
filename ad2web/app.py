@@ -4,16 +4,18 @@ from gevent import monkey
 monkey.patch_all()
 
 import os
+import signal
 import jsonpickle
 
 from flask import Flask, request, render_template, g, redirect, url_for
 from flask.ext.babel import Babel
+from flask.ext.script import Manager
 
 from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SerialDevice
 
 from .config import DefaultConfig
-from .decoder import decodersocket
+from .decoder import decodersocket, Decoder, create_decoder_socket
 from .user import User, user
 from .settings import settings
 from .frontend import frontend
@@ -66,7 +68,35 @@ def create_app(config=None, app_name=None, blueprints=None):
     configure_template_filters(app)
     configure_error_handlers(app)
 
-    return app
+    decoder = Decoder(None, None)
+    manager = Manager(app)
+    appsocket = create_decoder_socket(app)
+
+    def signal_handler(signal, frame):
+        decoder.close()
+        appsocket.stop()
+
+    try:
+        signal.signal(signal.SIGINT, signal_handler)
+
+        app.decoder = decoder
+        decoder.app = app
+        decoder.websocket = appsocket
+
+        with app.app_context():
+            device_type = None
+            try:
+                device_type = Setting.get_by_name('device_type')
+            except:
+                pass
+
+            if device_type is not None and device_type.value is not None:
+                decoder.open()
+
+    except Exception, err:
+        app.logger.error("Error", exc_info=True)
+
+    return app, appsocket
 
 
 def configure_app(app, config=None):

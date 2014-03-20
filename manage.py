@@ -7,7 +7,7 @@ import sys
 from flask.ext.script import Manager
 
 from alarmdecoder.util import NoDeviceError
-from ad2web import create_app, create_decoder_socket
+from ad2web import create_app
 from ad2web.decoder import Decoder
 from ad2web.extensions import db
 from ad2web.user import User, UserDetail, ADMIN, USER, ACTIVE
@@ -19,29 +19,14 @@ from ad2web.notifications import Notification, NotificationSetting
 from ad2web.zones import Zone
 
 decoder = Decoder(None, None)
-app = create_app()
+app, appsocket = create_app()
 manager = Manager(app)
-appsocket = create_decoder_socket(app)
-
-def signal_handler(signal, frame):
-    decoder.close()
-    appsocket.stop()
 
 @manager.command
 def run():
     """Run in local machine."""
 
     try:
-        signal.signal(signal.SIGINT, signal_handler)
-
-        app.decoder = decoder
-        decoder.app = app
-        decoder.websocket = appsocket
-
-        device_type = Setting.get_by_name('device_type')
-        if device_type.value is not None:
-            decoder.open()
-
         appsocket.serve_forever()
 
     except Exception, err:
