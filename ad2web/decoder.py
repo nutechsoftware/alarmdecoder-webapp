@@ -51,16 +51,16 @@ EVENT_MESSAGES = {
     ARM: 'The alarm was armed.',
     DISARM: 'The alarm was disarmed.',
     POWER_CHANGED: 'Power status has changed to {status}.',
-    ALARM: 'Alarming!  Oh no!',
-    FIRE: 'Fire!  Oh no!',
+    ALARM: 'Alarm is triggered!',
+    FIRE: 'There is a fire!',
     BYPASS: 'A zone has been bypassed.',
     BOOT: 'The AlarmDecoder has finished booting.',
-    CONFIG_RECEIVED: 'AlarmDecoder has been configuratorized.',
+    CONFIG_RECEIVED: 'AlarmDecoder has been configured.',
     ZONE_FAULT: '{zone_name} ({zone}) has been faulted.',
     ZONE_RESTORE: '{zone_name} ({zone}) has been restored.',
-    LOW_BATTERY: 'Low battery detected.  You should probably mount it higher.',
-    PANIC: 'Panic!  Ants are invading the pantry!',
-    RELAY_CHANGED: 'Some relay or another has changed.'
+    LOW_BATTERY: 'Low battery detected.',
+    PANIC: 'Panic!',
+    RELAY_CHANGED: 'A relay has changed.'
 }
 
 decodersocket = Blueprint('sock', __name__, url_prefix='/socket.io')

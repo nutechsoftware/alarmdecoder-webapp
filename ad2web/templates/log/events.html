@@ -13,7 +13,7 @@
                 className: 'spinner',
             }
             $('#loading').spin('flower');
-            $('#paginateMe').dataTable({
+            var oTable = $('#events-table').dataTable({
                 "bJQueryUI": true,
                 "sPaginationType": "full_numbers",
                 "sDom" : '<"H"lr>t<"F"fip>',
@@ -21,23 +21,42 @@
                     "sInfoFiltered": "",
                     "sInfo": "_START_ to _END_ of _TOTAL_",
                     "sInfoEmpty": "No Results",
+                    "sInfoThousands": "",
                 },
                 "fnInitComplete": function() {
                     $('#loading').stop();
                     $('#loading').hide();
                     $('#datatable').show();
+                    $('#clear').css('display', 'block');
                     this.fnAdjustColumnSizing();
                 },
+            });
+            $('#clearbutton').on('click', function() {
+                $.confirm({
+                    text: "Are you sure?",
+                    title: "Clear Event Log",
+                    confirm: function(button) {
+                        $.ajax({
+                            url: "/log/delete",
+                        }).done( function( data ) {
+                            oTable.fnClearTable();
+                        });
+                    },
+                    cancel: function(button) {
+                    },
+                    confirmButton: "Yes",
+                    cancelButton: "No",
+                    post: false,
+                });
             });
         });
     </script>
 {% endblock %}
 {% block body %}
 <div>
-    <h2>Event Log</h2>
     <div id="loading"></div>
     <div id="datatable" style="display: none;">
-        <table id="paginateMe" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
+        <table id="events-table" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
             <thead>
                 <tr>
                     <th>Timestamp</th>
@@ -53,6 +72,10 @@
                 </tr>
             {% endfor %}
         </table>
+    </div>
+    <div id="clear" style="display: none; margin-top: 10px;">
+        <button type="button" class="btn btn-primary" name="clearbutton" id="clearbutton">Clear</button>
+        <button type="button" class="btn btn-primary" name="refreshbutton" id="refreshbutton" onclick="location.reload();">Reload</button>
     </div>
 </div>
 {% endblock %}

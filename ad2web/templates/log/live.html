@@ -4,7 +4,10 @@
 
 {% block pagejs %}
     <script type="text/javascript">
-        var giCount = 1;
+        //are we paused?
+        var bPaused = false;
+        //store messages when paused, display later
+        var messagesBacklog = [];
         $(document).ready(function() {
             $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
                 if( oSettings.oFeatures.bServerSide === false )
@@ -31,8 +34,28 @@
                 //remove microseconds
                 var timestamp = msg.timestamp.slice(0, msg.timestamp.indexOf("."));;
 
-                $('#panel-log').dataTable().fnAddData([ timestamp, msg.raw], false);
-                $('#panel-log').dataTable().fnStandingRedraw();
+                if( !bPaused )
+                {
+                    //if we're unpaused and have messages in the backlog, present them
+                    if(messagesBacklog.length > 0)
+                    {
+                        for( i = 0; i < messagesBacklog.length; i++ )
+                        {
+                            $('#panel-log').dataTable().fnAddData([messagesBacklog[i].tstamp, messagesBacklog[i].message], false);
+                            $('#panel-log').dataTable().fnStandingRedraw();
+                        }
+                        //empty the backlog array as we've added the contents to the table already
+                        messagesBacklog = [];
+                        messagesBacklog.length = 0;
+                    }
+                    $('#panel-log').dataTable().fnAddData([ timestamp, msg.raw], false);
+                    $('#panel-log').dataTable().fnStandingRedraw();
+                }
+                else
+                {
+                    //if we're paused, save messages in an array to add when unpaused.
+                    messagesBacklog.push({tstamp:timestamp, message:msg.raw});
+                }
             });
             $.fn.spin.presets.flower = {
                 lines: 13,
@@ -42,7 +65,7 @@
                 className: 'spinner',
             }
             $('#loading').spin('flower');
-            $('#panel-log').dataTable({
+            var oTable = $('#panel-log').dataTable({
                 "bJQueryUI": true,
                 "sPaginationType": "full_numbers",
                 "bFilter": false,
@@ -52,13 +75,37 @@
                     "sInfoFiltered": "",
                     "sInfo": "_START_ to _END_ of _TOTAL_",
                     "sInfoEmpty": "No Results",
+                    "sInfoThousands": "",
                 },
                 "fnInitComplete": function() {
                     $('#loading').stop();
                     $('#loading').hide();
                     $('#datatable').show();
+                    $('#clear').css('display', 'block');
                     this.fnAdjustColumnSizing();
                 },
+            });
+            $('#clearbutton').on('click', function() {
+                $.confirm({
+                    text: "Are you sure?",
+                    title: "Clear Event Log",
+                    confirm: function(button) {
+                        oTable.fnClearTable();
+                    },
+                    cancel: function(button) {
+                    },
+                    confirmButton: "Yes",
+                    cancelButton: "No",
+                    post: false,
+                });
+            });
+            $('#pausebutton').on('click', function() {
+                bPaused = !bPaused;
+
+                if( !bPaused )
+                    $('#pausebutton').text("Pause");
+                else
+                    $('#pausebutton').text("Unpause");
             });
         });
     </script>
@@ -66,7 +113,6 @@
 
 {% block body %}
 <div>
-    <h2>Panel Log</h2>
     <div id="loading"></div>
     <div id="datatable" style="display: none;">
         <table id='panel-log' cellpadding="3" class="display table-hover" border="1" bordercolor="EEEEEE">
@@ -79,6 +125,10 @@
             <tbody>
             </tbody>
         </table>
+    </div>
+    <div id="clear" style="display: none; margin-top: 10px;">
+        <button type="button" name="clearbutton" id="clearbutton" class="btn btn-primary">Clear</button>
+        <button type="button" name="pausebutton" id="pausebutton" class="btn btn-primary">Pause</button>
     </div>
 </div>
 {% endblock %}

@@ -164,3 +164,20 @@
     border: none;
     background:url('../img/pound-large.png') no-repeat;
 }
+
+#panic-button-row {
+    text-align: center;
+    position: relative;
+}
+.panic-button {
+    position: relative;
+    left: 34px;
+    top: 10px;
+    height: 60px;
+    width: 460px;
+    background-color: red;
+    font-size: 54px;
+    font-family: inherit;
+    color: black !important;
+    border: 1px solid;
+}

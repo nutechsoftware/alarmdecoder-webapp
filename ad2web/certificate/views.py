@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 
 from flask import Blueprint, render_template, abort, g, request, flash, Response, redirect, url_for
 from flask import current_app as APP
@@ -6,9 +7,11 @@ from flask.ext.login import login_required, current_user
 
 from ..extensions import db
 from ..decorators import admin_required
-from .constants import ACTIVE, CLIENT, CA, PACKAGE_TYPE_LOOKUP, CERTIFICATE_TYPES, CERTIFICATE_STATUS
+from .constants import ACTIVE, CLIENT, CA, PACKAGE_TYPE_LOOKUP, CERTIFICATE_TYPES, CERTIFICATE_STATUS, SERVER, INTERNAL, REVOKED
 from .models import Certificate, CertificatePackage
 from .forms import GenerateCertificateForm
+from ..settings.models import Setting
+from ..ser2sock import ser2sock
 
 certificate = Blueprint('certificate', __name__, url_prefix='/settings/certificates')
 
@@ -23,8 +26,8 @@ def certificate_context_processor():
 @login_required
 def index():
     certificates = Certificate.query.all()
-
-    return render_template('certificate/index.html', certificates=certificates, active='certificates')
+    ca_cert = Certificate.query.filter_by(type=CA).first()
+    return render_template('certificate/index.html', certificates=certificates, ca_cert=ca_cert, active='certificates')
 
 @certificate.route('/generate', methods=['GET', 'POST'])
 @login_required
@@ -41,6 +44,9 @@ def generate():
         cert.status = ACTIVE
         cert.type = CLIENT
         cert.user = current_user
+
+        if parent.id is not None:
+            cert.ca_id = parent.id
 
         db.session.add(cert)
         db.session.commit()
@@ -92,3 +98,85 @@ def revoke(certificate_id):
     flash('The certificate has been revoked.', 'success')
 
     return render_template('certificate/view.html', certificate=cert)
+
+@certificate.route('/generateCA')
+@login_required
+@admin_required
+def generateCA():
+    ca_cert = Certificate(
+                name="AlarmDecoder CA",
+                description='CA certificate used for authenticating others.',
+                status=ACTIVE,
+                type=CA)
+    ca_cert.generate(common_name='AlarmDecoder CA')
+    db.session.add(ca_cert)
+    db.session.commit()
+
+    server_cert = Certificate(
+                name="AlarmDecoder Server",
+                description='Server certificate used by ser2sock.',
+                status=ACTIVE,
+                type=SERVER,
+                ca_id=ca_cert.id)
+    server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
+    db.session.add(server_cert)
+    
+    internal_cert = Certificate(
+                name="AlarmDecoder Internal",
+                description='Internal certificate used to communicate with ser2sock.',
+                status=ACTIVE,
+                type=INTERNAL,
+                ca_id=ca_cert.id)
+    internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
+    db.session.add(internal_cert)
+
+    config_path = Setting.get_by_name('ser2sock_config_path')
+    if config_path is not None:
+        _update_ser2sock_config(config_path.value)
+    db.session.commit()
+
+    return redirect(url_for('certificate.index'))
+
+def _update_ser2sock_config(path):
+    if path is not None:
+        config = ser2sock.read_config(os.path.join(path, 'ser2sock.conf'))
+    else:
+        config = None
+
+    if config is not None:
+        config_values = {}
+        for k, v in config.items('ser2sock'):
+            config_values[k] = v
+
+        config_values['device'] = Setting.get_by_name('device_path').value
+        config_values['baudrate'] = Setting.get_by_name('device_baudrate').value
+        config_values['port'] = Setting.get_by_name('device_port').value
+        config_values['encrypted'] = Setting.get_by_name('use_ssl').value
+        if config_values['encrypted'] == 1:
+            ca = Certificate.query.filter_by(type=CA).first()
+            server_cert = Certificate.query.filter_by(type=SERVER).first()
+
+            if ca is not None and server_cert is not None:
+                ca.export(os.path.join(path, 'certs'))
+                server_cert.export(os.path.join(path, 'certs'))
+
+                config_values['ca_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(ca.name))
+                config_values['ssl_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(server_cert.name))
+                config_values['ssl_key'] = os.path.join(path, 'certs', '{0}.key'.format(server_cert.name))
+
+                ser2sock.save_certificate_index(path)
+                ser2sock.save_revocation_list(path)
+
+        ser2sock.save_config(os.path.join(path, 'ser2sock.conf'), config_values)
+        ser2sock.hup()
+
+@certificate.route('/revokeCA')
+@login_required
+@admin_required
+def revokeCA():
+    ca = Certificate.query.filter_by(type=CA).first()
+    certs = Certificate.query.filter_by(ca_id=ca.id).delete()
+    ca = Certificate.query.filter_by(type=CA).delete()
+    db.session.commit()
+
+    return redirect(url_for('certificate.index'))
