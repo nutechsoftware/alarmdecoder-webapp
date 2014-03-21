@@ -13,6 +13,7 @@
         $('#loading').spin('flower');
 
         $('#users-table').dataTable({
+            "bAutoWidth": false,
             "bJQueryUI" : true,
             "sPaginationType": "full_numbers",
             "sDom" : '<"H"lr>t<"F"fip>',
@@ -22,6 +23,13 @@
                 "sInfoEmpty": "No Results",
                 "sEmptyTable": " ",
             },
+            "aoColumns": [
+                null,
+                { "sWidth": "15%" },
+                { "sWidth": "15%" },
+                { "sWidth": "15%" },
+                { "sWidth": "10%" },
+            ],
             "fnInitComplete": function() {
                 $('#loading').stop();
                 $('#loading').hide();
