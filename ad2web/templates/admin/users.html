@@ -53,7 +53,7 @@
                 <td><a href="{{ url_for('admin.user', user_id=user.id)}}">{{ user.name }}</a></td>
                 <td>{{ user.status }}</td>
                 <td>{{ user.role }}</td>
-                <td>{{ user.created_time|format_date }}</td>
+                <td>{{ user.created_time.strftime('%m-%d-%Y %H:%m') }}</td>
                 <td><a href="{{ url_for('admin.remove', user_id=user.id)}}"><img style="text-align: center; float: right; margin-right: 15px;" src="../../static/img/red_x.png"/></a></td>
             </tr>
             {% endfor %}
