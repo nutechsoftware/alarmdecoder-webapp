@@ -38,7 +38,7 @@ def create():
 
         flash('Zone created.', 'success')
 
-        return redirect(url_for('zones.edit', id=zone.zone_id))
+        return redirect(url_for('zones.index'))
 
     return render_template('zones/create.html', form=form, active="zones")
 
