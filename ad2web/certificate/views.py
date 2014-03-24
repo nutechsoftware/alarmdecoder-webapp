@@ -45,7 +45,7 @@ def generate():
         cert.type = CLIENT
         cert.user = current_user
 
-        if parent.id is not None:
+        if parent is not None:
             cert.ca_id = parent.id
 
         db.session.add(cert)
@@ -62,10 +62,11 @@ def generate():
 @login_required
 def view(certificate_id):
     cert = Certificate.get_by_id(certificate_id)
+    ca_cert = Certificate.query.filter_by(type=CA).first()
     if cert.user != current_user and not current_user.is_admin():
         abort(403)
 
-    return render_template('certificate/view.html', certificate=cert, active='certificates')
+    return render_template('certificate/view.html', certificate=cert, ca_cert=ca_cert, active='certificates')
 
 @certificate.route('/<int:certificate_id>/download/<download_type>')
 @login_required

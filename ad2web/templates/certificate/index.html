@@ -93,6 +93,8 @@
         <a style="margin-top: 5px; width: 95px;" id="revokeca" class='btn btn-primary' href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
     {% endif %}
     <br>
+    {% if ca_cert %}
     <a style="margin-top: 5px;" class="btn btn-primary" href="{{ url_for('certificate.generate') }}">New Certificate</a>
+    {% endif %}
 </div>
 {% endblock %}
