@@ -99,7 +99,7 @@ class Decoder(object):
 
         try:
             device = devicetype(interface=interface)
-            if self._device_location == 'network' and use_ssl:
+            if use_ssl:
                 ca_cert = Certificate.query.filter_by(name='AlarmDecoder CA').one()
                 internal_cert = Certificate.query.filter_by(name='AlarmDecoder Internal').one()
 
