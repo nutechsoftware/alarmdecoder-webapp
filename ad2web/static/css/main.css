@@ -354,19 +354,24 @@ table#test_results td.details {
 #cert_cert_cert {
     position: relative;
     top: -155px;
-    left: -80px;
     float: right;
     text-align: center;
 }
 
+#cert_cert_cert button {
+    width: 150px;
+}
 #cert_cert_key {
     position: relative;
     float: right;
     top: -120px;
-    left: -30px;
+    left: 150px;
     text-align: center;
 }
 
+#cert_cert_key button {
+    width: 150px;
+}
 #cert_id {
     margin-bottom: 10px;
 }

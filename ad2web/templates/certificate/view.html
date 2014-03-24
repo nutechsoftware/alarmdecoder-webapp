@@ -147,11 +147,11 @@ $(document).ready(function() {
         <span id="certificate-description">{{ certificate.description }}</span>
     </div>
     <div id="cert_cert_cert">
-        <button id="cert" name="cert" type="button" value="Cert" class="btn btn-primary" style="width: 60px;">Cert</button>
+        <button id="cert" name="cert" type="button" value="Cert" class="btn btn-primary" style="position: relative;">View Certificate</button>
         <div id="cert_input" style="display:none;"><p>{{ certificate.certificate }}</p></div>
     </div>
     <div id="cert_cert_key">
-        <button id="key" name="key" type="button" value="Key" class="btn btn-primary" style="position: relative; width: 60px; left: 10px;">Key</button>
+        <button id="key" name="key" type="button" value="Key" class="btn btn-primary" style="position: relative;">View Key</button>
         <div id="cert_key" style="display:none;"><p>{{ certificate.key }}</p></div>
     </div>
 </div>
