@@ -12,6 +12,7 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from wtforms.widgets import ListWidget, CheckboxInput, html_params
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES, DEFAULT_BAUDRATES
+from ..validators import PathExists, Hex
 
 class BackButtonWidget(object):
     html_params = staticmethod(html_params)
@@ -54,7 +55,7 @@ class DeviceTypeForm(Form):
 
 class NetworkDeviceForm(Form):
     device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
-    device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
+    device_port = IntegerField(u'Port', [Required(), NumberRange(1024, 65535)], description=u'', default=10000)
     ssl = BooleanField(u'Use SSL?')
 
     buttons = FormField(SetupButtonForm)
@@ -67,15 +68,15 @@ class SSLForm(Form):
     buttons = FormField(SetupButtonForm)
 
 class SSLHostForm(Form):
-    config_path = TextField(u'SER2SOCK Configuration Path', default='/etc/ser2sock')
+    config_path = TextField(u'SER2SOCK Configuration Path', [Required(), PathExists()], default='/etc/ser2sock')
     device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
-    device_port = IntegerField(u'Port', [Required()], description=u'', default=10000)
+    device_port = IntegerField(u'Port', [Required(), NumberRange(1024, 65535)], description=u'', default=10000)
     ssl = BooleanField(u'Use SSL?')
 
     buttons = FormField(SetupButtonForm)
 
 class LocalDeviceForm(Form):
-    device_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Filesystem path to your AlarmDecoder.', default='/dev/ttyAMA0')
+    device_path = TextField(u'Path', [Required(), Length(max=255), PathExists()], description=u'Filesystem path to your AlarmDecoder.', default='/dev/ttyAMA0')
     baudrate = SelectField(u'Baudrate', choices=[(baudrate, str(baudrate)) for baudrate in BAUDRATES], default=115200, coerce=int)
     confirm_management = BooleanField(u'Share AlarmDecoder on your network?', description='This setting serves the AlarmDecoder on your network with ser2sock and allows other software (Software keypad, etc.) to use it in conjunction with this webapp.')
 
@@ -87,8 +88,8 @@ class TestDeviceForm(Form):
     next = SubmitField(u'Next')
 
 class DeviceForm(Form):
-    keypad_address = TextField(u'Keypad Address', [Required()], default=18)
-    address_mask = TextField(u'Address Mask', [Required(), Length(max=8)], default=u'ffffffff')
+    keypad_address = TextField(u'Keypad Address', [Required(), NumberRange(1, 99)], default=18)
+    address_mask = TextField(u'Address Mask', [Required(), Length(max=8), Hex()], default=u'ffffffff')
     zone_expanders = MultiCheckboxField(u'Zone Expanders', choices=[('1', 'Emulate zone expander #1?'), ('2', 'Emulate zone expander #2?'), ('3', 'Emulate zone expander #3?'), ('4', 'Emulate zone expander #4?'), ('5', 'Emulate zone expander #5?')])
     relay_expanders = MultiCheckboxField(u'Relay Expanders', choices=[('1', 'Emulate relay expander #1?'), ('2', 'Emulate relay expander #2?'), ('3', 'Emulate relay expander #3?'), ('4', 'Emulate relay expander #4?')])
     lrr_enabled = BooleanField(u'Emulate Long Range Radio?')
