@@ -13,6 +13,7 @@
         $('#loading').spin('flower');
 
         $('#users-table').dataTable({
+            "bAutoWidth": false,
             "bJQueryUI" : true,
             "sPaginationType": "full_numbers",
             "sDom" : '<"H"lr>t<"F"fip>',
@@ -20,7 +21,15 @@
                 "sInfoFiltered": "",
                 "sInfo": "_START_ to _END_ of _TOTAL_",
                 "sInfoEmpty": "No Results",
+                "sEmptyTable": " ",
             },
+            "aoColumns": [
+                null,
+                { "sWidth": "15%" },
+                { "sWidth": "15%" },
+                { "sWidth": "15%" },
+                { "sWidth": "10%" },
+            ],
             "fnInitComplete": function() {
                 $('#loading').stop();
                 $('#loading').hide();
@@ -41,9 +50,9 @@
                     <th>Username</th>
                     <th>Status</th>
                     <th>Role</th>
-                    <th>Created Time</th>
+                    <th>Created Date</th>
                 {% if users %}
-                    <th>Remove</th>
+                    <th>Actions</th>
                 {% endif %}
                 </tr>
             </thead>
@@ -52,7 +61,7 @@
                 <td><a href="{{ url_for('admin.user', user_id=user.id)}}">{{ user.name }}</a></td>
                 <td>{{ user.status }}</td>
                 <td>{{ user.role }}</td>
-                <td>{{ user.created_time|format_date }}</td>
+                <td>{{ user.created_time.strftime('%m-%d-%Y %H:%m') }}</td>
                 <td><a href="{{ url_for('admin.remove', user_id=user.id)}}"><img style="text-align: center; float: right; margin-right: 15px;" src="../../static/img/red_x.png"/></a></td>
             </tr>
             {% endfor %}

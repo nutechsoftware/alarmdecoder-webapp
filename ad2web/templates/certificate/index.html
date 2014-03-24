@@ -38,7 +38,15 @@
                 "sInfoFiltered": "",
                 "sInfo": "_START_ to _END_ of _TOTAL_",
                 "sInfoEmpty": "No Results",
+                "sEmptyTable": " ",
             },
+            "aoColumns": [
+                { "sWidth": "16%"},
+                { "sWidth": "13%"},
+                { "sWidth": "8%" },
+                { "sWidth": "8%" },
+                null
+            ],
             "fnInitComplete": function() {
                 $('#loading').stop();
                 $('#loading').hide();
@@ -79,10 +87,10 @@
         </table>
     </div>
     {% if not ca_cert and current_user.is_admin() %}
-        <a style="margin-top: 5px;" id="generateca" class='btn btn-primary' href="{{ url_for('certificate.generateCA') }}">Generate CA</a>
+        <a style="margin-top: 5px; width: 95px;" id="generateca" class='btn btn-primary' href="{{ url_for('certificate.generateCA') }}">Generate CA</a>
     {% endif %}
     {% if ca_cert and current_user.is_admin() %}
-        <a style="margin-top: 5px;" id="revokeca" class='btn btn-primary' href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
+        <a style="margin-top: 5px; width: 95px;" id="revokeca" class='btn btn-primary' href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
     {% endif %}
     <br>
     <a style="margin-top: 5px;" class="btn btn-primary" href="{{ url_for('certificate.generate') }}">New Certificate</a>
