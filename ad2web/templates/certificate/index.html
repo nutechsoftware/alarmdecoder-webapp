@@ -78,7 +78,7 @@
                     <td><a href="{{ url_for('certificate.view', certificate_id=cert.id) }}">{{ cert.name }}</a></td>
                     <td>{{ TYPES[cert.type] }}</td>
                     <td>{{ STATUS[cert.status] }}</td>
-                    <td>{% if cert.user %}{{ cert.user.name}}{% endif %}</td>
+                    <td>{% if cert.user %}{{ cert.user.name}}{% else %}System{% endif %}</td>
                     <td>{{ cert.description }}</td>
                 </tr>
                 {% endif %}

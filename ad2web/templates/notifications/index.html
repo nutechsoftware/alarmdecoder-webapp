@@ -23,6 +23,12 @@
                 "sInfoEmpty": "No Results",
                 "sEmptyTable": " ",
             },
+            "aoColumns": [
+                { "sWidth": "15%" },
+                { "sWidth": "15%" },
+                null,
+                { "sWidth": "10%" },
+            ],
             "fnInitComplete": function() {
                 $('#loading').stop();
                 $('#loading').hide();
@@ -45,9 +51,7 @@
                     <th>Type</th>
                     <th>Owner</th>
                     <th>Description</th>
-                {% if notifications %}
-                    <th>Remove</th>
-                {% endif %}
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
