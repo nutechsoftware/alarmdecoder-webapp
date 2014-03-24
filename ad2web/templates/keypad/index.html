@@ -376,7 +376,7 @@
                 title: "Confirm Panic",
                 confirm: function(button) {
                     add_flash_message("Panic Triggered!", "error");
-                    decoder.emit('keypress', '\x05\x05\x05');
+                    decoder.emit('keypress', 5);
                 },
                 cancel: function(button) {
                 },
