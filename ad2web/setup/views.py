@@ -13,8 +13,8 @@ from ..certificate.models import Certificate
 from ..certificate.constants import CA, SERVER, CLIENT, INTERNAL, ACTIVE, REVOKED
 from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
                    SSLForm, SSLHostForm, DeviceForm, TestDeviceForm)
-from .constants import (STAGES, SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
-                    SETUP_LOCAL, SETUP_DEVICE, SETUP_COMPLETE, BAUDRATES,
+from .constants import (SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
+                    SETUP_LOCAL, SETUP_DEVICE, SETUP_TEST, SETUP_COMPLETE, BAUDRATES,
                     DEFAULT_BAUDRATES, DEFAULT_PATHS, SETUP_ENDPOINT_STAGE)
 from ..ser2sock import ser2sock
 
@@ -311,7 +311,7 @@ def test():
     form = TestDeviceForm()
 
     if not form.is_submitted():
-        set_stage(SETUP_DEVICE)
+        set_stage(SETUP_TEST)
         db.session.commit()
     else:
         setup_complete = Setting.get_by_name('setup_complete')
@@ -384,6 +384,8 @@ def device():
             zone_expanders.value = ','.join([str(x) for x in zx])
             relay_expanders.value = ','.join([str(x) for x in rx])
             deduplicate.value = form.deduplicate.data
+
+            set_stage(SETUP_TEST)
 
             db.session.add(keypad_address)
             db.session.add(address_mask)

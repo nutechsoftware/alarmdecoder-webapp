@@ -27,7 +27,7 @@ from .keypad import keypad
 from .notifications import notifications
 from .zones import zones
 from .settings.models import Setting
-from .setup.constants import SETUP_COMPLETE, SETUP_STAGE_ENDPOINT
+from .setup.constants import SETUP_COMPLETE, SETUP_STAGE_ENDPOINT, SETUP_ENDPOINT_STAGE
 from .setup import setup
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
@@ -211,13 +211,26 @@ def configure_hook(app):
 
     @app.before_request
     def before_request():
-        if not request.blueprint in safe_blueprints:
-            setup_stage = Setting.get_by_name('setup_stage')
-            if setup_stage.value is None:
+        if request.blueprint == 'setup':
+            setup_stage = Setting.get_by_name('setup_stage').value
+            # If setup hasn't been started, redirect to the index
+            if setup_stage is None:
+                if request.endpoint != 'setup.index' and request.endpoint != 'setup.type':
+                    return redirect(url_for('setup.index'))
+
+            # Disallow skipping ahead in the setup process but allow them to go back.
+            elif SETUP_ENDPOINT_STAGE[request.endpoint] > setup_stage:
+                return redirect(url_for(SETUP_STAGE_ENDPOINT[setup_stage]))
+
+        elif not request.blueprint in safe_blueprints:
+            setup_stage = Setting.get_by_name('setup_stage').value
+            # If setup hasn't been started, force them to the index.
+            if setup_stage is None:
                 return redirect(url_for('setup.index'))
 
-            elif setup_stage.value != SETUP_COMPLETE:
-                stage_page = SETUP_STAGE_ENDPOINT[setup_stage.value]
+            # And if it has, place them at the last-known stage.
+            elif setup_stage != SETUP_COMPLETE:
+                stage_page = SETUP_STAGE_ENDPOINT[setup_stage]
 
                 return redirect(url_for(stage_page))
 
