@@ -23,6 +23,12 @@
                 "sInfoEmpty": "No Results",
                 "sEmptyTable": " ",
             },
+            "aoColumns": [
+                { "sWidth": "15%" },
+                { "sWidth": "15%" },
+                null,
+                { "sWidth": "10%" },
+            ],
             "fnInitComplete": function() {
                 $('#loading').stop();
                 $('#loading').hide();
@@ -44,16 +50,14 @@
                     <th>ID</th>
                     <th>Zone Name</th>
                     <th>Description</th>
-                {% if zones %}
-                    <th>Remove</th>
-                {% endif %}
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
             {% for zone in zones %}
                 <tr>
-                    <td>{{ zone.zone_id }}</td>
-                    <td><a href="{{ url_for('zones.edit', id=zone.zone_id) }}">{{ zone.name }}</a></td>
+                    <td><a href="{{ url_for('zones.edit', id=zone.zone_id) }}">{{ zone.zone_id }}</a></td>
+                    <td>{{ zone.name }}</td>
                     <td>{{ zone.description }}</td>
                     <td><a href="{{ url_for('zones.remove', id=zone.zone_id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="../../static/img/red_x.png"/></a></td>
             {% endfor %}
