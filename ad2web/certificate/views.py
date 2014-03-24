@@ -73,11 +73,15 @@ def view(certificate_id):
         abort(404)
 
     cert = Certificate.get_by_id(certificate_id)
+
+    if cert.type != CLIENT and not current_user.is_admin():
+        abort(403)
+
     ca_cert = Certificate.query.filter_by(type=CA).first()
     if cert.user != current_user and not current_user.is_admin():
         abort(403)
 
-    return render_template('certificate/view.html', certificate=cert, ca_cert=ca_cert, active='certificates')
+    return render_template('certificate/view.html', certificate=cert, ca_cert=ca_cert, current_user=current_user, active='certificates')
 
 @certificate.route('/<int:certificate_id>/download/<download_type>')
 @login_required

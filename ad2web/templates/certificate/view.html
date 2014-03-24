@@ -122,6 +122,11 @@ $(document).ready(function() {
         <a style="margin-top: 3px; position: relative; float: right; width: 125px;" class="btn btn-primary" href="{{ url_for('certificate.revoke', certificate_id=certificate.id) }}">Revoke certificate</a>
     </div>
     {% endif %}
+    {% if certificate.type == 0 or certificate.type == 1 and current_user.is_admin() %}
+    <div id="cert_download">
+        <a style="margin-top: 3px; position: relative; float: right; width: 125px;" class="btn btn-primary" href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
+    </div>
+    {% endif %}
     <div id="cert_id">
         <label for="certificate-id">Certificate ID</label>
         <span id="certificate-id">{{ certificate.id }} ({{ TYPES[certificate.type] }})</span>

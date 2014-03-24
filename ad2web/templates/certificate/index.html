@@ -21,14 +21,6 @@
                 text: 'Are you sure?',
             });
         }
-        if( $('#revokeca').length )
-        {
-            $('#revokeca').confirm({
-                title: 'Revoke CA?',
-                text: 'Are you sure?',
-                
-            });
-        }
 
         $('#certificate-table').dataTable({
             "bJQueryUI" : true,
@@ -88,9 +80,6 @@
     </div>
     {% if not ca_cert and current_user.is_admin() %}
         <a style="margin-top: 5px; width: 95px;" id="generateca" class='btn btn-primary' href="{{ url_for('certificate.generateCA') }}">Generate CA</a>
-    {% endif %}
-    {% if ca_cert and current_user.is_admin() %}
-        <a style="margin-top: 5px; width: 95px;" id="revokeca" class='btn btn-primary' href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
     {% endif %}
     <br>
     {% if ca_cert %}
