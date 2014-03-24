@@ -13,8 +13,8 @@ from ..user import User
 from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX, AGE_MIN, AGE_MAX, DEPOSIT_MIN, DEPOSIT_MAX
 
 class ZoneForm(Form):
-    zone_id = IntegerField(u'Zone ID', [Required()])
+    zone_id = IntegerField(u'Zone ID', [Required(), NumberRange(1, 65535)])
     name = TextField(u'Name', [Required(), Length(max=32)])
-    description = TextField(u'Description', [Required(), Length(max=255)])
+    description = TextField(u'Description', [Length(max=255)])
 
     submit = SubmitField(u'Save')
