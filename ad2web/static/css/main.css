@@ -157,18 +157,38 @@ cursor: pointer;
 }
 
 .dataTables_length {
-    padding-top: 5px;
     padding-left: 5px;
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.dataTables_length label {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.dataTables_length label select {
+    padding-bottom: 3px !important;
+    top: 0px !important;
 }
 
 .dataTables_filter {
     float: right;
     padding-right: 10px;
-    padding-top: 5px;
 }
 
+.dataTables_filter label {
+    display: table-cell !important;
+    vertical-align: middle !important;
+}
+
+.dataTables_filter label input {
+    padding-bottom: 3px;
+}
 .dataTables_info {
     padding-left: 5px;
+    display: table-cell;
+    vertical-align: middle;
 }
 //forms
 input:focus {
@@ -284,19 +304,13 @@ table#test_results td.details {
     height: 31px !important;
 }
 
-.dataTables_filter {
-    position: relative;
-    top: -3px;
-}
-
 .dataTables_filter label {
     position: relative;
-    top: -8px;
+    top: -4px !important;
 }
-
 .dataTables_filter label input {
     position: relative;
-    top: 8px;
+    top: 3px;
     height: 15px;
 }
 .dataTables_length {
@@ -304,14 +318,10 @@ table#test_results td.details {
     top: -3px;
 }
 
-.dataTables_length label {
-    position: relative;
-    top: -8px;
-}
 
 .dataTables_length label select {
     position: relative;
-    top: 8px !important;
+    top: 3px !important;
     height: 25px;
 }
 
@@ -323,7 +333,7 @@ table#test_results td.details {
 
 .dataTables_paginate {
     position: relative;
-    top: -23px;
+    top: -21px;
     left: 280px;
 }
 
