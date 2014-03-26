@@ -371,27 +371,6 @@
                 post: false,
             });
 
-            $("#button-panic").confirm({
-                text: "Are you sure?",
-                title: "Confirm Panic",
-                confirm: function(button) {
-                    add_flash_message("Panic Triggered!", "error");
-                    decoder.emit('keypress', 5);
-                },
-                cancel: function(button) {
-                },
-                confirmButton: "Yes I am",
-                cancelButton: "No",
-                post: false,
-            });
-
-            $('#button-panic').on('mousedown', function() {
-                $(this).css('background-color', 'yellow');
-            });
-            $('#button-panic').on('mouseup', function() {
-                $(this).css('background-color', 'red');
-            });
-
 	        $('#button-F1').on('mousedown', function() {
         		$(this).css('background', 'url(../static/img/f1-fire-on.png) no-repeat 65% center');
     	    });
@@ -451,9 +430,6 @@
             <input id="button-star" class="keypad-button" type="button" value=""></input>
             <input id="button-0" class="keypad-button" type="button" value=""></input>
             <input id="button-pound" class="keypad-button" type="button" value=""></input>
-        </div>
-        <div id="panic-button-row">
-            <button id="button-panic" class="panic-button" type="button">PANIC</button>
         </div>
     </div>
 </div>
