@@ -41,8 +41,11 @@ def save_config(path, config_values=DEFAULT_SETTINGS):
 
 def hup():
     for proc in psutil.process_iter():
-        if proc.name == 'ser2sock':
-            os.kill(proc.pid, signal.SIGHUP)
+        try:
+            if proc.name == 'ser2sock':
+                os.kill(proc.pid, signal.SIGHUP)
+        except OSError, err:
+            raise RuntimeError('Error while sending SIGHUP to ser2sock (pid {0}): {1}'.format(proc.pid, err))
 
 def save_certificate_index(path):
     path = os.path.join(path, 'certs', 'certindex')

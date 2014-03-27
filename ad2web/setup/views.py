@@ -214,7 +214,6 @@ def sslserver():
         device_address = Setting.get_by_name('device_address')
         device_port = Setting.get_by_name('device_port')
         device_location = Setting.get_by_name('device_location')
-        serial_number = Setting.get_by_name
 
         manage_ser2sock.value = True
         use_ssl.value = form.ssl.data
@@ -237,10 +236,14 @@ def sslserver():
         if form.ssl.data == True:
             _generate_certs()
 
-        _update_ser2sock_config(config_path.value)
-        db.session.commit()
+        try:
+            _update_ser2sock_config(config_path.value)
+            db.session.commit()
 
-        return redirect(url_for(next_stage))
+        except RuntimeError, err:
+            flash("There was an error while updating ser2sock's configuration: {0}".format(err), 'error')
+        else:
+            return redirect(url_for(next_stage))
 
     return render_template('setup/ssl.html', form=form)
 
@@ -273,6 +276,8 @@ def _generate_certs():
     db.session.add(internal_cert)
 
 def _update_ser2sock_config(path):
+
+
     if path is not None:
         config = ser2sock.read_config(os.path.join(path, 'ser2sock.conf'))
     else:
