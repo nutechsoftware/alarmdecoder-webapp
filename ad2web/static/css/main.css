@@ -147,6 +147,9 @@ table {
     -webkit-box-shadow: 0px 0px 8px rgba(0,0,0,0.3);
     -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    display: inline-block;
+    vertical-align: middle;
+    width: 100%;
 }
 
 .paging_full_numbers .ui-button {
@@ -157,18 +160,47 @@ cursor: pointer;
 }
 
 .dataTables_length {
-    padding-top: 5px;
     padding-left: 5px;
+}
+
+.dataTables_length label {
+    position: relative;
+    top: -3px;
+}
+.dataTables_length label select {
+    position: relative;
+    padding-bottom: 3px !important;
+    top: 4px !important;
 }
 
 .dataTables_filter {
     float: right;
     padding-right: 10px;
-    padding-top: 5px;
 }
 
+.dataTables_filter label {
+    position: relative;
+    top: -3px !important;
+}
+.dataTables_filter label input {
+    position: relative;
+    top: 3px !important;
+}
 .dataTables_info {
     padding-left: 5px;
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    top: 4px;
+}
+
+.dataTables_paginate {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    top: 5px;
+    left: 175px;
 }
 //forms
 input:focus {
@@ -284,49 +316,6 @@ table#test_results td.details {
     height: 31px !important;
 }
 
-.dataTables_filter {
-    position: relative;
-    top: -3px;
-}
-
-.dataTables_filter label {
-    position: relative;
-    top: -8px;
-}
-
-.dataTables_filter label input {
-    position: relative;
-    top: 8px;
-    height: 15px;
-}
-.dataTables_length {
-    position: relative;
-    top: -3px;
-}
-
-.dataTables_length label {
-    position: relative;
-    top: -8px;
-}
-
-.dataTables_length label select {
-    position: relative;
-    top: 8px !important;
-    height: 25px;
-}
-
-.dataTables_info {
-    padding-top: 5px;
-    position: relative;
-    top: -4px;
-}
-
-.dataTables_paginate {
-    position: relative;
-    top: -23px;
-    left: 280px;
-}
-
 .css_right {
     float: right;
 }
@@ -354,19 +343,24 @@ table#test_results td.details {
 #cert_cert_cert {
     position: relative;
     top: -155px;
-    left: -80px;
     float: right;
     text-align: center;
 }
 
+#cert_cert_cert button {
+    width: 150px;
+}
 #cert_cert_key {
     position: relative;
     float: right;
     top: -120px;
-    left: -30px;
+    left: 150px;
     text-align: center;
 }
 
+#cert_cert_key button {
+    width: 150px;
+}
 #cert_id {
     margin-bottom: 10px;
 }

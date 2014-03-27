@@ -25,6 +25,9 @@ def certificate_context_processor():
 @certificate.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+    if use_ssl == False:
+        abort(404)
     certificates = Certificate.query.all()
     ca_cert = Certificate.query.filter_by(type=CA).first()
     return render_template('certificate/index.html', certificates=certificates, ca_cert=ca_cert, active='certificates')
@@ -32,6 +35,10 @@ def index():
 @certificate.route('/generate', methods=['GET', 'POST'])
 @login_required
 def generate():
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+    if use_ssl == False:
+        abort(404)
+
     form = GenerateCertificateForm(next=request.args.get('next'))
 
     if form.validate_on_submit():
@@ -45,7 +52,7 @@ def generate():
         cert.type = CLIENT
         cert.user = current_user
 
-        if parent.id is not None:
+        if parent is not None:
             cert.ca_id = parent.id
 
         db.session.add(cert)
@@ -61,15 +68,28 @@ def generate():
 @certificate.route('/<int:certificate_id>')
 @login_required
 def view(certificate_id):
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+    if use_ssl == False:
+        abort(404)
+
     cert = Certificate.get_by_id(certificate_id)
+
+    if cert.type != CLIENT and not current_user.is_admin():
+        abort(403)
+
+    ca_cert = Certificate.query.filter_by(type=CA).first()
     if cert.user != current_user and not current_user.is_admin():
         abort(403)
 
-    return render_template('certificate/view.html', certificate=cert, active='certificates')
+    return render_template('certificate/view.html', certificate=cert, ca_cert=ca_cert, current_user=current_user, active='certificates')
 
 @certificate.route('/<int:certificate_id>/download/<download_type>')
 @login_required
 def download(certificate_id, download_type):
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+    if use_ssl == False:
+        abort(404)
+
     cert = Certificate.get_by_id(certificate_id)
     if cert.user != current_user and not current_user.is_admin():
         abort(403)
@@ -84,6 +104,10 @@ def download(certificate_id, download_type):
 @certificate.route('/<int:certificate_id>/revoke')
 @login_required
 def revoke(certificate_id):
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+    if use_ssl == False:
+        abort(404)
+
     cert = Certificate.get_by_id(certificate_id)
     if cert.user != current_user and not current_user.is_admin():
         abort(403)
@@ -103,6 +127,10 @@ def revoke(certificate_id):
 @login_required
 @admin_required
 def generateCA():
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+    if use_ssl == False:
+        abort(404)
+
     ca_cert = Certificate(
                 name="AlarmDecoder CA",
                 description='CA certificate used for authenticating others.',
@@ -174,6 +202,10 @@ def _update_ser2sock_config(path):
 @login_required
 @admin_required
 def revokeCA():
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+    if use_ssl == False:
+        abort(404)
+
     ca = Certificate.query.filter_by(type=CA).first()
     certs = Certificate.query.filter_by(ca_id=ca.id).delete()
     ca = Certificate.query.filter_by(type=CA).delete()
