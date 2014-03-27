@@ -147,6 +147,9 @@ table {
     -webkit-box-shadow: 0px 0px 8px rgba(0,0,0,0.3);
     -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    display: inline-block;
+    vertical-align: middle;
+    width: 100%;
 }
 
 .paging_full_numbers .ui-button {
@@ -158,18 +161,16 @@ cursor: pointer;
 
 .dataTables_length {
     padding-left: 5px;
-    display: table-cell;
-    vertical-align: middle;
 }
 
 .dataTables_length label {
-    display: table-cell;
-    vertical-align: middle;
+    position: relative;
+    top: -3px;
 }
-
 .dataTables_length label select {
+    position: relative;
     padding-bottom: 3px !important;
-    top: 0px !important;
+    top: 4px !important;
 }
 
 .dataTables_filter {
@@ -178,17 +179,28 @@ cursor: pointer;
 }
 
 .dataTables_filter label {
-    display: table-cell !important;
-    vertical-align: middle !important;
+    position: relative;
+    top: -3px !important;
 }
-
 .dataTables_filter label input {
-    padding-bottom: 3px;
+    position: relative;
+    top: 3px !important;
 }
 .dataTables_info {
     padding-left: 5px;
-    display: table-cell;
+    display: inline-block;
     vertical-align: middle;
+    position: relative;
+    top: 4px;
+}
+
+.dataTables_paginate {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    top: 5px;
+    left: 175px;
 }
 //forms
 input:focus {
@@ -302,39 +314,6 @@ table#test_results td.details {
 
 .ui-widget-header {
     height: 31px !important;
-}
-
-.dataTables_filter label {
-    position: relative;
-    top: -4px !important;
-}
-.dataTables_filter label input {
-    position: relative;
-    top: 3px;
-    height: 15px;
-}
-.dataTables_length {
-    position: relative;
-    top: -3px;
-}
-
-
-.dataTables_length label select {
-    position: relative;
-    top: 3px !important;
-    height: 25px;
-}
-
-.dataTables_info {
-    padding-top: 5px;
-    position: relative;
-    top: -4px;
-}
-
-.dataTables_paginate {
-    position: relative;
-    top: -21px;
-    left: 280px;
 }
 
 .css_right {
