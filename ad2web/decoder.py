@@ -207,6 +207,8 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                     self._alarmdecoder.device.send(AlarmDecoder.KEY_F3)
                 elif key == 4:
                     self._alarmdecoder.device.send(AlarmDecoder.KEY_F4)
+                elif key == 5:
+                    self._alarmdecoder.device.send(AlarmDecoder.KEY_PANIC)
                 else:
                     self._alarmdecoder.device.send(key)
             except CommError, err:

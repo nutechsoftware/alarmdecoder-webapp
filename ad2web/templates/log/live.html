@@ -9,6 +9,7 @@
         //store messages when paused, display later
         var messagesBacklog = [];
         $(document).ready(function() {
+            $.fn.dataTableExt.oPagination.iFullNumbersShowPages = 3;
             $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
                 if( oSettings.oFeatures.bServerSide === false )
                 {

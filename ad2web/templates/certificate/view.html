@@ -113,11 +113,18 @@ $(document).ready(function() {
 <div id="cert_info">
     {% if certificate.type == 2 %}
     <div id="cert_download">
+        {% if ca_cert %}
         Download: <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='pkcs12') }}">PKCS12</a>
         | <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='tgz') }}">TGZ</a>
         | <a href="{{ url_for('certificate.download', certificate_id=certificate.id, download_type='bks') }}">BKS</a>
+        {% endif %}
         <br>
-        <a style="margin-top: 3px;" class="btn btn-primary" href="{{ url_for('certificate.revoke', certificate_id=certificate.id) }}">Revoke certificate</a>
+        <a style="margin-top: 3px; position: relative; float: right; width: 125px;" class="btn btn-primary" href="{{ url_for('certificate.revoke', certificate_id=certificate.id) }}">Revoke certificate</a>
+    </div>
+    {% endif %}
+    {% if certificate.type == 0 or certificate.type == 1 and current_user.is_admin() %}
+    <div id="cert_download">
+        <a style="margin-top: 3px; position: relative; float: right; width: 125px;" class="btn btn-primary" href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
     </div>
     {% endif %}
     <div id="cert_id">
@@ -147,11 +154,11 @@ $(document).ready(function() {
         <span id="certificate-description">{{ certificate.description }}</span>
     </div>
     <div id="cert_cert_cert">
-        <button id="cert" name="cert" type="button" value="Cert" class="btn btn-primary" style="width: 60px;">Cert</button>
+        <button id="cert" name="cert" type="button" value="Cert" class="btn btn-primary" style="position: relative;">View Certificate</button>
         <div id="cert_input" style="display:none;"><p>{{ certificate.certificate }}</p></div>
     </div>
     <div id="cert_cert_key">
-        <button id="key" name="key" type="button" value="Key" class="btn btn-primary" style="position: relative; width: 60px; left: 10px;">Key</button>
+        <button id="key" name="key" type="button" value="Key" class="btn btn-primary" style="position: relative;">View Key</button>
         <div id="cert_key" style="display:none;"><p>{{ certificate.key }}</p></div>
     </div>
 </div>

@@ -22,7 +22,7 @@ settings = Blueprint('settings', __name__, url_prefix='/settings')
 @settings.route('/')
 @login_required
 def index():
-    ssl = Setting.get_by_name('use_ssl')
+    ssl = Setting.get_by_name('use_ssl',default=False).value
     return render_template('settings/index.html', ssl=ssl)
 
 @settings.route('/profile', methods=['GET', 'POST'])
