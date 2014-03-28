@@ -12,10 +12,27 @@
     margin-bottom: 0;
 }
 
+.navbar {
+    width: 100%;
+}
+.navbar-inner {
+    width: 100%;
+}
 .navbar .container {
-    width: 940px;
+    width: 65%;
 }
 
+.container #setup {
+    position: relative;
+    left: 30px;
+    width: 80% !important;
+}
+
+.container #flash_message_container {
+    width: 80% !important;
+    position: relative;
+    left: 30px;
+}
 /* Sign up */
 .btn-signup {
     color: white;
@@ -46,6 +63,7 @@ body {
 }
 #footer {
     background-color: #f5f5f5;
+    width: 100%;
 }
 
 @media (max-width: 767px) {
@@ -64,6 +82,7 @@ body {
     text-shadow: 0 1px 0 white;
     background-color: whiteSmoke;
     border-top: 1px solid #E5E5E5;
+    width: 100%;
 }
 
 .footer-links li {

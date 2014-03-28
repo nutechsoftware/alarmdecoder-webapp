@@ -225,9 +225,15 @@ a:hover {
 .navbar-static-top .container,
 .navbar-fixed-top .container,
 .navbar-fixed-bottom .container {
-  width: 940px;
+    width: 80%;
+}
+.container {
+    width: 100% !important;
 }
 
+.navbar-inner .container {
+    width: 75% !important;
+}
 .span12 {
   width: 940px;
 }
