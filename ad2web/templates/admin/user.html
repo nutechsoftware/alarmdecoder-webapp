@@ -3,7 +3,7 @@
 {% extends "settings/layout.html" %}
 
 {% block body %}
-<div class="container">
+<div id="data">
     {{ render_form(url_for('admin.user', user_id=user_id), form) }}
 </div>
 {% endblock %}

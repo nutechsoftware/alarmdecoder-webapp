@@ -28,6 +28,24 @@
     width: 80% !important;
 }
 
+.container #data {
+    width: 70%;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container .settings_wrapper {
+    width: 70%;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+}
+.container .nav-tabs {
+    width: 70%;
+    position: relative;
+    left: 200px;
+}
 .container #flash_message_container {
     width: 80% !important;
     position: relative;
@@ -351,6 +369,10 @@ table#test_results td.details {
     -webkit-box-shadow: 0px 0px 8px rgba(0,0,0,0.3);
     -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    width: 70%;
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #cert_download {
