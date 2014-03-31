@@ -72,6 +72,7 @@ body {
     height: auto !important;
     height: 100%;
     margin: 0 auto -60px;
+    overflow-x: hidden;
 }
 
 #push,
