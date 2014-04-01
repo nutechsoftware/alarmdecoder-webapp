@@ -6,12 +6,58 @@
 
 {% block pagejs %}
     <script type="text/javascript">
+        var beep1 = new Audio('../static/sounds/1beep.wav');
+        var beep2 = new Audio('../static/sounds/2beep.wav');
+        var beep3 = new Audio('../static/sounds/3beep.wav');
+        var beep4 = new Audio('../static/sounds/4beep.wav');
+        var beep5 = new Audio('../static/sounds/5beep.wav');
+        var beep6 = new Audio('../static/sounds/6beep.wav');
+        var beep7 = new Audio('../static/sounds/7beep.wav');
         $(document).ready(function() {
             PubSub.subscribe('message', function(type, msg) {
                 var lines = ['', '']
                 var armed = msg.armed_away | msg.armed_home;
                 var ready = msg.ready;
+                var beeps = 0;
 
+                if( msg.beeps )
+                {
+                    beeps = msg.beeps;
+                }
+
+                switch(beeps)
+                {
+                    case 1:
+                        beep1.play();
+                        beep1.currentTime=0;
+                        break;
+                    case 2:
+                        beep2.play();
+                        beep2.currentTime=0;
+                        break;
+                    case 3:
+                        beep3.play();
+                        beep3.currentTime=0;
+                        break;
+                    case 4:
+                        beep4.play();
+                        beep4.currentTime=0;
+                        break;
+                    case 5:
+                        beep5.play();
+                        beep5.currentTime=0;
+                        break;
+                    case 6:
+                        beep6.play();
+                        beep6.currentTime=0;
+                        break;
+                    case 7:
+                        beep7.play();
+                        beep7.currentTime=0;
+                        break;
+                    default:
+                        break;
+                }
                 // every once in a while msg.text is undefined, we handle this
                 if(msg.text)
                 {
