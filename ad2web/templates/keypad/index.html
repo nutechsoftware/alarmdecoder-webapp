@@ -6,6 +6,12 @@
 
 {% block pagejs %}
     <script type="text/javascript">
+        function storageSupported()
+        {
+            if( Modernizr.localstorage)
+                return true;
+            return false;
+        }
         var beep1 = new Audio('../static/sounds/1beep.wav');
         var beep2 = new Audio('../static/sounds/2beep.wav');
         var beep3 = new Audio('../static/sounds/3beep.wav');
@@ -13,7 +19,18 @@
         var beep5 = new Audio('../static/sounds/5beep.wav');
         var beep6 = new Audio('../static/sounds/6beep.wav');
         var beep7 = new Audio('../static/sounds/7beep.wav');
+        var mute = 0;
         $(document).ready(function() {
+            if( storageSupported() )
+            {
+                if( (checkmute = localStorage.getItem("mute")) !== null )
+                    mute = parseInt(checkmute);
+
+                if( mute == 1 )
+                    $('#check-mute').prop('checked', true);
+                else
+                    $('#check-mute').prop('checked', false);
+            }
             PubSub.subscribe('message', function(type, msg) {
                 var lines = ['', '']
                 var armed = msg.armed_away | msg.armed_home;
@@ -25,38 +42,41 @@
                     beeps = msg.beeps;
                 }
 
-                switch(beeps)
+                if( mute == 0 )
                 {
-                    case 1:
-                        beep1.play();
-                        beep1.currentTime=0;
-                        break;
-                    case 2:
-                        beep2.play();
-                        beep2.currentTime=0;
-                        break;
-                    case 3:
-                        beep3.play();
-                        beep3.currentTime=0;
-                        break;
-                    case 4:
-                        beep4.play();
-                        beep4.currentTime=0;
-                        break;
-                    case 5:
-                        beep5.play();
-                        beep5.currentTime=0;
-                        break;
-                    case 6:
-                        beep6.play();
-                        beep6.currentTime=0;
-                        break;
-                    case 7:
-                        beep7.play();
-                        beep7.currentTime=0;
-                        break;
-                    default:
-                        break;
+                    switch(beeps)
+                    {
+                        case 1:
+                            beep1.play();
+                            beep1.currentTime=0;
+                            break;
+                        case 2:
+                            beep2.play();
+                            beep2.currentTime=0;
+                            break;
+                        case 3:
+                            beep3.play();
+                            beep3.currentTime=0;
+                            break;
+                        case 4:
+                            beep4.play();
+                            beep4.currentTime=0;
+                            break;
+                        case 5:
+                            beep5.play();
+                            beep5.currentTime=0;
+                            break;
+                        case 6:
+                            beep6.play();
+                            beep6.currentTime=0;
+                            break;
+                        case 7:
+                            beep7.play();
+                            beep7.currentTime=0;
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 // every once in a while msg.text is undefined, we handle this
                 if(msg.text)
@@ -665,6 +685,15 @@
                     $(this).css('background', 'url(../static/img/f4-led-text.png) no-repeat 65% center');
                 }
             });
+            $('#check-mute').on("click", function() {
+                if( $(this).is(':checked') )
+                    mute = 1;
+                else
+                    mute = 0;
+
+                if( storageSupported() )
+                    localStorage.setItem("mute", mute);
+            });
 
         })
     </script>
@@ -700,6 +729,9 @@
             <input id="button-star" class="keypad-button" type="button" value=""></input>
             <input id="button-0" class="keypad-button" type="button" value=""></input>
             <input id="button-pound" class="keypad-button" type="button" value=""></input>
+        </div>
+        <div id="mute-row" style="margin-top: 5px;">
+            <input type="checkbox" id="check-mute" name="check-mute" style="margin-top: -2px;"/><label for="check-mute" style="display: inline-block; padding-top: 2px; color: black; font-weight: normal;">Mute Sounds</label>
         </div>
     </div>
 </div>

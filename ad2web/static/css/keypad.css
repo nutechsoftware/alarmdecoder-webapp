@@ -71,7 +71,7 @@
     width: 100%;
     margin: 0 auto;
     position: relative;
-    right: 0px;
+    left: -30px;
 }
 #keypad-button-row
 {
@@ -83,7 +83,7 @@
 
 .keypad-button
 {
-    width: 12% !important;
+    width: 150px !important;
     height: 80px;
 }
 
