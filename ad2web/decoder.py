@@ -127,11 +127,12 @@ class Decoder(object):
 
     def bind_events(self, appsocket, decoder):
         build_event_handler = lambda ftype: lambda sender, *args, **kwargs: self._handle_event(ftype, sender, *args, **kwargs)
+        build_message_handler = lambda ftype: lambda sender, *args, **kwargs: self._on_message(ftype, sender, *args, **kwargs)
 
-        self.device.on_message += self._on_message
-        self.device.on_lrr_message += self._on_message
-        self.device.on_rfx_message += self._on_message
-        self.device.on_expander_message += self._on_message
+        self.device.on_message += build_message_handler('panel')
+        self.device.on_lrr_message += build_message_handler('lrr')
+        self.device.on_rfx_message += build_message_handler('rfx')
+        self.device.on_expander_message += build_message_handler('exp')
 
         self.device.on_open += self._on_device_open
         self.device.on_close += self._on_device_close
@@ -149,9 +150,9 @@ class Decoder(object):
 
         # TODO: try to reopen
 
-    def _on_message(self, sender, *args, **kwargs):
+    def _on_message(self, ftype, sender, *args, **kwargs):
         try:
-            self.broadcast('message', kwargs.get('message', None))
+            self.broadcast('message', { 'message': kwargs.get('message', None), 'message_type': ftype } )
 
         except Exception, err:
             self.app.logger.error('Error while broadcasting message.', exc_info=True)

@@ -20,7 +20,10 @@ var AlarmDecoder = function() {
         _socket.on('message', function(msg) {
             obj = JSON.parse(msg);
 
-            PubSub.publish('message', obj);
+            msg = obj.message;
+            msg.message_type = obj.message_type;
+
+            PubSub.publish('message', msg);
         });
 
         _socket.on('event', function(msg) {

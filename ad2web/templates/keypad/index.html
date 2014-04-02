@@ -82,60 +82,60 @@
                     $('#check-mute').prop('checked', false);
             }
             PubSub.subscribe('message', function(type, msg) {
-                var lines = ['', '']
-                var armed = msg.armed_away | msg.armed_home;
-                var ready = msg.ready;
-                var beeps = 0;
+                if( msg.message_type == 'panel')
+                {
+                    var lines = ['', '']
+                    var armed = msg.armed_away | msg.armed_home;
+                    var ready = msg.ready;
+                    var beeps = 0;
 
-                if( msg.beeps )
-                {
-                    beeps = msg.beeps;
-                }
-
-                if( beeps > 0 )
-                {
-                    blink('#keypad-line1', beeps, 100);
-                    blink('#keypad-line2', beeps, 100);
-                }
-                if( mute == 0 )
-                {
-                    switch(beeps)
+                    if( msg.beeps )
                     {
-                        case 1:
-                            beep1.play();
-                            beep1.currentTime=0;
-                            break;
-                        case 2:
-                            beep2.play();
-                            beep2.currentTime=0;
-                            break;
-                        case 3:
-                            beep3.play();
-                            beep3.currentTime=0;
-                            break;
-                        case 4:
-                            beep4.play();
-                            beep4.currentTime=0;
-                            break;
-                        case 5:
-                            beep5.play();
-                            beep5.currentTime=0;
-                            break;
-                        case 6:
-                            beep6.play();
-                            beep6.currentTime=0;
-                            break;
-                        case 7:
-                            beep7.play();
-                            beep7.currentTime=0;
-                            break;
-                        default:
-                            break;
+                        beeps = msg.beeps;
                     }
-                }
-                // every once in a while msg.text is undefined, we handle this
-                if(msg.text)
-                {
+
+                    if( beeps > 0 )
+                    {
+                        blink('#keypad-line1', beeps, 100);
+                        blink('#keypad-line2', beeps, 100);
+                    }
+                    if( mute == 0 )
+                    {
+                        switch(beeps)
+                        {
+                            case 1:
+                                beep1.play();
+                                beep1.currentTime=0;
+                                break;
+                            case 2:
+                                beep2.play();
+                                beep2.currentTime=0;
+                                break;
+                            case 3:
+                                beep3.play();
+                                beep3.currentTime=0;
+                                break;
+                            case 4:
+                                beep4.play();
+                                beep4.currentTime=0;
+                                break;
+                            case 5:
+                                beep5.play();
+                                beep5.currentTime=0;
+                                break;
+                            case 6:
+                                beep6.play();
+                                beep6.currentTime=0;
+                                break;
+                            case 7:
+                                beep7.play();
+                                beep7.currentTime=0;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
                     if(msg.text.length >= 16) {
                         lines[0] = msg.text.substring(0, 16);
                         lines[1] = msg.text.substring(16);
@@ -143,41 +143,41 @@
                     else {
                         lines[0] = msg.text;
                     }
-                }
 
-                if( armed )
-                {
-                    $('#status-image1').attr("src", "../static/img/led-on-red.png");
-                }
-                else
-                {
-                    $('#status-image1').attr("src", "../static/img/led-off.png");
-                }
-                if( ready )
-                {
-                    $('#status-image2').attr("src", "../static/img/led-on.png");
-                }
-                else
-                {
-                    $('#status-image2').attr("src", "../static/img/led-off.png");
-                }
-                if( lines[0] != '' )
-                {
-                    $('#keypad-line1').text(lines[0]);
-                    $('#keypad-line1').css("color", "black");
-
-                    //hackery to get page to stop shifting when only 1 line of text present
-                    if( lines[1].match(/ /g).length == 16 )
-                        lines[1] = '';
-                    if( lines[1].length > 0 )
+                    if( armed )
                     {
-                        $('#keypad-line2').css("color", "black");
-                        $('#keypad-line2').text(lines[1]);
+                        $('#status-image1').attr("src", "../static/img/led-on-red.png");
                     }
                     else
                     {
-                        $('#keypad-line2').css("color", "white");
-                        $('#keypad-line2').text('---');
+                        $('#status-image1').attr("src", "../static/img/led-off.png");
+                    }
+                    if( ready )
+                    {
+                        $('#status-image2').attr("src", "../static/img/led-on.png");
+                    }
+                    else
+                    {
+                        $('#status-image2').attr("src", "../static/img/led-off.png");
+                    }
+                    if( lines[0] != '' )
+                    {
+                        $('#keypad-line1').text(lines[0]);
+                        $('#keypad-line1').css("color", "black");
+
+                        //hackery to get page to stop shifting when only 1 line of text present
+                        if( lines[1].match(/ /g).length == 16 )
+                            lines[1] = '';
+                        if( lines[1].length > 0 )
+                        {
+                            $('#keypad-line2').css("color", "black");
+                            $('#keypad-line2').text(lines[1]);
+                        }
+                        else
+                        {
+                            $('#keypad-line2').css("color", "white");
+                            $('#keypad-line2').text('---');
+                        }
                     }
                 }
             });
