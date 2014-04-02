@@ -3,21 +3,25 @@ import os
 import ConfigParser
 import psutil
 import signal
+from collections import OrderedDict
 from OpenSSL import crypto
 
 from ..certificate.models import Certificate
 from ..certificate.constants import CRL_CODE, ACTIVE, REVOKED, CA
 
-DEFAULT_SETTINGS = {
-    'device': '',
-    'baudrate': 19200,
-    'port': 10000,
-    'preserve_connections': '1',
-    'encrypted': '0',
-    'ca_certificate': '',
-    'ssl_certificate': '',
-    'ssl_key': ''
-}
+DEFAULT_SETTINGS = OrderedDict([
+    ('device', ''),
+    ('baudrate', 19200),
+    ('port', 10000),
+    ('preserve_connections', '1'),
+    ('encrypted', '0'),
+    ('ca_certificate', ''),
+    ('ssl_certificate', ''),
+    ('ssl_key', '')
+])
+
+class Ser2sockNotRunning(Exception):
+    pass
 
 def read_config(path):
     config = ConfigParser.SafeConfigParser()
@@ -25,7 +29,7 @@ def read_config(path):
 
     return config
 
-def save_config(path, config_values=DEFAULT_SETTINGS):
+def save_config(path, config_values):
     config = read_config(path)
 
     try:
@@ -33,19 +37,31 @@ def save_config(path, config_values=DEFAULT_SETTINGS):
     except ConfigParser.DuplicateSectionError:
         pass
 
-    for k, v in config_values.iteritems():
+    config_entries = OrderedDict(DEFAULT_SETTINGS.items() + config_values.items())
+
+    for k, v in config_entries.iteritems():
         config.set('ser2sock', k, str(v))
 
     with open(path, 'w') as configfile:
         config.write(configfile)
 
+def is_running():
+    process_names = [proc.name() for proc in psutil.process_iter()]
+    return True if 'ser2sock' in process_names else False
+
 def hup():
+    found = False
+
     for proc in psutil.process_iter():
         try:
-            if proc.name == 'ser2sock':
+            if proc.name() == 'ser2sock':
+                found = True
                 os.kill(proc.pid, signal.SIGHUP)
         except OSError, err:
-            raise RuntimeError('Error while sending SIGHUP to ser2sock (pid {0}): {1}'.format(proc.pid, err))
+            raise RuntimeError('Error attempting to restart ser2sock (pid {0}): {1}'.format(proc.pid, err))
+
+    if not found:
+        raise Ser2sockNotRunning('ser2sock was not found in the process list.')
 
 def save_certificate_index(path):
     path = os.path.join(path, 'certs', 'certindex')
