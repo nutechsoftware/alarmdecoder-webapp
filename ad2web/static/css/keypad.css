@@ -286,3 +286,18 @@
 .blink {
     color: red !important;
 }
+
+#mute-row {
+    margin-top: 10px;
+}
+#check-mute {
+    margin-top: -2px;
+}
+
+#check-mute-label {
+    display: inline-block;
+    padding-top: 2px;
+    padding-left: 2px;
+    color: black;
+    font-weight: normal;
+}
