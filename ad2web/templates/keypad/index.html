@@ -12,6 +12,29 @@
                 return true;
             return false;
         }
+        function blink(elem, times, speed) 
+        {
+            if( times > 0 || times < 0 ) 
+            {
+                if( $(elem).hasClass("blink") ) 
+                    $(elem).removeClass("blink");
+                else
+                    $(elem).addClass("blink");
+            }
+
+            clearTimeout(function() {
+                blink( elem, times, speed );
+            });
+
+            if( times > 0 || times < 0 ) 
+            {
+                setTimeout(function() {
+                    blink( elem, times, speed );
+            }, speed);
+
+            times -= .5;
+        }
+}
         var beep1 = new Audio('../static/sounds/1beep.wav');
         var beep2 = new Audio('../static/sounds/2beep.wav');
         var beep3 = new Audio('../static/sounds/3beep.wav');
@@ -42,6 +65,11 @@
                     beeps = msg.beeps;
                 }
 
+                if( beeps > 0 )
+                {
+                    blink('#keypad-line1', beeps, 100);
+                    blink('#keypad-line2', beeps, 100);
+                }
                 if( mute == 0 )
                 {
                     switch(beeps)
@@ -730,7 +758,7 @@
             <input id="button-0" class="keypad-button" type="button" value=""></input>
             <input id="button-pound" class="keypad-button" type="button" value=""></input>
         </div>
-        <div id="mute-row" style="margin-top: 5px;">
+        <div id="mute-row" style="margin-top: 10px;">
             <input type="checkbox" id="check-mute" name="check-mute" style="margin-top: -2px;"/><label for="check-mute" style="display: inline-block; padding-top: 2px; color: black; font-weight: normal;">Mute Sounds</label>
         </div>
     </div>

@@ -282,3 +282,7 @@
     border: none;
     background:url('../img/pound-small.png') no-repeat;
 }
+
+.blink {
+    color: red !important;
+}
