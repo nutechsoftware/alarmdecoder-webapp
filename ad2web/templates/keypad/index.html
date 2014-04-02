@@ -29,8 +29,8 @@
                 return true;
             return false;
         }
-        //blink an element
-        function blink(elem, times, speed) 
+        //visual beep or veep an element
+        function veep(elem, times, speed) 
         {
             if( times > 0 || times < 0 ) 
             {
@@ -41,13 +41,13 @@
             }
 
             clearTimeout(function() {
-                blink( elem, times, speed );
+                veep( elem, times, speed );
             });
 
             if( times > 0 || times < 0 ) 
             {
                 setTimeout(function() {
-                    blink( elem, times, speed );
+                    veep( elem, times, speed );
                 }, speed);
 
                 times -= .5;
@@ -96,8 +96,8 @@
 
                     if( beeps > 0 )
                     {
-                        blink('#keypad-line1', beeps, 100);
-                        blink('#keypad-line2', beeps, 100);
+                        veep('#keypad-line1', beeps, 100);
+                        veep('#keypad-line2', beeps, 100);
                     }
                     if( mute == 0 )
                     {
