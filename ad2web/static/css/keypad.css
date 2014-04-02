@@ -1,6 +1,7 @@
 @font-face {
     font-family: lcd-font;
     src: url('../fonts/advanced_led_board-7.ttf');
+    -webkit-font-smoothing: antialiased;
 }
 
 .container #keypad-buttons {
