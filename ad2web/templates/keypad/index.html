@@ -6,12 +6,30 @@
 
 {% block pagejs %}
     <script type="text/javascript">
+        //detect if mobile
+        function isMobile()
+        {
+            if( $('html').hasClass('mobile') == true && $('html').hasClass('tablet') == false )
+                return true;
+
+            return false;
+        }
+        //detect if tablet
+        function isTablet()
+        {
+            if( $('html').hasClass('tablet') == true )
+                return true;
+
+            return false;
+        }
+        //is local storage supported?
         function storageSupported()
         {
             if( Modernizr.localstorage)
                 return true;
             return false;
         }
+        //blink an element
         function blink(elem, times, speed) 
         {
             if( times > 0 || times < 0 ) 
@@ -30,11 +48,13 @@
             {
                 setTimeout(function() {
                     blink( elem, times, speed );
-            }, speed);
+                }, speed);
 
-            times -= .5;
+                times -= .5;
+            }
         }
-}
+
+        //setup audio beeping
         var beep1 = new Audio('../static/sounds/1beep.wav');
         var beep2 = new Audio('../static/sounds/2beep.wav');
         var beep3 = new Audio('../static/sounds/3beep.wav');
@@ -43,7 +63,14 @@
         var beep6 = new Audio('../static/sounds/6beep.wav');
         var beep7 = new Audio('../static/sounds/7beep.wav');
         var mute = 0;
+        var mobile = false;
+        var tablet = false;
         $(document).ready(function() {
+            //detect mobile and tablet
+            mobile = isMobile();
+            tablet = isTablet();
+
+            //check to see if we're going to play sounds or not if we've set the checkbox
             if( storageSupported() )
             {
                 if( (checkmute = localStorage.getItem("mute")) !== null )
@@ -295,7 +322,7 @@
                 decoder.emit('keypress', '1');
             });
             $('#button-1').on('mousedown', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/1-small-on.png) no-repeat');
                 }
@@ -305,7 +332,7 @@
                 }
 	        });
 	        $('#button-1').on('mouseup', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/1-small.png) no-repeat');
                 }
@@ -318,7 +345,7 @@
                 decoder.emit('keypress', '2');
             });
             $('#button-2').on('mousedown', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/2-small-on.png) no-repeat');
                 }
@@ -328,7 +355,7 @@
                 }
             });
             $('#button-2').on('mouseup', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/2-small.png) no-repeat');
                 }
@@ -341,7 +368,7 @@
                 decoder.emit('keypress', '3');
             });
             $('#button-3').on('mousedown', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/3-small-on.png) no-repeat');
                 }
@@ -351,7 +378,7 @@
                 }
             });
             $('#button-3').on('mouseup', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/3-small.png) no-repeat');
                 }
@@ -365,7 +392,7 @@
                 decoder.emit('keypress', '4');
             });
             $('#button-4').on('mousedown', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/4-small-on.png) no-repeat');
                 }
@@ -375,7 +402,7 @@
                 }
             });
             $('#button-4').on('mouseup', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/4-small.png) no-repeat');
                 }
@@ -389,7 +416,7 @@
                 decoder.emit('keypress', '5');
             });
             $('#button-5').on('mousedown', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/5-small-on.png) no-repeat');
                 }
@@ -399,7 +426,7 @@
                 }
             });
             $('#button-5').on('mouseup', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/5-small.png) no-repeat');
                 }
@@ -413,7 +440,7 @@
                 decoder.emit('keypress', '6');
             });
             $('#button-6').on('mousedown', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/6-small-on.png) no-repeat');
                 }
@@ -423,7 +450,7 @@
                 }
             });
             $('#button-6').on('mouseup', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/6-small.png) no-repeat');
                 }
@@ -437,7 +464,7 @@
                 decoder.emit('keypress', '7');
             });
             $('#button-7').on('mousedown', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/7-small-on.png) no-repeat');
                 }
@@ -447,7 +474,7 @@
                 }
             });
             $('#button-7').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/7-small.png) no-repeat');
                 }
@@ -461,7 +488,7 @@
                 decoder.emit('keypress', '8');
             });
             $('#button-8').on('mousedown', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/8-small-on.png) no-repeat');
                 }
@@ -471,7 +498,7 @@
                 }
             });
             $('#button-8').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/8-small.png) no-repeat');
                 }
@@ -485,7 +512,7 @@
                 decoder.emit('keypress', '9');
             });
             $('#button-9').on('mousedown', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/9-small-on.png) no-repeat');
                 }
@@ -495,7 +522,7 @@
                 }
             });
             $('#button-9').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/9-small.png) no-repeat');
                 }
@@ -509,7 +536,7 @@
                 decoder.emit('keypress', '0');
             });
             $('#button-0').on('mousedown', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/0-small-on.png) no-repeat');
                 }
@@ -519,7 +546,7 @@
                 }
             });
             $('#button-0').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/0-small.png) no-repeat');
                 }
@@ -533,7 +560,7 @@
                 decoder.emit('keypress', '*');
             });
             $('#button-star').on('mousedown', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/star-small-on.png) no-repeat');
                 }
@@ -543,7 +570,7 @@
                 }
             });
             $('#button-star').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/star-small.png) no-repeat');
                 }
@@ -557,7 +584,7 @@
                 decoder.emit('keypress', '#');
             });
             $('#button-pound').on('mousedown', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/pound-small-on.png) no-repeat');
                 }
@@ -567,7 +594,7 @@
                 }
             });
             $('#button-pound').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/pound-small.png) no-repeat');
                 }
@@ -634,7 +661,7 @@
             });
 
 	        $('#button-F1').on('mousedown', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/f1-fire-small-on.png) no-repeat 65% center');
                 }
@@ -644,7 +671,7 @@
                 }
     	    });
             $('#button-F1').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/f1-fire-small.png) no-repeat 65% center');
                 }
@@ -654,7 +681,7 @@
                 }
             });
             $('#button-F2').on('mousedown', function() {
-                if( $('html').hasClass('mobile') )
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/f2-police-small-on.png) no-repeat 65% center');
                 }
@@ -664,7 +691,7 @@
                 }
             });
             $('#button-F2').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/f2-police-small.png) no-repeat 65% center');
                 }
@@ -674,7 +701,7 @@
                 }
             });
             $('#button-F3').on('mousedown', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/f3-medical-small-on.png) no-repeat 65% center');
                 }
@@ -684,7 +711,7 @@
                 }
             });
             $('#button-F3').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/f3-medical-small.png) no-repeat 65% center');
                 }
@@ -694,7 +721,7 @@
                 }
             });
             $('#button-F4').on('mousedown', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/f4-led-text-small-on.png) no-repeat 65% center');
                 }
@@ -704,7 +731,7 @@
                 }
             });
             $('#button-F4').on('mouseup', function() {
-                if( $('html').hasClass('mobile'))
+                if( mobile )
                 {
                     $(this).css('background', 'url(../static/img/f4-led-text-small.png) no-repeat 65% center');
                 }
