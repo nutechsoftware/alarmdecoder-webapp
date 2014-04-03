@@ -265,32 +265,33 @@ def sslserver():
     return render_template('setup/ssl.html', form=form)
 
 def _generate_certs():
-    ca_cert = Certificate(
-                name="AlarmDecoder CA",
-                description='CA certificate used for authenticating others.',
+    if Certificate.query.filter_by(type=CA).first() is None:
+        ca_cert = Certificate(
+                    name="AlarmDecoder CA",
+                    description='CA certificate used for authenticating others.',
+                    status=ACTIVE,
+                    type=CA)
+        ca_cert.generate(common_name='AlarmDecoder CA')
+        db.session.add(ca_cert)
+        db.session.commit()
+
+        server_cert = Certificate(
+                name="AlarmDecoder Server",
+                description='Server certificate used by ser2sock.',
                 status=ACTIVE,
-                type=CA)
-    ca_cert.generate(common_name='AlarmDecoder CA')
-    db.session.add(ca_cert)
-    db.session.commit()
+                type=SERVER,
+                ca_id=ca_cert.id)
+        server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
+        db.session.add(server_cert)
 
-    server_cert = Certificate(
-            name="AlarmDecoder Server",
-            description='Server certificate used by ser2sock.',
-            status=ACTIVE,
-            type=SERVER,
-            ca_id=ca_cert.id)
-    server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
-    db.session.add(server_cert)
-
-    internal_cert = Certificate(
-            name="AlarmDecoder Internal",
-            description='Internal certificate used to communicate with ser2sock.',
-            status=ACTIVE,
-            type=INTERNAL,
-            ca_id=ca_cert.id)
-    internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
-    db.session.add(internal_cert)
+        internal_cert = Certificate(
+                name="AlarmDecoder Internal",
+                description='Internal certificate used to communicate with ser2sock.',
+                status=ACTIVE,
+                type=INTERNAL,
+                ca_id=ca_cert.id)
+        internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
+        db.session.add(internal_cert)
 
 def _update_ser2sock_config(path):
     try:
