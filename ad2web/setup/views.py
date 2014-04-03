@@ -83,9 +83,12 @@ def local():
         else:
             form.baudrate.data = DEFAULT_BAUDRATES[device_type]
 
-        managed = Setting.get_by_name('managed_ser2sock').value
-        if managed is not None:
-            form.confirm_management.data = managed
+        if ser2sock.exists():
+            managed = Setting.get_by_name('managed_ser2sock').value
+            if managed is not None:
+                form.confirm_management.data = managed
+        else:
+            del form.confirm_management
 
     if form.validate_on_submit():
         device_path = Setting.get_by_name('device_path')
@@ -214,7 +217,6 @@ def sslserver():
         device_address = Setting.get_by_name('device_address')
         device_port = Setting.get_by_name('device_port')
         device_location = Setting.get_by_name('device_location')
-        serial_number = Setting.get_by_name
 
         manage_ser2sock.value = True
         use_ssl.value = form.ssl.data
@@ -234,76 +236,104 @@ def sslserver():
         set_stage(SETUP_ENDPOINT_STAGE[next_stage])
         db.session.commit()
 
-        if form.ssl.data == True:
-            _generate_certs()
+        try:
+            if form.ssl.data == True:
+                _generate_certs()
 
-        _update_ser2sock_config(config_path.value)
-        db.session.commit()
+            _update_ser2sock_config(config_path.value)
+            db.session.commit()
 
-        return redirect(url_for(next_stage))
+        except RuntimeError, err:
+            flash("{0}".format(err), 'error')
+
+        except ser2sock.HupFailed, err:
+            flash("We had an issue restarting ser2sock: {0}".format(err), 'error')
+
+        # except ser2sock.NotRunning, err:
+        #     flash("It appears that ser2sock isn't running.  We've gone ahead and written the configuration but you need to start it for things to work correctly from this point forward.", 'warning')
+        #     return redirect(url_for(next_stage))
+
+        except ser2sock.NotFound, err:
+            flash("We weren't able to find ser2sock on your system.", 'error')            
+
+        except Exception, err:
+            flash("Unexpected Error: {0}".format(err), 'error')
+
+        else:
+            return redirect(url_for(next_stage))
 
     return render_template('setup/ssl.html', form=form)
 
 def _generate_certs():
-    ca_cert = Certificate(
-                name="AlarmDecoder CA",
-                description='CA certificate used for authenticating others.',
+    if Certificate.query.filter_by(type=CA).first() is None:
+        ca_cert = Certificate(
+                    name="AlarmDecoder CA",
+                    description='CA certificate used for authenticating others.',
+                    status=ACTIVE,
+                    type=CA)
+        ca_cert.generate(common_name='AlarmDecoder CA')
+        db.session.add(ca_cert)
+        db.session.commit()
+
+        server_cert = Certificate(
+                name="AlarmDecoder Server",
+                description='Server certificate used by ser2sock.',
                 status=ACTIVE,
-                type=CA)
-    ca_cert.generate(common_name='AlarmDecoder CA')
-    db.session.add(ca_cert)
-    db.session.commit()
+                type=SERVER,
+                ca_id=ca_cert.id)
+        server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
+        db.session.add(server_cert)
 
-    server_cert = Certificate(
-            name="AlarmDecoder Server",
-            description='Server certificate used by ser2sock.',
-            status=ACTIVE,
-            type=SERVER,
-            ca_id=ca_cert.id)
-    server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
-    db.session.add(server_cert)
-
-    internal_cert = Certificate(
-            name="AlarmDecoder Internal",
-            description='Internal certificate used to communicate with ser2sock.',
-            status=ACTIVE,
-            type=INTERNAL,
-            ca_id=ca_cert.id)
-    internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
-    db.session.add(internal_cert)
+        internal_cert = Certificate(
+                name="AlarmDecoder Internal",
+                description='Internal certificate used to communicate with ser2sock.',
+                status=ACTIVE,
+                type=INTERNAL,
+                ca_id=ca_cert.id)
+        internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
+        db.session.add(internal_cert)
 
 def _update_ser2sock_config(path):
-    if path is not None:
-        config = ser2sock.read_config(os.path.join(path, 'ser2sock.conf'))
-    else:
-        config = None
+    try:
+        if path is not None:
+            config = ser2sock.read_config(os.path.join(path, 'ser2sock.conf'))
+        else:
+            config = None
 
-    if config is not None:
-        config_values = {}
-        for k, v in config.items('ser2sock'):
-            config_values[k] = v
+        if config is not None:
+            config_values = {}
+            if config.has_section('ser2sock'):
+                for k, v in config.items('ser2sock'):
+                    config_values[k] = v
 
-        config_values['device'] = Setting.get_by_name('device_path').value
-        config_values['baudrate'] = Setting.get_by_name('device_baudrate').value
-        config_values['port'] = Setting.get_by_name('device_port').value
-        config_values['encrypted'] = Setting.get_by_name('use_ssl').value
-        if config_values['encrypted'] == 1:
-            ca = Certificate.query.filter_by(type=CA).first()
-            server_cert = Certificate.query.filter_by(type=SERVER).first()
+            config_values['device'] = Setting.get_by_name('device_path').value
+            config_values['baudrate'] = Setting.get_by_name('device_baudrate').value
+            config_values['port'] = Setting.get_by_name('device_port').value
+            config_values['encrypted'] = Setting.get_by_name('use_ssl').value
+            if config_values['encrypted'] == 1:
+                cert_path = os.path.join(path, 'certs')
+                if not os.path.exists(cert_path):
+                    os.mkdir(cert_path, 0700)
 
-            if ca is not None and server_cert is not None:
-                ca.export(os.path.join(path, 'certs'))
-                server_cert.export(os.path.join(path, 'certs'))
+                ca = Certificate.query.filter_by(type=CA).first()
+                server_cert = Certificate.query.filter_by(type=SERVER).first()
 
-                config_values['ca_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(ca.name))
-                config_values['ssl_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(server_cert.name))
-                config_values['ssl_key'] = os.path.join(path, 'certs', '{0}.key'.format(server_cert.name))
+                if ca is not None and server_cert is not None:
+                    ca.export(cert_path)
+                    server_cert.export(cert_path)
 
-                ser2sock.save_certificate_index(path)
-                ser2sock.save_revocation_list(path)
+                    config_values['ca_certificate'] = os.path.join(cert_path, '{0}.pem'.format(ca.name))
+                    config_values['ssl_certificate'] = os.path.join(cert_path, '{0}.pem'.format(server_cert.name))
+                    config_values['ssl_key'] = os.path.join(cert_path, '{0}.key'.format(server_cert.name))
 
-        ser2sock.save_config(os.path.join(path, 'ser2sock.conf'), config_values)
-        ser2sock.hup()
+                    ser2sock.save_certificate_index(path)
+                    ser2sock.save_revocation_list(path)
+
+            ser2sock.save_config(os.path.join(path, 'ser2sock.conf'), config_values)
+            ser2sock.hup()
+
+    except (OSError, IOError), err:
+        raise RuntimeError('Error updating ser2sock configuration: {0}'.format(err))
 
 @setup.route('/test', methods=['GET', 'POST'])
 @admin_or_first_run_required
