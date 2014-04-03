@@ -97,18 +97,15 @@ def local():
 
         device_path.value = form.device_path.data
         baudrate.value = form.baudrate.data
+        managed.value = form.confirm_management.data
 
         db.session.add(device_path)
         db.session.add(baudrate)
+        db.session.add(managed)
 
         next_stage = 'setup.device'
-
-        if form.confirm_management:
-            managed.value = form.confirm_management.data
-            db.session.add(managed)
-            
-            if form.confirm_management.data == True:
-                next_stage = 'setup.sslserver'
+        if form.confirm_management.data == True:
+            next_stage = 'setup.sslserver'
 
         set_stage(SETUP_ENDPOINT_STAGE[next_stage])
         db.session.commit()
