@@ -16,7 +16,7 @@ from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
 from .constants import (SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
                     SETUP_LOCAL, SETUP_DEVICE, SETUP_TEST, SETUP_COMPLETE, BAUDRATES,
                     DEFAULT_BAUDRATES, DEFAULT_PATHS, SETUP_ENDPOINT_STAGE)
-from ..ser2sock import ser2sock, Ser2sockNotRunning
+from ..ser2sock import ser2sock
 
 setup = Blueprint('setup', __name__, url_prefix='/setup')
 
@@ -83,9 +83,12 @@ def local():
         else:
             form.baudrate.data = DEFAULT_BAUDRATES[device_type]
 
-        managed = Setting.get_by_name('managed_ser2sock').value
-        if managed is not None:
-            form.confirm_management.data = managed
+        if ser2sock.exists():
+            managed = Setting.get_by_name('managed_ser2sock').value
+            if managed is not None:
+                form.confirm_management.data = managed
+        else:
+            del form.confirm_management
 
     if form.validate_on_submit():
         device_path = Setting.get_by_name('device_path')
@@ -94,15 +97,18 @@ def local():
 
         device_path.value = form.device_path.data
         baudrate.value = form.baudrate.data
-        managed.value = form.confirm_management.data
 
         db.session.add(device_path)
         db.session.add(baudrate)
-        db.session.add(managed)
 
         next_stage = 'setup.device'
-        if form.confirm_management.data == True:
-            next_stage = 'setup.sslserver'
+
+        if form.confirm_management:
+            managed.value = form.confirm_management.data
+            db.session.add(managed)
+            
+            if form.confirm_management.data == True:
+                next_stage = 'setup.sslserver'
 
         set_stage(SETUP_ENDPOINT_STAGE[next_stage])
         db.session.commit()
@@ -243,9 +249,15 @@ def sslserver():
         except RuntimeError, err:
             flash("{0}".format(err), 'error')
 
-        except Ser2sockNotRunning, err:
-            flash("It appears that ser2sock isn't running.  We've gone ahead and written the configuration but you need to start it for things to work correctly from this point forward.", 'warning')
-            return redirect(url_for(next_stage))
+        except ser2sock.HupFailed, err:
+            flash("We had an issue restarting ser2sock: {0}".format(err), 'error')
+
+        # except ser2sock.NotRunning, err:
+        #     flash("It appears that ser2sock isn't running.  We've gone ahead and written the configuration but you need to start it for things to work correctly from this point forward.", 'warning')
+        #     return redirect(url_for(next_stage))
+
+        except ser2sock.NotFound, err:
+            flash("We weren't able to find ser2sock on your system.", 'error')            
 
         except Exception, err:
             flash("Unexpected Error: {0}".format(err), 'error')

@@ -3,6 +3,7 @@ import os
 import ConfigParser
 import psutil
 import signal
+import sh
 from collections import OrderedDict
 from OpenSSL import crypto
 
@@ -20,7 +21,10 @@ DEFAULT_SETTINGS = OrderedDict([
     ('ssl_key', '')
 ])
 
-class Ser2sockNotRunning(Exception):
+class NotFound(Exception):
+    pass
+
+class HupFailed(Exception):
     pass
 
 def read_config(path):
@@ -45,9 +49,19 @@ def save_config(path, config_values):
     with open(path, 'w') as configfile:
         config.write(configfile)
 
-def is_running():
-    process_names = [proc.name() for proc in psutil.process_iter()]
-    return True if 'ser2sock' in process_names else False
+def exists():
+    return sh.which('ser2sock') is not None
+
+def start():
+    try:
+        sh.ser2sock('-d')
+    except sh.CommandNotFound, err:
+        raise NotFound('Could not locate ser2sock.')
+
+def stop():
+    for proc in psutil.process_iter():
+        if proc.name() == 'ser2sock':
+            os.kill(proc.pid, signal.SIGKILL)
 
 def hup():
     found = False
@@ -58,10 +72,10 @@ def hup():
                 found = True
                 os.kill(proc.pid, signal.SIGHUP)
         except OSError, err:
-            raise RuntimeError('Error attempting to restart ser2sock (pid {0}): {1}'.format(proc.pid, err))
+            raise HupFailed('Error attempting to restart ser2sock (pid {0}): {1}'.format(proc.pid, err))
 
     if not found:
-        raise Ser2sockNotRunning('ser2sock was not found in the process list.')
+        start()
 
 def save_certificate_index(path):
     path = os.path.join(path, 'certs', 'certindex')
