@@ -171,11 +171,13 @@
                         if( lines[1].length > 0 )
                         {
                             $('#keypad-line2').css("color", "black");
+                            $('#keypad-line2').css("visibility", "visible");
                             $('#keypad-line2').text(lines[1]);
                         }
                         else
                         {
                             $('#keypad-line2').css("color", "white");
+                            $('#keypad-line2').css("visibility", "hidden");
                             $('#keypad-line2').text('---');
                         }
                     }

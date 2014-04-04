@@ -44,7 +44,13 @@
 .container .nav-tabs {
     width: 70%;
     position: relative;
-    left: 200px;
+    left: 15%;
+}
+
+.mobile .container .nav-tabs {
+    position: relative;
+    left: 15% !important;
+    width: 70%;
 }
 .container #flash_message_container {
     width: 80% !important;
@@ -242,11 +248,34 @@ cursor: pointer;
     top: 5px;
     left: 175px;
 }
+
+.mobile .dataTables_paginate {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    left: 70px !important;
+    top: 10px !important;
+}
+
+#clear {
+    display: none;
+    margin-top: 10px !important;
+    margin-bottom: 5px !important;
+}
+
+.mobile #clear {
+    display: none;
+    margin-top: 45px !important;
+    margin-bottom: 30px !important;
+}
 //forms
 input:focus {
     border: solid 1px #337FD6;
 }
-
+select:focus {
+    border: solid 1px #337FD6;
+}
 form {
     background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
     background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
