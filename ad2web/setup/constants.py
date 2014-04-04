@@ -9,6 +9,7 @@ SETUP_SSLCLIENT = 4
 SETUP_SSLSERVER = 5
 SETUP_DEVICE = 6
 SETUP_TEST = 7
+SETUP_ACCOUNT = 8
 SETUP_COMPLETE = 100
 
 SETUP_STAGE_ENDPOINT = {
@@ -21,7 +22,8 @@ SETUP_STAGE_ENDPOINT = {
     SETUP_LOCAL: 'setup.local',
     SETUP_DEVICE: 'setup.device',
     SETUP_TEST: 'setup.test',
-    SETUP_COMPLETE: 'setup.complete'
+    SETUP_ACCOUNT: 'setup.account',
+    SETUP_COMPLETE: 'frontend.index'
 }
 
 SETUP_ENDPOINT_STAGE = {
@@ -35,7 +37,8 @@ SETUP_ENDPOINT_STAGE = {
     'setup.local': SETUP_LOCAL,
     'setup.device': SETUP_DEVICE,
     'setup.test': SETUP_TEST,
-    'setup.complete': SETUP_COMPLETE
+    'setup.account': SETUP_ACCOUNT,
+    'frontend.index': SETUP_COMPLETE
 }
 
 NETWORK_DEVICE = 0

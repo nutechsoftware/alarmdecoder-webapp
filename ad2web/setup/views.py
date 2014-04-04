@@ -12,11 +12,13 @@ from ..settings.models import Setting
 from ..certificate.models import Certificate
 from ..certificate.constants import CA, SERVER, CLIENT, INTERNAL, ACTIVE, REVOKED
 from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
-                   SSLForm, SSLHostForm, DeviceForm, TestDeviceForm)
+                   SSLForm, SSLHostForm, DeviceForm, TestDeviceForm, CreateAccountForm)
 from .constants import (SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
                     SETUP_LOCAL, SETUP_DEVICE, SETUP_TEST, SETUP_COMPLETE, BAUDRATES,
                     DEFAULT_BAUDRATES, DEFAULT_PATHS, SETUP_ENDPOINT_STAGE)
 from ..ser2sock import ser2sock
+from ..user.models import User
+from ..user.constants import ADMIN, ACTIVE
 
 setup = Blueprint('setup', __name__, url_prefix='/setup')
 
@@ -44,7 +46,11 @@ def type():
 
         device_location = Setting.get_by_name('device_location').value
         if device_location is not None:
-            form.device_location.data = device_location
+            managed_ser2sock = Setting.get_by_name('managed_ser2sock', default=False).value
+            if managed_ser2sock:
+                form.device_location.data = 'local'
+            else:
+                form.device_location.data = device_location
 
     if form.validate_on_submit():
         device_type = Setting.get_by_name('device_type')
@@ -344,20 +350,43 @@ def test():
         set_stage(SETUP_TEST)
         db.session.commit()
     else:
-        setup_complete = Setting.get_by_name('setup_complete')
-        setup_complete.value = True
+        setup_complete = Setting.get_by_name('setup_complete', default=False)
 
-        db.session.add(setup_complete)
+        next_stage = 'setup.account'
+        if setup_complete.value:
+            next_stage = 'frontend.index'
+            flash('Setup complete!', 'success')
 
-        next_stage = 'setup.complete'
         set_stage(SETUP_ENDPOINT_STAGE[next_stage])
-
         db.session.commit()
 
-        flash('Setup complete!', 'success')
         return redirect(url_for(next_stage))
 
     return render_template('setup/test.html', form=form)
+
+@setup.route('/account', methods=['GET', 'POST'])
+@admin_or_first_run_required
+def account():
+    form = CreateAccountForm()
+
+    if form.validate_on_submit():
+        user = User(role_code=ADMIN, status_code=ACTIVE)
+        form.populate_obj(user)
+        db.session.add(user)
+
+        setup_complete = Setting.get_by_name('setup_complete', default=False)
+        setup_complete.value = True
+        db.session.add(setup_complete)
+
+        next_stage = 'frontend.index'
+        set_stage(SETUP_ENDPOINT_STAGE[next_stage])
+        db.session.commit()
+
+        flash('Setup complete!', 'success')
+
+        return redirect(url_for(next_stage))
+
+    return render_template('setup/account.html', form=form)
 
 @setup.route('/device', methods=['GET', 'POST'])
 @admin_or_first_run_required
