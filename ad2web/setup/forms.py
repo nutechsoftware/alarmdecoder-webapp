@@ -13,6 +13,7 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
 from wtforms.widgets import ListWidget, CheckboxInput, html_params
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES, DEFAULT_BAUDRATES
 from ..validators import PathExists, Hex
+from ..utils import STRING_LEN, PASSWORD_LEN_MIN, PASSWORD_LEN_MAX
 
 class BackButtonWidget(object):
     html_params = staticmethod(html_params)
@@ -96,3 +97,13 @@ class DeviceForm(Form):
     deduplicate = BooleanField(u'Deduplicate messages?')
 
     buttons = FormField(SetupButtonForm)
+
+class CreateAccountForm(Form):
+    name = TextField(u'Username', [Required(), Length(max=STRING_LEN)], default=u'admin')
+    email = TextField(u'Email Address', [Required(), Length(max=STRING_LEN), Email()], default=u'admin@example.com')
+    password = PasswordField('New password', [Required(), Length(PASSWORD_LEN_MIN, PASSWORD_LEN_MAX)])
+    password_again = PasswordField('Password again', [Required(), Length(PASSWORD_LEN_MIN, PASSWORD_LEN_MAX), EqualTo('password')])
+
+    save = SubmitField(u'Save')
+
+    #buttons = FormField(SetupButtonForm)

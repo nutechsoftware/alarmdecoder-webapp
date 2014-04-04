@@ -39,13 +39,13 @@ def initdb():
     db.drop_all()
     db.create_all()
 
-    admin = User(
-            name=u'admin',
-            email=u'admin@example.com',
-            password=u'testing',
-            role_code=ADMIN,
-            status_code=ACTIVE)
-    db.session.add(admin)
+    #admin = User(
+    #        name=u'admin',
+    #        email=u'admin@example.com',
+    #        password=u'testing',
+    #        role_code=ADMIN,
+    #        status_code=ACTIVE)
+    #db.session.add(admin)
 
     # user = User(name=u'testing',
     #             email=u'test@test.com',
