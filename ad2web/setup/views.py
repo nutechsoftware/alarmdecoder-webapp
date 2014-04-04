@@ -46,7 +46,11 @@ def type():
 
         device_location = Setting.get_by_name('device_location').value
         if device_location is not None:
-            form.device_location.data = device_location
+            managed_ser2sock = Setting.get_by_name('managed_ser2sock', default=False).value
+            if managed_ser2sock:
+                form.device_location.data = 'local'
+            else:
+                form.device_location.data = device_location
 
     if form.validate_on_submit():
         device_type = Setting.get_by_name('device_type')
