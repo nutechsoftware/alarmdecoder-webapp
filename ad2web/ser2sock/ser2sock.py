@@ -54,7 +54,7 @@ def exists():
 
 def start():
     try:
-        sh.ser2sock('-d')
+        sh.ser2sock('-d', _bg=True)
     except sh.CommandNotFound, err:
         raise NotFound('Could not locate ser2sock.')
 

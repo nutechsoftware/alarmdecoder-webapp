@@ -64,8 +64,6 @@ def create_profile():
 
 @frontend.route('/')
 def index():
-    current_app.logger.debug('debug')
-
     if current_user.is_authenticated():
         return redirect(url_for('keypad.index'))
 
