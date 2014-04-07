@@ -62,7 +62,7 @@
 .container #flash_message_container {
     width: 80% !important;
     position: relative;
-    left: 30px;
+    margin: 0 auto;
 }
 /* Sign up */
 .btn-signup {
