@@ -101,45 +101,52 @@
                     }
                     if( mute == 0 )
                     {
-                        switch(beeps)
+                        try
                         {
-                            case 1:
-                                beep1.load();
-                                beep1.play();
-                                beep1.currentTime=0;
-                                break;
-                            case 2:
-                                beep2.load();
-                                beep2.play();
-                                beep2.currentTime=0;
-                                break;
-                            case 3:
-                                beep3.load();
-                                beep3.play();
-                                beep3.currentTime=0;
-                                break;
-                            case 4:
-                                beep4.load();
-                                beep4.play();
-                                beep4.currentTime=0;
-                                break;
-                            case 5:
-                                beep5.load();
-                                beep5.play();
-                                beep5.currentTime=0;
-                                break;
-                            case 6:
-                                beep6.load();
-                                beep6.play();
-                                beep6.currentTime=0;
-                                break;
-                            case 7:
-                                beep7.load();
-                                beep7.play();
-                                beep7.currentTime=0;
-                                break;
-                            default:
-                                break;
+                            switch(beeps)
+                            {
+                                case 1:
+                                    beep1.load();
+                                    beep1.play();
+                                    beep1.currentTime=0;
+                                    break;
+                                case 2:
+                                    beep2.load();
+                                    beep2.play();
+                                    beep2.currentTime=0;
+                                    break;
+                                case 3:
+                                    beep3.load();
+                                    beep3.play();
+                                    beep3.currentTime=0;
+                                    break;
+                                case 4:
+                                    beep4.load();
+                                    beep4.play();
+                                    beep4.currentTime=0;
+                                    break;
+                                case 5:
+                                    beep5.load();
+                                    beep5.play();
+                                    beep5.currentTime=0;
+                                    break;
+                                case 6:
+                                    beep6.load();
+                                    beep6.play();
+                                    beep6.currentTime=0;
+                                    break;
+                                case 7:
+                                    beep7.load();
+                                    beep7.play();
+                                    beep7.currentTime=0;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        catch(e)
+                        {
+                            if( window.console && console.error("Error: " + e ) );
                         }
                     }
 
