@@ -1,0 +1,101 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = "License Agreement" %}
+
+{% extends "layouts/base.html" %}
+
+{% block body %}
+<h2>License Agreement</h2>
+
+<textarea id="license_text" style="width: 50%; height: 300px" disabled>
+PLEASE READ THIS LICENSE CAREFULLY
+
+This license governs use of the accompanying software. If you use the software,
+you accept this license. If you do not accept the license, do not use the
+software.
+
+The enclosed computer program(s) ("Software") is licensed, not sold, to you by
+Nu Tech Software Solutions, Inc. ("Nu Tech Software Solutions") for use only
+under the terms of this License, and Nu Tech Software Solutions reserves any
+rights not expressly granted to you. You own the disk(s) on which the Software
+is recorded or fixed, but Nu Tech Software Solutions, its licensors and
+sub-licensors retain ownership of the Software itself.
+
+1. Definitions
+
+The terms "reproduce," "reproduction" and "distribution" have the same meaning
+here as under U.S. copyright law. "You" means the licensee of the software.
+"Your company" means the company you worked for when you downloaded the
+software. "Reference use" means use of the software by you or within your
+company as a reference, for the sole purposes of developing your product,
+debugging your products, maintaining your products, or enhancing the
+interoperability of your products with the software, and specifically excludes
+the right to distribute the software outside of your company or to any third
+party.
+
+2. Grant of Rights
+
+(A) Copyright Grant- Subject to the terms of this license, the Licensor grants
+you a non-transferable, non-exclusive, worldwide, royalty-free copyright license
+to reproduce the software for reference use.
+
+3. Limitations
+
+(A) No Trademark License- This license does not grant you any rights to use the
+Licensor’s name, logo, or trademarks.
+
+(B) If you begin patent litigation against the Licensor over patents that you
+think may apply to the software (including a cross-claim or counterclaim in a
+lawsuit), your license to the software ends automatically.
+
+(C) The software is licensed "as-is." You bear the risk of using it. In no event
+will Nu Tech Software Solutions, its parent or subsidiaries or any of the
+licensors or sub-licensors, directors, officers, employees or affiliates of any
+of the foregoing be liable to you for any consequential, incidental, indirect or
+special damages whatsoever (including, without limitation, damages for loss of
+business profits, business interruption, loss of business information and the
+like), whether foreseeable or or unforeseeable, arising out of the use of or
+inability to use the Software or accompanying written materials, regardless of
+the basis of the claim and even if Nu Tech Software Solutions or a Nu Tech
+Software Solutions representative has been advised of the possibility of such
+damage. Nu Tech Software Solutions' liability to you for direct damages for any
+cause whatsoever, and regardless of the form of the action, will be limited to
+replacement of the Software that caused the damages. THE LIMITATION WILL NOT
+APPLY IN CASE OF PERSONAL INJURY ONLY WHERE AND TO THE EXTENT THAT APPLICABLE
+LAW REQUIRES SUCH LIABILITY. BECAUSE SOME JURISDICTIONS DO NOT ALLOW THE
+EXCLUSION OR LIMITATION OF LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES,
+THE ABOVE LIMITATION MAY NOT APPLY TO YOU.
+
+4. General
+
+(A) This License will be construed under the laws of the State of Oregon. If any
+provision of this License shall be held by a court of competent jurisdiction to
+be contrary to law, that provision will be enforced to the maximum extent
+permissible, and the remaining provisions of this License will remain in full
+force and effect. If you are a U.S. Government user, then the Software is
+provided with " RESTRICTED RIGHTS" as set forth in subparagraphs (c)(1) and (2)
+of the Commercial Computer Software-Restricted Rights clause at FAR 52.227-19 or
+subparagraph (c)(1)(ii) of the Rights in Technical Data and Computer Software
+clause at DFARS 252.277-7013, as applicable. Manufacturer: Nu Tech Software
+Solutions, 11575 SW Pacific HWY, Suite 109, Tigard, Oregon 97223
+
+5. Termination
+
+(A) This License is effective until terminated. This License will terminate
+immediately without notice from Nu Tech Software Solutions or judicial
+resolution if you fail to comply with any provision of this license. Upon such
+termination you must destroy the Software, all accompanying written materials
+and all copies thereof, and Sections 3, and 4 will survive any termination.
+
+
+Address for Notice
+NUTECH
+Attn: General Counsel
+11575 SW Pacific HWY #109
+Tigard, OR 97223
+Vox: 503.443.2000
+Fax: 503.968.1877
+</textarea>
+
+{{ render_form(url_for('frontend.license'), form) }}
+{% endblock %}

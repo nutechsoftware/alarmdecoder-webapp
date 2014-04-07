@@ -10,8 +10,8 @@ from flask.ext.login import login_required, login_user, current_user, logout_use
 
 from ..user import User, UserDetail
 from ..extensions import db, mail, login_manager, oid
-from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm
-
+from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm, LicenseAgreementForm
+from ..settings import Setting
 
 frontend = Blueprint('frontend', __name__)
 
@@ -98,6 +98,11 @@ def login():
             remember = request.form.get('remember') == 'y'
             if login_user(user, remember=remember):
                 flash(_("Logged in"), 'success')
+
+                license = Setting.get_by_name('license_agreement', default=False).value
+                if not license:
+                    return redirect(url_for('frontend.license'))
+
             return redirect(form.next.data or url_for('keypad.index'))
         else:
             flash(_('Sorry, invalid login'), 'error')
@@ -213,3 +218,17 @@ def reset_password():
 @frontend.route('/help')
 def help():
     return render_template('frontend/footers/help.html', active="help")
+
+@frontend.route('/license', methods=['GET', 'POST'])
+def license():
+    form = LicenseAgreementForm()
+    if form.validate_on_submit():
+        license = Setting.get_by_name('license_agreement', False)
+        license.value = True
+
+        db.session.add(license)
+        db.session.commit()
+
+        return redirect(url_for('keypad.index'))
+
+    return render_template('frontend/license.html', form=form)

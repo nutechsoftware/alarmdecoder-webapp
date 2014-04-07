@@ -81,3 +81,8 @@ class CreateProfileForm(Form):
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first() is not None:
             raise ValidationError(u'This email is taken.')
+
+class LicenseAgreementForm(Form):
+    agree = BooleanField(u'I agree to the license agreement', [Required()], default=False)
+
+    submit = SubmitField(u'Save')
