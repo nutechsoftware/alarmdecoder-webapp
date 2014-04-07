@@ -5,6 +5,8 @@
 {% extends "layouts/base.html" %}
 
 {% block body %}
+<div id="setup">
 <h2>Sign in</h2>
 {{ render_form(url_for('frontend.login'), form)}}
+</div>
 {% endblock %}
