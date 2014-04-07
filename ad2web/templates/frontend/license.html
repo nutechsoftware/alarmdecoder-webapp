@@ -5,6 +5,7 @@
 {% extends "layouts/base.html" %}
 
 {% block body %}
+<div id="setup">
 <h2>License Agreement</h2>
 
 <textarea id="license_text" style="width: 50%; height: 300px" disabled>
@@ -98,4 +99,5 @@ Fax: 503.968.1877
 </textarea>
 
 {{ render_form(url_for('frontend.license'), form) }}
+</div>
 {% endblock %}
