@@ -2,20 +2,28 @@
 
 import os
 import hashlib
+import io
+import tarfile
+import json
 
 from datetime import datetime
 
-from flask import Blueprint, render_template, current_app, request, flash
+from flask import Blueprint, render_template, current_app, request, flash, Response
 from flask.ext.login import login_required, current_user
 
+from sqlalchemy.orm import class_mapper
+
 from ..extensions import db
-from ..user import User
-from ..utils import allowed_file, make_dir
+from ..user import User, UserDetail
+from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
 from ..decorators import admin_required
 from ..settings import Setting
 from .forms import ProfileForm, PasswordForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE
+from ..certificate import Certificate
+from ..notifications import Notification, NotificationSetting
+from ..zones import Zone
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -162,3 +170,42 @@ def device():
         type_form.device_type.data = Setting.get_by_name('device_type', type_form.device_type.default).value
 
     return render_template('settings/device.html', form=current_form, active='device', form_type=form_type)
+
+@settings.route('/export', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def export():
+    def serialize(model):
+        data = []
+        for res in model.query.all():
+            res_dict = {}
+            for c in class_mapper(res.__class__).columns:
+                value = getattr(res, c.key)
+
+                if isinstance(value, datetime):
+                    value = str(value)
+                elif isinstance(value, set):
+                    continue
+
+                res_dict[c.key] = value
+
+            data.append(res_dict)
+
+        return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), skipkeys=True)
+
+    prefix = 'alarmdecoder-export'
+    filename = '{0}-{1}.tar.gz'.format(prefix, datetime.now().strftime('%Y%m%d%H%M%S'))
+    fileobj = io.BytesIO()
+
+    with tarfile.open(name=bytes(filename), mode='w:gz', fileobj=fileobj) as tar:
+        tar_add_directory(tar, prefix)
+
+        tar_add_textfile(tar, 'settings.json', bytes(serialize(Setting)), prefix)
+        tar_add_textfile(tar, 'certificates.json', bytes(serialize(Certificate)), prefix)
+        tar_add_textfile(tar, 'notifications.json', bytes(serialize(Notification)), prefix)
+        tar_add_textfile(tar, 'notification_settings.json', bytes(serialize(NotificationSetting)), prefix)
+        tar_add_textfile(tar, 'users.json', bytes(serialize(User)), prefix)
+        tar_add_textfile(tar, 'user_details.json', bytes(serialize(UserDetail)), prefix)
+        tar_add_textfile(tar, 'zones.json', bytes(serialize(Zone)), prefix)
+
+    return Response(fileobj.getvalue(), mimetype='application/x-gzip', headers={ 'Content-Type': 'application/x-gzip', 'Content-Disposition': 'attachment; filename=' + filename })

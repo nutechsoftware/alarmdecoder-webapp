@@ -6,6 +6,9 @@
 import string
 import random
 import os
+import io
+import tarfile
+import time
 
 from datetime import datetime
 
@@ -101,3 +104,23 @@ def make_dir(dir_path):
             os.mkdir(dir_path)
     except Exception, e:
         raise e
+
+
+def tar_add_directory(tar, name):
+    ti = tarfile.TarInfo(name=name)
+    ti.mtime = time.time()
+    ti.type = tarfile.DIRTYPE
+    ti.mode = 0755
+    tar.addfile(ti)
+
+
+def tar_add_textfile(tar, name, data, parent_path=None):
+    path = name
+    if parent_path:
+        path = os.path.join(parent_path, name)
+
+    ti = tarfile.TarInfo(name=path)
+    ti.mtime = time.time()
+    ti.size = len(data)
+
+    tar.addfile(ti, io.TextIOWrapper(buffer=io.BytesIO(data), encoding='ascii'))
