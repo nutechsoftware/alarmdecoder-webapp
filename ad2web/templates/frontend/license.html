@@ -3,12 +3,11 @@
 {% set page_title = "License Agreement" %}
 
 {% extends "layouts/base.html" %}
-
 {% block body %}
-<div id="setup">
+<div id="setup" style="margin-left: auto; margin-right: auto;">
 <h2>License Agreement</h2>
 
-<textarea id="license_text" style="width: 50%; height: 300px" disabled>
+<textarea id="license_text" style="width: 98%; height: 300px; resize: none;" disabled>
 PLEASE READ THIS LICENSE CAREFULLY
 
 This license governs use of the accompanying software. If you use the software,
@@ -97,7 +96,6 @@ Tigard, OR 97223
 Vox: 503.443.2000
 Fax: 503.968.1877
 </textarea>
-
 {{ render_form(url_for('frontend.license'), form) }}
 </div>
 {% endblock %}
