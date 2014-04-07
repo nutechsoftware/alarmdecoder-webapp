@@ -6,6 +6,7 @@ monkey.patch_all()
 import time
 import traceback
 import threading
+import Queue
 
 from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
@@ -77,49 +78,55 @@ class Decoder(object):
         self._device_baudrate = 115200
         self._device_type = None
         self._device_location = None
+        self._work_queue = Queue.Queue()
+        self._thread = DecoderThread(self)
+
+    def start(self):
+        self._thread.start()
 
     def open(self):
-        self._device_type = Setting.get_by_name('device_type').value
-        self._device_location = Setting.get_by_name('device_location').value
+        with self.app.app_context():
+            self._device_type = Setting.get_by_name('device_type').value
+            self._device_location = Setting.get_by_name('device_location').value
 
-        # TODO: make this not ugly.
-        interface = ('localhost', 10000)
-        use_ssl = False
-        devicetype = SocketDevice
-        if self._device_location == 'local':
-            devicetype = SerialDevice
-            interface = Setting.get_by_name('device_path').value
-            self._device_baudrate = Setting.get_by_name('device_baudrate').value
-        elif self._device_location == 'network':
-            interface = (Setting.get_by_name('device_address').value, Setting.get_by_name('device_port').value)
+            # TODO: make this not ugly.
+            interface = ('localhost', 10000)
+            use_ssl = False
+            devicetype = SocketDevice
+            if self._device_location == 'local':
+                devicetype = SerialDevice
+                interface = Setting.get_by_name('device_path').value
+                self._device_baudrate = Setting.get_by_name('device_baudrate').value
+            elif self._device_location == 'network':
+                interface = (Setting.get_by_name('device_address').value, Setting.get_by_name('device_port').value)
 
-            use_ssl = Setting.get_by_name('use_ssl').value
-            if use_ssl is None:
-                use_ssl = False
+                use_ssl = Setting.get_by_name('use_ssl').value
+                if use_ssl is None:
+                    use_ssl = False
 
-        try:
-            device = devicetype(interface=interface)
-            if use_ssl:
-                ca_cert = Certificate.query.filter_by(name='AlarmDecoder CA').one()
-                internal_cert = Certificate.query.filter_by(name='AlarmDecoder Internal').one()
+            try:
+                device = devicetype(interface=interface)
+                if use_ssl:
+                    ca_cert = Certificate.query.filter_by(name='AlarmDecoder CA').one()
+                    internal_cert = Certificate.query.filter_by(name='AlarmDecoder Internal').one()
 
-                device.ssl = True
-                device.ssl_ca = ca_cert.certificate_obj
-                device.ssl_certificate = internal_cert.certificate_obj
-                device.ssl_key = internal_cert.key_obj
+                    device.ssl = True
+                    device.ssl_ca = ca_cert.certificate_obj
+                    device.ssl_certificate = internal_cert.certificate_obj
+                    device.ssl_key = internal_cert.key_obj
 
-            self.device = AlarmDecoder(device)
-            self.bind_events(self.websocket, self.device)
-            self.device.open(baudrate=self._device_baudrate)
+                self.device = AlarmDecoder(device)
+                self.bind_events(self.websocket, self.device)
+                self.device.open(baudrate=self._device_baudrate)
 
-        except NoDeviceError, err:
-            self.app.logger.warning('Open failed: %s', err[0], exc_info=True)
-            raise
+            except NoDeviceError, err:
+                self.app.logger.warning('Open failed: %s', err[0], exc_info=True)
+                raise
 
-        except SSL.Error, err:
-            source, fn, message = err[0][0]
-            self.app.logger.warning('SSL connection failed: %s - %s', fn, message, exc_info=True)
-            raise
+            except SSL.Error, err:
+                source, fn, message = err[0][0]
+                self.app.logger.warning('SSL connection failed: %s - %s', fn, message, exc_info=True)
+                raise
 
     def close(self):
         if self.device is not None:
@@ -143,12 +150,16 @@ class Decoder(object):
             device_handler += build_event_handler(event)
 
     def _on_device_open(self, sender):
+        self.app.logger.info('AlarmDecoder device was opened.')
+
         self.broadcast('device_open')
+        self._work_queue.put('device_open')
 
     def _on_device_close(self, sender):
-        self.broadcast('device_close')
+        self.app.logger.info('AlarmDecoder device was closed.')
 
-        # TODO: try to reopen
+        self.broadcast('device_close')
+        self._work_queue.put('device_close')
 
     def _on_message(self, ftype, sender, *args, **kwargs):
         try:
@@ -193,6 +204,54 @@ class Decoder(object):
     def _make_packet(self, channel, data):
         return dict(type='event', name=channel, args=data, endpoint='/alarmdecoder')
 
+class DecoderThread(threading.Thread):
+    """
+    Worker thread for handling device events, specifically device reconnection.
+    """
+
+    QUEUE_TIMEOUT = 5
+
+    def __init__(self, decoder):
+        threading.Thread.__init__(self)
+        self._decoder = decoder
+        self._work_queue = decoder._work_queue
+        self._running = False
+        self._try_reopen = False
+
+    def stop(self):
+        """
+        Stops the running thread.
+        """
+        self._running = False
+
+    def run(self):
+        """
+        The actual read process.
+        """
+        self._running = True
+
+        while self._running:
+            with self._decoder.app.app_context():
+                try:
+                    # Process any new events in the work queue.
+                    try:
+                        event = self._work_queue.get(True, self.QUEUE_TIMEOUT)
+
+                        if event == 'device_close':
+                            self._try_reopen = True
+                        elif event == 'device_open':
+                            self._try_reopen = False
+                    except Queue.Empty:
+                        pass
+
+                    # Perform any requred actions.
+                    if self._try_reopen:
+                        self._decoder.app.logger.info('Attempting to reconnect to the AlarmDecoder')
+                        self._decoder.open()
+
+                except Exception, err:
+                    self._decoder.app.logger.error('Error in DecoderThread: {0}'.format(err), exc_info=True)
+
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
     def initialize(self):
         self._alarmdecoder = self.request
@@ -213,7 +272,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 else:
                     self._alarmdecoder.device.send(key)
             except CommError, err:
-                self.app.logger.error('Error sending keypress to device', exc_info=True)
+                self._alarmdecoder.app.logger.error('Error sending keypress to device', exc_info=True)
 
     def on_test(self, *args):
         with self._alarmdecoder.app.app_context():
