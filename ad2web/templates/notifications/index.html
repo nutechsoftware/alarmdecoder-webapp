@@ -32,6 +32,7 @@
             "fnInitComplete": function() {
                 $('#loading').stop();
                 $('#loading').hide();
+                $('#clear').css('display', 'inline-block');
                 $('#datatable').show();
                 this.fnAdjustColumnSizing();
             },
@@ -71,6 +72,6 @@
         </table>
     </div>
     <br>
-    <a class="btn btn-primary" href="{{ url_for('notifications.create') }}">New Notification</a>
+    <a id="clear" class="btn btn-primary" href="{{ url_for('notifications.create') }}">New Notification</a>
 </div>
 {% endblock %}

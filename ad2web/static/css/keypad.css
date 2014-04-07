@@ -92,13 +92,22 @@
     width: 100px !important;
     height: 80px;
 }
+
+.tablet .keypad-button {
+    width: 150px !important;
+    height: 80px;
+}
 #button-0
 {
     margin: 0 auto;
     border: none;
     background:url('../img/0-large.png') no-repeat;
 }
-
+.tablet #button-0 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/0-large.png') no-repeat !important;
+}
 .mobile #button-0
 {
     margin: 0 auto;
@@ -112,17 +121,31 @@
     background:url('../img/1-large.png') no-repeat;
 }
 
+.tablet #button-1 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/1-large.png') no-repeat !important;
+}
+
 .mobile #button-1 {
     margin: 0 auto;
     border: none;
     background:url('../img/1-small.png') no-repeat;
 }
+
 #button-2
 {
     margin: 0 auto;
     border: none;
     background:url('../img/2-large.png') no-repeat;
 }
+
+.tablet #button-2 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/2-large.png') no-repeat !important;
+}
+
 .mobile #button-2 {
     margin: 0 auto;
     border: none;
@@ -133,6 +156,12 @@
     margin: 0 auto;
     border: none;
     background:url('../img/3-large.png') no-repeat;
+}
+
+.tablet #button-3 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/3-large.png') no-repeat !important;
 }
 .mobile #button-3 {
     margin: 0 auto;
@@ -147,6 +176,11 @@
     background:url('../img/4-large.png') no-repeat;
 }
 
+.tablet #button-4 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/4-large.png') no-repeat !important;
+}
 .mobile #button-4 {
     margin: 0 auto;
     border: none;
@@ -159,6 +193,11 @@
     background:url('../img/5-large.png') no-repeat;
 }
 
+.tablet #button-5 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/5-large.png') no-repeat !important;
+}
 .mobile #button-5 {
     margin: 0 auto;
     border: none;
@@ -171,22 +210,36 @@
     background:url('../img/6-large.png') no-repeat;
 }
 
+.tablet #button-6 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/6-large.png') no-repeat !important;
+}
+
 .mobile #button-6 {
     margin: 0 auto;
     border: none;
     background:url('../img/6-small.png') no-repeat;
 }
+
 #button-7
 {
     margin: 0 auto;
     border: none;
     background:url('../img/7-large.png') no-repeat;
 }
+.tablet #button-7 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/7-large.png') no-repeat !important;
+}
+
 .mobile #button-7 {
     margin: 0 auto;
     border: none;
     background:url('../img/7-small.png') no-repeat;
 }
+
 #button-8
 {
     margin: 0 auto;
@@ -194,17 +247,29 @@
     background:url('../img/8-large.png') no-repeat;
 }
 
+.tablet #button-8 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/8-large.png') no-repeat !important;
+}
 .mobile #button-8 {
     margin: 0 auto;
     border: none;
     background:url('../img/8-small.png') no-repeat;
 }
+
 #button-9
 {
     margin: 0 auto;
     border: none;
     background:url('../img/9-large.png') no-repeat;
 }
+.tablet #button-9 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/9-large.png') no-repeat !important;
+}
+
 .mobile #button-9 {
     margin: 0 auto;
     border: none;
@@ -215,6 +280,11 @@
     margin:0 auto;
     border: none;
     background:url('../img/f1-fire.png') no-repeat 65% center;
+}
+.tablet #button-F1 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/f1-fire.png') no-repeat 65% center !important;
 }
 
 .mobile #button-F1
@@ -230,6 +300,12 @@
     background:url('../img/f2-police.png') no-repeat 65% center;
 }
 
+.tablet #button-F2 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/f2-police.png') no-repeat 65% center !important;
+}
+
 .mobile #button-F2
 {
     margin: 0 auto;
@@ -243,6 +319,11 @@
     background:url('../img/f3-medical.png') no-repeat 65% center;
 }
 
+.tablet #button-F3 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/f3-medical.png') no-repeat 65% center !important;
+}
 .mobile #button-F3
 {
     margin: 0 auto;
@@ -254,6 +335,12 @@
     margin: 0 auto;
     border: none;
     background:url('../img/f4-led-text.png') no-repeat 65% center;
+}
+
+.tablet #button-F4 {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/f4-led-text.png') no-repeat 65% center !important;
 }
 .mobile #button-F4
 {
@@ -267,6 +354,12 @@
     border: none;
     background:url('../img/star-large.png') no-repeat;
 }
+
+.tablet #button-star {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/star-large.png') no-repeat !important;
+}
 .mobile #button-star {
     margin: 0 auto;
     border: none;
@@ -277,6 +370,12 @@
     margin: 0 auto;
     border: none;
     background:url('../img/pound-large.png') no-repeat;
+}
+
+.tablet #button-pound {
+    margin: 0 auto;
+    border: none;
+    background:url('../img/pound-large.png') no-repeat !important;
 }
 .mobile #button-pound {
     margin: 0 auto;
