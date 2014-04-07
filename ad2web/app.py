@@ -83,6 +83,8 @@ def create_app(config=None, app_name=None, blueprints=None):
         decoder.app = app
         decoder.websocket = appsocket
 
+        decoder.start()
+
         with app.app_context():
             device_type = None
             try:

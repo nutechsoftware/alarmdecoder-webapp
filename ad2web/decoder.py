@@ -81,6 +81,7 @@ class Decoder(object):
         self._work_queue = Queue.Queue()
         self._thread = DecoderThread(self)
 
+    def start(self):
         self._thread.start()
 
     def open(self):
@@ -230,24 +231,26 @@ class DecoderThread(threading.Thread):
         self._running = True
 
         while self._running:
-            try:
-                # Process any new events in the work queue.
+            with self._decoder.app.app_context():
                 try:
-                    event = self._work_queue.get(True, self.QUEUE_TIMEOUT)
+                    # Process any new events in the work queue.
+                    try:
+                        event = self._work_queue.get(True, self.QUEUE_TIMEOUT)
 
-                    if event == 'device_close':
-                        self._try_reopen = True
-                    elif event == 'device_open':
-                        self._try_reopen = False
-                except Queue.Empty:
-                    pass
+                        if event == 'device_close':
+                            self._try_reopen = True
+                        elif event == 'device_open':
+                            self._try_reopen = False
+                    except Queue.Empty:
+                        pass
 
-                # Perform any requred actions.
-                if self._try_reopen:
-                    self._decoder.open()
+                    # Perform any requred actions.
+                    if self._try_reopen:
+                        self._decoder.app.logger.info('Attempting to reconnect to the AlarmDecoder')
+                        self._decoder.open()
 
-            except Exception, err:
-                traceback.print_exc(err)
+                except Exception, err:
+                    self._decoder.app.logger.error('Error in DecoderThread: {0}'.format(err), exc_info=True)
 
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
     def initialize(self):
