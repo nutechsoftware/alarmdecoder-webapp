@@ -108,6 +108,97 @@
                 else
                     $('#pausebutton').text("Unpause");
             });
+            $(document).keydown(function(event) {
+                var shiftKey = event.shiftKey;
+                var charCode = (typeof event.which == "number") ? event.which : event.keyCode;
+                var realCharCode = String.fromCharCode(charCode);
+//F1-F4
+                if( charCode == 112 )
+                {
+                    $.confirm({
+                        text: "Are you sure?",
+                        title: "Call the Fire Department",
+                        confirm: function(button) {
+                            add_flash_message("Fire Department notified.", "error");
+                            decoder.emit('keypress', 1);
+                        },
+                        cancel: function(button) {
+                        },
+                        confirmButton: "Yes I am",
+                        cancelButton: "No",
+                        post: false,
+                    });
+                }
+                if( charCode == 113 )
+                {
+                    $.confirm({
+                        text: "Are you sure?",
+                        title: "Call the Police Department",
+                        confirm: function(button) {
+                            add_flash_message("Police Department notified.", "error");
+                            decoder.emit('keypress', 2);
+                        },
+                        cancel: function(button) {
+                        },
+                        confirmButton: "Yes I am",
+                        cancelButton: "No",
+                        post: false,
+                    });
+                }
+                if( charCode == 114 )
+                {
+                    $.confirm({
+                        text: "Are you sure?",
+                        title: "Call the Medics",
+                        confirm: function(button) {
+                            add_flash_message("Medical Help notified.", "error");
+                            decoder.emit('keypress', 3);
+                        },
+                        cancel: function(button) {
+                        },
+                        confirmButton: "Yes I am",
+                        cancelButton: "No",
+                        post: false,
+                    });
+                }
+                if( charCode == 115 )
+                {
+                    $.confirm({
+                        text: "Are you sure?",
+                        title: "Confirmation required",
+                        confirm: function(button) {
+                            add_flash_message("Notification sent.", "error");
+                            decoder.emit('keypress', 4);
+                        },
+                        cancel: function(button) {
+                        },
+                        confirmButton: "Yes I am",
+                        cancelButton: "No",
+                        post: false,
+                    });
+                }
+
+//the rest
+                if( charCode == 8 || charCode == 9 || charCode == 46 || charCode == 37 || charCode == 39 || (charCode >= 48 && charCode <= 57) || (charCode >= 96 && charCode <= 105 ))
+                {
+                    if( shiftKey )
+                    {
+                        if(charCode == 56)
+                        {
+                            decoder.emit('keypress', '*');
+                        }
+                        if(charCode == 51)
+                        {
+                            decoder.emit('keypress', '#');
+                        }
+                    }
+                    else
+                    {
+                        decoder.emit('keypress', realCharCode);
+                    }
+                }
+            });
+
         });
     </script>
 {% endblock %}
@@ -115,7 +206,6 @@
 {% block body %}
 <div id="data">
     <div id="loading"></div>
-    <div id="datatable" style="display: none;">
         <table id='panel-log' cellpadding="3" class="display table-hover" border="1" bordercolor="EEEEEE">
             <thead>
                 <tr>
