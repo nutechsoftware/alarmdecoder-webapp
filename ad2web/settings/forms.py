@@ -50,3 +50,8 @@ class PasswordForm(Form):
         user = User.get_by_id(current_user.id)
         if not user.check_password(field.data):
             raise ValidationError("Password is wrong.")
+
+class ImportSettingsForm(Form):
+    import_file = FileField(u'Settings Archive', [Required()])
+
+    submit = SubmitField(u'Import')

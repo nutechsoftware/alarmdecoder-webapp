@@ -8,19 +8,20 @@ import json
 
 from datetime import datetime
 
-from flask import Blueprint, render_template, current_app, request, flash, Response
+from flask import Blueprint, render_template, current_app, request, flash, Response, url_for, redirect
 from flask.ext.login import login_required, current_user
 
 from sqlalchemy.orm import class_mapper
+from sqlalchemy.exc import SQLAlchemyError
 
 from ..extensions import db
 from ..user import User, UserDetail
 from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
-from .constants import NETWORK_DEVICE, SERIAL_DEVICE
+from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP
 from ..certificate import Certificate
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
@@ -97,102 +98,10 @@ def password():
     return render_template('settings/password.html', user=user,
             active="password", form=form)
 
-@settings.route('/device', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def device():
-    # This is ugly.. better way to do this?
-
-    type_form = DeviceTypeForm(prefix="type")
-    network_form = NetworkDeviceForm(prefix="network")
-    local_form = LocalDeviceForm(prefix="local")
-    current_form, form_type = type_form, 'type'
-
-    if type_form.submit.data:
-        if type_form.validate_on_submit():
-            # Save type settings.
-            device_type = Setting.get_by_name('device_type')
-            device_type.value = type_form.device_type.data
-
-            db.session.add(device_type)
-            db.session.commit()
-
-            # Type form done.. populate network/serial forms.
-            if device_type.value == NETWORK_DEVICE:
-                network_form.device_address.data = Setting.get_by_name('device_address', network_form.device_address.default).value
-                network_form.device_port.data = Setting.get_by_name('device_port', network_form.device_port.default).value
-                network_form.ssl.data = Setting.get_by_name('use_ssl', network_form.ssl.default).value
-                current_form, form_type = network_form, 'network'
-
-            elif device_type.value == SERIAL_DEVICE:
-                local_form.device_path.data = Setting.get_by_name('device_path', local_form.device_path.default).value
-                local_form.baudrate.data = Setting.get_by_name('device_baudrate', local_form.baudrate.default).value
-                current_form, form_type = local_form, 'serial'
-
-    elif network_form.submit.data:
-        current_form, form_type = network_form, 'network'
-        if network_form.validate_on_submit():
-            # Save network device settings
-            device_address = Setting.get_by_name('device_address')
-            device_address.value = network_form.device_address.data
-
-            device_port = Setting.get_by_name('device_port')
-            device_port.value = network_form.device_port.data
-
-            ssl = Setting.get_by_name('use_ssl')
-            ssl.value = network_form.ssl.data
-
-            db.session.add(device_address)
-            db.session.add(device_port)
-            db.session.add(ssl)
-            db.session.commit()
-
-            flash('Device settings saved.', 'success')
-
-    elif local_form.submit.data:
-        current_form, form_type = local_form, 'serial'
-        if local_form.validate_on_submit():
-            # Save serial device settings.
-            device_path = Setting.get_by_name('device_path')
-            device_path.value = local_form.device_path.data
-
-            baudrate = Setting.get_by_name('baudrate')
-            baudrate.value = local_form.baudrate.data
-
-            db.session.add(device_path)
-            db.session.add(baudrate)
-            db.session.commit()
-
-            flash('Device settings saved.', 'success')
-
-    else:
-        # Populate saved device type if this is a fresh page load.
-        type_form.device_type.data = Setting.get_by_name('device_type', type_form.device_type.default).value
-
-    return render_template('settings/device.html', form=current_form, active='device', form_type=form_type)
-
 @settings.route('/export', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def export():
-    def serialize(model):
-        data = []
-        for res in model.query.all():
-            res_dict = {}
-            for c in class_mapper(res.__class__).columns:
-                value = getattr(res, c.key)
-
-                if isinstance(value, datetime):
-                    value = str(value)
-                elif isinstance(value, set):
-                    continue
-
-                res_dict[c.key] = value
-
-            data.append(res_dict)
-
-        return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), skipkeys=True)
-
     prefix = 'alarmdecoder-export'
     filename = '{0}-{1}.tar.gz'.format(prefix, datetime.now().strftime('%Y%m%d%H%M%S'))
     fileobj = io.BytesIO()
@@ -200,12 +109,85 @@ def export():
     with tarfile.open(name=bytes(filename), mode='w:gz', fileobj=fileobj) as tar:
         tar_add_directory(tar, prefix)
 
-        tar_add_textfile(tar, 'settings.json', bytes(serialize(Setting)), prefix)
-        tar_add_textfile(tar, 'certificates.json', bytes(serialize(Certificate)), prefix)
-        tar_add_textfile(tar, 'notifications.json', bytes(serialize(Notification)), prefix)
-        tar_add_textfile(tar, 'notification_settings.json', bytes(serialize(NotificationSetting)), prefix)
-        tar_add_textfile(tar, 'users.json', bytes(serialize(User)), prefix)
-        tar_add_textfile(tar, 'user_details.json', bytes(serialize(UserDetail)), prefix)
-        tar_add_textfile(tar, 'zones.json', bytes(serialize(Zone)), prefix)
+        for export_file, model in EXPORT_MAP.iteritems():
+            tar_add_textfile(tar, export_file, bytes(_export_model(model)), prefix)
 
     return Response(fileobj.getvalue(), mimetype='application/x-gzip', headers={ 'Content-Type': 'application/x-gzip', 'Content-Disposition': 'attachment; filename=' + filename })
+
+def _export_model(model):
+    data = []
+    for res in model.query.all():
+        res_dict = {}
+        for c in class_mapper(res.__class__).columns:
+            value = getattr(res, c.key)
+
+            if isinstance(value, datetime):
+                value = value.strftime('%Y-%m-%d %H:%M:%S.%f')
+
+            elif isinstance(value, set):
+                continue
+
+            res_dict[c.key] = value
+
+        data.append(res_dict)
+
+    return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), skipkeys=True)
+
+@settings.route('/import', methods=['GET', 'POST'], endpoint='import')
+@login_required
+@admin_required
+def import_backup():
+    form = ImportSettingsForm()
+    form.multipart = True
+    if form.validate_on_submit():
+        archive_data = form.import_file.data.read()
+        fileobj = io.BytesIO(archive_data)
+
+        prefix = 'alarmdecoder-export'
+
+        try:
+            with tarfile.open(mode='r:gz', fileobj=fileobj) as tar:
+                root = tar.getmember(prefix)
+
+                for member in tar.getmembers():
+                    if member.name == prefix:
+                        continue
+                    else:
+                        filename = os.path.basename(member.name)
+                        if filename in EXPORT_MAP.keys():
+                            _import_model(tar, member, EXPORT_MAP[filename])
+
+                db.session.commit()
+
+                current_app.logger.info('Successfully imported backup file.')
+                flash('Import finished.', 'success')
+
+                return redirect(url_for('frontend.index'))
+
+        except (tarfile.ReadError, KeyError), err:
+            current_app.logger.error('Import Error: {0}'.format(err))
+            flash('Import Failed: Not a valid AlarmDecoder archive.', 'error')
+
+        except (SQLAlchemyError, ValueError), err:
+            db.session.rollback()
+
+            current_app.logger.error('Import Error: {0}'.format(err))
+            flash('Import failed.'.format(err), 'error')
+
+    return render_template('settings/import.html', form=form)
+
+def _import_model(tar, tarinfo, model):
+    model.query.delete()
+
+    filedata = tar.extractfile(tarinfo).read()
+    items = json.loads(filedata)
+
+    for itm in items:
+        m = model()
+        for k, v in itm.iteritems():
+            if isinstance(model.__table__.columns[k].type, db.DateTime) and v is not None:
+                v = datetime.strptime(v, '%Y-%m-%d %H:%M:%S.%f')
+
+            setattr(m, k, v)
+
+        db.session.add(m)

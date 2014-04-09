@@ -1,0 +1,15 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <h3>Import Settings</h3>
+
+    <div style="color: red;">WARNING: This will replace all current settings!</div>
+    <br>
+    <div>
+        {{ render_form(url_for('settings.import'), form) }}
+    </div>
+</div>
+{% endblock %}
