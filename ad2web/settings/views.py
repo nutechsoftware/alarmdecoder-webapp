@@ -95,8 +95,10 @@ def password():
 
         flash('Password updated.', 'success')
 
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
     return render_template('settings/password.html', user=user,
-            active="password", form=form)
+            active="password", form=form, ssl=use_ssl)
 
 @settings.route('/export', methods=['GET', 'POST'])
 @login_required
@@ -174,7 +176,9 @@ def import_backup():
             current_app.logger.error('Import Error: {0}'.format(err))
             flash('Import failed.'.format(err), 'error')
 
-    return render_template('settings/import.html', form=form)
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('settings/import.html', form=form, ssl=use_ssl)
 
 def _import_model(tar, tarinfo, model):
     model.query.delete()

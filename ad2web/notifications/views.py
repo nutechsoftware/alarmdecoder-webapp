@@ -27,9 +27,10 @@ def notifications_context_processor():
 @notifications.route('/')
 @login_required
 def index():
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
     notification_list = Notification.query.all()
 
-    return render_template('notifications/index.html', notifications=notification_list, active='notifications')
+    return render_template('notifications/index.html', notifications=notification_list, active='notifications', ssl=use_ssl)
 
 @notifications.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -57,7 +58,9 @@ def edit(id):
 
         flash('Notification saved.', 'success')
 
-    return render_template('notifications/edit.html', form=form, id=id, notification=notification, active='notifications')
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('notifications/edit.html', form=form, id=id, notification=notification, active='notifications', ssl=use_ssl)
 
 @notifications.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -67,7 +70,9 @@ def create():
     if form.validate_on_submit():
         return redirect(url_for('notifications.create_by_type', type=form.type.data))
 
-    return render_template('notifications/create.html', form=form, active='notifications')
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('notifications/create.html', form=form, active='notifications', ssl=use_ssl)
 
 @notifications.route('/create/<string:type>', methods=['GET', 'POST'])
 @login_required
@@ -93,7 +98,9 @@ def create_by_type(type):
 
         return redirect(url_for('notifications.index'))
 
-    return render_template('notifications/create_by_type.html', form=form, type=type, active='notifications')
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('notifications/create_by_type.html', form=form, type=type, active='notifications', ssl=use_ssl)
 
 @notifications.route('/remove/<int:id>', methods=['GET', 'POST'])
 @login_required

@@ -8,6 +8,7 @@ from ..decorators import admin_required
 
 from ..user import User
 from .forms import UserForm
+from ..settings import Setting
 
 
 admin = Blueprint('admin', __name__, url_prefix='/settings')
@@ -26,7 +27,10 @@ def index():
 @admin_required
 def users():
     users = User.query.all()
-    return render_template('admin/users.html', users=users, active='users')
+
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('admin/users.html', users=users, active='users', ssl=use_ssl)
 
 
 @admin.route('/user/create', methods=['GET', 'POST'], defaults={'user_id': None})
@@ -50,7 +54,9 @@ def user(user_id):
 
         flash('User created.' if user_id is None else 'User updated.', 'success')
 
-    return render_template('admin/user.html', user_id=user_id, form=form)
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('admin/user.html', user_id=user_id, form=form, ssl=use_ssl)
 
 @admin.route('/user/remove/<int:user_id>', methods=['GET', 'POST'])
 @login_required
@@ -62,5 +68,7 @@ def remove(user_id):
         db.session.delete(user)
         db.session.commit()
         flash('User deleted.', 'success')
+
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
     return redirect(url_for('admin.users'))

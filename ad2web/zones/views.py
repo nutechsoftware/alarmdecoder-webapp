@@ -21,7 +21,9 @@ zones = Blueprint('zones', __name__, url_prefix='/settings/zones')
 def index():
     zones = Zone.query.all()
 
-    return render_template('zones/index.html', zones=zones, active="zones")
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('zones/index.html', zones=zones, active="zones", ssl=use_ssl)
 
 @zones.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -40,7 +42,9 @@ def create():
 
         return redirect(url_for('zones.index'))
 
-    return render_template('zones/create.html', form=form, active="zones")
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('zones/create.html', form=form, active="zones", ssl=use_ssl)
 
 @zones.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -57,7 +61,9 @@ def edit(id):
 
         flash('Zone updated.', 'success')
 
-    return render_template('zones/edit.html', form=form, id=id, active="zones")
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('zones/edit.html', form=form, id=id, active="zones", ssl=use_ssl)
 
 @zones.route('/remove/<int:id>', methods=['GET', 'POST'])
 @login_required

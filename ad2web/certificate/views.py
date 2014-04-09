@@ -28,9 +28,11 @@ def index():
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
     if use_ssl == False:
         abort(404)
+
     certificates = Certificate.query.all()
     ca_cert = Certificate.query.filter_by(type=CA).first()
-    return render_template('certificate/index.html', certificates=certificates, ca_cert=ca_cert, active='certificates')
+
+    return render_template('certificate/index.html', certificates=certificates, ca_cert=ca_cert, active='certificates', ssl=use_ssl)
 
 @certificate.route('/generate', methods=['GET', 'POST'])
 @login_required
@@ -62,7 +64,7 @@ def generate():
 
         return redirect(url_for('certificate.index'))
 
-    return render_template('certificate/generate.html', form=form, active='certificates')
+    return render_template('certificate/generate.html', form=form, active='certificates', ssl=use_ssl)
 
 
 @certificate.route('/<int:certificate_id>')
@@ -81,7 +83,7 @@ def view(certificate_id):
     if cert.user != current_user and not current_user.is_admin():
         abort(403)
 
-    return render_template('certificate/view.html', certificate=cert, ca_cert=ca_cert, current_user=current_user, active='certificates')
+    return render_template('certificate/view.html', certificate=cert, ca_cert=ca_cert, current_user=current_user, active='certificates', ssl=use_ssl)
 
 @certificate.route('/<int:certificate_id>/download/<download_type>')
 @login_required
@@ -121,7 +123,7 @@ def revoke(certificate_id):
 
     flash('The certificate has been revoked.', 'success')
 
-    return render_template('certificate/view.html', certificate=cert)
+    return render_template('certificate/view.html', certificate=cert, ssl=use_ssl)
 
 @certificate.route('/generateCA')
 @login_required
@@ -163,7 +165,7 @@ def generateCA():
         _update_ser2sock_config(config_path.value)
     db.session.commit()
 
-    return redirect(url_for('certificate.index'))
+    return redirect(url_for('certificate.index'), ssl=use_ssl)
 
 def _update_ser2sock_config(path):
     if path is not None:
@@ -211,4 +213,4 @@ def revokeCA():
     ca = Certificate.query.filter_by(type=CA).delete()
     db.session.commit()
 
-    return redirect(url_for('certificate.index'))
+    return redirect(url_for('certificate.index'), ssl=use_ssl)
