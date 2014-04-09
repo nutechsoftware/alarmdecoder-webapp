@@ -10,7 +10,7 @@ from ..extensions import db
 from ..decorators import admin_required, admin_or_first_run_required
 from ..settings.models import Setting
 from ..certificate.models import Certificate
-from ..certificate.constants import CA, SERVER, CLIENT, INTERNAL, ACTIVE, REVOKED
+from ..certificate.constants import CA, SERVER, CLIENT, INTERNAL, ACTIVE as CERT_ACTIVE
 from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
                    SSLForm, SSLHostForm, DeviceForm, TestDeviceForm, CreateAccountForm)
 from .constants import (SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
@@ -18,7 +18,7 @@ from .constants import (SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
                     DEFAULT_BAUDRATES, DEFAULT_PATHS, SETUP_ENDPOINT_STAGE)
 from ..ser2sock import ser2sock
 from ..user.models import User
-from ..user.constants import ADMIN, ACTIVE
+from ..user.constants import ADMIN as USER_ADMIN, ACTIVE as USER_ACTIVE
 
 setup = Blueprint('setup', __name__, url_prefix='/setup')
 
@@ -275,7 +275,7 @@ def _generate_certs():
         ca_cert = Certificate(
                     name="AlarmDecoder CA",
                     description='CA certificate used for authenticating others.',
-                    status=ACTIVE,
+                    status=CERT_ACTIVE,
                     type=CA)
         ca_cert.generate(common_name='AlarmDecoder CA')
         db.session.add(ca_cert)
@@ -284,7 +284,7 @@ def _generate_certs():
         server_cert = Certificate(
                 name="AlarmDecoder Server",
                 description='Server certificate used by ser2sock.',
-                status=ACTIVE,
+                status=CERT_ACTIVE,
                 type=SERVER,
                 ca_id=ca_cert.id)
         server_cert.generate(common_name='AlarmDecoder Server', parent=ca_cert)
@@ -293,7 +293,7 @@ def _generate_certs():
         internal_cert = Certificate(
                 name="AlarmDecoder Internal",
                 description='Internal certificate used to communicate with ser2sock.',
-                status=ACTIVE,
+                status=CERT_ACTIVE,
                 type=INTERNAL,
                 ca_id=ca_cert.id)
         internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
@@ -370,7 +370,7 @@ def account():
     form = CreateAccountForm()
 
     if form.validate_on_submit():
-        user = User(role_code=ADMIN, status_code=ACTIVE)
+        user = User(role_code=USER_ADMIN, status_code=USER_ACTIVE)
         form.populate_obj(user)
         db.session.add(user)
 
