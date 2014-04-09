@@ -52,10 +52,17 @@
     left: 15% !important;
     width: 70%;
 }
+
+.tablet .container .nav-tabs {
+    position: relative;
+    width: 70%;
+    left: 15% !important;
+}
+
 .container #flash_message_container {
     width: 80% !important;
     position: relative;
-    left: 30px;
+    margin: 0 auto;
 }
 /* Sign up */
 .btn-signup {
@@ -248,14 +255,22 @@ cursor: pointer;
     top: 5px;
     left: 175px;
 }
+.tablet dataTables_paginate {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    top: 5px !important;
+    left: 175px !important;
+}
 
 .mobile .dataTables_paginate {
     position: relative;
     display: inline-block;
     vertical-align: middle;
     text-align: center;
-    left: 135px !important;
-    top: 15px !important;
+    left: 135px;
+    top: 15px;
 }
 
 #clear {
