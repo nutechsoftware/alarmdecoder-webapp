@@ -1,3 +1,16 @@
+#nojs {
+    border: 1px dashed #FFB2B2;
+    background: #FFE6E6;
+    width: 50%;
+    margin: 0 auto;
+    padding: 5px;
+}
+
+#nojs p {
+    color: red;
+    margin: 0 auto;
+}
+
 .form-actions {
     padding: 0;
     background-color: #fff;
@@ -181,7 +194,7 @@ table .headerSortUp:after {
     border: 0 !important
 }
 
-//dataTables
+/* dataTables */
 table.display {
     margin: 0px auto;
     clear: both;
@@ -284,7 +297,7 @@ cursor: pointer;
     margin-top: 45px !important;
     margin-bottom: 30px !important;
 }
-//forms
+/* forms */
 input:focus {
     border: solid 1px #337FD6;
 }
