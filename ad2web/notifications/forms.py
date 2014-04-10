@@ -79,7 +79,7 @@ class EmailNotificationForm(EditNotificationForm):
 
 class GoogleTalkNotificationForm(EditNotificationForm):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Messages will originate from this address')
-    password = TextField(u'Password', [Required(), Length(max=255)], description=u'Password for the source account')
+    password = PasswordField(u'Password', [Required(), Length(max=255)], description=u'Password for the source account')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Messages will be sent to this address')
 
     submit = SubmitField(u'Save')
