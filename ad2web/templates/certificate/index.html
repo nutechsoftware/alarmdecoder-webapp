@@ -14,13 +14,6 @@
             className: 'spinner',
         }
         $('#loading').spin('flower');
-        if( $('#generateca').length )
-        {
-            $('#generateca').confirm({
-                title: 'Generate CA?',
-                text: 'Are you sure?',
-            });
-        }
 
         $('#certificate-table').dataTable({
             "bJQueryUI" : true,

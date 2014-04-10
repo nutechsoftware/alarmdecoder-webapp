@@ -106,6 +106,15 @@ $(document).ready(function() {
             }
         });
     });
+
+
+    if( $('#revokeca').length )
+    {
+        $('#revokeca').confirm({
+            title: 'Revoke CA?',
+            text: 'This will invalidate all existing certificates.  Are you sure?',
+        });
+    }
 });
 </script>
 {% endblock %}
@@ -122,9 +131,9 @@ $(document).ready(function() {
         <a style="margin-top: 3px; position: relative; float: right; width: 125px;" class="btn btn-primary" href="{{ url_for('certificate.revoke', certificate_id=certificate.id) }}">Revoke certificate</a>
     </div>
     {% endif %}
-    {% if certificate.type == 0 or certificate.type == 1 and current_user.is_admin() %}
+    {% if certificate.type == 0 and current_user.is_admin() %}
     <div id="cert_download">
-        <a style="margin-top: 3px; position: relative; float: right; width: 125px;" class="btn btn-primary" href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
+        <a id="revokeca" style="margin-top: 3px; position: relative; float: right; width: 125px;" class="btn btn-primary" href="{{ url_for('certificate.revokeCA') }}">Revoke CA</a>
     </div>
     {% endif %}
     <div id="cert_id">
