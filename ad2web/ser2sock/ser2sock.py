@@ -119,3 +119,50 @@ def save_revocation_list(path):
 
         crl_data = crl.export(ca_cert.certificate_obj, ca_cert.key_obj)
         crl_file.write(crl_data)
+
+def update_config(path, *args, **kwargs):
+    try:
+        if path is not None:
+            config = read_config(os.path.join(path, 'ser2sock.conf'))
+        else:
+            config = None
+
+        if config is not None:
+            config_values = {}
+            if config.has_section('ser2sock'):
+                for k, v in config.items('ser2sock'):
+                    config_values[k] = v
+
+            if 'device_path' in kwargs.keys():
+                config_values['device'] = kwargs['device_path']
+            if 'device_baudrate' in kwargs.keys():
+                config_values['baudrate'] = kwargs['device_baudrate']
+            if 'device_port' in kwargs.keys():
+                config_values['port'] = kwargs['device_port']
+            if 'use_ssl' in kwargs.keys():
+                config_values['encrypted'] = int(kwargs['use_ssl'])
+
+            if 'encrypted' in config_values and config_values['encrypted'] == 1:
+                cert_path = os.path.join(path, 'certs')
+                if not os.path.exists(cert_path):
+                    os.mkdir(cert_path, 0700)
+
+                ca_cert = kwargs['ca_cert'] if 'ca_cert' in kwargs.keys() else None
+                server_cert = kwargs['server_cert'] if 'server_cert' in kwargs.keys() else None
+
+                if ca_cert is not None and server_cert is not None:
+                    ca_cert.export(cert_path)
+                    server_cert.export(cert_path)
+
+                    config_values['ca_certificate'] = os.path.join(cert_path, '{0}.pem'.format(ca_cert.name))
+                    config_values['ssl_certificate'] = os.path.join(cert_path, '{0}.pem'.format(server_cert.name))
+                    config_values['ssl_key'] = os.path.join(cert_path, '{0}.key'.format(server_cert.name))
+
+                    save_certificate_index(path)
+                    save_revocation_list(path)
+
+            save_config(os.path.join(path, 'ser2sock.conf'), config_values)
+            hup()
+
+    except (OSError, IOError), err:
+        raise RuntimeError('Error updating ser2sock configuration: {0}'.format(err))

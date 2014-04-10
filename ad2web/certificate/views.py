@@ -162,43 +162,11 @@ def generateCA():
 
     config_path = Setting.get_by_name('ser2sock_config_path')
     if config_path is not None:
-        _update_ser2sock_config(config_path.value)
+        ser2sock.update_config(config_path.value, ca_cert=ca_cert, server_cert=server_cert, use_ssl=True)
+
     db.session.commit()
 
-    return redirect(url_for('certificate.index'), ssl=use_ssl)
-
-def _update_ser2sock_config(path):
-    if path is not None:
-        config = ser2sock.read_config(os.path.join(path, 'ser2sock.conf'))
-    else:
-        config = None
-
-    if config is not None:
-        config_values = {}
-        for k, v in config.items('ser2sock'):
-            config_values[k] = v
-
-        config_values['device'] = Setting.get_by_name('device_path').value
-        config_values['baudrate'] = Setting.get_by_name('device_baudrate').value
-        config_values['port'] = Setting.get_by_name('device_port').value
-        config_values['encrypted'] = Setting.get_by_name('use_ssl').value
-        if config_values['encrypted'] == 1:
-            ca = Certificate.query.filter_by(type=CA).first()
-            server_cert = Certificate.query.filter_by(type=SERVER).first()
-
-            if ca is not None and server_cert is not None:
-                ca.export(os.path.join(path, 'certs'))
-                server_cert.export(os.path.join(path, 'certs'))
-
-                config_values['ca_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(ca.name))
-                config_values['ssl_certificate'] = os.path.join(path, 'certs', '{0}.pem'.format(server_cert.name))
-                config_values['ssl_key'] = os.path.join(path, 'certs', '{0}.key'.format(server_cert.name))
-
-                ser2sock.save_certificate_index(path)
-                ser2sock.save_revocation_list(path)
-
-        ser2sock.save_config(os.path.join(path, 'ser2sock.conf'), config_values)
-        ser2sock.hup()
+    return redirect(url_for('certificate.index'))
 
 @certificate.route('/revokeCA')
 @login_required
@@ -213,4 +181,4 @@ def revokeCA():
     ca = Certificate.query.filter_by(type=CA).delete()
     db.session.commit()
 
-    return redirect(url_for('certificate.index'), ssl=use_ssl)
+    return redirect(url_for('certificate.index'))
