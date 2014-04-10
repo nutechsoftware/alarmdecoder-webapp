@@ -112,6 +112,11 @@ def local():
         next_stage = 'setup.device'
         if form.confirm_management.data == True:
             next_stage = 'setup.sslserver'
+        else:
+            try:
+                ser2sock.stop()
+            except:
+                flash("We've detected that ser2sock is running and failed to stop it.  There may be communication issues unless it is killed manually.", 'warning')
 
         set_stage(SETUP_ENDPOINT_STAGE[next_stage])
         db.session.commit()
