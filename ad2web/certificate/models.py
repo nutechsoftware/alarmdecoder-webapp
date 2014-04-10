@@ -19,6 +19,7 @@ from ..settings.models import Setting
 from .constants import CERTIFICATE_TYPES, CA, SERVER, CLIENT, INTERNAL, \
                         CERTIFICATE_STATUS, REVOKED, ACTIVE, EXPIRED, \
                         PACKAGE_TYPES, TGZ, PKCS12, BKS, CRL_CODE
+from ..utils import tar_add_directory, tar_add_textfile
 
 class Certificate(db.Model):
     __tablename__ = 'certificates'
@@ -205,11 +206,11 @@ class CertificatePackage(object):
         fileobj = io.BytesIO()
 
         with tarfile.open(name=bytes(filename), mode='w:gz', fileobj=fileobj) as tar:
-            self._tar_add_directory(tar, self.certificate.name)
+            tar_add_directory(tar, self.certificate.name)
 
-            self._tar_add_cert(tar, 'ca.pem', bytes(self.ca.certificate), parent_path=self.certificate.name)
-            self._tar_add_cert(tar, self.certificate.name + '.pem', bytes(self.certificate.certificate), parent_path=self.certificate.name)
-            self._tar_add_cert(tar, self.certificate.name + '.key', bytes(self.certificate.key), parent_path=self.certificate.name)
+            tar_add_textfile(tar, 'ca.pem', bytes(self.ca.certificate), parent_path=self.certificate.name)
+            tar_add_textfile(tar, self.certificate.name + '.pem', bytes(self.certificate.certificate), parent_path=self.certificate.name)
+            tar_add_textfile(tar, self.certificate.name + '.key', bytes(self.certificate.key), parent_path=self.certificate.name)
 
         return filename, fileobj.getvalue()
 
@@ -270,21 +271,3 @@ class CertificatePackage(object):
         os.unlink(output.name)
 
         return filename, data
-
-    def _tar_add_directory(self, tar, name):
-        ti = tarfile.TarInfo(name=name)
-        ti.mtime = time.time()
-        ti.type = tarfile.DIRTYPE
-        ti.mode = 0755
-        tar.addfile(ti)
-
-    def _tar_add_cert(self, tar, name, data, parent_path=None):
-        path = name
-        if parent_path:
-            path = os.path.join(parent_path, name)
-
-        ti = tarfile.TarInfo(name=path)
-        ti.mtime = time.time()
-        ti.size = len(data)
-
-        tar.addfile(ti, io.TextIOWrapper(buffer=io.BytesIO(data), encoding='ascii'))
