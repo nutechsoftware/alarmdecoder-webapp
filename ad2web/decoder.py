@@ -306,11 +306,13 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
         def on_config_received(device):
             timer.cancel()
             self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'PASS', 'details': ''})
-            self._alarmdecoder.device.on_config_received.remove(on_config_received)
+            if on_config_received in self._alarmdecoder.device.on_config_received:
+                self._alarmdecoder.device.on_config_received.remove(on_config_received)
 
         def on_timeout():
             self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'TIMEOUT', 'details': 'Test timed out.'})
-            self._alarmdecoder.device.on_config_received.remove(on_config_received)
+            if on_config_received in self._alarmdecoder.device.on_config_received:
+                self._alarmdecoder.device.on_config_received.remove(on_config_received)
 
         timer = threading.Timer(10, on_timeout)
         timer.start()
@@ -338,14 +340,16 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 
         except Exception, err:
             timer.cancel()
-            self._alarmdecoder.device.on_config_received.remove(on_config_received)
+            if on_config_received in self._alarmdecoder.device.on_config_received:
+                self._alarmdecoder.device.on_config_received.remove(on_config_received)
             self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
             current_app.logger.error('Error while testing device config.', exc_info=True)
 
     def _test_send(self):
         def on_sending_received(device, status, message):
             timer.cancel()
-            self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
+            if on_sending_received in self._alarmdecoder.device.on_sending_received:
+                self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
 
             results, details = 'PASS', ''
             if status != True:
@@ -355,7 +359,8 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 
         def on_timeout():
             self._alarmdecoder.broadcast('test', {'test': 'send', 'results': 'TIMEOUT', 'details': 'Test timed out.'})
-            self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
+            if on_sending_received in self._alarmdecoder.device.on_sending_received:
+                self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
 
         timer = threading.Timer(10, on_timeout)
         timer.start()
@@ -366,19 +371,22 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 
         except Exception, err:
             timer.cancel()
-            self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
+            if on_sending_received in self._alarmdecoder.device.on_sending_received:
+                self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
             self._alarmdecoder.broadcast('test', {'test': 'send', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
             current_app.logger.error('Error while testing keypad communication.', exc_info=True)
 
     def _test_receive(self):
         def on_message(device, message):
             timer.cancel()
-            self._alarmdecoder.device.on_message.remove(on_message)
+            if on_message in self._alarmdecoder.device.on_message:
+                self._alarmdecoder.device.on_message.remove(on_message)
             self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'PASS', 'details': ''})
 
         def on_timeout():
             self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'TIMEOUT', 'details': 'Test timed out.'})
-            self._alarmdecoder.device.on_message.remove(on_message)
+            if on_message in self._alarmdecoder.device.on_message:
+                self._alarmdecoder.device.on_message.remove(on_message)
 
         timer = threading.Timer(10, on_timeout)
         timer.start()
@@ -389,7 +397,8 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 
         except Exception, err:
             timer.cancel()
-            self._alarmdecoder.device.on_message.remove(on_message)
+            if on_message in self._alarmdecoder.device.on_message:
+                self._alarmdecoder.device.on_message.remove(on_message)
             self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
             current_app.logger.error('Error while testing keypad communication.', exc_info=True)
 
