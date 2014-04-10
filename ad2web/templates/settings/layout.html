@@ -5,6 +5,7 @@
 
 {% if ssl == True %}
 {% set tabs = [
+    ("index", url_for('settings.index'), False),
     ("device", url_for('setup.index'), True),
     ("notifications", url_for('notifications.index'), False),
     ("zones", url_for('zones.index'), True),
@@ -14,6 +15,7 @@
 ]%}
 {% else %}
 {% set tabs = [
+    ("index", url_for('settings.index'), False),
     ("device", url_for('setup.index'), True),
     ("notifications", url_for('notifications.index'), False),
     ("zones", url_for('zones.index'), True),
