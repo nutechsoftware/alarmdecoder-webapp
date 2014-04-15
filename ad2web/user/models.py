@@ -45,6 +45,12 @@ class DenormalizedText(Mutable, types.TypeDecorator):
         return set(value)
 
 
+class UserHistory(db.Model):
+    __tablename__ = 'user_history'
+    id = Column(db.Integer, primary_key=True)
+    ip_address = Column(db.String(STRING_LEN))
+    user_id = Column(db.Integer)
+
 class UserDetail(db.Model):
 
     __tablename__ = 'user_details'
@@ -121,6 +127,8 @@ class User(db.Model, UserMixin):
     # One-to-one (uselist=False) relationship between users and user_details.
     user_detail_id = Column(db.Integer, db.ForeignKey("user_details.id"))
     user_detail = db.relationship("UserDetail", uselist=False, backref="user")
+    user_ip_id = Column(db.Integer, db.ForeignKey("user_history.id"))
+    user_ip_history = db.relationship("UserHistory", uselist=False, backref="user")
 
     # ================================================================
     # Follow / Following

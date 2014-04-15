@@ -8,10 +8,11 @@ from flask.ext.mail import Message
 from flask.ext.babel import gettext as _
 from flask.ext.login import login_required, login_user, current_user, logout_user, confirm_login, login_fresh
 
-from ..user import User, UserDetail
+from ..user import User, UserDetail, UserHistory
 from ..extensions import db, mail, login_manager, oid
 from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm, LicenseAgreementForm
 from ..settings import Setting
+from socket import gethostname, gethostbyname
 
 frontend = Blueprint('frontend', __name__)
 
@@ -98,7 +99,15 @@ def login():
             remember = request.form.get('remember') == 'y'
             if login_user(user, remember=remember):
                 flash(_("Logged in"), 'success')
-
+                ip = gethostbyname(gethostname())
+                user_history = UserHistory()
+                user_history.user_id = user.id
+                user_history.ip_address = ip
+                db.session.add(user_history)
+                db.session.commit()
+                user.user_ip_id = user_history.id
+                db.session.add(user)
+                db.session.commit()
                 license = Setting.get_by_name('license_agreement', default=False).value
                 if not license:
                     return redirect(url_for('frontend.license'))
