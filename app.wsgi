@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys, os, pwd
+import threading
 
 project = "ad2web"
 
@@ -22,5 +23,14 @@ if BASE_DIR not in sys.path:
 
 from ad2web import create_app
 
+class SocketIOThread(threading.Thread):
+	def __init__(self, appsocket):
+		threading.Thread.__init__(self)
+		self._appsocket = appsocket
+
+	def run(self):
+		self._appsocket.serve_forever()
+
 application, appsocket = create_app()
-appsocket.serve_forever()
+socket_thread = SocketIOThread(appsocket)
+socket_thread.start()
