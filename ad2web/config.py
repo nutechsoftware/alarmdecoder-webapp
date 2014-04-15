@@ -18,6 +18,8 @@ class BaseConfig(object):
 
     ADMINS = ['youremail@yourdomain.com']
 
+    make_dir(INSTANCE_FOLDER_PATH)
+
     # http://flask.pocoo.org/docs/quickstart/#sessions
     SECRET_KEY = 'secret key'
 
