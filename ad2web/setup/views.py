@@ -264,6 +264,7 @@ def sslserver():
                 'server_cert': server_cert
             }
 
+            db.session.commit()
             ser2sock.update_config(config_path.value, **config_settings)
             db.session.commit()
 

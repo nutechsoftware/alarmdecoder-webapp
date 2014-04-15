@@ -99,7 +99,7 @@ class Certificate(db.Model):
                         revoked.set_reason(None)
                         # NOTE: crypto.Revoked() expects YYYY instead of YY as needed by the cert index above.
                         revoked.set_rev_date(time.strftime('%Y%m%d%H%M%SZ', cert.revoked_on.utctimetuple()))
-                        revoked.set_serial(cert.serial_number)
+                        revoked.set_serial(str(cert.serial_number))
 
                         crl.add_revoked(revoked)
 
