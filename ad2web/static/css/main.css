@@ -41,6 +41,12 @@
     width: 80% !important;
 }
 
+.container #setup2 {
+    position: relative;
+    width: 80% !important;
+    margin-left: auto;
+    margin-right: auto;
+}
 .container #data {
     width: 70%;
     position: relative;
