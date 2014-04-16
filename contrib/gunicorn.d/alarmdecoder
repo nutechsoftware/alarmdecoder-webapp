@@ -1,0 +1,11 @@
+CONFIG = {
+    'working_dir': '/opt/alarmdecoder-webapp',
+    'user': 'pi',
+    'group': 'pi',
+    'args': (
+        '--worker-class=socketio.sgunicorn.GeventSocketIOWorker',
+        #'--debug',
+        #'--log-level=debug',
+        'app',
+    ),
+}
