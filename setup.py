@@ -29,7 +29,7 @@ setup(
         'gevent-socketio',
         'jsonpickle',
         'sleekxmpp',
-        'psutil',
+        'psutil>=2.0.0',
         'sh'
     ],
     dependency_links=[
