@@ -84,16 +84,7 @@ def create_app(config=None, app_name=None, blueprints=None):
         decoder.websocket = appsocket
 
         decoder.start()
-
-        with app.app_context():
-            device_type = None
-            try:
-                device_type = Setting.get_by_name('device_type')
-            except:
-                pass
-
-            if device_type is not None and device_type.value is not None:
-                decoder.open()
+        decoder.init()
 
     except Exception, err:
         app.logger.error("Error", exc_info=True)
