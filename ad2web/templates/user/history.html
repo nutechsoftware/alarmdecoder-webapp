@@ -1,0 +1,61 @@
+{% set page_title = user.name %}
+
+{% extends "layouts/base.html" %}
+
+{% block pagejs %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $.fn.dataTableExt.oPagination.iFullNumbersShowPages = 3;
+            $.fn.spin.presets.flower = {
+                lines: 13,
+                length: 30,
+                width: 10,
+                radius: 30,
+                className: 'spinner',
+            }
+            $('#loading').spin('flower');
+
+            var oTable = $('#history-table').dataTable({
+                "bJQueryUI": true,
+                "sPaginationType": "full_numbers",
+                "sDom" : '<"H"lr>t<"F"fip>',
+                "oLanguage": {
+                    "sInfoFiltered": "",
+                    "sInfo": "_START_ to _END_ of _TOTAL_",
+                    "sInfoEmpty": "No Results",
+                    "sInfoThousands": "",
+                    "sEmptyTable": " ",
+                },
+                "fnInitComplete": function() {
+                    $('#loading').stop();
+                    $('#loading').hide();
+                    $('#datatable').show();
+                    this.fnAdjustColumnSizing();
+                },
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+<div id="data">
+<h2>Login History<small> / {{ user.name }}</small></h2>
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table id="history-table" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
+            <thead>
+                <th>IP Address</th>
+                <th>Login Time</th>
+                <th>User Agent</th>
+            </thead>
+            {% for history in user_history %}
+                <tr>
+                    <td>{{history.ip_address}}</td>
+                    <td>{{history.login_time}}</td>
+                    <td>{{history.user_agent_string}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}
