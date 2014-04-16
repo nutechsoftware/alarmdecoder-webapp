@@ -78,8 +78,9 @@ class Decoder(object):
         self._device_baudrate = 115200
         self._device_type = None
         self._device_location = None
-        self._work_queue = Queue.Queue()
+        #self._work_queue = Queue.Queue()
         self._thread = DecoderThread(self)
+        self.reopen_device = False
 
     def start(self):
         self._thread.start()
@@ -90,7 +91,7 @@ class Decoder(object):
 
             if device_type is not None:
                 # HACK - queue up the device opening
-                self._work_queue.put('open_device')
+                self.reopen_device = True
 
     def open(self):
         with self.app.app_context():
@@ -162,13 +163,15 @@ class Decoder(object):
         self.app.logger.info('AlarmDecoder device was opened.')
 
         self.broadcast('device_open')
-        self._work_queue.put('device_opened')
+        #self._work_queue.put('device_opened')
+        self.reopen_device = False
 
     def _on_device_close(self, sender):
         self.app.logger.info('AlarmDecoder device was closed.')
 
         self.broadcast('device_close')
-        self._work_queue.put('open_device')
+        #self._work_queue.put('open_device')
+        self.reopen_device = True
 
     def _on_message(self, ftype, sender, *args, **kwargs):
         try:
@@ -218,14 +221,12 @@ class DecoderThread(threading.Thread):
     Worker thread for handling device events, specifically device reconnection.
     """
 
-    QUEUE_TIMEOUT = 5
+    TIMEOUT = 5
 
     def __init__(self, decoder):
         threading.Thread.__init__(self)
         self._decoder = decoder
-        self._work_queue = decoder._work_queue
         self._running = False
-        self._try_reopen = False
 
     def stop(self):
         """
@@ -242,21 +243,12 @@ class DecoderThread(threading.Thread):
         while self._running:
             with self._decoder.app.app_context():
                 try:
-                    # Process any new events in the work queue.
-                    try:
-                        event = self._work_queue.get(True, self.QUEUE_TIMEOUT)
-
-                        if event == 'open_device':
-                            self._try_reopen = True
-                        elif event == 'device_opened':
-                            self._try_reopen = False
-                    except Queue.Empty:
-                        pass
-
                     # Perform any requred actions.
-                    if self._try_reopen:
+                    if self._decoder.reopen_device:
                         self._decoder.app.logger.info('Attempting to reconnect to the AlarmDecoder')
                         self._decoder.open()
+
+                    time.sleep(self.TIMEOUT)
 
                 except Exception, err:
                     self._decoder.app.logger.error('Error in DecoderThread: {0}'.format(err), exc_info=True)
