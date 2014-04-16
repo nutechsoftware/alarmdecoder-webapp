@@ -45,6 +45,14 @@ class DenormalizedText(Mutable, types.TypeDecorator):
         return set(value)
 
 
+class UserHistory(db.Model):
+    __tablename__ = 'user_history'
+    id = Column(db.Integer, primary_key=True)
+    ip_address = Column(db.String(STRING_LEN))
+    user_id = Column(db.Integer)
+    login_time = Column(db.DateTime, default=get_current_time)
+    user_agent_string = Column(db.String(STRING_LEN))
+
 class UserDetail(db.Model):
 
     __tablename__ = 'user_details'
