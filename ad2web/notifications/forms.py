@@ -8,8 +8,9 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 
-from .constants import NOTIFICATIONS, NOTIFICATION_TYPES, EMAIL, GOOGLETALK
-from .models import NotificationSetting
+from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, EMAIL, GOOGLETALK, POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, ZONE_RESTORE, FIRE, PANIC, LRR, EXP, REL, RFX, AUI, KPE, ALARM_EXIT_ERROR, TROUBLE, BYPASS, ACLOSS, LOWBAT, TEST_CALL, OPEN, ARM_AWAY, RFLOWBAT, CANCEL, RESTORE, TROUBLE_RESTORE, BYPASS_RESTORE, AC_RESTORE, LOWBAT_RESTORE, RFLOWBAT_RESTORE, TEST_RESTORE, ALARM_PANIC, ALARM_FIRE, ALARM_ENTRY, ALARM_AUX, ALARM_AUDIBLE, ALARM_SILENT, ALARM_PERIMETER, CUSTOM_NOTIFICATION_EVENTS_TYPES, LRR_EVENTS_TYPES)
+
+from .models import NotificationSetting, CustomNotification, CustomNotificationSetting
 
 class AppendMixin(object):
     @classmethod
