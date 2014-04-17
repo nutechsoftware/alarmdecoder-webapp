@@ -7,7 +7,7 @@ from ..extensions import db
 from ..decorators import admin_required
 from ..settings import Setting
 from .forms import CreateNotificationForm, EditNotificationForm, EmailNotificationForm, GoogleTalkNotificationForm
-from .models import Notification, NotificationSetting
+from .models import Notification, NotificationSetting, CustomNotification, CustomNotificationSetting
 from .constants import NOTIFICATION_TYPES, EMAIL, GOOGLETALK
 
 NOTIFICATION_TYPE_DETAILS = {
