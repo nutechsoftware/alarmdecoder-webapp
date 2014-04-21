@@ -8,10 +8,11 @@ from flask.ext.mail import Message
 from flask.ext.babel import gettext as _
 from flask.ext.login import login_required, login_user, current_user, logout_user, confirm_login, login_fresh
 
-from ..user import User, UserDetail
+from ..user import User, UserDetail, UserHistory
 from ..extensions import db, mail, login_manager, oid
 from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm, LicenseAgreementForm
 from ..settings import Setting
+from socket import gethostname, gethostbyname
 
 frontend = Blueprint('frontend', __name__)
 
@@ -82,6 +83,16 @@ def search():
     return render_template('frontend/search.html', pagination=pagination, keywords=keywords)
 
 
+def login_history_add(user):
+    user_history = UserHistory()
+    ip = gethostbyname(gethostname())
+    user_history.user_id = user.id
+    user_history.ip_address = ip
+    userAgentString = request.headers.get('User-Agent')
+    user_history.user_agent_string = userAgentString
+    db.session.add(user_history)
+    db.session.commit()
+    
 @frontend.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated():
@@ -98,7 +109,7 @@ def login():
             remember = request.form.get('remember') == 'y'
             if login_user(user, remember=remember):
                 flash(_("Logged in"), 'success')
-
+                login_history_add(user)
                 license = Setting.get_by_name('license_agreement', default=False).value
                 if not license:
                     return redirect(url_for('frontend.license'))

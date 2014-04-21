@@ -41,6 +41,12 @@
     width: 80% !important;
 }
 
+.container #setup2 {
+    position: relative;
+    width: 80% !important;
+    margin-left: auto;
+    margin-right: auto;
+}
 .container #data {
     width: 70%;
     position: relative;
@@ -338,6 +344,7 @@ label {
     -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
     -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    width: 60%;
 }
 .ui-accordion-header {
     -webkit-border-radius: 10px;
@@ -354,6 +361,9 @@ label {
     background: -moz-linear-gradient(left, #CCCCCC, #337FD6);
 }
 
+.ui-accordion-content {
+    width: 93% !important;
+}
 div#buttons {
     margin-top: 30px;
 }

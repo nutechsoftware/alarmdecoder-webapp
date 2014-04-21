@@ -3,6 +3,7 @@
 # http://docs.fabfile.org/en/1.5/tutorial.html
 
 from fabric.api import *
+from ad2web.utils import INSTANCE_FOLDER_PATH
 
 project = "ad2web"
 
@@ -17,8 +18,8 @@ def reset():
     Reset local debug env.
     """
 
-    local("rm -rf /tmp/instance")
-    local("mkdir /tmp/instance")
+    local("rm -rf {0}".format(INSTANCE_FOLDER_PATH))
+    local("mkdir {0}".format(INSTANCE_FOLDER_PATH))
     local("python manage.py initdb")
 
 
