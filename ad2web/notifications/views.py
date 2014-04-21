@@ -6,13 +6,40 @@ from wtforms import FormField
 from ..extensions import db
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import CreateNotificationForm, EditNotificationForm, EmailNotificationForm, GoogleTalkNotificationForm
+from .forms import (CreateNotificationForm, EditNotificationForm, EmailNotificationForm, GoogleTalkNotificationForm, CreateCustomNotificationForm,
+                     PowerChangedNotificationForm, AlarmNotificationForm, BypassNotificationForm, ArmNotificationForm, DisarmNotificationForm,
+                     ZoneFaultNotificationForm, ZoneRestoreNotificationForm, FireNotificationForm, PanicNotificationForm, LRRNotificationForm,
+                     EXPNotificationForm, RELNotificationForm, RFXNotificationForm, AUINotificationForm, KPENotificationForm)
+
 from .models import Notification, NotificationSetting, CustomNotification, CustomNotificationSetting
-from .constants import NOTIFICATION_TYPES, EMAIL, GOOGLETALK
+
+from .constants import (NOTIFICATION_TYPES, EMAIL, GOOGLETALK, CUSTOM_NOTIFICATION_EVENTS_TYPES, CUSTOM_NOTIFICATION_EVENTS,
+                     LRR_EVENTS_TYPES, LRR_EVENTS, ALARM_EXIT_ERROR, TROUBLE, BYPASS, ACLOSS, LOWBAT, TEST_CALL, OPEN, ARM_AWAY,
+                     RFLOWBAT, CANCEL, RESTORE, TROUBLE_RESTORE, BYPASS_RESTORE, AC_RESTORE, LOWBAT_RESTORE, RFLOWBAT_RESTORE, TEST_RESTORE,
+                     ALARM_PANIC, ALARM_FIRE, ALARM_ENTRY, ALARM_AUX, ALARM_AUDIBLE, ALARM_SILENT, ALARM_PERIMETER, POWER_CHANGED, ALARM,
+                     BYPASS, ARM, DISARM, ZONE_FAULT, ZONE_RESTORE, FIRE, PANIC, LRR, EXP, REL, RFX, AUI, KPE)
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
     'googletalk': (GOOGLETALK, GoogleTalkNotificationForm),
+}
+
+CUSTOM_NOTIFICATION_EVENTS_DETAILS = {
+    'powerchanged': (POWER_CHANGED, PowerChangedNotificationForm),
+    'alarm': (ALARM, AlarmNotificationForm),
+    'bypass': (BYPASS, BypassNotificationForm),
+    'arm': (ARM, ArmNotificationForm),
+    'disarm': (DISARM, DisarmNotificationForm),
+    'zonefault': (ZONE_FAULT, ZoneFaultNotificationForm),
+    'zonerestore': (ZONE_RESTORE, ZoneRestoreNotificationForm),
+    'fire': (FIRE, FireNotificationForm),
+    'panic': (PANIC, PanicNotificationForm),
+    'lrrmessage': (LRR, LRRNotificationForm),
+    'expmessage': (EXP, EXPNotificationForm),
+    'relmessage': (REL, RELNotificationForm),
+    'rfxmessage': (RFX, RFXNotificationForm),
+    'auimessage': (AUI, AUINotificationForm),
+    'keypressevent': (KPE, KPENotificationForm),
 }
 
 notifications = Blueprint('notifications', __name__, url_prefix='/settings/notifications')
@@ -114,3 +141,50 @@ def remove(id):
 
     flash('Notification deleted.', 'success')
     return redirect(url_for('notifications.index'))
+
+@notifications.route('/custom/create', methods=['GET', 'POST'])
+@login_required
+def create_custom():
+    form = CreateCustomNotificationForm()
+
+    if form.validate_on_submit():
+        return redirect(url_for('notifications.create_custom_by_event', notification_event=form.notification_event.data))
+
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('notifications/custom.html', form=form, active='notifications', ssl=use_ssl)
+
+
+@notifications.route('/custom', methods=['GET', 'POST'])
+@login_required
+def custom_index():
+    notification_list = CustomNotification.query.all()
+    return render_template('notifications/custom_index.html', notification_list=notification_list)
+
+@notifications.route('/custom/create/<string:notification_event>', methods=['GET', 'POST'])
+@login_required
+def create_custom_by_event(notification_event):
+    if notification_event not in CUSTOM_NOTIFICATION_EVENTS_DETAILS.keys():
+        abort(404)
+
+    notification_event_id, form_type = CUSTOM_NOTIFICATION_EVENTS_DETAILS[notification_event]
+    form = form_type()
+    form.notification_event = notification_event_id
+
+    if form.validate_on_submit():
+        obj = CustomNotification()
+
+        form.populate_obj(obj)
+        obj.user = current_user
+        form.populate_settings(obj.settings)
+
+        db.session.add(obj)
+        db.session.commit()
+
+        flash('Custom Notification created.', 'success')
+
+        return redirect(url_for('notifications.custom_index'))
+
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('notifications/create_by_event.html', form=form, notification_event=notification_event, active='custom_notifications', ssl=use_ssl)

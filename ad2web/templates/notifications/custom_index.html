@@ -1,0 +1,77 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+        $('#loading').spin('flower');
+        $('#notifications-table').dataTable({
+            "bJQueryUI":true,
+            "sPaginationType": "full_numbers",
+            "sDom" : '<"H"lr>t<"F"fip>',
+            "oLanguage": {
+                "sInfoFiltered": "",
+                "sInfo": "_START_ to _END_ of _TOTAL_",
+                "sInfoEmpty": "No Results",
+                "sEmptyTable": " ",
+            },
+            "aoColumns": [
+                { "sWidth": "15%" },
+                { "sWidth": "15%" },
+                null,
+                { "sWidth": "10%" },
+            ],
+            "fnInitComplete": function() {
+                $('#loading').stop();
+                $('#loading').hide();
+                $('#clear').css('display', 'inline-block');
+                $('#datatable').show();
+                this.fnAdjustColumnSizing();
+            },
+
+        });
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table id="notifications-table" class="display table-hover" border="1" cellpadding="3" bordercolor="EEEEEE">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Owner</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for notification in notifications %}
+                {% if notification.user == current_user or current_user.is_admin() %}
+                <tr>
+                    <td>{{ TYPES[notification.type] }}</td>
+                    <td>{{ notification.user.name }}</td>
+                    <td>
+                        <a href="{{ url_for('notifications.edit', id=notification.id) }}">{{ notification.description }}</a>
+                    </td>
+                    <td><a href="{{ url_for('notifications.remove', id=notification.id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="../../static/img/red_x.png"/></a></td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <a id="clear" class="btn btn-primary" href="{{ url_for('notifications.create') }}">New Notification</a>
+</div>
+{% endblock %}

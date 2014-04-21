@@ -26,6 +26,7 @@ class CustomNotificationSetting(db.Model):
     message_address_or_serial = Column(db.Integer)
     message_channel = Column(db.Integer)
     message_data = Column(db.Integer)
+    custom_alert_message = Column(db.String(255), nullable=False)
 
 class Notification(db.Model):
     __tablename__ = 'notifications'
