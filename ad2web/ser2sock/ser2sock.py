@@ -18,7 +18,8 @@ DEFAULT_SETTINGS = OrderedDict([
     ('encrypted', '0'),
     ('ca_certificate', ''),
     ('ssl_certificate', ''),
-    ('ssl_key', '')
+    ('ssl_key', ''),
+    ('ssl_crl', '/etc/ser2sock/ser2sock.crl'),
 ])
 
 class NotFound(Exception):

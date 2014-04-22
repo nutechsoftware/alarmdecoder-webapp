@@ -264,6 +264,7 @@ def sslserver():
                 'server_cert': server_cert
             }
 
+            db.session.commit()
             ser2sock.update_config(config_path.value, **config_settings)
             db.session.commit()
 
@@ -297,7 +298,6 @@ def _generate_certs():
                     type=CA)
         ca_cert.generate(common_name='AlarmDecoder CA')
         db.session.add(ca_cert)
-        db.session.commit()
 
         server_cert = Certificate(
                 name="AlarmDecoder Server",
@@ -316,6 +316,7 @@ def _generate_certs():
                 ca_id=ca_cert.id)
         internal_cert.generate(common_name='AlarmDecoder Internal', parent=ca_cert)
         db.session.add(internal_cert)
+        db.session.commit()
 
 @setup.route('/test', methods=['GET', 'POST'])
 @admin_or_first_run_required

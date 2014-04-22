@@ -99,7 +99,7 @@ class Certificate(db.Model):
                         revoked.set_reason(None)
                         # NOTE: crypto.Revoked() expects YYYY instead of YY as needed by the cert index above.
                         revoked.set_rev_date(time.strftime('%Y%m%d%H%M%SZ', cert.revoked_on.utctimetuple()))
-                        revoked.set_serial(cert.serial_number)
+                        revoked.set_serial(str(cert.serial_number))
 
                         crl.add_revoked(revoked)
 
@@ -111,49 +111,59 @@ class Certificate(db.Model):
         self.revoked_on = datetime.datetime.today()
 
     def generate(self, common_name, parent=None):
+        self.serial_number = self._generate_serial_number(parent)
+
+        # Generate a key and apply it to our cert.
+        key = self._create_key()
+        req = self._create_request(common_name, key)
+        cert = self._create_cert(req, key, self.serial_number, parent)
+
+        self.certificate = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
+        self.certificate_obj = cert
+
+        self.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, key)
+        self.key_obj = key
+
+    def _create_key(self, type=crypto.TYPE_RSA, bits=2048):
+        key = crypto.PKey()
+        key.generate_key(type, bits)
+
+        return key
+
+    def _create_request(self, common_name, key):
+        req = crypto.X509Req()
+
+        req.get_subject().O = "AlarmDecoder"
+        req.get_subject().CN = common_name
+
+        req.set_pubkey(key)
+        req.sign(key, 'md5')
+
+        return req
+
+    def _create_cert(self, req, key, serial_number, parent=None):
         cert = crypto.X509()
 
         cert.set_version(2)
-        cert.get_subject().O = "AlarmDecoder"
-        cert.get_subject().CN = common_name
-
-        # Generate a serial number
-        serial_number = 1
-        if parent:
-            serial_setting = Setting.get_by_name('ssl_serial_number')
-            if serial_setting.value is None:
-                serial_setting.value = 1
-            else:
-                serial_setting.value = serial_setting.value + 1
-
-            db.session.add(serial_setting)
-            db.session.commit()
-
-            serial_number = serial_setting.value
-
-        cert.set_serial_number(serial_number)
+        cert.set_serial_number(self.serial_number)
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(20*365*24*60*60)   # 20 years.
-
-        # Generate a key and apply it to our cert.
-        key = crypto.PKey()
-        key.generate_key(crypto.TYPE_RSA, 2048)
-
-        cert.set_pubkey(key)
+        cert.set_subject(req.get_subject())
+        cert.set_pubkey(req.get_pubkey())
 
         # Set specific extensions based on whether or not we're the CA.
         if parent is None:
-            cert.add_extensions((crypto.X509Extension("keyUsage", True, "keyCertSign"),))
+            cert.add_extensions((crypto.X509Extension("keyUsage", True, "keyCertSign, cRLSign"),))
             cert.add_extensions((crypto.X509Extension("basicConstraints", False, "CA:TRUE"),))
             cert.add_extensions((crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=cert),))               # Subject = self
             cert.add_extensions((crypto.X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=cert),))      # Authority = self
 
             # CA cert is self-signed.
-            cert.set_issuer(cert.get_subject())
+            cert.set_issuer(req.get_subject())
             cert.sign(key, 'sha1')
 
         else:
-            cert.add_extensions((crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=cert),))                           # Subject = self
+            cert.add_extensions((crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=cert),))                             # Subject = self
             cert.add_extensions((crypto.X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=parent.certificate_obj),))  # Authority = CA
             cert.add_extensions((crypto.X509Extension("basicConstraints", False, "CA:FALSE"),))
 
@@ -161,12 +171,19 @@ class Certificate(db.Model):
             cert.set_issuer(parent.certificate_obj.get_subject())
             cert.sign(parent.key_obj, 'sha1')
 
-        self.serial_number = serial_number
-        self.certificate = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
-        self.key = crypto.dump_privatekey(crypto.FILETYPE_PEM, key)
+        return cert
 
-        self.certificate_obj = cert
-        self.key_obj = key
+    def _generate_serial_number(self, parent=None):
+        if parent is None:
+            return 1
+
+        serial_setting = Setting.get_by_name('ssl_serial_number', default=1)
+        serial_setting.value = serial_setting.value + 1
+
+        db.session.add(serial_setting)
+        db.session.commit()
+
+        return serial_setting.value
 
     def export(self, path):
         open(os.path.join(path, '{0}.key'.format(self.name)), 'w').write(self.key)

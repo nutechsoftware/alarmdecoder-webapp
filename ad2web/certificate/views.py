@@ -121,6 +121,8 @@ def revoke(certificate_id):
     db.session.add(cert)
     db.session.commit()
 
+    ser2sock.hup()
+
     flash('The certificate has been revoked.', 'success')
 
     return render_template('certificate/view.html', certificate=cert, ssl=use_ssl)
