@@ -6,6 +6,8 @@ import os
 
 from fabric.api import *
 from flask.ext.script import Manager
+import git
+import git.exc
 
 from ad2web import create_app
 from ad2web.extensions import db
@@ -125,6 +127,25 @@ def revoke_cert(name):
             print name, 'successfully revoked.'
         else:
             print name, 'not found.'
+
+def test_git():
+    try:
+        r = git.Repo('.')
+
+        current_branch = str(r.head.reference)
+        current_revision = str(r.head.reference.commit)
+
+        fetched = r.remotes.origin.fetch()
+        remote_revision = str(fetched[0].commit)
+
+        print '{0}: {1} -> {2}'.format(current_branch, current_revision, remote_revision)
+        if current_revision != remote_revision:
+            print 'Update needed.'
+        else:
+            print 'No update needed.'
+
+    except git.exc.InvalidGitRepositoryError, err:
+        print 'Invalid git repository.'
 
 def babel():
     """
