@@ -174,7 +174,7 @@ class Certificate(db.Model):
         return cert
 
     def _generate_serial_number(self, parent=None):
-        if parent is not None:
+        if parent is None:
             return 1
 
         serial_setting = Setting.get_by_name('ssl_serial_number', default=1)
