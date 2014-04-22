@@ -111,11 +111,21 @@ class Certificate(db.Model):
         self.revoked_on = datetime.datetime.today()
 
     def generate(self, common_name, parent=None):
-        cert = crypto.X509()
+        # Generate a key and apply it to our cert.
+        key = crypto.PKey()
+        key.generate_key(crypto.TYPE_RSA, 2048)
 
-        cert.set_version(2)
-        cert.get_subject().O = "AlarmDecoder"
-        cert.get_subject().CN = common_name
+        # Build request
+        req = crypto.X509Req()
+
+        req.get_subject().O = "AlarmDecoder"
+        req.get_subject().CN = common_name
+
+        req.set_pubkey(key)
+        req.sign(key, 'md5')
+
+        # Create certificate
+        cert = crypto.X509()
 
         # Generate a serial number
         serial_number = 1
@@ -131,29 +141,26 @@ class Certificate(db.Model):
 
             serial_number = serial_setting.value
 
+        cert.set_version(2)
         cert.set_serial_number(serial_number)
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(20*365*24*60*60)   # 20 years.
-
-        # Generate a key and apply it to our cert.
-        key = crypto.PKey()
-        key.generate_key(crypto.TYPE_RSA, 2048)
-
-        cert.set_pubkey(key)
+        cert.set_subject(req.get_subject())
+        cert.set_pubkey(req.get_pubkey())
 
         # Set specific extensions based on whether or not we're the CA.
         if parent is None:
-            cert.add_extensions((crypto.X509Extension("keyUsage", True, "keyCertSign"),))
+            cert.add_extensions((crypto.X509Extension("keyUsage", True, "keyCertSign, cRLSign"),))
             cert.add_extensions((crypto.X509Extension("basicConstraints", False, "CA:TRUE"),))
             cert.add_extensions((crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=cert),))               # Subject = self
             cert.add_extensions((crypto.X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=cert),))      # Authority = self
 
             # CA cert is self-signed.
-            cert.set_issuer(cert.get_subject())
+            cert.set_issuer(req.get_subject())
             cert.sign(key, 'sha1')
 
         else:
-            cert.add_extensions((crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=cert),))                           # Subject = self
+            cert.add_extensions((crypto.X509Extension("subjectKeyIdentifier", False, "hash", subject=cert),))                             # Subject = self
             cert.add_extensions((crypto.X509Extension("authorityKeyIdentifier", False, "keyid:always", issuer=parent.certificate_obj),))  # Authority = CA
             cert.add_extensions((crypto.X509Extension("basicConstraints", False, "CA:FALSE"),))
 
