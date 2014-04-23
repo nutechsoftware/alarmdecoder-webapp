@@ -19,4 +19,8 @@ def keypad_context_processor():
 @keypad.route('/')
 @login_required
 def index():
+    if current_user.is_admin():
+        if len(APP.decoder.updates):
+            flash('There is a software update available.', 'warning')
+
     return render_template('keypad/index.html')

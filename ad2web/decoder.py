@@ -28,6 +28,7 @@ from .notifications import NotificationFactory
 from .zones import Zone
 from .settings.models import Setting
 from .certificate.models import Certificate
+from .updater import Updater
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
@@ -80,10 +81,14 @@ class Decoder(object):
         self._device_location = None
         #self._work_queue = Queue.Queue()
         self._thread = DecoderThread(self)
+        self._version_thread = VersionChecker(self)
         self.reopen_device = False
+
+        self.updates = {}
 
     def start(self):
         self._thread.start()
+        self._version_thread.start()
 
     def init(self):
         with self.app.app_context():
@@ -252,6 +257,26 @@ class DecoderThread(threading.Thread):
 
                 except Exception, err:
                     self._decoder.app.logger.error('Error in DecoderThread: {0}'.format(err), exc_info=True)
+
+class VersionChecker(threading.Thread):
+    TIMEOUT = 60 * 10
+
+    def __init__(self, decoder):
+        threading.Thread.__init__(self)
+        self._decoder = decoder
+        self._updater = Updater()
+        self._running = False
+
+    def stop(self):
+        self._running = False
+
+    def run(self):
+        self._running = True
+
+        while self._running:
+            self._decoder.updates = self._updater.check_updates()
+
+            time.sleep(self.TIMEOUT)
 
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
     def initialize(self):

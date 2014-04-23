@@ -17,6 +17,7 @@ from ad2web.certificate import Certificate
 from ad2web.certificate.constants import ACTIVE, CA, SERVER, INTERNAL, CLIENT
 from ad2web.decoder import Decoder
 from ad2web.ser2sock import ser2sock
+from ad2web.updater import Updater
 
 project = "ad2web"
 
@@ -128,24 +129,22 @@ def revoke_cert(name):
         else:
             print name, 'not found.'
 
-def test_git():
-    try:
-        r = git.Repo('.')
+def update():
+    u = Updater()
 
-        current_branch = str(r.head.reference)
-        current_revision = str(r.head.reference.commit)
+    update_needed = u.check_updates()
 
-        fetched = r.remotes.origin.fetch()
-        remote_revision = str(fetched[0].commit)
+    if len(update_needed):
+        print 'The following components need an update: '
 
-        print '{0}: {1} -> {2}'.format(current_branch, current_revision, remote_revision)
-        if current_revision != remote_revision:
-            print 'Update needed.'
-        else:
-            print 'No update needed.'
+        for component, (branch, local_revision, remote_revision) in update_needed.items():
+            print 'Component: ', component, local_revision, '->', remote_revision
 
-    except git.exc.InvalidGitRepositoryError, err:
-        print 'Invalid git repository.'
+        print 'Updating components..'
+        u.update()
+        print 'Complete!'
+    else:
+        print 'No update necessary.'
 
 def babel():
     """
