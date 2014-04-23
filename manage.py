@@ -4,6 +4,8 @@ import datetime
 import signal
 import sys
 
+import werkzeug.serving
+from werkzeug.debug import DebuggedApplication
 from flask.ext.script import Manager
 
 from alarmdecoder.util import NoDeviceError
@@ -26,11 +28,17 @@ manager = Manager(app)
 def run():
     """Run in local machine."""
 
-    try:
-        appsocket.serve_forever()
+    @werkzeug.serving.run_with_reloader
+    def runDebugServer():
+        try:
+            app.debug = True
+            dapp = DebuggedApplication(app, evalex=True)
+            appsocket.serve_forever()
 
-    except Exception, err:
-        app.logger.error("Error", exc_info=True)
+        except Exception, err:
+            app.logger.error("Error", exc_info=True)
+
+    runDebugServer()
 
 @manager.command
 def initdb():
