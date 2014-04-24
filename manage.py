@@ -20,7 +20,6 @@ from ad2web.utils import MALE
 from ad2web.notifications import Notification, NotificationSetting
 from ad2web.zones import Zone
 
-decoder = Decoder(None, None)
 app, appsocket = create_app()
 manager = Manager(app)
 
