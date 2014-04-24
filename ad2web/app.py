@@ -73,8 +73,8 @@ def create_app(config=None, app_name=None, blueprints=None):
     appsocket = create_decoder_socket(app)
 
     def signal_handler(signal, frame):
-        decoder.close()
-        appsocket.stop()
+        decoder.stop()
+        os._exit(0)
 
     try:
         signal.signal(signal.SIGINT, signal_handler)

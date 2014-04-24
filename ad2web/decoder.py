@@ -3,6 +3,8 @@
 from gevent import monkey
 monkey.patch_all()
 
+import os
+import sys
 import time
 import traceback
 import threading
@@ -89,6 +91,24 @@ class Decoder(object):
     def start(self):
         self._thread.start()
         self._version_thread.start()
+
+    def stop(self, restart=False):
+        self.app.logger.info('Stopping service..')
+
+        self.close()
+
+        self._thread.stop()
+        self._version_thread.stop()
+
+        if restart:
+            self._thread.join(5)
+            self._version_thread.join(5)
+
+        self.websocket.stop()
+
+        if restart:
+            self.app.logger.info('Restarting service..')
+            os.execv(sys.executable, [sys.executable] + sys.argv)
 
     def init(self):
         with self.app.app_context():
@@ -297,6 +317,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                     self._alarmdecoder.device.send(AlarmDecoder.KEY_PANIC)
                 else:
                     self._alarmdecoder.device.send(key)
+
             except CommError, err:
                 self._alarmdecoder.app.logger.error('Error sending keypress to device', exc_info=True)
 
