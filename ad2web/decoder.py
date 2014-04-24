@@ -78,7 +78,6 @@ class Decoder(object):
         self._device_baudrate = 115200
         self._device_type = None
         self._device_location = None
-        #self._work_queue = Queue.Queue()
         self._thread = DecoderThread(self)
         self._version_thread = VersionChecker(self)
         self.reopen_device = False
@@ -185,14 +184,12 @@ class Decoder(object):
         self.app.logger.info('AlarmDecoder device was opened.')
 
         self.broadcast('device_open')
-        #self._work_queue.put('device_opened')
         self.reopen_device = False
 
     def _on_device_close(self, sender):
         self.app.logger.info('AlarmDecoder device was closed.')
 
         self.broadcast('device_close')
-        #self._work_queue.put('open_device')
         self.reopen_device = True
 
     def _on_message(self, ftype, sender, *args, **kwargs):
