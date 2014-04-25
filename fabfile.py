@@ -49,12 +49,13 @@ def setup():
     reset()
 
 
-def d():
+def d(skip_reset=False):
     """
     Debug.
     """
 
-    reset()
+    if not skip_reset:
+        reset()
     local("python manage.py run")
 
 
