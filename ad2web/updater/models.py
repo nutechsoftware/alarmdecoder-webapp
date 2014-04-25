@@ -7,7 +7,12 @@ class Updater(object):
     def check_updates(self):
         needing_update = {}
         if self._source_updater.needs_update():
-            needing_update['webapp'] = (self._source_updater.branch(), self._source_updater.local_revision(), self._source_updater.remote_revision())
+            behind, ahead = self._source_updater.commit_count()
+            commit_string = '{0} commit{1} behind'.format(behind, 's' if behind > 1 else '')
+            if ahead > 0:
+                commit_string += ' and {0} commit{1} behind'.format(ahead, 's' if ahead > 1 else '')
+
+            needing_update['webapp'] = (self._source_updater.branch(), self._source_updater.local_revision(), self._source_updater.remote_revision(), commit_string)
 
         return needing_update
 
@@ -33,6 +38,13 @@ class SourceUpdater(object):
             return True
 
         return False
+
+    def commit_count(self):
+        remote = 'origin'
+        branch = self.branch()
+        results = self._repo.git.rev_list('{remote}...{local}'.format(remote=self._repo.remotes[remote].refs[branch], local=branch), left_right=True)
+
+        return (results.count('<'), results.count('>'))
 
     def update(self, branch=None):
         if branch is None:

@@ -29,6 +29,7 @@ from .zones import zones
 from .settings.models import Setting
 from .setup.constants import SETUP_COMPLETE, SETUP_STAGE_ENDPOINT, SETUP_ENDPOINT_STAGE
 from .setup import setup
+from .updater import updater
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
 
@@ -49,6 +50,7 @@ DEFAULT_BLUEPRINTS = (
     notifications,
     zones,
     setup,
+    updater,
 )
 
 def create_app(config=None, app_name=None, blueprints=None):

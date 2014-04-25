@@ -1,0 +1,26 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'layouts/base.html' %}
+
+{% block pagejs %}
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <h3>Update</h3>
+    {% if updates|length == 0 %}
+        <p>No updates available!</p>
+    {% else %}
+        <table>
+        <tr><th>Component</th><th>Branch</th><th>Revision</th><th>New Revision</th></tr>
+        {% for component, (branch, revision, new_revision, commit_count) in updates.iteritems() %}
+            <tr>
+                <td>{{ component }}</td>
+                <td><a href="https://github.com/nutechsoftware/alarmdecoder-webapp/tree/{{ branch|urlencode }}">{{ branch }}</a></td>
+                <td><a href="https://github.com/nutechsoftware/alarmdecoder-webapp/commit/{{ revision }}">{{ revision|truncate(10, True, '') }}</a></td>
+                <td><a href="https://github.com/nutechsoftware/alarmdecoder-webapp/commit/{{ new_revision }}">{{ new_revision|truncate(10, True, '') }}</a></td>
+        {% endfor %}
+        </table>
+    {% endif %}
+</div>
+{% endblock %}
