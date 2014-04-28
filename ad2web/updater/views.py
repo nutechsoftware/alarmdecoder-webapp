@@ -37,6 +37,6 @@ def update():
 @login_required
 @admin_required
 def restart():
-    APP.decoder.stop(restart=True)
+    APP.decoder.trigger_restart = True
 
-    return ''
+    return json.dumps({ 'status': 'PASS' })

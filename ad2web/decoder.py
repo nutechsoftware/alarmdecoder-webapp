@@ -81,7 +81,8 @@ class Decoder(object):
         self._device_location = None
         self._thread = DecoderThread(self)
         self._version_thread = VersionChecker(self)
-        self.reopen_device = False
+        self.trigger_reopen_device = False
+        self.trigger_restart = False
 
         self.updates = {}
 
@@ -98,8 +99,11 @@ class Decoder(object):
         self._version_thread.stop()
 
         if restart:
-            self._thread.join(5)
-            self._version_thread.join(5)
+            try:
+                self._thread.join(5)
+                self._version_thread.join(5)
+            except RuntimeError:
+                pass
 
         self.websocket.stop()
 
@@ -113,7 +117,7 @@ class Decoder(object):
 
             if device_type is not None:
                 # HACK - queue up the device opening
-                self.reopen_device = True
+                self.trigger_reopen_device = True
 
     def open(self):
         with self.app.app_context():
@@ -185,13 +189,13 @@ class Decoder(object):
         self.app.logger.info('AlarmDecoder device was opened.')
 
         self.broadcast('device_open')
-        self.reopen_device = False
+        self.trigger_reopen_device = False
 
     def _on_device_close(self, sender):
         self.app.logger.info('AlarmDecoder device was closed.')
 
         self.broadcast('device_close')
-        self.reopen_device = True
+        self.trigger_reopen_device = True
 
     def _on_message(self, ftype, sender, *args, **kwargs):
         try:
@@ -264,9 +268,13 @@ class DecoderThread(threading.Thread):
             with self._decoder.app.app_context():
                 try:
                     # Perform any requred actions.
-                    if self._decoder.reopen_device:
+                    if self._decoder.trigger_reopen_device:
                         self._decoder.app.logger.info('Attempting to reconnect to the AlarmDecoder')
                         self._decoder.open()
+
+                    if self._decoder.trigger_restart:
+                        self._decoder.app.logger.info('Restarting service..')
+                        self._decoder.stop(restart=True)
 
                     time.sleep(self.TIMEOUT)
 

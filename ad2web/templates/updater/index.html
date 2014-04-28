@@ -52,7 +52,7 @@
                 data: JSON.stringify({ 'component': component }),
                 contentType: 'application/json;charset=UTF-8',
                 complete: function() {
-                    $('#' + component + '-update-anim').hide();
+                    setTimeout(function() { window.location.reload(); }, 10000);
                 }
             });
 

@@ -11,11 +11,9 @@ class Updater(object):
         needs_update = {}
 
         for name, component in self._components.iteritems():
-            if component.needs_update():
-                behind, ahead = component.commit_count()
-                status = self._format_status(behind, ahead)
-
-                needs_update[name] = (component.branch(), component.local_revision(), component.remote_revision(), status)
+            component.refresh()
+            if component.needs_update:
+                needs_update[name] = (component.branch, component.local_revision, component.remote_revision, component.status)
 
         return needs_update
 
@@ -33,69 +31,90 @@ class Updater(object):
 
         return ret
 
-    def _format_status(self, behind, ahead):
-        status = ''
-
-        if behind is not None or ahead is not None:
-            status = '{0} commit{1} behind'.format(behind, 's' if behind > 1 else '')
-
-            if ahead is not None:
-                status += ' and '
-
-        if ahead is not None and ahead > 0:
-            status += '{0} commit{1} ahead'.format(ahead, 's' if ahead > 1 else '')
-
-        if status == '': status = 'Up to date.'
-
-        return status
 
 class SourceUpdater(object):
     def __init__(self, name):
         self.name = name
+        self._branch = 'master'
+        self._local_revision = None
+        self._remote_revision = None
+        self._commits_ahead = 0
+        self._commits_behind = 0
 
+    @property
+    def branch(self):
+        return self._branch
+
+    @property
+    def local_revision(self):
+        return self._local_revision
+
+    @property
+    def remote_revision(self):
+        return self._remote_revision
+
+    @property
+    def commit_count(self):
+        return self._commits_behind, self._commits_ahead
+
+    @property
+    def status(self):
+        return self._status
+
+    @property
     def needs_update(self):
-        ahead, behind = self.commit_count()
+        behind, ahead = self.commit_count
 
         if behind is not None and behind > 0:
             return True
 
         return False
 
-    def commit_count(self):
-        ret = (None, None)
+    def refresh(self):
+        self._fetch()
+
+        self._retrieve_branch()
+        self._retrieve_local_revision()
+        self._retrieve_remote_revision()
+        self._retrieve_commit_count()
+
+    def update(self, branch=None):
+        try:
+            #results = git.merge('origin/{0}'.format(self.branch()))
+            pass
+        except sh.ErrorReturnCode, err:
+            # error
+            pass
+
+        return { 'status': 'PASS', 'restart_required': True }
+
+    def _retrieve_commit_count(self):
         try:
             results = git('rev-list', '@{upstream}...HEAD', left_right=True).strip()
 
-            ret = (results.count('<'), results.count('>'))
+            self._commits_behind, self._commits_ahead = results.count('<'), results.count('>')
+            self._update_status()
         except sh.ErrorReturnCode:
             pass
 
-        return ret
-
-    def update(self, branch=None):
-        return { 'status': 'PASS', 'restart_required': True }
-
-    def branch(self):
-        results = None
+    def _retrieve_branch(self):
         try:
             results = git('symbolic-ref', 'HEAD', q=True).strip()
-            results = results.replace('refs/heads/', '')
+            self._branch = results.replace('refs/heads/', '')
         except sh.ErrorReturnCode:
             pass
 
-        return results
-
-    def local_revision(self):
-        results = None
+    def _retrieve_local_revision(self):
         try:
-            results = git('rev-parse', 'HEAD').strip()
+            results = git('rev-parse', 'HEAD')
+
+            self._local_revision = results.strip()
         except sh.ErrorReturnCode:
             pass
 
-        return results
-
-    def remote_revision(self, branch=None):
+    def _retrieve_remote_revision(self):
         results = None
+
         try:
             results = git('rev-parse', '--verify', '--quiet', '@{upstream}').strip()
             if results == '':
@@ -103,7 +122,25 @@ class SourceUpdater(object):
         except sh.ErrorReturnCode:
             pass
 
-        return results
+        self._remote_revision = results
+
+    def _fetch(self):
+        try:
+            results = git.fetch('origin')
+        except sh.ErrorReturnCode:
+            # error
+            pass
+
+    def _update_status(self):
+        status = []
+
+        if self._commits_behind is not None:
+            status.append('{0} commit{1} behind'.format(self._commits_behind, 's' if self._commits_behind > 1 else ''))
+
+        if self._commits_ahead is not None and self._commits_ahead > 0:
+            status.append('{0} commit{1} ahead'.format(self._commits_ahead, 's' if self._commits_ahead > 1 else ''))
+
+        self._status = ', '.join(status)
 
 
 class DBUpdater(object):
