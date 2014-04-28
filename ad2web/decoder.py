@@ -74,6 +74,7 @@ class Decoder(object):
         self.app = app
         self.websocket = websocket
         self.device = None
+        self.updater = Updater()
         self._last_message = None
         self._device_baudrate = 115200
         self._device_type = None
@@ -278,7 +279,7 @@ class VersionChecker(threading.Thread):
     def __init__(self, decoder):
         threading.Thread.__init__(self)
         self._decoder = decoder
-        self._updater = Updater()
+        self._updater = decoder.updater
         self._running = False
 
     def stop(self):

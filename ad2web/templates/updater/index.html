@@ -3,6 +3,69 @@
 {% extends 'layouts/base.html' %}
 
 {% block pagejs %}
+<script type="text/javascript">
+    function build_update_button(component) {
+        $('#' + component + '-update-submit').click(function() {
+            $('#' + component + '-status').html('');
+            $('#' + component + '-update-submit').hide();
+            $('#' + component + '-update-anim').show();
+
+            $.ajax({
+                url: "{{ url_for('update.update') }}",
+                type: 'POST',
+                data: JSON.stringify({ 'component': component }),
+                contentType: 'application/json;charset=UTF-8',
+                success: function(data, status, xhr) {
+                    var jsondata = JSON.parse(data);
+
+                    if (jsondata[component]['status'] == 'PASS')
+                    {
+                        $('#' + component + '-status').html('<span style="color:green">&#10004;</span>');
+
+                        if (jsondata[component]['restart_required'] === true)
+                        {
+                            $('#' + component + '-restart-submit').show();
+                        }
+                    }
+                    else
+                    {
+                        $('#' + component + '-status').html('<span style="color:red">&#10008;</span>');
+                        $('#' + component + '-update-submit').show();
+                    }
+                },
+                complete: function() {
+                    $('#' + component + '-update-anim').hide();
+                }
+            });
+
+            return false;
+        });
+
+        $('#' + component + '-restart-submit').click(function() {
+            $('#' + component + '-status').html('');
+            $('#' + component + '-restart-submit').hide();
+            $('#' + component + '-update-anim').show();
+
+            $.ajax({
+                url: "{{ url_for('update.restart') }}",
+                type: 'POST',
+                data: JSON.stringify({ 'component': component }),
+                contentType: 'application/json;charset=UTF-8',
+                complete: function() {
+                    $('#' + component + '-update-anim').hide();
+                }
+            });
+
+            return false;
+        });
+    }
+
+    $('body').ready(function() {
+    {% for component, data in updates.iteritems() %}
+        build_update_button('{{ component }}');
+    {% endfor %}
+    });
+</script>
 {% endblock %}
 
 {% block body %}
@@ -12,13 +75,18 @@
         <p>No updates available!</p>
     {% else %}
         <table>
-        <tr><th>Component</th><th>Branch</th><th>Revision</th><th>New Revision</th></tr>
-        {% for component, (branch, revision, new_revision, commit_count) in updates.iteritems() %}
+        <tr><th>Component</th><th>Branch</th><th>Status</th><th></th></tr>
+        {% for component, (branch, revision, new_revision, status) in updates.iteritems() %}
             <tr>
                 <td>{{ component }}</td>
                 <td><a href="https://github.com/nutechsoftware/alarmdecoder-webapp/tree/{{ branch|urlencode }}">{{ branch }}</a></td>
-                <td><a href="https://github.com/nutechsoftware/alarmdecoder-webapp/commit/{{ revision }}">{{ revision|truncate(10, True, '') }}</a></td>
-                <td><a href="https://github.com/nutechsoftware/alarmdecoder-webapp/commit/{{ new_revision }}">{{ new_revision|truncate(10, True, '') }}</a></td>
+                <td>{{ status }}</td>
+                <td>
+                    <span id="{{ component }}-status"></span>
+                    <input class="btn" name="{{ component }}-update-submit" id="{{ component }}-update-submit" value="Update" style=" width: 4em;">
+                    <input class="btn" name="{{ component }}-restart-submit" id="{{ component }}-restart-submit" value="Restart" style="display:none; width: 4em;">
+                    <img id="{{ component }}-update-anim" src="{{ url_for('static', filename='img/spinner.gif') }}" style="display: none;">
+                </td>
         {% endfor %}
         </table>
     {% endif %}

@@ -1,80 +1,110 @@
-import git
+import sh
+from sh import git
 
 class Updater(object):
     def __init__(self):
-        self._source_updater = SourceUpdater()
+        self._components = {}
+
+        self._components['webapp'] = SourceUpdater('webapp')
 
     def check_updates(self):
-        needing_update = {}
-        if self._source_updater.needs_update():
-            behind, ahead = self._source_updater.commit_count()
-            commit_string = '{0} commit{1} behind'.format(behind, 's' if behind > 1 else '')
-            if ahead > 0:
-                commit_string += ' and {0} commit{1} behind'.format(ahead, 's' if ahead > 1 else '')
+        needs_update = {}
 
-            needing_update['webapp'] = (self._source_updater.branch(), self._source_updater.local_revision(), self._source_updater.remote_revision(), commit_string)
+        for name, component in self._components.iteritems():
+            if component.needs_update():
+                behind, ahead = component.commit_count()
+                status = self._format_status(behind, ahead)
 
-        return needing_update
+                needs_update[name] = (component.branch(), component.local_revision(), component.remote_revision(), status)
 
-    def update(self):
-        if self._source_updater.needs_update():
-            self._source_updater.update()
+        return needs_update
+
+    def update(self, component_name=None):
+        ret = { }
+
+        if component_name is not None:
+            component = self._components[component_name]
+
+            ret[component_name] = component.update()
+        else:
+            for name, component in self._components.iteritems():
+                if component.needs_update():
+                    ret[component_name] = component.update()
+
+        return ret
+
+    def _format_status(self, behind, ahead):
+        status = ''
+
+        if behind is not None or ahead is not None:
+            status = '{0} commit{1} behind'.format(behind, 's' if behind > 1 else '')
+
+            if ahead is not None:
+                status += ' and '
+
+        if ahead is not None and ahead > 0:
+            status += '{0} commit{1} ahead'.format(ahead, 's' if ahead > 1 else '')
+
+        if status == '': status = 'Up to date.'
+
+        return status
 
 class SourceUpdater(object):
-    def __init__(self, path='.'):
-        try:
-            self._repo = git.Repo(path)
-        except git.exc.InvalidGitRepositoryError, err:
-            self._repo = None
+    def __init__(self, name):
+        self.name = name
 
     def needs_update(self):
-        if self._repo is None:
-            return False
+        ahead, behind = self.commit_count()
 
-        local_revision = self.local_revision()
-        remote_revision = self.remote_revision()
-
-        if remote_revision is not None and local_revision != remote_revision:
+        if behind is not None and behind > 0:
             return True
 
         return False
 
     def commit_count(self):
-        remote = 'origin'
-        branch = self.branch()
-        results = self._repo.git.rev_list('{remote}...{local}'.format(remote=self._repo.remotes[remote].refs[branch], local=branch), left_right=True)
+        ret = (None, None)
+        try:
+            results = git('rev-list', '@{upstream}...HEAD', left_right=True).strip()
 
-        return (results.count('<'), results.count('>'))
+            ret = (results.count('<'), results.count('>'))
+        except sh.ErrorReturnCode:
+            pass
+
+        return ret
 
     def update(self, branch=None):
-        if branch is None:
-            branch = self.branch()
-
-        self._repo.remotes.origin.pull(branch)
+        return { 'status': 'PASS', 'restart_required': True }
 
     def branch(self):
+        results = None
         try:
-            branch_name = self._repo.active_branch.name
-        except TypeError:
-            return None
+            results = git('symbolic-ref', 'HEAD', q=True).strip()
+            results = results.replace('refs/heads/', '')
+        except sh.ErrorReturnCode:
+            pass
 
-        return branch_name
+        return results
 
     def local_revision(self):
-        return str(self._repo.head.commit)
+        results = None
+        try:
+            results = git('rev-parse', 'HEAD').strip()
+        except sh.ErrorReturnCode:
+            pass
+
+        return results
 
     def remote_revision(self, branch=None):
-        if branch is None:
-            branch = self.branch()
+        results = None
+        try:
+            results = git('rev-parse', '--verify', '--quiet', '@{upstream}').strip()
+            if results == '':
+                results = None
+        except sh.ErrorReturnCode:
+            pass
 
-        self._repo.remotes.origin.fetch()
+        return results
 
-        remote_revision = None
-        for ref in self._repo.remotes.origin.refs:
-            if ref.remote_head == branch:
-                remote_revision = str(ref.commit)
-
-        return remote_revision
 
 class DBUpdater(object):
     pass

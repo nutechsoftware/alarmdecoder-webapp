@@ -310,7 +310,7 @@ input:focus {
 select:focus {
     border: solid 1px #337FD6;
 }
-form {
+form.form-box {
     background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
     background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
     -webkit-border-radius: 10px;
