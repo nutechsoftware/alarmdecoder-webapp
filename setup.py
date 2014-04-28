@@ -31,7 +31,7 @@ setup(
         'sleekxmpp',
         'psutil>=2.0.0',
         'sh',
-        'gitpython',
+        'alembic',
     ],
     dependency_links=[
         'https://github.com/eblot/pyftdi/archive/v0.9.0.tar.gz#egg=pyftdi-0.9.0'
