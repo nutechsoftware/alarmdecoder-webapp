@@ -70,9 +70,10 @@ def create_app(config=None, app_name=None, blueprints=None):
     configure_template_filters(app)
     configure_error_handlers(app)
 
-    decoder = Decoder(None, None)
-    manager = Manager(app)
     appsocket = create_decoder_socket(app)
+    decoder = Decoder(app, appsocket)
+    manager = Manager(app)
+    app.decoder = decoder
 
     def signal_handler(signal, frame):
         decoder.stop()
@@ -80,10 +81,6 @@ def create_app(config=None, app_name=None, blueprints=None):
 
     try:
         signal.signal(signal.SIGINT, signal_handler)
-
-        app.decoder = decoder
-        decoder.app = app
-        decoder.websocket = appsocket
 
         decoder.start()
         decoder.init()

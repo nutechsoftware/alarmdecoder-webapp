@@ -1,5 +1,12 @@
 import sh
 from sh import git
+import sqlalchemy.exc
+from sqlalchemy import create_engine, pool
+from alembic import command
+from alembic.migration import MigrationContext
+from alembic.config import Config
+from alembic.script import ScriptDirectory
+from flask import current_app
 
 class Updater(object):
     def __init__(self):
@@ -41,6 +48,8 @@ class SourceUpdater(object):
         self._commits_ahead = 0
         self._commits_behind = 0
 
+        self._db_updater = DBUpdater()
+
     @property
     def branch(self):
         return self._branch
@@ -78,10 +87,13 @@ class SourceUpdater(object):
         self._retrieve_remote_revision()
         self._retrieve_commit_count()
 
+        self._db_updater.refresh()
+
     def update(self, branch=None):
         try:
             #results = git.merge('origin/{0}'.format(self.branch()))
-            pass
+
+            self._db_updater.update()
         except sh.ErrorReturnCode, err:
             # error
             pass
@@ -144,4 +156,56 @@ class SourceUpdater(object):
 
 
 class DBUpdater(object):
-    pass
+    def __init__(self):
+        self._config = Config()
+        self._config.set_main_option("script_location", "alembic")
+
+        self._script = ScriptDirectory.from_config(self._config)
+        self._engine = create_engine(current_app.config.get('SQLALCHEMY_DATABASE_URI'))
+
+    @property
+    def needs_update(self):
+        if self.current_revision != self.newest_revision:
+            return True
+
+        return False
+
+    @property
+    def current_revision(self):
+        return self._current_revision
+
+    @property
+    def newest_revision(self):
+        return self._newest_revision
+
+    @property
+    def status(self):
+        return 'hi'
+
+    def refresh(self):
+        self._open()
+
+        self._current_revision = self._context.get_current_revision()
+        self._newest_revision = self._script.get_current_head()
+
+        self._close()
+
+    def update(self):
+        if self._current_revision != self._newest_revision:
+            print '------------------------- Updating now..', self._current_revision, self._newest_revision
+            try:
+                command.upgrade(self._config, 'head')
+            except sqlalchemy.exc.OperationalError, err:
+                print '--------------------------- Error while updating..', err
+            else:
+                print '--------------------------- Finished updating!'
+        else:
+            print '------------------------------ Up to date!'
+
+    def _open(self):
+        self._connection = self._engine.connect()
+        self._context = MigrationContext.configure(self._connection)
+
+    def _close(self):
+        self._connection.close()
+        self._connection = self._context = None
