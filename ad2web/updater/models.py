@@ -192,15 +192,12 @@ class DBUpdater(object):
 
     def update(self):
         if self._current_revision != self._newest_revision:
-            print '------------------------- Updating now..', self._current_revision, self._newest_revision
             try:
                 command.upgrade(self._config, 'head')
             except sqlalchemy.exc.OperationalError, err:
-                print '--------------------------- Error while updating..', err
-            else:
-                print '--------------------------- Finished updating!'
-        else:
-            print '------------------------------ Up to date!'
+                return False
+
+        return True
 
     def _open(self):
         self._connection = self._engine.connect()
