@@ -13,9 +13,8 @@ var AlarmDecoder = function() {
             'max reconnection attempts': Infinity,
         });
 
-        _socket.on('connect', function() {
-            console.log('websocket opened');
-        });
+        _socket.on('connect', function() { });
+        _socket.on('disconnect', function() { });
 
         _socket.on('message', function(msg) {
             obj = JSON.parse(msg);
@@ -29,19 +28,11 @@ var AlarmDecoder = function() {
         _socket.on('event', function(msg) {
             obj = JSON.parse(msg);
 
-            console.log('obj', obj);
-
             PubSub.publish('event', obj);
-        });
-
-        _socket.on('disconnect', function() {
-            console.log('websocket closed');
         });
 
         _socket.on('test', function(msg) {
             obj = JSON.parse(msg);
-
-            console.log('test', obj);
 
             PubSub.publish('test', obj);
         });
@@ -49,14 +40,12 @@ var AlarmDecoder = function() {
         _socket.on('device_open', function(msg) {
             obj = JSON.parse(msg)
 
-            console.log('device opened.');
             PubSub.publish('device_open', obj);
         });
 
         _socket.on('device_close', function(msg) {
             obj = JSON.parse(msg)
 
-            console.log('device closed.');
             PubSub.publish('device_close', obj);
         });
     };
