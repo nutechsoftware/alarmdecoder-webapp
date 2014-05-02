@@ -71,20 +71,21 @@ def create_decoder_socket(app):
 
 class Decoder(object):
     def __init__(self, app, websocket):
-        self.app = app
-        self.websocket = websocket
-        self.device = None
-        self.updater = Updater()
-        self._last_message = None
-        self._device_baudrate = 115200
-        self._device_type = None
-        self._device_location = None
-        self._thread = DecoderThread(self)
-        self._version_thread = VersionChecker(self)
-        self.trigger_reopen_device = False
-        self.trigger_restart = False
+        with app.app_context():
+            self.app = app
+            self.websocket = websocket
+            self.device = None
+            self.updater = Updater()
+            self._last_message = None
+            self._device_baudrate = 115200
+            self._device_type = None
+            self._device_location = None
+            self._thread = DecoderThread(self)
+            self._version_thread = VersionChecker(self)
+            self.trigger_reopen_device = False
+            self.trigger_restart = False
 
-        self.updates = {}
+            self.updates = {}
 
     def start(self):
         self._thread.start()
