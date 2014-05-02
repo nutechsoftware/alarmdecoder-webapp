@@ -45,7 +45,7 @@ class SourceUpdater(object):
             self._git = None
 
         self.name = name
-        self._branch = 'master'
+        self._branch = ''
         self._local_revision = None
         self._remote_revision = None
         self._commits_ahead = 0
@@ -104,12 +104,11 @@ class SourceUpdater(object):
             return { 'status': 'FAIL', 'restart_required': False }
 
         try:
-            #results = self._git.merge('origin/{0}'.format(self.branch()))
+            results = self._git.merge('origin/{0}'.format(self.branch))
 
             self._db_updater.update()
         except sh.ErrorReturnCode, err:
-            # error
-            pass
+            return { 'status': 'FAIL', 'restart_required': False }
 
         return { 'status': 'PASS', 'restart_required': True }
 
@@ -120,28 +119,27 @@ class SourceUpdater(object):
             self._commits_behind, self._commits_ahead = results.count('<'), results.count('>')
             self._update_status()
         except sh.ErrorReturnCode:
-            pass
+            self._commits_behind, self._commits_ahead = 0, 0
 
     def _retrieve_branch(self):
         try:
             results = self._git('symbolic-ref', 'HEAD', q=True).strip()
             self._branch = results.replace('refs/heads/', '')
         except sh.ErrorReturnCode:
-            pass
+            self._branch = ''
 
     def _retrieve_local_revision(self):
         try:
-            results = self._git('rev-parse', 'HEAD')
-
-            self._local_revision = results.strip()
+            self._local_revision = self._git('rev-parse', 'HEAD').strip()
         except sh.ErrorReturnCode:
-            pass
+            self._local_revision = None
 
     def _retrieve_remote_revision(self):
         results = None
 
         try:
             results = self._git('rev-parse', '--verify', '--quiet', '@{upstream}').strip()
+
             if results == '':
                 results = None
         except sh.ErrorReturnCode:
@@ -163,7 +161,6 @@ class SourceUpdater(object):
                 pass
 
         except sh.ErrorReturnCode:
-            # error
             pass
 
     def _update_status(self, status=''):
@@ -175,11 +172,11 @@ class SourceUpdater(object):
             self._status = enabled_status
         else:
             temp_status = []
-            if self._commits_behind is not None:
-                temp_status.append('{0} commit{1} behind'.format(self._commits_behind, 's' if self._commits_behind > 1 else ''))
+            if self._commits_behind is not None and self._commits_behind > 0:
+                temp_status.append('{0} commit{1} behind'.format(self._commits_behind, '' if self._commits_behind == 1 else 's'))
 
             if self._commits_ahead is not None and self._commits_ahead > 0:
-                temp_status.append('{0} commit{1} ahead'.format(self._commits_ahead, 's' if self._commits_ahead > 1 else ''))
+                temp_status.append('{0} commit{1} ahead'.format(self._commits_ahead, '' if self._commits_ahead == 1 else 's'))
 
             if len(temp_status) == 0:
                 self._status = 'Up to date!'
