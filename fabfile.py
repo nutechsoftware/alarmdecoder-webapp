@@ -130,23 +130,6 @@ def revoke_cert(name):
         else:
             print name, 'not found.'
 
-def update():
-    u = Updater()
-
-    update_needed = u.check_updates()
-
-    if len(update_needed):
-        print 'The following components need an update: '
-
-        for component, (branch, local_revision, remote_revision) in update_needed.items():
-            print 'Component: ', component, local_revision, '->', remote_revision
-
-        print 'Updating components..'
-        u.update()
-        print 'Complete!'
-    else:
-        print 'No update necessary.'
-
 def babel():
     """
     Babel compile.
