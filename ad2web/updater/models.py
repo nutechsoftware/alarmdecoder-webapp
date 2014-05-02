@@ -201,15 +201,16 @@ class SourceUpdater(object):
 
     def _check_remotes(self):
         """ Hack of a check determine if our origin remote is via ssh since it blocks if the key has a password. """
-        ret = True
+        if not self._git:
+            return True
 
         remotes = self._git.remote(v=True)
         for r in remotes.strip().split("\n"):
             name, path = r.split("\t")
             if name == 'origin' and '@' in path:
-                ret = False
+                return False
 
-        return ret
+        return True
 
 
 class DBUpdater(object):
