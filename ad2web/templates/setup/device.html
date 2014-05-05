@@ -5,27 +5,27 @@
 {% block pagejs %}
 <script type="text/javascript">
     $('body').ready(function() {
-        function disable_form(val) {
-            $('#keypad_address').prop('disabled', val);
-            $('#address_mask').prop('disabled', val);
-            $('[id^=zone_expanders]').prop('disabled', val);
-            $('[id^=relay_expanders]').prop('disabled', val);
-            $('#lrr_enabled').prop('disabled', val);
-            $('#deduplicate').prop('disabled', val);
+        function set_form_visible(val) {
+            $('#keypad_address').closest('.control-group').toggle(val);
+            $('#address_mask').closest('.control-group').toggle(val);
+            $('[id^=zone_expanders]').closest('.control-group').toggle(val);
+            $('[id^=relay_expanders]').closest('.control-group').toggle(val);
+            $('#lrr_enabled').closest('.control-group').toggle(val);
+            $('#deduplicate').closest('.control-group').toggle(val);
         }
 
         if ($('#panel_mode-1:checked').val()) {
-            disable_form(true);
+            set_form_visible(false);
         }
 
         $('[id^=panel_mode]').change(function(event) {
             switch($(event.target).val()) {
                 case '0':
-                    disable_form(false);
+                    set_form_visible(true);
                     break;
 
                 case '1':
-                    disable_form(true);
+                    set_form_visible(false);
                     break;
             }
         });
