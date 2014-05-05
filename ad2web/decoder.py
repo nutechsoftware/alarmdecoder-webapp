@@ -271,7 +271,10 @@ class DecoderThread(threading.Thread):
                     # Perform any requred actions.
                     if self._decoder.trigger_reopen_device:
                         self._decoder.app.logger.info('Attempting to reconnect to the AlarmDecoder')
-                        self._decoder.open()
+                        try:
+                            self._decoder.open()
+                        except NoDeviceError, err:
+                            self._decoder.app.logger.error('Device not found: {0}'.format(err[0]))
 
                     if self._decoder.trigger_restart:
                         self._decoder.app.logger.info('Restarting service..')
@@ -369,6 +372,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
         timer.start()
 
         try:
+            panel_mode = Setting.get_by_name('panel_mode')
             keypad_address = Setting.get_by_name('keypad_address')
             address_mask = Setting.get_by_name('address_mask')
             lrr_enabled = Setting.get_by_name('lrr_enabled')
@@ -379,6 +383,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             zx = [x == u'True' for x in zone_expanders.value.split(',')]
             rx = [x == u'True' for x in relay_expanders.value.split(',')]
 
+            self._alarmdecoder.device.mode = panel_mode.value
             self._alarmdecoder.device.address = keypad_address.value
             self._alarmdecoder.device.address_mask = int(address_mask.value, 16)
             self._alarmdecoder.device.emulate_zone = zx

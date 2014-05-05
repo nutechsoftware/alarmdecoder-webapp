@@ -371,6 +371,7 @@ def device():
     form = DeviceForm()
     if not form.is_submitted():
         if current_app.decoder.device is not None:
+            form.panel_mode.data = current_app.decoder.device.mode
             form.keypad_address.data = current_app.decoder.device.address
             form.address_mask.data = '{0:x}'.format(current_app.decoder.device.address_mask)
             form.lrr_enabled.data = current_app.decoder.device.emulate_lrr
@@ -378,6 +379,10 @@ def device():
             form.zone_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_zone)]
             form.relay_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_relay)]
         else:
+            panel_mode = Setting.get_by_name('panel_mode').value
+            if panel_mode is not None:
+                form.panel_mode.data = panel_mode
+
             keypad_address = Setting.get_by_name('keypad_address').value
             if keypad_address is not None:
                 form.keypad_address.data = keypad_address
@@ -404,6 +409,7 @@ def device():
 
     else:
         if form.validate_on_submit():
+            panel_mode = Setting.get_by_name('panel_mode')
             keypad_address = Setting.get_by_name('keypad_address')
             address_mask = Setting.get_by_name('address_mask')
             lrr_enabled = Setting.get_by_name('lrr_enabled')
@@ -414,6 +420,7 @@ def device():
             zx = [True if str(x) in form.zone_expanders.data else False for x in xrange(1, 6)]
             rx = [True if str(x) in form.relay_expanders.data else False for x in xrange(1, 5)]
 
+            panel_mode.value = form.panel_mode.data
             keypad_address.value = form.keypad_address.data
             address_mask.value = form.address_mask.data
             lrr_enabled.value = form.lrr_enabled.data
@@ -423,6 +430,7 @@ def device():
 
             set_stage(SETUP_TEST)
 
+            db.session.add(panel_mode)
             db.session.add(keypad_address)
             db.session.add(address_mask)
             db.session.add(lrr_enabled)
