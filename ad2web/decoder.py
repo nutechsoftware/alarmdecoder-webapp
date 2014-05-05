@@ -348,9 +348,14 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             self._alarmdecoder.close()
             self._alarmdecoder.open()
 
+        except NoDeviceError, err:
+            results = 'FAIL'
+            details = '{0}: {1}'.format(err[0], err[1][1])
+            current_app.logger.error('Error while testing device open.', exc_info=True)
+
         except Exception, err:
             results = 'FAIL'
-            details = 'Failed to open the device.'
+            details = 'Failed to open the device: {0}'.format(err)
             current_app.logger.error('Error while testing device open.', exc_info=True)
 
         finally:
