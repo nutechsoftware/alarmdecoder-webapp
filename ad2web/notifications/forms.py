@@ -24,7 +24,6 @@ class AppendMixin(object):
         setattr(cls, name, field)
         return cls
 
-
 class CreateNotificationForm(Form):
     type = SelectField(u'Notification Type', choices=[nt for t, nt in NOTIFICATIONS.iteritems()])
 
@@ -41,7 +40,6 @@ class EditNotificationForm(Form):
         raise NotImplementedError()
 
     def populate_setting(self, name, value, id=None):
-        # NOTE: Can we do this better with a session.merge?
         if id is not None:
             setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
         else:
