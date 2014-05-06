@@ -11,10 +11,14 @@ from ..certificate.models import Certificate
 from ..certificate.constants import CRL_CODE, ACTIVE, REVOKED, CA
 
 DEFAULT_SETTINGS = OrderedDict([
+    ('daemonize', 1),
     ('device', ''),
     ('baudrate', 19200),
     ('port', 10000),
-    ('preserve_connections', '1'),
+    ('preserve_connections', 1),
+    ('bind_ip', '0.0.0.0'),
+    ('send_terminal_init', 0),
+    ('device_open_delay', 5000),
     ('encrypted', '0'),
     ('ca_certificate', ''),
     ('ssl_certificate', ''),
