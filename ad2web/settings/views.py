@@ -174,7 +174,7 @@ def import_backup():
             db.session.rollback()
 
             current_app.logger.error('Import Error: {0}'.format(err))
-            flash('Import failed.'.format(err), 'error')
+            flash('Import failed: {0}'.format(err), 'error')
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
