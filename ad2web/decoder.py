@@ -5,7 +5,6 @@ import sys
 import time
 import traceback
 import threading
-import Queue
 
 from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
@@ -76,16 +75,17 @@ class Decoder(object):
             self.websocket = websocket
             self.device = None
             self.updater = Updater()
+            self.updates = {}
+
+            self.trigger_reopen_device = False
+            self.trigger_restart = False
+
             self._last_message = None
             self._device_baudrate = 115200
             self._device_type = None
             self._device_location = None
             self._thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
-            self.trigger_reopen_device = False
-            self.trigger_restart = False
-
-            self.updates = {}
 
     def start(self):
         self._thread.start()
