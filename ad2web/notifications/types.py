@@ -32,7 +32,7 @@ class EmailNotification(object):
         try:
             msg = MIMEText(text)
 
-            msg['Subject'] = 'Test'
+            msg['Subject'] = 'AlarmDecoder: Alarm Event'
             msg['From'] = self.source
             msg['To'] = self.destination #', '.join(self.destination)
 

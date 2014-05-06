@@ -59,7 +59,7 @@ class Certificate(db.Model):
         Saves the certificate index used by ser2sock
         """
         ser2sock_config_path = Setting.get_by_name('ser2sock_config_path').value
-        if ser2sock_config_path:
+        if not ser2sock_config_path:
             raise ValueError('ser2sock_config_path is not set.')
 
         path = os.path.join(ser2sock_config_path, 'certs', 'certindex')
@@ -87,7 +87,7 @@ class Certificate(db.Model):
         Saves the certificate revocation list used by ser2sock.
         """
         ser2sock_config_path = Setting.get_by_name('ser2sock_config_path').value
-        if ser2sock_config_path:
+        if not ser2sock_config_path:
             raise ValueError('ser2sock_config_path is not set.')
 
         path = os.path.join(ser2sock_config_path, 'ser2sock.crl')
