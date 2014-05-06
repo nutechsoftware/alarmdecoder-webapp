@@ -107,5 +107,3 @@ class CreateAccountForm(Form):
     password_again = PasswordField('Password again', [Required(), Length(PASSWORD_LEN_MIN, PASSWORD_LEN_MAX), EqualTo('password')])
 
     save = SubmitField(u'Save')
-
-    #buttons = FormField(SetupButtonForm)
