@@ -14,7 +14,7 @@ from wtforms.widgets import ListWidget, CheckboxInput, html_params
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES, DEFAULT_BAUDRATES
 from ..validators import PathExists, Hex
 from ..utils import STRING_LEN, PASSWORD_LEN_MIN, PASSWORD_LEN_MAX
-from alarmdecoder.panels import ADEMCO, DSC, MODES
+from alarmdecoder.panels import ADEMCO, DSC
 
 class BackButtonWidget(object):
     html_params = staticmethod(html_params)
