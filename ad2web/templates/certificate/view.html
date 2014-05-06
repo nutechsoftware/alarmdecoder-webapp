@@ -173,3 +173,7 @@ $(document).ready(function() {
 </div>
 {% endblock %}
 
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
+{% endblock %}

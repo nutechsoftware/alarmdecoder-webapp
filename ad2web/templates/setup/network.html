@@ -2,6 +2,9 @@
 
 {% extends 'setup/layout.html' %}
 
+{% block css %}
+{% endblock %}
+
 {% block pagejs %}
 <script type="text/javascript">
 </script>
@@ -18,4 +21,7 @@
 	<br>
     {{ render_form(url_for('setup.network'), form) }}
 </div>
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}

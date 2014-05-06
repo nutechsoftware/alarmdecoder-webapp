@@ -2,6 +2,9 @@
 
 {% extends 'setup/layout.html' %}
 
+{% block css %}
+{% endblock %}
+
 {% block pagejs %}
 <script type="text/javascript">
 	$(document).ready(function() {
@@ -60,4 +63,7 @@
 	<br>
     {{ render_form(url_for('setup.test'), form) }}
 </div>
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}

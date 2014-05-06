@@ -2,9 +2,15 @@
 
 {% extends 'settings/layout.html' %}
 
+{% block css %}
+{% endblock %}
+
 {% block body %}
 <div class="settings_wrapper">
     <h3>Public Profile</h3>
     {{ render_form(url_for('settings.profile'), form) }}
 </div>
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}

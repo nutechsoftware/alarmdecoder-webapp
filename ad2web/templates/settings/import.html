@@ -2,6 +2,9 @@
 
 {% extends 'settings/layout.html' %}
 
+{% block css %}
+{% endblock %}
+
 {% block body %}
 <div class="settings_wrapper">
     <h3>Import Settings</h3>
@@ -12,4 +15,7 @@
         {{ render_form(url_for('settings.import'), form) }}
     </div>
 </div>
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}

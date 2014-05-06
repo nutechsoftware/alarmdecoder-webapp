@@ -2,6 +2,10 @@
 
 {% extends "log/layout.html" %}
 
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+{% endblock %}
+
 {% block pagejs %}
     <script type="text/javascript">
         $(document).ready(function() {
@@ -85,4 +89,12 @@
         <button type="button" class="btn btn-primary" name="refreshbutton" id="refreshbutton" onclick="location.reload();">Reload</button>
     </div>
 </div>
+{% endblock %}
+
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
 {% endblock %}

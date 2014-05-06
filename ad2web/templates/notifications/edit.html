@@ -2,6 +2,9 @@
 
 {% extends 'settings/layout.html' %}
 
+{% block css %}
+{% endblock %}
+
 {% block pagejs %}
 <script type="text/javascript">
 </script>
@@ -14,4 +17,7 @@
 
     {{ render_form(url_for('notifications.edit', id=id), form) }}
 </div>
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}

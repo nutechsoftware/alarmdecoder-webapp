@@ -3,10 +3,15 @@
 {% set page_title = "Sign in" %}
 
 {% extends "layouts/base.html" %}
+{% block css %}
+{% endblock %}
 
 {% block body %}
 <div id="setup">
 <h2>Sign in</h2>
 {{ render_form(url_for('frontend.login'), form)}}
 </div>
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}
