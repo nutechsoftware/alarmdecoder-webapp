@@ -55,6 +55,8 @@ class Certificate(db.Model):
 
     @classmethod
     def save_certificate_index(cls):
+        """Saves the certificate index used by ser2sock"""
+
         ser2sock_config_path = Setting.get_by_name('ser2sock_config_path').value
         if ser2sock_config_path:
             raise ValueError('ser2sock_config_path is not set.')
@@ -80,6 +82,8 @@ class Certificate(db.Model):
 
     @classmethod
     def save_revocation_list(cls):
+        """Saves the certificate revocation list used by ser2sock."""
+
         ser2sock_config_path = Setting.get_by_name('ser2sock_config_path').value
         if ser2sock_config_path:
             raise ValueError('ser2sock_config_path is not set.')
@@ -190,6 +194,8 @@ class Certificate(db.Model):
         open(os.path.join(path, '{0}.pem'.format(self.name)), 'w').write(self.certificate)
 
 class CertificatePackage(object):
+    """Represents a downloadable package of certificates"""
+
     def __init__(self, certificate, ca):
         self.certificate = certificate
         self.ca = ca

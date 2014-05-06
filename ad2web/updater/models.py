@@ -8,12 +8,21 @@ from alembic.script import ScriptDirectory
 from flask import current_app
 
 class Updater(object):
+    """
+    The primary update system
+    """
     def __init__(self):
+        """
+        Constructor
+        """
         self._components = {}
 
         self._components['webapp'] = SourceUpdater('webapp')
 
     def check_updates(self):
+        """
+        Performs a check for component updates
+        """
         status = {}
 
         for name, component in self._components.iteritems():
@@ -23,6 +32,12 @@ class Updater(object):
         return status
 
     def update(self, component_name=None):
+        """
+        Updates the specificed component or all components.
+
+        :param component_name: Name of the component to update.
+        :type component_name: string
+        """
         ret = {}
 
         if component_name is not None:
@@ -36,9 +51,18 @@ class Updater(object):
 
         return ret
 
-
 class SourceUpdater(object):
+    """
+    Git-based update system
+    """
+
     def __init__(self, name):
+        """
+        Constructor
+
+        :param name: Name of the component
+        :type name: string
+        """
         try:
             self._git = sh.git
         except sh.CommandNotFound:
@@ -56,26 +80,32 @@ class SourceUpdater(object):
 
     @property
     def branch(self):
+        """Returns the current branch"""
         return self._branch
 
     @property
     def local_revision(self):
+        """Returns the current local revision"""
         return self._local_revision
 
     @property
     def remote_revision(self):
+        """Returns the current remote revision"""
         return self._remote_revision
 
     @property
     def commit_count(self):
+        """Returns the number of commits behind and ahead of the remote branch"""
         return self._commits_behind, self._commits_ahead
 
     @property
     def status(self):
+        """Returns the status string"""
         return self._status
 
     @property
     def needs_update(self):
+        """Determines if a component needs an update"""
         if self._enabled:
             behind, ahead = self.commit_count
 
@@ -85,6 +115,9 @@ class SourceUpdater(object):
         return False
 
     def refresh(self):
+        """
+        Refreshes the component status
+        """
         self._update_status()
 
         if not self._enabled:
@@ -99,7 +132,10 @@ class SourceUpdater(object):
 
         self._db_updater.refresh()
 
-    def update(self, branch=None):
+    def update(self):
+        """
+        Performs the update
+        """
         if not self._enabled:
             return { 'status': 'FAIL', 'restart_required': False }
 
@@ -113,6 +149,9 @@ class SourceUpdater(object):
         return { 'status': 'PASS', 'restart_required': True }
 
     def _retrieve_commit_count(self):
+        """
+        Retrieves the commit counts
+        """
         try:
             results = self._git('rev-list', '@{upstream}...HEAD', left_right=True).strip()
 
@@ -122,6 +161,9 @@ class SourceUpdater(object):
             self._commits_behind, self._commits_ahead = 0, 0
 
     def _retrieve_branch(self):
+        """
+        Retrieves the current branch
+        """
         try:
             results = self._git('symbolic-ref', 'HEAD', q=True).strip()
             self._branch = results.replace('refs/heads/', '')
@@ -129,12 +171,18 @@ class SourceUpdater(object):
             self._branch = ''
 
     def _retrieve_local_revision(self):
+        """
+        Retrieves the current local revision
+        """
         try:
             self._local_revision = self._git('rev-parse', 'HEAD').strip()
         except sh.ErrorReturnCode:
             self._local_revision = None
 
     def _retrieve_remote_revision(self):
+        """
+        Retrieves the current remote revision
+        """
         results = None
 
         try:
@@ -148,6 +196,9 @@ class SourceUpdater(object):
         self._remote_revision = results
 
     def _fetch(self):
+        """
+        Performs a fetch from the origin
+        """
         try:
             # HACK:
             #
@@ -164,6 +215,9 @@ class SourceUpdater(object):
             pass
 
     def _update_status(self, status=''):
+        """
+        Updates the status string
+        """
         self._status = status
 
         enabled, enabled_status = self._check_enabled()
@@ -184,6 +238,9 @@ class SourceUpdater(object):
                 self._status += ', '.join(temp_status)
 
     def _check_enabled(self):
+        """
+        Determine if this update component is enabled
+        """
         git_available = self._git is not None
         remote_okay = self._check_remotes()
 
@@ -197,7 +254,9 @@ class SourceUpdater(object):
         return (git_available and remote_okay, status)
 
     def _check_remotes(self):
-        """ Hack of a check determine if our origin remote is via ssh since it blocks if the key has a password. """
+        """
+        Hack of a check determine if our origin remote is via ssh since it blocks if the key has a password.
+        """
         if not self._git:
             return True
 
@@ -211,7 +270,14 @@ class SourceUpdater(object):
 
 
 class DBUpdater(object):
+    """
+    Database update system
+    """
+
     def __init__(self):
+        """
+        Constructor
+        """
         self._config = Config()
         self._config.set_main_option("script_location", "alembic")
 
@@ -220,6 +286,7 @@ class DBUpdater(object):
 
     @property
     def needs_update(self):
+        """Returns whether or not the component needs an update"""
         if self.current_revision != self.newest_revision:
             return True
 
@@ -227,17 +294,23 @@ class DBUpdater(object):
 
     @property
     def current_revision(self):
+        """Returns the current database revision"""
         return self._current_revision
 
     @property
     def newest_revision(self):
+        """Returns the newest revision available"""
         return self._newest_revision
 
     @property
     def status(self):
-        return 'hi'
+        """Returns the component status"""
+        return ''
 
     def refresh(self):
+        """
+        Refreshes the component status
+        """
         self._open()
 
         self._current_revision = self._context.get_current_revision()
@@ -246,6 +319,9 @@ class DBUpdater(object):
         self._close()
 
     def update(self):
+        """
+        Performs the update
+        """
         if self._current_revision != self._newest_revision:
             try:
                 command.upgrade(self._config, 'head')
@@ -255,9 +331,15 @@ class DBUpdater(object):
         return True
 
     def _open(self):
+        """
+        Create a connection and migration _context
+        """
         self._connection = self._engine.connect()
         self._context = MigrationContext.configure(self._connection)
 
     def _close(self):
+        """
+        Closes down the connection
+        """
         self._connection.close()
         self._connection = self._context = None
