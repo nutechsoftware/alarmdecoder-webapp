@@ -84,11 +84,11 @@ class Decoder(object):
             self._device_baudrate = 115200
             self._device_type = None
             self._device_location = None
-            self._thread = DecoderThread(self)
+            self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
 
     def start(self):
-        self._thread.start()
+        self._event_thread.start()
         self._version_thread.start()
 
     def stop(self, restart=False):
@@ -96,12 +96,12 @@ class Decoder(object):
 
         self.close()
 
-        self._thread.stop()
+        self._event_thread.stop()
         self._version_thread.stop()
 
         if restart:
             try:
-                self._thread.join(5)
+                self._event_thread.join(5)
                 self._version_thread.join(5)
             except RuntimeError:
                 pass
@@ -116,8 +116,7 @@ class Decoder(object):
         with self.app.app_context():
             device_type = Setting.get_by_name('device_type').value
 
-            if device_type is not None:
-                # HACK - queue up the device opening
+            if device_type:
                 self.trigger_reopen_device = True
 
     def open(self):
@@ -125,22 +124,22 @@ class Decoder(object):
             self._device_type = Setting.get_by_name('device_type').value
             self._device_location = Setting.get_by_name('device_location').value
 
-            if self._device_type is not None:
-                # TODO: make this not ugly.
+            if self._device_type:
                 interface = ('localhost', 10000)
                 use_ssl = False
                 devicetype = SocketDevice
+
+                # Set up device interfaces based on our location.
                 if self._device_location == 'local':
                     devicetype = SerialDevice
                     interface = Setting.get_by_name('device_path').value
                     self._device_baudrate = Setting.get_by_name('device_baudrate').value
+
                 elif self._device_location == 'network':
                     interface = (Setting.get_by_name('device_address').value, Setting.get_by_name('device_port').value)
+                    use_ssl = Setting.get_by_name('use_ssl', False).value
 
-                    use_ssl = Setting.get_by_name('use_ssl').value
-                    if use_ssl is None:
-                        use_ssl = False
-
+                # Create and open the device.
                 try:
                     device = devicetype(interface=interface)
                     if use_ssl:
@@ -166,7 +165,7 @@ class Decoder(object):
                     raise
 
     def close(self):
-        if self.device is not None:
+        if self.device:
             self.device.close()
 
     def bind_events(self, appsocket, decoder):
@@ -268,7 +267,7 @@ class DecoderThread(threading.Thread):
         while self._running:
             with self._decoder.app.app_context():
                 try:
-                    # Perform any requred actions.
+                    # Handle reopen events
                     if self._decoder.trigger_reopen_device:
                         self._decoder.app.logger.info('Attempting to reconnect to the AlarmDecoder')
                         try:
@@ -276,6 +275,7 @@ class DecoderThread(threading.Thread):
                         except NoDeviceError, err:
                             self._decoder.app.logger.error('Device not found: {0}'.format(err[0]))
 
+                    # Handle service restart events
                     if self._decoder.trigger_restart:
                         self._decoder.app.logger.info('Restarting service..')
                         self._decoder.stop(restart=True)
@@ -403,6 +403,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             timer.cancel()
             if on_config_received in self._alarmdecoder.device.on_config_received:
                 self._alarmdecoder.device.on_config_received.remove(on_config_received)
+
             self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
             current_app.logger.error('Error while testing device config.', exc_info=True)
 
@@ -434,6 +435,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             timer.cancel()
             if on_sending_received in self._alarmdecoder.device.on_sending_received:
                 self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
+
             self._alarmdecoder.broadcast('test', {'test': 'send', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
             current_app.logger.error('Error while testing keypad communication.', exc_info=True)
 
@@ -442,6 +444,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             timer.cancel()
             if on_message in self._alarmdecoder.device.on_message:
                 self._alarmdecoder.device.on_message.remove(on_message)
+
             self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'PASS', 'details': ''})
 
         def on_timeout():
@@ -460,6 +463,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             timer.cancel()
             if on_message in self._alarmdecoder.device.on_message:
                 self._alarmdecoder.device.on_message.remove(on_message)
+
             self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
             current_app.logger.error('Error while testing keypad communication.', exc_info=True)
 
