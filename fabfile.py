@@ -62,7 +62,6 @@ def d(skip_reset=False):
 def certs():
     reset()
 
-    decoder = Decoder(None, None)
     app, appsocket = create_app()
     manager = Manager(app)
 

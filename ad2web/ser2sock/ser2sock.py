@@ -11,10 +11,14 @@ from ..certificate.models import Certificate
 from ..certificate.constants import CRL_CODE, ACTIVE, REVOKED, CA
 
 DEFAULT_SETTINGS = OrderedDict([
+    ('daemonize', 1),
     ('device', ''),
     ('baudrate', 19200),
     ('port', 10000),
-    ('preserve_connections', '1'),
+    ('preserve_connections', 1),
+    ('bind_ip', '0.0.0.0'),
+    ('send_terminal_init', 0),
+    ('device_open_delay', 5000),
     ('encrypted', '0'),
     ('ca_certificate', ''),
     ('ssl_certificate', ''),
@@ -23,18 +27,35 @@ DEFAULT_SETTINGS = OrderedDict([
 ])
 
 class NotFound(Exception):
+    """Exception generated when ser2sock is not found."""
     pass
 
 class HupFailed(Exception):
+    """Exception generated when ser2sock fails to be hupped."""
     pass
 
 def read_config(path):
+    """
+    Reads an existing ser2sock configuration.
+
+    :param path: Path to the configuration file.
+    :type path: string
+    :returns: A SafeConfigParser to operate on the configuration.
+    """
     config = ConfigParser.SafeConfigParser()
     config.read(path)
 
     return config
 
 def save_config(path, config_values):
+    """
+    Saves the ser2sock configuration.
+
+    :param path: Path to the configuration file.
+    :type path: string
+    :param config_values: Configuration values to use
+    :type config_values: dict
+    """
     config = read_config(path)
 
     try:
@@ -42,6 +63,7 @@ def save_config(path, config_values):
     except ConfigParser.DuplicateSectionError:
         pass
 
+    # Include default entries
     config_entries = OrderedDict(DEFAULT_SETTINGS.items() + config_values.items())
 
     for k, v in config_entries.iteritems():
@@ -51,20 +73,34 @@ def save_config(path, config_values):
         config.write(configfile)
 
 def exists():
+    """
+    Determines whether or not ser2sock exists in our path.
+
+    :returns: Whether or not ser2sock exists in the path.
+    """
     return sh.which('ser2sock') is not None
 
 def start():
+    """
+    Starts ser2sock
+    """
     try:
         sh.ser2sock('-d', _bg=True)
     except sh.CommandNotFound, err:
         raise NotFound('Could not locate ser2sock.')
 
 def stop():
+    """
+    Stops ser2sock
+    """
     for proc in psutil.process_iter():
         if proc.name() == 'ser2sock':
             os.kill(proc.pid, signal.SIGKILL)
 
 def hup():
+    """
+    Hups ser2sock in order to force it to reread it's configuration.
+    """
     found = False
 
     for proc in psutil.process_iter():
@@ -79,6 +115,12 @@ def hup():
         start()
 
 def save_certificate_index(path):
+    """
+    Saves the certificate index
+
+    :param path: The path to the ser2sock configuration directory.
+    :type path: string
+    """
     path = os.path.join(path, 'certs', 'certindex')
 
     with open(path, 'w') as cert_index:
@@ -99,6 +141,12 @@ def save_certificate_index(path):
                 ]) + "\n")
 
 def save_revocation_list(path):
+    """
+    Saves the certificate revocation list
+
+    :param path: Path to the ser2sock configuration directory
+    :type path: string
+    """
     path = os.path.join(path, 'ser2sock.crl')
 
     ca_cert = Certificate.query.filter_by(type=CA).first()
@@ -122,6 +170,17 @@ def save_revocation_list(path):
         crl_file.write(crl_data)
 
 def update_config(path, *args, **kwargs):
+    """
+    Updates the ser2sock configuration with new settings, saves the index
+    and revocation list, and hups ser2sock.
+
+    :param path: Path to the ser2sock configuration directory
+    :type path: string
+    :param args: Argument list
+    :type args: list
+    :param kwargs: Keyward arguments
+    :type kwargs: dict
+    """
     try:
         if path is not None:
             config = read_config(os.path.join(path, 'ser2sock.conf'))
@@ -129,11 +188,13 @@ def update_config(path, *args, **kwargs):
             config = None
 
         if config is not None:
+            # Pre-populate with existing settings from the config.
             config_values = {}
             if config.has_section('ser2sock'):
                 for k, v in config.items('ser2sock'):
                     config_values[k] = v
 
+            # Set any settings that were provided in our kwargs.
             if 'device_path' in kwargs.keys():
                 config_values['device'] = kwargs['device_path']
             if 'device_baudrate' in kwargs.keys():

@@ -29,7 +29,7 @@ def set_stage(stage):
 
 @setup.context_processor
 def setup_context_processor():
-    return { }
+    return {}
 
 @setup.route('/')
 @admin_or_first_run_required
@@ -41,11 +41,11 @@ def type():
     form = DeviceTypeForm()
     if not form.is_submitted():
         device_type = Setting.get_by_name('device_type').value
-        if device_type is not None:
+        if device_type:
             form.device_type.data = device_type
 
         device_location = Setting.get_by_name('device_location').value
-        if device_location is not None:
+        if device_location:
             managed_ser2sock = Setting.get_by_name('managed_ser2sock', default=False).value
             if managed_ser2sock:
                 form.device_location.data = 'local'
@@ -78,20 +78,20 @@ def local():
         device_type = Setting.get_by_name('device_type').value
 
         device_path = Setting.get_by_name('device_path').value
-        if device_path is not None:
+        if device_path:
             form.device_path.data = device_path
         else:
             form.device_path.data = DEFAULT_PATHS[device_type]
 
         baudrate = Setting.get_by_name('device_baudrate').value
-        if baudrate is not None:
+        if baudrate:
             form.baudrate.data = baudrate
         else:
             form.baudrate.data = DEFAULT_BAUDRATES[device_type]
 
         if ser2sock.exists():
             managed = Setting.get_by_name('managed_ser2sock').value
-            if managed is not None:
+            if managed:
                 form.confirm_management.data = managed
         else:
             del form.confirm_management
@@ -131,11 +131,11 @@ def network():
     form = NetworkDeviceForm()
     if not form.is_submitted():
         device_address = Setting.get_by_name('device_address').value
-        if device_address is not None:
+        if device_address:
             form.device_address.data = device_address
 
         device_port = Setting.get_by_name('device_port').value
-        if device_port is not None:
+        if device_port:
             form.device_port.data = device_port
 
         use_ssl = Setting.get_by_name('use_ssl').value
@@ -210,15 +210,15 @@ def sslserver():
             form.ssl.data = use_ssl
 
         config_path = Setting.get_by_name('ser2sock_config_path').value
-        if config_path is not None:
+        if config_path:
             form.config_path.data = config_path
 
         device_address = Setting.get_by_name('device_address').value
-        if device_address is not None:
+        if device_address:
             form.device_address.data = device_address
 
         device_port = Setting.get_by_name('device_port').value
-        if device_port is not None:
+        if device_port:
             form.device_port.data = device_port
 
     if form.validate_on_submit():
@@ -273,10 +273,6 @@ def sslserver():
 
         except ser2sock.HupFailed, err:
             flash("We had an issue restarting ser2sock: {0}".format(err), 'error')
-
-        # except ser2sock.NotRunning, err:
-        #     flash("It appears that ser2sock isn't running.  We've gone ahead and written the configuration but you need to start it for things to work correctly from this point forward.", 'warning')
-        #     return redirect(url_for(next_stage))
 
         except ser2sock.NotFound, err:
             flash("We weren't able to find ser2sock on your system.", 'error')            
@@ -371,6 +367,7 @@ def device():
     form = DeviceForm()
     if not form.is_submitted():
         if current_app.decoder.device is not None:
+            form.panel_mode.data = current_app.decoder.device.mode
             form.keypad_address.data = current_app.decoder.device.address
             form.address_mask.data = '{0:x}'.format(current_app.decoder.device.address_mask)
             form.lrr_enabled.data = current_app.decoder.device.emulate_lrr
@@ -378,8 +375,12 @@ def device():
             form.zone_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_zone)]
             form.relay_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_relay)]
         else:
+            panel_mode = Setting.get_by_name('panel_mode').value
+            if panel_mode is not None:
+                form.panel_mode.data = panel_mode
+
             keypad_address = Setting.get_by_name('keypad_address').value
-            if keypad_address is not None:
+            if keypad_address:
                 form.keypad_address.data = keypad_address
 
             address_mask = Setting.get_by_name('address_mask').value
@@ -404,6 +405,7 @@ def device():
 
     else:
         if form.validate_on_submit():
+            panel_mode = Setting.get_by_name('panel_mode')
             keypad_address = Setting.get_by_name('keypad_address')
             address_mask = Setting.get_by_name('address_mask')
             lrr_enabled = Setting.get_by_name('lrr_enabled')
@@ -414,6 +416,7 @@ def device():
             zx = [True if str(x) in form.zone_expanders.data else False for x in xrange(1, 6)]
             rx = [True if str(x) in form.relay_expanders.data else False for x in xrange(1, 5)]
 
+            panel_mode.value = form.panel_mode.data
             keypad_address.value = form.keypad_address.data
             address_mask.value = form.address_mask.data
             lrr_enabled.value = form.lrr_enabled.data
@@ -423,6 +426,7 @@ def device():
 
             set_stage(SETUP_TEST)
 
+            db.session.add(panel_mode)
             db.session.add(keypad_address)
             db.session.add(address_mask)
             db.session.add(lrr_enabled)

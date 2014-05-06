@@ -14,6 +14,7 @@ from wtforms.widgets import ListWidget, CheckboxInput, html_params
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES, DEFAULT_BAUDRATES
 from ..validators import PathExists, Hex
 from ..utils import STRING_LEN, PASSWORD_LEN_MIN, PASSWORD_LEN_MAX
+from alarmdecoder.panels import ADEMCO, DSC
 
 class BackButtonWidget(object):
     html_params = staticmethod(html_params)
@@ -89,6 +90,7 @@ class TestDeviceForm(Form):
     next = SubmitField(u'Next')
 
 class DeviceForm(Form):
+    panel_mode = RadioField(u'Panel Type', choices=[(ADEMCO, 'Ademco'), (DSC, 'DSC')], default=ADEMCO, coerce=int)
     keypad_address = IntegerField(u'Keypad Address', [Required(), NumberRange(1, 99)], default=18)
     address_mask = TextField(u'Address Mask', [Required(), Length(max=8), Hex()], default=u'ffffffff')
     zone_expanders = MultiCheckboxField(u'Zone Expanders', choices=[('1', 'Emulate zone expander #1?'), ('2', 'Emulate zone expander #2?'), ('3', 'Emulate zone expander #3?'), ('4', 'Emulate zone expander #4?'), ('5', 'Emulate zone expander #5?')])
@@ -105,5 +107,3 @@ class CreateAccountForm(Form):
     password_again = PasswordField('Password again', [Required(), Length(PASSWORD_LEN_MIN, PASSWORD_LEN_MAX), EqualTo('password')])
 
     save = SubmitField(u'Save')
-
-    #buttons = FormField(SetupButtonForm)

@@ -7,21 +7,47 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $('body').ready(function() {
+        function set_form_visible(val) {
+            $('#keypad_address').closest('.control-group').toggle(val);
+            $('#address_mask').closest('.control-group').toggle(val);
+            $('[id^=zone_expanders]').closest('.control-group').toggle(val);
+            $('[id^=relay_expanders]').closest('.control-group').toggle(val);
+            $('#lrr_enabled').closest('.control-group').toggle(val);
+            $('#deduplicate').closest('.control-group').toggle(val);
+        }
+
+        if ($('#panel_mode-1:checked').val()) {
+            set_form_visible(false);
+        }
+
+        $('[id^=panel_mode]').change(function(event) {
+            switch($(event.target).val()) {
+                case '0':
+                    set_form_visible(true);
+                    break;
+
+                case '1':
+                    set_form_visible(false);
+                    break;
+            }
+        });
+    });
 </script>
 {% endblock %}
 
 {% block body %}
-<div id="setup">
-	<h3>AlarmDecoder Settings</h3>
-	<div>
-		<p>
-			Finally, we need to configure the AlarmDecoder itself.  Most of these settings are fine when set to the default, but the Keypad Address needs to be configured specific to your panel.
-		</p>
-		<p>
-			  "SE" panels need to be set to address 31 but on other panels you are welcome to use any free keypad address you have after it has been enabled on your panel.  Check your panel documentation, or call your alarm system provider, to add one for the AlarmDecoder to use.
-		</p>
-	</div>
-	<br>
+<div id="setup" class="container">
+    <h3>AlarmDecoder Settings</h3>
+    <div>
+        <p>
+            Finally, we need to configure the AlarmDecoder itself.  Most of these settings are fine when set to the default, but the Keypad Address needs to be configured specific to your panel.
+        </p>
+        <p>
+              "SE" panels need to be set to address 31 but on other panels you are welcome to use any free keypad address you have after it has been enabled on your panel.  Check your panel documentation, or call your alarm system provider, to add one for the AlarmDecoder to use.
+        </p>
+    </div>
+    <br>
     {{ render_form(url_for('setup.device'), form) }}
 </div>
 {% endblock %}

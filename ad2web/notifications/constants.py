@@ -3,7 +3,7 @@
 EMAIL = 0
 GOOGLETALK = 1
 
-"""Alarm Event/Message Types"""
+# Alarm Event/Message Types
 POWER_CHANGED = 0
 ALARM = 1
 BYPASS = 2
@@ -20,7 +20,7 @@ RFX = 12
 AUI = 13
 KPE = 14
 
-"""LRR Event Types"""
+# LRR Event Types
 ALARM_EXIT_ERROR = 0
 TROUBLE = 1
 BYPASS = 2
@@ -55,7 +55,6 @@ NOTIFICATIONS = {
     EMAIL: ('email', u'Email'),
     GOOGLETALK: ('googletalk', u'Google Talk'),
 }
-
 
 CUSTOM_NOTIFICATION_EVENTS_TYPES = {
     POWER_CHANGED: 'powerchanged',

@@ -5,7 +5,6 @@ import sys
 import time
 import traceback
 import threading
-import Queue
 
 from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
@@ -70,38 +69,61 @@ def create_decoder_socket(app):
     return SocketIOServer(('', 5000), app, resource="socket.io")
 
 class Decoder(object):
+    """
+    Primary application state
+    """
+
     def __init__(self, app, websocket):
+        """
+        Constructor
+
+        :param app: The flask application object
+        :type app: Flask
+        :param websocket: The websocket object
+        :type websocket: SocketIOServer
+        """
         with app.app_context():
             self.app = app
             self.websocket = websocket
             self.device = None
             self.updater = Updater()
+            self.updates = {}
+
+            self.trigger_reopen_device = False
+            self.trigger_restart = False
+
             self._last_message = None
             self._device_baudrate = 115200
             self._device_type = None
             self._device_location = None
-            self._thread = DecoderThread(self)
+            self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
-            self.trigger_reopen_device = False
-            self.trigger_restart = False
-
-            self.updates = {}
 
     def start(self):
-        self._thread.start()
+        """
+        Starts the internal threads.
+        """
+        self._event_thread.start()
         self._version_thread.start()
 
     def stop(self, restart=False):
+        """
+        Closes the device, stops the internal threads, and shuts down.  Optionally
+        triggers a restart of the application.
+
+        :param restart: Indicates whether or not the application should be restarted.
+        :type restart: bool
+        """
         self.app.logger.info('Stopping service..')
 
         self.close()
 
-        self._thread.stop()
+        self._event_thread.stop()
         self._version_thread.stop()
 
         if restart:
             try:
-                self._thread.join(5)
+                self._event_thread.join(5)
                 self._version_thread.join(5)
             except RuntimeError:
                 pass
@@ -113,34 +135,40 @@ class Decoder(object):
             os.execv(sys.executable, [sys.executable] + sys.argv)
 
     def init(self):
+        """
+        Initializes the application by triggering a device open if it's been
+        previously configured.
+        """
         with self.app.app_context():
             device_type = Setting.get_by_name('device_type').value
 
-            if device_type is not None:
-                # HACK - queue up the device opening
+            if device_type:
                 self.trigger_reopen_device = True
 
     def open(self):
+        """
+        Opens the AlarmDecoder device.
+        """
         with self.app.app_context():
             self._device_type = Setting.get_by_name('device_type').value
             self._device_location = Setting.get_by_name('device_location').value
 
-            if self._device_type is not None:
-                # TODO: make this not ugly.
+            if self._device_type:
                 interface = ('localhost', 10000)
                 use_ssl = False
                 devicetype = SocketDevice
+
+                # Set up device interfaces based on our location.
                 if self._device_location == 'local':
                     devicetype = SerialDevice
                     interface = Setting.get_by_name('device_path').value
                     self._device_baudrate = Setting.get_by_name('device_baudrate').value
+
                 elif self._device_location == 'network':
                     interface = (Setting.get_by_name('device_address').value, Setting.get_by_name('device_port').value)
+                    use_ssl = Setting.get_by_name('use_ssl', False).value
 
-                    use_ssl = Setting.get_by_name('use_ssl').value
-                    if use_ssl is None:
-                        use_ssl = False
-
+                # Create and open the device.
                 try:
                     device = devicetype(interface=interface)
                     if use_ssl:
@@ -153,7 +181,7 @@ class Decoder(object):
                         device.ssl_key = internal_cert.key_obj
 
                     self.device = AlarmDecoder(device)
-                    self.bind_events(self.websocket, self.device)
+                    self.bind_events()
                     self.device.open(baudrate=self._device_baudrate)
 
                 except NoDeviceError, err:
@@ -166,10 +194,17 @@ class Decoder(object):
                     raise
 
     def close(self):
-        if self.device is not None:
+        """
+        Closes the AlarmDecoder device.
+        """
+        if self.device:
             self.device.close()
 
-    def bind_events(self, appsocket, decoder):
+    def bind_events(self):
+        """
+        Binds the internal event handlers so that we can handle events from the
+        AlarmDecoder library.
+        """
         build_event_handler = lambda ftype: lambda sender, *args, **kwargs: self._handle_event(ftype, sender, *args, **kwargs)
         build_message_handler = lambda ftype: lambda sender, *args, **kwargs: self._on_message(ftype, sender, *args, **kwargs)
 
@@ -187,18 +222,42 @@ class Decoder(object):
             device_handler += build_event_handler(event)
 
     def _on_device_open(self, sender):
+        """
+        Internal event handler for when the device opens.
+
+        :param sender: The AlarmDecoder device that sent the open message.
+        :type sender: AlarmDecoder
+        """
         self.app.logger.info('AlarmDecoder device was opened.')
 
         self.broadcast('device_open')
         self.trigger_reopen_device = False
 
     def _on_device_close(self, sender):
+        """
+        Internal event handler for when the device closes.
+
+        :param sender: The AlarmDecoder device that sent the close message.
+        :type sender: AlarmDecoder
+        """
         self.app.logger.info('AlarmDecoder device was closed.')
 
         self.broadcast('device_close')
         self.trigger_reopen_device = True
 
     def _on_message(self, ftype, sender, *args, **kwargs):
+        """
+        Internal event handler for when the device receives a message.
+
+        :param ftype: Human-readable message type
+        :type ftype: string
+        :param sender: The AlarmDecoder device that sent the message.
+        :type sender: AlarmDecoder
+        :param args: Argument list for the message.
+        :type args: list
+        :param kwargs: Keyword arguments for the message.
+        :type kwargs: dict
+        """
         try:
             self.broadcast('message', { 'message': kwargs.get('message', None), 'message_type': ftype } )
 
@@ -206,6 +265,18 @@ class Decoder(object):
             self.app.logger.error('Error while broadcasting message.', exc_info=True)
 
     def _handle_event(self, ftype, sender, *args, **kwargs):
+        """
+        Internal event handler for other events from the AlarmDecoder.
+
+        :param ftype: Human-readable message type
+        :type ftype: string
+        :param sender: The AlarmDecoder device that sent the message.
+        :type sender: AlarmDecoder
+        :param args: Argument list for the message.
+        :type args: list
+        :param kwargs: Keyword arguments for the message.
+        :type kwargs: dict
+        """
         try:
             self._last_message = time.time()
 
@@ -229,16 +300,39 @@ class Decoder(object):
             self.app.logger.error('Error while broadcasting event.', exc_info=True)
 
     def broadcast(self, channel, data={}):
+        """
+        Broadcasts a message to all of the connected websocket clients.
+
+        :param channel: Websocket channel
+        :type channel: string
+        :param data: Data to send over the websocket.
+        :type data: dict
+        """
         obj = jsonpickle.encode(data, unpicklable=False)
         packet = self._make_packet(channel, obj)
 
         self._broadcast_packet(packet)
 
     def _broadcast_packet(self, packet):
+        """
+        Broadcasts the packet to all websocket clients.
+
+        :param packet: SocketIO packet to send.
+        :type packet: dict
+        """
         for session, sock in self.websocket.sockets.iteritems():
             sock.send_packet(packet)
 
     def _make_packet(self, channel, data):
+        """
+        Creates a packet to send over SocketIO.
+
+        :param channel: Websocket channel
+        :type channel: string
+        :param data: JSON-encoded string to send
+        :type data: string
+        :returns: A dictionary representing a websocket packet
+        """
         return dict(type='event', name=channel, args=data, endpoint='/alarmdecoder')
 
 class DecoderThread(threading.Thread):
@@ -247,8 +341,15 @@ class DecoderThread(threading.Thread):
     """
 
     TIMEOUT = 5
+    """Thread sleep time."""
 
     def __init__(self, decoder):
+        """
+        Constructor
+
+        :param decoder: Parent decoder object
+        :type decoder: Decoder
+        """
         threading.Thread.__init__(self)
         self._decoder = decoder
         self._running = False
@@ -261,18 +362,22 @@ class DecoderThread(threading.Thread):
 
     def run(self):
         """
-        The actual read process.
+        The thread processing loop.
         """
         self._running = True
 
         while self._running:
             with self._decoder.app.app_context():
                 try:
-                    # Perform any requred actions.
+                    # Handle reopen events
                     if self._decoder.trigger_reopen_device:
                         self._decoder.app.logger.info('Attempting to reconnect to the AlarmDecoder')
-                        self._decoder.open()
+                        try:
+                            self._decoder.open()
+                        except NoDeviceError, err:
+                            self._decoder.app.logger.error('Device not found: {0}'.format(err[0]))
 
+                    # Handle service restart events
                     if self._decoder.trigger_restart:
                         self._decoder.app.logger.info('Restarting service..')
                         self._decoder.stop(restart=True)
@@ -283,18 +388,35 @@ class DecoderThread(threading.Thread):
                     self._decoder.app.logger.error('Error in DecoderThread: {0}'.format(err), exc_info=True)
 
 class VersionChecker(threading.Thread):
+    """
+    Thread responsible for checking for new software versions.
+    """
     TIMEOUT = 60 * 10
+    """Version checker sleep time."""
 
     def __init__(self, decoder):
+        """
+        Constructor
+
+        :param decoder: Parent decoder object
+        :type decoder: Decoder
+        """
         threading.Thread.__init__(self)
         self._decoder = decoder
         self._updater = decoder.updater
         self._running = False
 
     def stop(self):
+        """
+        Stops the thread.
+        """
+
         self._running = False
 
     def run(self):
+        """
+        The thread processing loop.
+        """
         self._running = True
 
         while self._running:
@@ -303,10 +425,23 @@ class VersionChecker(threading.Thread):
             time.sleep(self.TIMEOUT)
 
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
+    """
+    Socket.IO namespace
+    """
+
     def initialize(self):
+        """
+        Initializes the namespace.
+        """
         self._alarmdecoder = self.request
 
     def on_keypress(self, key):
+        """
+        Handles websocket keypress events.
+
+        :param key: The key that was pressed.
+        :type key: int or string
+        """
         with self._alarmdecoder.app.app_context():
             try:
                 if key == 1:
@@ -326,6 +461,12 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 self._alarmdecoder.app.logger.error('Error sending keypress to device', exc_info=True)
 
     def on_test(self, *args):
+        """
+        Handles test start events.
+
+        :param args: Test arguments
+        :type args: list
+        """
         with self._alarmdecoder.app.app_context():
             try:
                 self._test_open()
@@ -338,29 +479,39 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 current_app.logger.error('Error running device tests.', exc_info=True)
 
     def _test_open(self):
-        results = 'PASS'
-        details = ''
+        """
+        Tests opening the AlarmDecoder device.
+        """
+        results, details = 'PASS', ''
 
         try:
             self._alarmdecoder.close()
             self._alarmdecoder.open()
 
+        except NoDeviceError, err:
+            results, details = 'FAIL', '{0}: {1}'.format(err[0], err[1][1])
+            current_app.logger.error('Error while testing device open.', exc_info=True)
+
         except Exception, err:
-            results = 'FAIL'
-            details = 'Failed to open the device.'
+            results, details = 'FAIL', 'Failed to open the device: {0}'.format(err)
             current_app.logger.error('Error while testing device open.', exc_info=True)
 
         finally:
             self._alarmdecoder.broadcast('test', {'test': 'open', 'results': results, 'details': details})
 
     def _test_config(self):
+        """
+        Tests retrieving and saving the AlarmDecoder configuration.
+        """
         def on_config_received(device):
+            """Internal config event handler"""
             timer.cancel()
             self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'PASS', 'details': ''})
             if on_config_received in self._alarmdecoder.device.on_config_received:
                 self._alarmdecoder.device.on_config_received.remove(on_config_received)
 
         def on_timeout():
+            """Internal timeout handler for the configuration message"""
             self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'TIMEOUT', 'details': 'Test timed out.'})
             if on_config_received in self._alarmdecoder.device.on_config_received:
                 self._alarmdecoder.device.on_config_received.remove(on_config_received)
@@ -369,6 +520,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
         timer.start()
 
         try:
+            panel_mode = Setting.get_by_name('panel_mode')
             keypad_address = Setting.get_by_name('keypad_address')
             address_mask = Setting.get_by_name('address_mask')
             lrr_enabled = Setting.get_by_name('lrr_enabled')
@@ -379,6 +531,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             zx = [x == u'True' for x in zone_expanders.value.split(',')]
             rx = [x == u'True' for x in relay_expanders.value.split(',')]
 
+            self._alarmdecoder.device.mode = panel_mode.value
             self._alarmdecoder.device.address = keypad_address.value
             self._alarmdecoder.device.address_mask = int(address_mask.value, 16)
             self._alarmdecoder.device.emulate_zone = zx
@@ -393,11 +546,16 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             timer.cancel()
             if on_config_received in self._alarmdecoder.device.on_config_received:
                 self._alarmdecoder.device.on_config_received.remove(on_config_received)
+
             self._alarmdecoder.broadcast('test', {'test': 'config', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
             current_app.logger.error('Error while testing device config.', exc_info=True)
 
     def _test_send(self):
+        """
+        Tests keypress sending functionality.
+        """
         def on_sending_received(device, status, message):
+            """Internal event handler for key send events"""
             timer.cancel()
             if on_sending_received in self._alarmdecoder.device.on_sending_received:
                 self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
@@ -409,6 +567,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             self._alarmdecoder.broadcast('test', {'test': 'send', 'results': results, 'details': details})
 
         def on_timeout():
+            """Internal timeout for key send events"""
             self._alarmdecoder.broadcast('test', {'test': 'send', 'results': 'TIMEOUT', 'details': 'Test timed out.'})
             if on_sending_received in self._alarmdecoder.device.on_sending_received:
                 self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
@@ -424,17 +583,24 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             timer.cancel()
             if on_sending_received in self._alarmdecoder.device.on_sending_received:
                 self._alarmdecoder.device.on_sending_received.remove(on_sending_received)
+
             self._alarmdecoder.broadcast('test', {'test': 'send', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
             current_app.logger.error('Error while testing keypad communication.', exc_info=True)
 
     def _test_receive(self):
+        """
+        Tests message received events.
+        """
         def on_message(device, message):
+            """Internal event handler for message events"""
             timer.cancel()
             if on_message in self._alarmdecoder.device.on_message:
                 self._alarmdecoder.device.on_message.remove(on_message)
+
             self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'PASS', 'details': ''})
 
         def on_timeout():
+            """Internal timeout for message events"""
             self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'TIMEOUT', 'details': 'Test timed out.'})
             if on_message in self._alarmdecoder.device.on_message:
                 self._alarmdecoder.device.on_message.remove(on_message)
@@ -450,11 +616,13 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
             timer.cancel()
             if on_message in self._alarmdecoder.device.on_message:
                 self._alarmdecoder.device.on_message.remove(on_message)
+
             self._alarmdecoder.broadcast('test', {'test': 'recv', 'results': 'FAIL', 'details': 'There was an error sending the command to the device.'})
             current_app.logger.error('Error while testing keypad communication.', exc_info=True)
 
 @decodersocket.route('/<path:remaining>')
 def handle_socketio(remaining):
+    """Socket.IO route"""
     try:
         socketio_manage(request.environ, {'/alarmdecoder': DecoderNamespace}, g.alarmdecoder)
 
