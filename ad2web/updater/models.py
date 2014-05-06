@@ -22,6 +22,8 @@ class Updater(object):
     def check_updates(self):
         """
         Performs a check for component updates
+
+        :returns: A list of components and their statuses.
         """
         status = {}
 
@@ -37,6 +39,8 @@ class Updater(object):
 
         :param component_name: Name of the component to update.
         :type component_name: string
+
+        :returns: A list of components and the status after the update.
         """
         ret = {}
 
@@ -135,6 +139,8 @@ class SourceUpdater(object):
     def update(self):
         """
         Performs the update
+
+        :returns: Returns the update results
         """
         if not self._enabled:
             return { 'status': 'FAIL', 'restart_required': False }
@@ -240,6 +246,8 @@ class SourceUpdater(object):
     def _check_enabled(self):
         """
         Determine if this update component is enabled
+
+        :returns: Whether or not this component is enabled.
         """
         git_available = self._git is not None
         remote_okay = self._check_remotes()
@@ -255,7 +263,10 @@ class SourceUpdater(object):
 
     def _check_remotes(self):
         """
-        Hack of a check determine if our origin remote is via ssh since it blocks if the key has a password.
+        Hack of a check determine if our origin remote is via ssh since it
+        blocks if the key has a password.
+
+        :returns: Whether or not we're running with an ssh remote.
         """
         if not self._git:
             return True
@@ -321,6 +332,8 @@ class DBUpdater(object):
     def update(self):
         """
         Performs the update
+
+        :returns: The update results
         """
         if self._current_revision != self._newest_revision:
             try:

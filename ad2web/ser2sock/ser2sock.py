@@ -37,6 +37,10 @@ class HupFailed(Exception):
 def read_config(path):
     """
     Reads an existing ser2sock configuration.
+
+    :param path: Path to the configuration file.
+    :type path: string
+    :returns: A SafeConfigParser to operate on the configuration.
     """
     config = ConfigParser.SafeConfigParser()
     config.read(path)
@@ -47,6 +51,8 @@ def save_config(path, config_values):
     """
     Saves the ser2sock configuration.
 
+    :param path: Path to the configuration file.
+    :type path: string
     :param config_values: Configuration values to use
     :type config_values: dict
     """
@@ -69,6 +75,8 @@ def save_config(path, config_values):
 def exists():
     """
     Determines whether or not ser2sock exists in our path.
+
+    :returns: Whether or not ser2sock exists in the path.
     """
     return sh.which('ser2sock') is not None
 
@@ -109,6 +117,9 @@ def hup():
 def save_certificate_index(path):
     """
     Saves the certificate index
+
+    :param path: The path to the ser2sock configuration directory.
+    :type path: string
     """
     path = os.path.join(path, 'certs', 'certindex')
 
@@ -132,6 +143,9 @@ def save_certificate_index(path):
 def save_revocation_list(path):
     """
     Saves the certificate revocation list
+
+    :param path: Path to the ser2sock configuration directory
+    :type path: string
     """
     path = os.path.join(path, 'ser2sock.crl')
 
@@ -159,6 +173,13 @@ def update_config(path, *args, **kwargs):
     """
     Updates the ser2sock configuration with new settings, saves the index
     and revocation list, and hups ser2sock.
+
+    :param path: Path to the ser2sock configuration directory
+    :type path: string
+    :param args: Argument list
+    :type args: list
+    :param kwargs: Keyward arguments
+    :type kwargs: dict
     """
     try:
         if path is not None:

@@ -82,7 +82,6 @@ class Decoder(object):
         :param websocket: The websocket object
         :type websocket: SocketIOServer
         """
-
         with app.app_context():
             self.app = app
             self.websocket = websocket
@@ -104,7 +103,6 @@ class Decoder(object):
         """
         Starts the internal threads.
         """
-
         self._event_thread.start()
         self._version_thread.start()
 
@@ -116,7 +114,6 @@ class Decoder(object):
         :param restart: Indicates whether or not the application should be restarted.
         :type restart: bool
         """
-
         self.app.logger.info('Stopping service..')
 
         self.close()
@@ -142,7 +139,6 @@ class Decoder(object):
         Initializes the application by triggering a device open if it's been
         previously configured.
         """
-
         with self.app.app_context():
             device_type = Setting.get_by_name('device_type').value
 
@@ -153,7 +149,6 @@ class Decoder(object):
         """
         Opens the AlarmDecoder device.
         """
-
         with self.app.app_context():
             self._device_type = Setting.get_by_name('device_type').value
             self._device_location = Setting.get_by_name('device_location').value
@@ -202,7 +197,6 @@ class Decoder(object):
         """
         Closes the AlarmDecoder device.
         """
-
         if self.device:
             self.device.close()
 
@@ -211,7 +205,6 @@ class Decoder(object):
         Binds the internal event handlers so that we can handle events from the
         AlarmDecoder library.
         """
-
         build_event_handler = lambda ftype: lambda sender, *args, **kwargs: self._handle_event(ftype, sender, *args, **kwargs)
         build_message_handler = lambda ftype: lambda sender, *args, **kwargs: self._on_message(ftype, sender, *args, **kwargs)
 
@@ -338,6 +331,7 @@ class Decoder(object):
         :type channel: string
         :param data: JSON-encoded string to send
         :type data: string
+        :returns: A dictionary representing a websocket packet
         """
         return dict(type='event', name=channel, args=data, endpoint='/alarmdecoder')
 
@@ -354,7 +348,7 @@ class DecoderThread(threading.Thread):
         Constructor
 
         :param decoder: Parent decoder object
-        :type decodeR: Decoder
+        :type decoder: Decoder
         """
         threading.Thread.__init__(self)
         self._decoder = decoder
