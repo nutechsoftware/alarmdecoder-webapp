@@ -9,12 +9,6 @@ from ..decorators import admin_required
 
 keypad = Blueprint('keypad', __name__, url_prefix='/keypad')
 
-@keypad.context_processor
-def keypad_context_processor():
-    return {
-
-    }
-
 @keypad.route('/')
 @login_required
 def index():
