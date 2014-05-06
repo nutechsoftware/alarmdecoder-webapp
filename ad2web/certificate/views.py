@@ -88,6 +88,9 @@ def view(certificate_id):
 @certificate.route('/<int:certificate_id>/download/<download_type>')
 @login_required
 def download(certificate_id, download_type):
+    if not download_type in PACKAGE_TYPE_LOOKUP.keys():
+        abort(404)
+
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
     if use_ssl == False:
         abort(404)
@@ -163,7 +166,7 @@ def generateCA():
     db.session.add(internal_cert)
 
     config_path = Setting.get_by_name('ser2sock_config_path')
-    if config_path is not None:
+    if config_path:
         ser2sock.update_config(config_path.value, ca_cert=ca_cert, server_cert=server_cert, use_ssl=True)
 
     db.session.commit()

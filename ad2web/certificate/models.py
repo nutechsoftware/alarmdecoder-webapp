@@ -50,16 +50,16 @@ class Certificate(db.Model):
             self.certificate_obj = None
 
     @classmethod
-    def get_by_id(cls, user_id):
-        return cls.query.filter_by(id=user_id).first_or_404()
+    def get_by_id(cls, id):
+        return cls.query.filter_by(id=id).first_or_404()
 
     @classmethod
     def save_certificate_index(cls):
-        ser2sock_config_path = Setting.get_by_name('ser2sock_config_path')
-        if ser2sock_config_path.value is None:
+        ser2sock_config_path = Setting.get_by_name('ser2sock_config_path').value
+        if ser2sock_config_path:
             raise ValueError('ser2sock_config_path is not set.')
 
-        path = os.path.join(ser2sock_config_path.value, 'certs', 'certindex')
+        path = os.path.join(ser2sock_config_path, 'certs', 'certindex')
 
         with open(path, 'w') as cert_index:
             for cert in cls.query.all():
@@ -80,11 +80,11 @@ class Certificate(db.Model):
 
     @classmethod
     def save_revocation_list(cls):
-        ser2sock_config_path = Setting.get_by_name('ser2sock_config_path')
-        if ser2sock_config_path.value is None:
+        ser2sock_config_path = Setting.get_by_name('ser2sock_config_path').value
+        if ser2sock_config_path:
             raise ValueError('ser2sock_config_path is not set.')
 
-        path = os.path.join(ser2sock_config_path.value, 'ser2sock.crl')
+        path = os.path.join(ser2sock_config_path, 'ser2sock.crl')
 
         ca_cert = cls.query.filter_by(type=CA).first()
 
