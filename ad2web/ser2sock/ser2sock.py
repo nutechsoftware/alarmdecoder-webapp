@@ -133,11 +133,13 @@ def update_config(path, *args, **kwargs):
             config = None
 
         if config is not None:
+            # Pre-populate with existing settings from the config.
             config_values = {}
             if config.has_section('ser2sock'):
                 for k, v in config.items('ser2sock'):
                     config_values[k] = v
 
+            # Set any settings that were provided in our kwargs.
             if 'device_path' in kwargs.keys():
                 config_values['device'] = kwargs['device_path']
             if 'device_baudrate' in kwargs.keys():
