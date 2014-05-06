@@ -23,7 +23,7 @@ class Updater(object):
         return status
 
     def update(self, component_name=None):
-        ret = { }
+        ret = {}
 
         if component_name is not None:
             component = self._components[component_name]

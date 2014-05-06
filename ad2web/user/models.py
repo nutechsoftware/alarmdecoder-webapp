@@ -47,6 +47,7 @@ class DenormalizedText(Mutable, types.TypeDecorator):
 
 class UserHistory(db.Model):
     __tablename__ = 'user_history'
+
     id = Column(db.Integer, primary_key=True)
     ip_address = Column(db.String(STRING_LEN))
     user_id = Column(db.Integer)
@@ -58,7 +59,6 @@ class UserDetail(db.Model):
     __tablename__ = 'user_details'
 
     id = Column(db.Integer, primary_key=True)
-
     age = Column(db.Integer)
     phone = Column(db.String(STRING_LEN))
     url = Column(db.String(STRING_LEN))
