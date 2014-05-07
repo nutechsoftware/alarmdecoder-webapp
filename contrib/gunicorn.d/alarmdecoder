@@ -6,6 +6,6 @@ CONFIG = {
         '--worker-class=socketio.sgunicorn.GeventSocketIOWorker',
         #'--debug',
         #'--log-level=debug',
-        'app',
+        'wsgi:application',
     ),
 }
