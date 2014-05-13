@@ -10,7 +10,7 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from wtforms.widgets import ListWidget, CheckboxInput
-from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, EMAIL, GOOGLETALK)
+from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK)
 from .models import NotificationSetting
 
 class MultiCheckboxField(SelectMultipleField):
@@ -37,10 +37,9 @@ class EditNotificationForm(Form):
         settings['subscriptions'] = self.populate_setting('subscriptions', json.dumps({str(k): True for k in self.subscriptions.data}))
 
     def populate_from_settings(self, id):
-        test_subscriptions = self.populate_from_setting(id, 'subscriptions')
-        if test_subscriptions:
-            test_subscriptions = json.loads(test_subscriptions)
-        self.subscriptions.data = [k if v == True else False for k, v in test_subscriptions.iteritems()]
+        subscriptions = self.populate_from_setting(id, 'subscriptions')
+        if subscriptions:
+            self.subscriptions.data = [k if v == True else False for k, v in json.loads(subscriptions).iteritems()]
 
     def populate_setting(self, name, value, id=None):
         if id is not None:

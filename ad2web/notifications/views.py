@@ -10,7 +10,7 @@ from .forms import (CreateNotificationForm, EditNotificationForm, EmailNotificat
 
 from .models import Notification, NotificationSetting
 
-from .constants import (NOTIFICATION_TYPES, EMAIL, GOOGLETALK)
+from .constants import (NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK)
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
@@ -85,6 +85,9 @@ def create_by_type(type):
     type_id, form_type = NOTIFICATION_TYPE_DETAILS[type]
     form = form_type()
     form.type.data = type_id
+
+    if not form.is_submitted():
+        form.subscriptions.data = [k for k in DEFAULT_SUBSCRIPTIONS]
 
     if form.validate_on_submit():
         obj = Notification()
