@@ -48,16 +48,16 @@ EVENTS = {
 }
 
 EVENT_MESSAGES = {
-    ARM: 'The alarm was armed.',
-    DISARM: 'The alarm was disarmed.',
+    ARM: 'The alarm system has been armed.',
+    DISARM: 'The alarm system has been disarmed.',
     POWER_CHANGED: 'Power status has changed to {status}.',
     ALARM: 'Alarm is triggered!',
     FIRE: 'There is a fire!',
     BYPASS: 'A zone has been bypassed.',
     BOOT: 'The AlarmDecoder has finished booting.',
-    CONFIG_RECEIVED: 'AlarmDecoder has been configured.',
-    ZONE_FAULT: '{zone_name} ({zone}) has been faulted.',
-    ZONE_RESTORE: '{zone_name} ({zone}) has been restored.',
+    #CONFIG_RECEIVED: 'AlarmDecoder has been configured.',
+    ZONE_FAULT: 'Zone {zone_name} ({zone}) has been faulted.',
+    ZONE_RESTORE: 'Zone {zone_name} ({zone}) has been restored.',
     LOW_BATTERY: 'Low battery detected.',
     PANIC: 'Panic!',
     RELAY_CHANGED: 'A relay has changed.'
@@ -285,14 +285,20 @@ class Decoder(object):
                     zone_name = Zone.get_name(kwargs['zone'])
                     kwargs['zone_name'] = zone_name if zone_name else '<unnamed>'
 
-                event_message = EVENT_MESSAGES[ftype].format(**kwargs)
-                if ftype in CRITICAL_EVENTS:
+                try:
+                    event_message = EVENT_MESSAGES[ftype].format(**kwargs)
                     for id in NotificationFactory.notifications():
                         notifier = NotificationFactory.create(id)
-                        notifier.send('AlarmDecoder Event: {0}'.format(event_message))
 
-                db.session.add(EventLogEntry(type=ftype, message=event_message))
-                db.session.commit()
+                        if notifier.subscribes_to(EVENTS[ftype]):
+                            notifier.send('AlarmDecoder Event: {0}'.format(event_message))
+
+                    self.app.logger.info('Event: {0} - {1}'.format(ftype, event_message))
+                    db.session.add(EventLogEntry(type=ftype, message=event_message))
+                    db.session.commit()
+
+                except KeyError, err:
+                    self.app.logger.error('Error: {0}'.format(err))
 
             self.broadcast('event', kwargs)
 

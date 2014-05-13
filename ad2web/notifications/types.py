@@ -3,6 +3,7 @@
 import smtplib
 from email.mime.text import MIMEText
 import sleekxmpp
+import json
 
 from .constants import EMAIL, GOOGLETALK
 from .models import Notification, NotificationSetting
@@ -18,8 +19,21 @@ class NotificationFactory(object):
     def notifications(cls):
         return [obj.id for obj in Notification.query.all()]
 
-class EmailNotification(object):
+class BaseNotification(object):
     def __init__(self, obj):
+        if 'subscriptions' in obj.settings.keys():
+            self._subscriptions = json.loads(obj.settings['subscriptions'].value)
+        else:
+            self._subscriptions = {}
+
+    def subscribes_to(self, type, value=None):
+        if type in self._subscriptions.keys():
+            return True
+
+class EmailNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+
         self.id = obj.id
         self.description = obj.description
         self.source = obj.settings['source'].value
@@ -47,8 +61,10 @@ class EmailNotification(object):
             import traceback
             traceback.print_exc()
 
-class GoogleTalkNotification(object):
+class GoogleTalkNotification(BaseNotification):
     def __init__(self, obj):
+        BaseNotification.__init__(self)
+
         self.id = obj.id
         self.description = obj.description
         self.source = obj.settings['source'].value

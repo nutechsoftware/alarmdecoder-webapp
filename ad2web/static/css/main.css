@@ -519,3 +519,23 @@ table#test_results td.details {
 #cert_desc label {
     margin-bottom: -2px;
 }
+
+/* Notifications */
+div#subscriptions ul {
+    list-style-type: none;
+}
+
+div#subscriptions input {
+    float: left;
+    margin-right: 10px;
+}
+
+div#subscriptions span {
+    display: block;
+    overflow: hidden;
+}
+
+div#subscriptions span label {
+    float: right;
+    width: 100%;
+}
