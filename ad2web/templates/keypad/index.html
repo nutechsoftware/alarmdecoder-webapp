@@ -437,6 +437,7 @@
             $('#button-1').on('click', function() {
                 decoder.emit('keypress', '1');
             });
+
             $('#button-1').on('mousedown', function() {
                 if( mobile )
                 {
@@ -447,6 +448,7 @@
                     $(this).css('background', "url(" + buttonImageListLarge[2] + ") no-repeat");
                 }
 	        });
+
 	        $('#button-1').on('mouseup', function() {
                 if( mobile )
                 {
@@ -457,6 +459,7 @@
                     $(this).css('background', "url(" + buttonImageListLarge[3] + ") no-repeat");
                 }
             });
+
             $('#button-2').on('click', function() {
                 decoder.emit('keypress', '2');
             });
@@ -871,11 +874,11 @@
 {% endblock %}
 
 {% block body %}
-<div>
+<div style="-webkit-user-select: none; user-select: none; -moz-user-select: none;">
     <div id="keypad-line1">Please Wait</div>
     <div id="keypad-line2">Loading...</div>
     <hr>
-    <div id="status-indicator">Armed: <img id="status-image1" src="../static/img/led-off.png"> Ready: <img id="status-image2" src="../static/img/led-off.png"></div>
+    <div id="status-indicator">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"> Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
     <div id="keypad-buttons">
         <div id="keypad-button-row">
             <input id="button-F1" class="keypad-button" type="button" value="" class="confirmF1"></input>

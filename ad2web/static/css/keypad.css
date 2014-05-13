@@ -111,17 +111,32 @@
 {
     width: 150px !important;
     height: 80px;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
 }
 
 .mobile .keypad-button {
     width: 100px !important;
     height: 80px;
+    -webkit-user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
 }
 
 .tablet .keypad-button {
     width: 150px !important;
     height: 80px;
+    -webkit-user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
 }
+
 #button-0
 {
     margin: 0 auto;
