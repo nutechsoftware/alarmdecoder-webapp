@@ -164,6 +164,9 @@
             mobile = isMobile();
             tablet = isTablet();
 
+            $(function() {
+                FastClick.attach(document.body);
+            });
             //preload led images
             preloadImages(ledImages);
 
@@ -914,4 +917,5 @@
 {% block js_btm %}
 <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/fastclick.min.js') }}"></script>
 {% endblock %}
