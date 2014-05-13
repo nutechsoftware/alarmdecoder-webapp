@@ -30,6 +30,15 @@
 
     {% block js_top %}
     <script src="{{ url_for('static', filename='js/vendor/modernizr-latest.js') }}"></script>
+    <script type="text/javascript">
+        var isiPad = navigator.userAgent.match(/iPad/i) != null;
+
+        if( isiPad )
+        {
+            viewport = document.querySelector("meta[name=viewport]");
+            viewport.setAttribute('content', 'width=extend-to-zoom, initial-scale=0.8, target-densitydpi=device-dpi, user-scalable=no, maximum-scale=0.8');
+        }
+    </script>
     {% endblock %}
 </head>
 <body>
