@@ -12,8 +12,8 @@ from .forms import (CreateNotificationForm, EditNotificationForm,
 
 from .models import Notification, NotificationSetting, NotificationMessage
 
-from .constants import (NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, EMAIL,
-                        GOOGLETALK)
+from .constants import (EVENT_TYPES, NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, 
+                        EMAIL, GOOGLETALK)
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
@@ -28,7 +28,8 @@ notifications = Blueprint('notifications',
 def notifications_context_processor():
     return {
         'TYPES': NOTIFICATION_TYPES,
-        'TYPE_DETAILS': NOTIFICATION_TYPE_DETAILS
+        'TYPE_DETAILS': NOTIFICATION_TYPE_DETAILS,
+        'EVENT_TYPES': EVENT_TYPES,
     }
 
 @notifications.route('/')
@@ -104,7 +105,7 @@ def create_by_type(type):
     form.type.data = type_id
 
     if not form.is_submitted():
-        form.subscriptions.data = [k for k in DEFAULT_SUBSCRIPTIONS]
+        form.subscriptions.data = [str(k) for k in DEFAULT_SUBSCRIPTIONS]
 
     if form.validate_on_submit():
         obj = Notification()
@@ -149,7 +150,9 @@ def messages():
 
     messages = NotificationMessage.query.all()
 
-    return render_template('notifications/messages.html', messages=messages)
+    return render_template('notifications/messages.html',
+                            messages=messages,
+                            active='notifications')
 
 @notifications.route('/messages/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -175,4 +178,5 @@ def edit_message(id):
 
     return render_template('notifications/edit_message.html',
                             form=form,
-                            message_id=message.id)
+                            message_id=message.id,
+                            active='notifications')

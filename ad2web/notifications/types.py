@@ -18,7 +18,6 @@ class NotificationSystem(object):
         self._messages = DEFAULT_EVENT_MESSAGES
 
         self._init_notifiers()
-        self._init_messages()
 
     def send(self, type, **kwargs):
         for n in self._notifiers:
@@ -34,14 +33,10 @@ class NotificationSystem(object):
         for n in Notification.query.all():
             self._notifiers.append(TYPE_MAP[n.type](n))
 
-    def _init_messages(self):
-        messages = NotificationMessage.query.all()
-
-        for m in messages:
-            self._messages[m.id] = m.text
-
     def _build_message(self, type, **kwargs):
-        message = self._messages.get(type, None)
+        message = NotificationMessage.query.filter_by(id=type).first()
+        if message:
+            message = message.text
 
         if 'zone' in kwargs:
             zone_name = Zone.get_name(kwargs['zone'])

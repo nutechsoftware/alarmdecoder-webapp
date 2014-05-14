@@ -81,7 +81,7 @@ class Decoder(object):
             self._device_location = None
             self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
-            self._notifier_system = NotificationSystem()
+            self._notifier_system = None
 
     def start(self):
         """
@@ -128,6 +128,8 @@ class Decoder(object):
 
             if device_type:
                 self.trigger_reopen_device = True
+
+            self._notifier_system = NotificationSystem()
 
     def open(self):
         """
@@ -265,11 +267,7 @@ class Decoder(object):
             self._last_message = time.time()
 
             with self.app.app_context():
-                try:
-                    self._notifier_system.send(ftype, **kwargs)
-
-                except KeyError, err:
-                    self.app.logger.error('Error: {0}'.format(err))
+                self._notifier_system.send(ftype, **kwargs)
 
             self.broadcast('event', kwargs)
 

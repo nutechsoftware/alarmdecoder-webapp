@@ -64,7 +64,7 @@ NOTIFICATIONS = {
     GOOGLETALK: ('googletalk', u'Google Talk'),
 }
 
-DEFAULT_SUBSCRIPTIONS = ['on_alarm', 'on_panic', 'on_fire', 'on_arm', 'on_disarm']
+DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
 
 SUBSCRIPTIONS = OrderedDict([
     (ALARM, 'Alarm system is triggered?'),

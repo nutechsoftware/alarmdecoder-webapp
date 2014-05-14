@@ -56,7 +56,7 @@
             <tbody>
             {% for message in messages %}
                 <tr>
-                    <td>{{ message.id }}</td>
+                    <td>{{ EVENT_TYPES[message.id] }}</td>
                     <td>
                         {{ message.text }}
                     </td>
