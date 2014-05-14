@@ -5,7 +5,6 @@ from flask.ext.login import login_required, current_user
 from wtforms import FormField
 
 from ..extensions import db
-from ..decorators import admin_required
 from ..settings import Setting
 from .forms import (CreateNotificationForm, EditNotificationForm,
                     EditNotificationMessageForm,
@@ -144,16 +143,20 @@ def remove(id):
 
 @notifications.route('/messages', methods=['GET'])
 @login_required
-@admin_required
 def messages():
+    if not current_user.is_admin():
+        abort(403)
+
     messages = NotificationMessage.query.all()
 
     return render_template('notifications/messages.html', messages=messages)
 
 @notifications.route('/messages/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def edit_message(id):
+    if not current_user.is_admin():
+        abort(403)
+
     message = NotificationMessage.query.filter_by(id=id).first_or_404()
     form = EditNotificationMessageForm()
 

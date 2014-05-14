@@ -2,4 +2,4 @@
 
 from .models import Notification, NotificationSetting
 from .views import notifications
-from .types import NotificationFactory
+from .types import NotificationSystem

@@ -1,34 +1,83 @@
 # -*- coding: utf-8 -*-
 
+from flask import current_app
 import smtplib
 from email.mime.text import MIMEText
 import sleekxmpp
 import json
 
-from .constants import EMAIL, GOOGLETALK
-from .models import Notification, NotificationSetting
+from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES
+from .models import Notification, NotificationSetting, NotificationMessage
+from ..extensions import db
+from ..log.models import EventLogEntry
+from ..zones import Zone
 
-class NotificationFactory(object):
-    @classmethod
-    def create(cls, id):
-        db_object = Notification.query.filter_by(id=id).first()
+class NotificationSystem(object):
+    def __init__(self):
+        self._notifiers = []
+        self._messages = DEFAULT_EVENT_MESSAGES
 
-        return TYPE_MAP[db_object.type](db_object)
+        self._init_notifiers()
+        self._init_messages()
 
-    @classmethod
-    def notifications(cls):
-        return [obj.id for obj in Notification.query.all()]
+    def send(self, type, **kwargs):
+        for n in self._notifiers:
+            if n.subscribes_to(type):
+                message = self._build_message(type, **kwargs)
+
+                if message:
+                    n.send(type, message)
+
+    def _init_notifiers(self):
+        self._notifiers = [LogNotification()]   # Force LogNotification to always be present
+
+        for n in Notification.query.all():
+            self._notifiers.append(TYPE_MAP[n.type](n))
+
+    def _init_messages(self):
+        messages = NotificationMessage.query.all()
+
+        for m in messages:
+            self._messages[m.id] = m.text
+
+    def _build_message(self, type, **kwargs):
+        message = self._messages.get(type, None)
+
+        if 'zone' in kwargs:
+            zone_name = Zone.get_name(kwargs['zone'])
+            kwargs['zone_name'] = zone_name if zone_name else '<unnamed>'
+
+        if message:
+            message = message.format(**kwargs)
+
+        return message
 
 class BaseNotification(object):
     def __init__(self, obj):
         if 'subscriptions' in obj.settings.keys():
-            self._subscriptions = json.loads(obj.settings['subscriptions'].value)
+            self._subscriptions = {int(k): v for k, v in json.loads(obj.settings['subscriptions'].value).iteritems()}
         else:
             self._subscriptions = {}
 
     def subscribes_to(self, type, value=None):
         if type in self._subscriptions.keys():
             return True
+
+        return False
+
+class LogNotification(object):
+    def __init__(self):
+        pass
+
+    def subscribes_to(self, type):
+        return True
+
+    def send(self, type, text):
+        with current_app.app_context():
+            current_app.logger.info('Event: {0}'.format(text))
+
+        db.session.add(EventLogEntry(type=type, message=text))
+        db.session.commit()
 
 class EmailNotification(BaseNotification):
     def __init__(self, obj):
@@ -42,7 +91,7 @@ class EmailNotification(BaseNotification):
         self.username = obj.settings['username'].value
         self.password = obj.settings['password'].value
 
-    def send(self, text):
+    def send(self, type, text):
         try:
             msg = MIMEText(text)
 
@@ -72,7 +121,7 @@ class GoogleTalkNotification(BaseNotification):
         self.destination = obj.settings['destination'].value
         self.client = None
 
-    def send(self, text):
+    def send(self, type, text):
         self.msg_to_send = text
         try:
             self.client = sleekxmpp.ClientXMPP(self.source, self.password)
