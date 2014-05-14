@@ -4,6 +4,9 @@
     -webkit-font-smoothing: antialiased;
 }
 
+* {
+    -webkit-user-select: none !important;
+}
 .container #keypad-buttons {
     text-align: center;
 }
