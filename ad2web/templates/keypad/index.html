@@ -72,6 +72,61 @@
             }
         }
 
+        function bindMouseDown(id, key, mobile_image, desktop_image )
+        {
+            $(id).on('mousedown', function() {
+                if( mobile )
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+                if( !tablet )
+                    decoder.emit('keypress', String(key));
+            });
+        }
+
+//had to break this out from mousedown so it doesn't fire twice on touch devices
+        function bindTouchStart(id, key, mobile_image, desktop_image )
+        {
+            $(id).on('touchstart', function() {
+                if( mobile)
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+                if( tablet )
+                    decoder.emit('keypress', String(key));
+            });
+        }
+
+        function bindMouseUpTouchEnd(id, mobile_image, desktop_image )
+        {
+            $(id).on('mouseup touchend', function() {
+                if( mobile )
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+
+            });
+        }
+
+        function bindButtonEvents(id, key, mobile_image_down, desktop_image_down, mobile_image_up, desktop_image_up )
+        {
+            bindMouseDown(id, key, mobile_image_down, desktop_image_down );
+            bindTouchStart(id, key, mobile_image_down, desktop_image_down );
+            bindMouseUpTouchEnd(id, mobile_image_up, desktop_image_up );
+        }
+
         //arrays of images to preload
         var ledImages = [
             "{{ url_for('static', filename='img/led-on-red.png') }}",
@@ -357,12 +412,10 @@
                         if(charCode == 56)
                         {
                             $('#button-star').trigger('mouseup');
-                            decoder.emit('keypress', '*');
                         }
                         if(charCode == 51)
                         {
                             $('#button-pound').trigger('mouseup');
-                            decoder.emit('keypress', '#');
                         }
                     }
                     else
@@ -455,310 +508,34 @@
                         if(charCode == 56)
                         {
                             $('#button-star').trigger('mousedown');
-                            decoder.emit('keypress', '*');
                         }
                         if(charCode == 51)
                         {
                             $('#button-pound').trigger('mousedown');
-                            decoder.emit('keypress', '#');
                         }
                     }
                     else
                     {
                         $('#button-' + realCharCode).trigger('mousedown');
-                        decoder.emit('keypress', realCharCode);
                     }
                 }
             });
-            $('#button-1').on('click', function() {
-                decoder.emit('keypress', '1');
-            });
 
-            $('#button-1').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[2] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[2] );
-                }
-	        });
+//bind our events to our buttons
+            bindButtonEvents('#button-1', '1', buttonImageListSmall[2], buttonImageListLarge[2], buttonImageListSmall[3], buttonImageListLarge[3] );
+            bindButtonEvents('#button-2', '2', buttonImageListSmall[4], buttonImageListLarge[4], buttonImageListSmall[5], buttonImageListLarge[5] );
+            bindButtonEvents('#button-3', '3', buttonImageListSmall[6], buttonImageListLarge[6], buttonImageListSmall[7], buttonImageListLarge[7] );
+            bindButtonEvents('#button-4', '4', buttonImageListSmall[8], buttonImageListLarge[8], buttonImageListSmall[9], buttonImageListLarge[9] );
+            bindButtonEvents('#button-5', '5', buttonImageListSmall[10], buttonImageListLarge[10], buttonImageListSmall[11], buttonImageListLarge[11] );
+            bindButtonEvents('#button-6', '6', buttonImageListSmall[12], buttonImageListLarge[12], buttonImageListSmall[13], buttonImageListLarge[13] );
+            bindButtonEvents('#button-7', '7', buttonImageListSmall[14], buttonImageListLarge[14], buttonImageListSmall[15], buttonImageListLarge[15] );
+            bindButtonEvents('#button-8', '8', buttonImageListSmall[16], buttonImageListLarge[16], buttonImageListSmall[17], buttonImageListLarge[17] );
+            bindButtonEvents('#button-9', '9', buttonImageListSmall[18], buttonImageListLarge[18], buttonImageListSmall[19], buttonImageListLarge[19] );
+            bindButtonEvents('#button-0', '0', buttonImageListSmall[0], buttonImageListLarge[0], buttonImageListSmall[1], buttonImageListLarge[1] );
+            bindButtonEvents('#button-star', '*', buttonImageListSmall[20], buttonImageListLarge[20], buttonImageListSmall[21], buttonImageListLarge[21] );
+            bindButtonEvents('#button-pound', '#', buttonImageListSmall[22], buttonImageListLarge[22], buttonImageListSmall[23], buttonImageListLarge[23] );
 
-	        $('#button-1').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[3] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[3] );
-                }
-            });
-
-            $('#button-2').on('click', function() {
-                decoder.emit('keypress', '2');
-            });
-            $('#button-2').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[4]);
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[4]);
-                }
-            });
-            $('#button-2').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[5] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[5] );
-                }
-            });
-            $('#button-3').on('click', function() {
-                decoder.emit('keypress', '3');
-            });
-            $('#button-3').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[6] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[6] );
-                }
-            });
-            $('#button-3').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[7] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[7] );
-                }
-            });
-
-            $('#button-4').on('click', function() {
-                decoder.emit('keypress', '4');
-            });
-            $('#button-4').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[8] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[8] );
-                }
-            });
-            $('#button-4').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[9] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[9] );
-                }
-            });
-
-            $('#button-5').on('click', function() {
-                decoder.emit('keypress', '5');
-            });
-            $('#button-5').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[10] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[10] );
-                }
-            });
-            $('#button-5').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[11] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[11] );
-                }
-            });
-
-            $('#button-6').on('click', function() {
-                decoder.emit('keypress', '6');
-            });
-            $('#button-6').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[12] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[12] );
-                }
-            });
-            $('#button-6').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[13] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[13] );
-                }
-            });
-
-            $('#button-7').on('click', function() {
-                decoder.emit('keypress', '7');
-            });
-            $('#button-7').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[14] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[14] );
-                }
-            });
-            $('#button-7').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[15] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[15] );
-                }
-            });
-
-            $('#button-8').on('click', function() {
-                decoder.emit('keypress', '8');
-            });
-            $('#button-8').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[16] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[16] );
-                }
-            });
-            $('#button-8').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[17] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[17] );
-                }
-            });
-
-            $('#button-9').on('click', function() {
-                decoder.emit('keypress', '9');
-            });
-            $('#button-9').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[18] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[18] );
-                }
-            });
-            $('#button-9').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[19] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[19] );
-                }
-            });
-
-            $('#button-0').on('click', function() {
-                decoder.emit('keypress', '0');
-            });
-            $('#button-0').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[0] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[0] );
-                }
-            });
-            $('#button-0').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[1] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[1] );
-                }
-            });
-
-            $('#button-star').on('click', function() {
-                decoder.emit('keypress', '*');
-            });
-            $('#button-star').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[20] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[20] );
-                }
-            });
-            $('#button-star').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[21] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[21] );
-                }
-            });
-
-            $('#button-pound').on('click', function() {
-                decoder.emit('keypress', '#');
-            });
-            $('#button-pound').on('mousedown touchstart', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[22] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[22] );
-                }
-            });
-            $('#button-pound').on('mouseup touchend', function() {
-                if( mobile )
-                {
-                    $(this).attr("src", buttonImageListSmall[23] );
-                }
-                else
-                {
-                    $(this).attr("src", buttonImageListLarge[23] );
-                }
-            });
-
+//set up confirmations for F1-F4
             $("#button-F1").confirm({
                 text: "Are you sure?",
                 title: "Call the Fire Department",
@@ -950,5 +727,4 @@
 {% block js_btm %}
 <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/fastclick.min.js') }}"></script>
 {% endblock %}
