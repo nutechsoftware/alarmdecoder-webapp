@@ -1,0 +1,14 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block pagejs %}
+<script type="text/javascript">
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    {{ render_form(url_for('notifications.edit_message', id=message_id), form) }}
+</div>
+{% endblock %}

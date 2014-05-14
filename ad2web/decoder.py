@@ -19,19 +19,18 @@ from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SocketDevice, SerialDevice
 from alarmdecoder.util import NoDeviceError, CommError
 
-from .log.models import EventLogEntry
-from .log.constants import *
 from .extensions import db
-from .notifications import NotificationFactory
-from .zones import Zone
+from .notifications import NotificationSystem
 from .settings.models import Setting
 from .certificate.models import Certificate
 from .updater import Updater
 
-CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
-                    ZONE_RESTORE, FIRE, PANIC]
+from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, FIRE,
+                                        BYPASS, BOOT, CONFIG_RECEIVED, ZONE_FAULT,
+                                        ZONE_RESTORE, LOW_BATTERY, PANIC,
+                                        RELAY_CHANGED)
 
-EVENTS = {
+EVENT_MAP = {
     ARM: 'on_arm',
     DISARM: 'on_disarm',
     POWER_CHANGED: 'on_power_changed',
@@ -45,22 +44,6 @@ EVENTS = {
     LOW_BATTERY: 'on_low_battery',
     PANIC: 'on_panic',
     RELAY_CHANGED: 'on_relay_changed'
-}
-
-EVENT_MESSAGES = {
-    ARM: 'The alarm was armed.',
-    DISARM: 'The alarm was disarmed.',
-    POWER_CHANGED: 'Power status has changed to {status}.',
-    ALARM: 'Alarm is triggered!',
-    FIRE: 'There is a fire!',
-    BYPASS: 'A zone has been bypassed.',
-    BOOT: 'The AlarmDecoder has finished booting.',
-    CONFIG_RECEIVED: 'AlarmDecoder has been configured.',
-    ZONE_FAULT: '{zone_name} ({zone}) has been faulted.',
-    ZONE_RESTORE: '{zone_name} ({zone}) has been restored.',
-    LOW_BATTERY: 'Low battery detected.',
-    PANIC: 'Panic!',
-    RELAY_CHANGED: 'A relay has changed.'
 }
 
 decodersocket = Blueprint('sock', __name__, url_prefix='/socket.io')
@@ -98,6 +81,7 @@ class Decoder(object):
             self._device_location = None
             self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
+            self._notifier_system = None
 
     def start(self):
         """
@@ -144,6 +128,8 @@ class Decoder(object):
 
             if device_type:
                 self.trigger_reopen_device = True
+
+            self._notifier_system = NotificationSystem()
 
     def open(self):
         """
@@ -217,7 +203,7 @@ class Decoder(object):
         self.device.on_close += self._on_device_close
 
         # Bind the event handler to all of our events.
-        for event, device_event_name in EVENTS.iteritems():
+        for event, device_event_name in EVENT_MAP.iteritems():
             device_handler = getattr(self.device, device_event_name)
             device_handler += build_event_handler(event)
 
@@ -281,18 +267,7 @@ class Decoder(object):
             self._last_message = time.time()
 
             with self.app.app_context():
-                if 'zone' in kwargs:
-                    zone_name = Zone.get_name(kwargs['zone'])
-                    kwargs['zone_name'] = zone_name if zone_name else '<unnamed>'
-
-                event_message = EVENT_MESSAGES[ftype].format(**kwargs)
-                if ftype in CRITICAL_EVENTS:
-                    for id in NotificationFactory.notifications():
-                        notifier = NotificationFactory.create(id)
-                        notifier.send('AlarmDecoder Event: {0}'.format(event_message))
-
-                db.session.add(EventLogEntry(type=ftype, message=event_message))
-                db.session.commit()
+                self._notifier_system.send(ftype, **kwargs)
 
             self.broadcast('event', kwargs)
 

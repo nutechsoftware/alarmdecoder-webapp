@@ -1,43 +1,51 @@
 # -*- coding: utf-8 -*-
 
+import json
 from flask.ext.wtf import Form
 from flask.ext.wtf.html5 import URLField, EmailField, TelField
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,
-        FileField, DecimalField, BooleanField, SelectField, FormField, FieldList)
+        FileField, DecimalField, BooleanField, SelectField, FormField, FieldList,
+        SelectMultipleField)
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
+from wtforms.widgets import ListWidget, CheckboxInput
+from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK)
+from .models import NotificationSetting
 
-from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, EMAIL, GOOGLETALK, POWER_CHANGED,
-         ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, ZONE_RESTORE, FIRE, PANIC, LRR, EXP, REL,
-         RFX, AUI, KPE, ALARM_EXIT_ERROR, TROUBLE, BYPASS, ACLOSS, LOWBAT, TEST_CALL, OPEN,
-         ARM_AWAY, RFLOWBAT, CANCEL, RESTORE, TROUBLE_RESTORE, BYPASS_RESTORE, AC_RESTORE,
-         LOWBAT_RESTORE, RFLOWBAT_RESTORE, TEST_RESTORE, ALARM_PANIC, ALARM_FIRE, ALARM_ENTRY,
-         ALARM_AUX, ALARM_AUDIBLE, ALARM_SILENT, ALARM_PERIMETER, CUSTOM_NOTIFICATION_EVENTS_TYPES, LRR_EVENTS_TYPES,
-         CUSTOM_NOTIFICATION_EVENTS, LRR_EVENTS)
+class MultiCheckboxField(SelectMultipleField):
+    """
+    A multiple-select, except displays a list of checkboxes.
 
-from .models import NotificationSetting, CustomNotification, CustomNotificationSetting
-
-class AppendMixin(object):
-    @classmethod
-    def append_field(cls, name, field):
-        setattr(cls, name, field)
-        return cls
+    Iterating the field will produce subfields, allowing custom rendering of
+    the enclosed checkbox fields.
+    """
+    widget = ListWidget(prefix_label=True)
+    option_widget = CheckboxInput()
 
 class CreateNotificationForm(Form):
     type = SelectField(u'Notification Type', choices=[nt for t, nt in NOTIFICATIONS.iteritems()])
 
     submit = SubmitField(u'Next')
 
+class EditNotificationMessageForm(Form):
+    id = HiddenField()
+    text = TextAreaField(u'Message Text', [Required(), Length(max=255)])
+
+    submit = SubmitField(u'Save')
+
 class EditNotificationForm(Form):
     type = HiddenField()
     description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')
+    subscriptions = MultiCheckboxField(u'Notify on..', choices=[(str(k), v) for k, v in SUBSCRIPTIONS.iteritems()])
 
-    def populate_settings(self, obj, id=None):
-        raise NotImplementedError()
+    def populate_settings(self, settings, id=None):
+        settings['subscriptions'] = self.populate_setting('subscriptions', json.dumps({str(k): True for k in self.subscriptions.data}))
 
     def populate_from_settings(self, id):
-        raise NotImplementedError()
+        subscriptions = self.populate_from_setting(id, 'subscriptions')
+        if subscriptions:
+            self.subscriptions.data = [k if v == True else False for k, v in json.loads(subscriptions).iteritems()]
 
     def populate_setting(self, name, value, id=None):
         if id is not None:
@@ -69,6 +77,8 @@ class EmailNotificationForm(EditNotificationForm):
     submit = SubmitField(u'Save')
 
     def populate_settings(self, settings, id=None):
+        EditNotificationForm.populate_settings(self, settings, id)
+
         settings['source'] = self.populate_setting('source', self.source.data)
         settings['destination'] = self.populate_setting('destination', self.destination.data)
         settings['server'] = self.populate_setting('server', self.server.data)
@@ -76,6 +86,8 @@ class EmailNotificationForm(EditNotificationForm):
         settings['password'] = self.populate_setting('password', self.password.data)
 
     def populate_from_settings(self, id):
+        EditNotificationForm.populate_from_settings(self, id)
+
         self.source.data = self.populate_from_setting(id, 'source')
         self.destination.data = self.populate_from_setting(id, 'destination')
         self.server.data = self.populate_from_setting(id, 'server')
@@ -98,60 +110,3 @@ class GoogleTalkNotificationForm(EditNotificationForm):
         self.source.data = self.populate_from_setting(id, 'source')
         self.password.data = self.populate_from_setting(id, 'password')
         self.destination.data = self.populate_from_setting(id, 'destination')
-
-class CreateCustomNotificationForm(Form):
-    notification_event = SelectField(u'Event Type', choices=[nt for t, nt in CUSTOM_NOTIFICATION_EVENTS.iteritems()])
-
-    submit = SubmitField(u'Next')
-
-class PowerChangedNotificationForm(Form):
-    message = TextField(u'Alert Message', [Required(), Length(max=255)], default='The Alarm has had a power changed event', description=u'Message you want sent in an alert')
-    submit = SubmitField(u'Save')
-
-    notification_event = ''
-
-class AlarmNotificationForm(Form):
-    notification_event = ''
-
-class BypassNotificationForm(Form):
-    zone = TextField(u'Zone', [Required(), Length(max=4)], description=u'The Zone you want to be notified on bypass.')
-    message = TextField(u'Alert Message', [Required(), Length(max=255)], default=u'The Alarm has had a zone bypassed.', description=u'Message you want sent in an alert')
-
-    submit = SubmitField(u'Save')
-    notification_event = ''
-
-class ArmNotificationForm(Form):
-    notification_event = ''
-
-class DisarmNotificationForm(Form):
-    notification_event = ''
-
-class ZoneFaultNotificationForm(Form):
-    notification_event = ''
-
-class ZoneRestoreNotificationForm(Form):
-    notification_event = ''
-
-class FireNotificationForm(Form):
-    notification_event = ''
-
-class PanicNotificationForm(Form):
-    notification_event = ''
-
-class LRRNotificationForm(Form):
-    notification_event = ''
-
-class EXPNotificationForm(Form):
-    notification_event = ''
-
-class RELNotificationForm(Form):
-    notification_event = ''
-
-class RFXNotificationForm(Form):
-    notification_event = ''
-
-class AUINotificationForm(Form):
-    notification_event = ''
-
-class KPENotificationForm(Form):
-    notification_event = ''

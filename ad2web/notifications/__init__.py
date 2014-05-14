@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .models import Notification, NotificationSetting, CustomNotification, CustomNotificationSetting
+from .models import Notification, NotificationSetting
 from .views import notifications
-from .types import NotificationFactory
+from .types import NotificationSystem

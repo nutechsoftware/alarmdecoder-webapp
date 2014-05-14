@@ -1,50 +1,58 @@
 # -*- coding: utf-8 -*-
 
+from collections import OrderedDict
+
+ARM = 0
+DISARM = 1
+POWER_CHANGED = 2
+ALARM = 3
+FIRE = 4
+BYPASS = 5
+BOOT = 6
+CONFIG_RECEIVED = 7
+ZONE_FAULT = 8
+ZONE_RESTORE = 9
+LOW_BATTERY = 10
+PANIC = 11
+RELAY_CHANGED = 12
+
+CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
+                    ZONE_RESTORE, FIRE, PANIC]
+
+DEFAULT_EVENT_MESSAGES = {
+    ARM: 'The alarm system has been armed.',
+    DISARM: 'The alarm system has been disarmed.',
+    POWER_CHANGED: 'Power status has changed to {status}.',
+    ALARM: 'Alarm is triggered!',
+    FIRE: 'There is a fire!',
+    BYPASS: 'A zone has been bypassed.',
+    BOOT: 'The AlarmDecoder has finished booting.',
+    #CONFIG_RECEIVED: 'AlarmDecoder has been configured.',
+    ZONE_FAULT: 'Zone {zone_name} ({zone}) has been faulted.',
+    ZONE_RESTORE: 'Zone {zone_name} ({zone}) has been restored.',
+    LOW_BATTERY: 'Low battery detected.',
+    PANIC: 'Panic!',
+    RELAY_CHANGED: 'A relay has changed.'
+}
+
+EVENT_TYPES = {
+    ARM: 'arm',
+    DISARM: 'disarm',
+    POWER_CHANGED: 'power changed',
+    ALARM: 'alarm',
+    FIRE: 'fire',
+    BYPASS: 'bypass',
+    BOOT: 'boot',
+    CONFIG_RECEIVED: 'config received',
+    ZONE_FAULT: 'zone fault',
+    ZONE_RESTORE: 'zone restore',
+    LOW_BATTERY: 'low battery',
+    PANIC: 'panic',
+    RELAY_CHANGED: 'relay changed'
+}
+
 EMAIL = 0
 GOOGLETALK = 1
-
-# Alarm Event/Message Types
-POWER_CHANGED = 0
-ALARM = 1
-BYPASS = 2
-ARM = 3
-DISARM = 4
-ZONE_FAULT = 5
-ZONE_RESTORE = 6
-FIRE = 7
-PANIC = 8
-LRR = 9
-EXP = 10
-REL = 11
-RFX = 12
-AUI = 13
-KPE = 14
-
-# LRR Event Types
-ALARM_EXIT_ERROR = 0
-TROUBLE = 1
-BYPASS = 2
-ACLOSS = 3
-LOWBAT = 4
-TEST_CALL = 5
-OPEN = 6
-ARM_AWAY = 7
-RFLOWBAT = 8
-CANCEL = 9
-RESTORE = 10
-TROUBLE_RESTORE = 11
-BYPASS_RESTORE = 12
-AC_RESTORE = 13
-LOWBAT_RESTORE = 14
-RFLOWBAT_RESTORE = 15
-TEST_RESTORE = 16
-ALARM_PANIC = 17
-ALARM_FIRE = 18
-ALARM_ENTRY = 19
-ALARM_AUX = 20
-ALARM_AUDIBLE = 21
-ALARM_SILENT = 22
-ALARM_PERIMETER = 23
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
@@ -56,93 +64,19 @@ NOTIFICATIONS = {
     GOOGLETALK: ('googletalk', u'Google Talk'),
 }
 
-CUSTOM_NOTIFICATION_EVENTS_TYPES = {
-    POWER_CHANGED: 'powerchanged',
-    ALARM: 'alarm',
-    BYPASS: 'bypass',
-    ARM: 'arm',
-    DISARM: 'disarm',
-    ZONE_FAULT: 'zonefault',
-    ZONE_RESTORE: 'zonerestore',
-    FIRE: 'fire',
-    PANIC: 'panic',
-    LRR: 'lrrmessage',
-    EXP: 'expmessage',
-    REL: 'relmessage',
-    RFX: 'rfxmessage',
-    AUI: 'auimessage',
-    KPE: 'keypressevent',
-}
+DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
 
-CUSTOM_NOTIFICATION_EVENTS = {
-    POWER_CHANGED: ('powerchanged', u'Power Changed'),
-    ALARM: ('alarm', u'Alarm'),
-    BYPASS: ('bypass', u'Bypass'),
-    ARM: ('arm', u'Arm'),
-    DISARM: ('disarm', u'Disarm'),
-    ZONE_FAULT: ('zonefault', u'Zone Fault'),
-    ZONE_RESTORE: ('zonerestore', u'Zone Restore'),
-    FIRE: ('fire', u'Fire'),
-    PANIC: ('panic', u'Panic'),
-    LRR: ('lrrmessage', u'LRR Message'),
-    EXP: ('expmessage', u'EXP Message'),
-    REL: ('relmessage', u'REL Message'),
-    RFX: ('rfxmessage', u'RFX Message'),
-    AUI: ('auimessage', u'AUI Message'),
-    KPE: ('keypressevent', u'Keypress Event'),
-}
-
-LRR_EVENTS_TYPES = {
-    ALARM_EXIT_ERROR: 'alarmexiterror',
-    TROUBLE: 'trouble',
-    BYPASS: 'bypass',
-    ACLOSS: 'acloss',
-    LOWBAT: 'lowbattery',
-    TEST_CALL: 'testcall',
-    OPEN: 'open',
-    ARM_AWAY: 'armaway',
-    RFLOWBAT: 'rflowbat',
-    CANCEL: 'cancel',
-    RESTORE: 'restore',
-    TROUBLE_RESTORE: 'troublerestore',
-    BYPASS_RESTORE: 'bypassrestore',
-    AC_RESTORE: 'acrestore',
-    LOWBAT_RESTORE: 'lowbatrestore',
-    RFLOWBAT_RESTORE: 'rflowbatrestore',
-    TEST_RESTORE: 'testrestore',
-    ALARM_PANIC: 'alarmpanic',
-    ALARM_FIRE: 'alarmfire',
-    ALARM_ENTRY: 'alarmentry',
-    ALARM_AUX: 'alarmaux',
-    ALARM_AUDIBLE: 'alarmaudible',
-    ALARM_SILENT: 'alarmsilent',
-    ALARM_PERIMETER: 'alarmperimeter',
-}
-
-LRR_EVENTS = {
-    ALARM_EXIT_ERROR: ('alarmexiterror', u'Alarm Exit Error'),
-    TROUBLE: ('trouble', u'Trouble'),
-    BYPASS: ('bypass', u'Bypass'),
-    ACLOSS: ('acloss', u'AC Loss'),
-    LOWBAT: ('lowbattery' u'Low Battery'),
-    TEST_CALL: ('testcall', u'Test Call'),
-    OPEN: ('open', u'Open'),
-    ARM_AWAY: ('armaway', u'Arm Away'),
-    RFLOWBAT: ('rflowbat', u'RF Low Battery'),
-    CANCEL: ('cancel', u'Cancelled'),
-    RESTORE: ('restore', u'Restored'),
-    TROUBLE_RESTORE: ('troublerestore', u'Trouble Event Restore'),
-    BYPASS_RESTORE: ('bypassrestore', u'Bypassed Zone Restore'),
-    AC_RESTORE: ('acrestore', u'AC Power Restore'),
-    LOWBAT_RESTORE: ('lowbatrestore', u'Low Battery Restore'),
-    RFLOWBAT_RESTORE: ('rflowbatrestore', u'RF Low Battery Restore'),
-    TEST_RESTORE: ('testrestore', u'Test Mode Zone Restore'),
-    ALARM_PANIC: ('alarmpanic', u'Panic'),
-    ALARM_FIRE: ('alarmfire', u'Fire'),
-    ALARM_ENTRY: ('alarmentry', u'Entry'),
-    ALARM_AUX: ('alarmaux', u'Aux'),
-    ALARM_AUDIBLE: ('alarmaudible', u'Audible Alarm'),
-    ALARM_SILENT: ('alarmsilent', u'Silent Alarm'),
-    ALARM_PERIMETER: ('alarmperimeter', u'Perimeter Alarm'),
-}
-
+SUBSCRIPTIONS = OrderedDict([
+    (ALARM, 'Alarm system is triggered?'),
+    (PANIC, 'A panic has been detected?'),
+    (FIRE, 'A fire is detected?'),
+    (ARM, 'Alarm system is armed?'),
+    (DISARM, 'Alarm system is disarmed?'),
+    (ZONE_FAULT, 'A zone has faulted?'),
+    (ZONE_RESTORE, 'A zone has been restored?'),
+    (BYPASS, 'A zone has been bypassed?'),
+    (POWER_CHANGED, 'Power status has changed?'),
+    (LOW_BATTERY, 'A low battery has been detected?'),
+    (BOOT, 'The AlarmDecoder has rebooted?'),
+    (RELAY_CHANGED, 'A relay has been changed?'),
+])

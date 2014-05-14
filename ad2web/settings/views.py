@@ -192,6 +192,9 @@ def _import_model(tar, tarinfo, model):
             if isinstance(model.__table__.columns[k].type, db.DateTime) and v is not None:
                 v = datetime.strptime(v, '%Y-%m-%d %H:%M:%S.%f')
 
-            setattr(m, k, v)
+            if k == 'password' and model == User:
+                setattr(m, '_password', v)
+            else:
+                setattr(m, k, v)
 
         db.session.add(m)

@@ -2,10 +2,6 @@
 
 {% extends 'settings/layout.html' %}
 
-{% block css %}
- <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
-{% endblock %}
-
 {% block pagejs %}
 <script type="text/javascript">
     $(document).ready(function(){
@@ -28,7 +24,6 @@
                 "sEmptyTable": " ",
             },
             "aoColumns": [
-                { "sWidth": "15%" },
                 { "sWidth": "15%" },
                 null,
                 { "sWidth": "10%" },
@@ -54,36 +49,22 @@
             <thead>
                 <tr>
                     <th>Type</th>
-                    <th>Owner</th>
-                    <th>Description</th>
+                    <th>Message Text</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-            {% for notification in notifications %}
-                {% if notification.user == current_user or current_user.is_admin() %}
+            {% for message in messages %}
                 <tr>
-                    <td>{{ TYPES[notification.type] }}</td>
-                    <td>{{ notification.user.name }}</td>
+                    <td>{{ EVENT_TYPES[message.id] }}</td>
                     <td>
-                        <a href="{{ url_for('notifications.edit', id=notification.id) }}">{{ notification.description }}</a>
+                        {{ message.text }}
                     </td>
-                    <td><a href="{{ url_for('notifications.remove', id=notification.id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a></td>
+                    <td><a href="{{ url_for('notifications.edit_message', id=message.id) }}">Edit</a>
                 </tr>
-                {% endif %}
             {% endfor %}
             </tbody>
         </table>
     </div>
-    <br>
-    <a id="clear" class="btn btn-primary" href="{{ url_for('notifications.create') }}">New Notification</a>
-    <a class="btn" href="{{ url_for('notifications.messages') }}">Customize Messages</a>
 </div>
-{% endblock %}
-
-{% block js_btm %}
-<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
 {% endblock %}
