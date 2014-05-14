@@ -28,6 +28,12 @@ class CreateNotificationForm(Form):
 
     submit = SubmitField(u'Next')
 
+class EditNotificationMessageForm(Form):
+    id = HiddenField()
+    text = TextAreaField(u'Message Text', [Required(), Length(max=255)])
+
+    submit = SubmitField(u'Save')
+
 class EditNotificationForm(Form):
     type = HiddenField()
     description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')

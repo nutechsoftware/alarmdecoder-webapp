@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, current_app, request, flash, redirect, url_for, abort
+from flask import (Blueprint, render_template, current_app, request, flash,
+                    redirect, url_for, abort)
 from flask.ext.login import login_required, current_user
 
 from wtforms import FormField
@@ -6,18 +7,23 @@ from wtforms import FormField
 from ..extensions import db
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import (CreateNotificationForm, EditNotificationForm, EmailNotificationForm, GoogleTalkNotificationForm)
+from .forms import (CreateNotificationForm, EditNotificationForm,
+                    EditNotificationMessageForm,
+                    EmailNotificationForm, GoogleTalkNotificationForm)
 
-from .models import Notification, NotificationSetting
+from .models import Notification, NotificationSetting, NotificationMessage
 
-from .constants import (NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK)
+from .constants import (NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, EMAIL,
+                        GOOGLETALK)
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
     'googletalk': (GOOGLETALK, GoogleTalkNotificationForm),
 }
 
-notifications = Blueprint('notifications', __name__, url_prefix='/settings/notifications')
+notifications = Blueprint('notifications',
+                            __name__,
+                            url_prefix='/settings/notifications')
 
 @notifications.context_processor
 def notifications_context_processor():
@@ -32,7 +38,10 @@ def index():
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
     notification_list = Notification.query.all()
 
-    return render_template('notifications/index.html', notifications=notification_list, active='notifications', ssl=use_ssl)
+    return render_template('notifications/index.html',
+                            notifications=notification_list,
+                            active='notifications',
+                            ssl=use_ssl)
 
 @notifications.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -62,7 +71,12 @@ def edit(id):
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
-    return render_template('notifications/edit.html', form=form, id=id, notification=notification, active='notifications', ssl=use_ssl)
+    return render_template('notifications/edit.html',
+                            form=form,
+                            id=id,
+                            notification=notification,
+                            active='notifications',
+                            ssl=use_ssl)
 
 @notifications.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -70,11 +84,15 @@ def create():
     form = CreateNotificationForm()
 
     if form.validate_on_submit():
-        return redirect(url_for('notifications.create_by_type', type=form.type.data))
+        return redirect(url_for('notifications.create_by_type',
+                        type=form.type.data))
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
-    return render_template('notifications/create.html', form=form, active='notifications', ssl=use_ssl)
+    return render_template('notifications/create.html',
+                            form=form,
+                            active='notifications',
+                            ssl=use_ssl)
 
 @notifications.route('/create/<string:type>', methods=['GET', 'POST'])
 @login_required
@@ -105,7 +123,11 @@ def create_by_type(type):
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
-    return render_template('notifications/create_by_type.html', form=form, type=type, active='notifications', ssl=use_ssl)
+    return render_template('notifications/create_by_type.html',
+                            form=form,
+                            type=type,
+                            active='notifications',
+                            ssl=use_ssl)
 
 @notifications.route('/remove/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -119,3 +141,35 @@ def remove(id):
 
     flash('Notification deleted.', 'success')
     return redirect(url_for('notifications.index'))
+
+@notifications.route('/messages', methods=['GET'])
+@login_required
+@admin_required
+def messages():
+    messages = NotificationMessage.query.all()
+
+    return render_template('notifications/messages.html', messages=messages)
+
+@notifications.route('/messages/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_message(id):
+    message = NotificationMessage.query.filter_by(id=id).first_or_404()
+    form = EditNotificationMessageForm()
+
+    if not form.is_submitted():
+        form.id.data = message.id
+        form.text.data = message.text
+    else:
+        message.text = form.text.data
+
+        db.session.add(message)
+        db.session.commit()
+
+        flash('The notification message has been updated.', 'success')
+
+        return redirect(url_for('notifications.messages'))
+
+    return render_template('notifications/edit_message.html',
+                            form=form,
+                            message_id=message.id)
