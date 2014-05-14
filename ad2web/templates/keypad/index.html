@@ -57,6 +57,152 @@
             }
         }
 
+        //preload our images into cache
+        function preloadImages(array)
+        {
+            if( !preloadImages.list)
+            {
+                preloadImages.list = [];
+            }
+            for( var i = 0; i < array.length; i++ )
+            {
+                var img = new Image();
+                img.src = array[i];
+                preloadImages.list.push(img);   
+            }
+        }
+
+        function bindMouseDown(id, key, mobile_image, desktop_image )
+        {
+            $(id).on('mousedown', function() {
+                if( mobile )
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+                if( !tablet )
+                    decoder.emit('keypress', String(key));
+            });
+        }
+
+//had to break this out from mousedown so it doesn't fire twice on touch devices
+        function bindTouchStart(id, key, mobile_image, desktop_image )
+        {
+            $(id).on('touchstart', function() {
+                if( mobile)
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+                if( tablet )
+                    decoder.emit('keypress', String(key));
+            });
+        }
+
+        function bindMouseUpTouchEnd(id, mobile_image, desktop_image )
+        {
+            $(id).on('mouseup touchend', function() {
+                if( mobile )
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+
+            });
+        }
+
+        function bindButtonEvents(id, key, mobile_image_down, desktop_image_down, mobile_image_up, desktop_image_up )
+        {
+            bindMouseDown(id, key, mobile_image_down, desktop_image_down );
+            bindTouchStart(id, key, mobile_image_down, desktop_image_down );
+            bindMouseUpTouchEnd(id, mobile_image_up, desktop_image_up );
+        }
+
+        //arrays of images to preload
+        var ledImages = [
+            "{{ url_for('static', filename='img/led-on-red.png') }}",
+            "{{ url_for('static', filename='img/led-off.png') }}",
+            "{{ url_for('static', filename='img/led-on.png') }}"
+        ];
+
+        var buttonImageListLarge = [
+            "{{ url_for('static', filename='img/0-large-on.png') }}",
+            "{{ url_for('static', filename='img/0-large.png') }}",
+            "{{ url_for('static', filename='img/1-large-on.png') }}",
+            "{{ url_for('static', filename='img/1-large.png') }}",
+            "{{ url_for('static', filename='img/2-large-on.png') }}",
+            "{{ url_for('static', filename='img/2-large.png') }}",
+            "{{ url_for('static', filename='img/3-large-on.png') }}",
+            "{{ url_for('static', filename='img/3-large.png') }}",
+            "{{ url_for('static', filename='img/4-large-on.png') }}",
+            "{{ url_for('static', filename='img/4-large.png') }}",
+            "{{ url_for('static', filename='img/5-large-on.png') }}",
+            "{{ url_for('static', filename='img/5-large.png') }}",
+            "{{ url_for('static', filename='img/6-large-on.png') }}",
+            "{{ url_for('static', filename='img/6-large.png') }}",
+            "{{ url_for('static', filename='img/7-large-on.png') }}",
+            "{{ url_for('static', filename='img/7-large.png') }}",
+            "{{ url_for('static', filename='img/8-large-on.png') }}",
+            "{{ url_for('static', filename='img/8-large.png') }}",
+            "{{ url_for('static', filename='img/9-large-on.png') }}",
+            "{{ url_for('static', filename='img/9-large.png') }}",
+            "{{ url_for('static', filename='img/star-large-on.png') }}",
+            "{{ url_for('static', filename='img/star-large.png') }}",
+            "{{ url_for('static', filename='img/pound-large-on.png') }}",
+            "{{ url_for('static', filename='img/pound-large.png') }}",
+            "{{ url_for('static', filename='img/f1-fire-on.png') }}",
+            "{{ url_for('static', filename='img/f1-fire.png') }}",
+            "{{ url_for('static', filename='img/f2-police-on.png') }}",
+            "{{ url_for('static', filename='img/f2-police.png') }}",
+            "{{ url_for('static', filename='img/f3-medical-on.png') }}",
+            "{{ url_for('static', filename='img/f3-medical.png') }}",
+            "{{ url_for('static', filename='img/f4-led-text-on.png') }}",
+            "{{ url_for('static', filename='img/f4-led-text.png') }}"
+        ];
+
+        var buttonImageListSmall = [
+            "{{ url_for('static', filename='img/0-small-on.png') }}",
+            "{{ url_for('static', filename='img/0-small.png') }}",
+            "{{ url_for('static', filename='img/1-small-on.png') }}",
+            "{{ url_for('static', filename='img/1-small.png') }}",
+            "{{ url_for('static', filename='img/2-small-on.png') }}",
+            "{{ url_for('static', filename='img/2-small.png') }}",
+            "{{ url_for('static', filename='img/3-small-on.png') }}",
+            "{{ url_for('static', filename='img/3-small.png') }}",
+            "{{ url_for('static', filename='img/4-small-on.png') }}",
+            "{{ url_for('static', filename='img/4-small.png') }}",
+            "{{ url_for('static', filename='img/5-small-on.png') }}",
+            "{{ url_for('static', filename='img/5-small.png') }}",
+            "{{ url_for('static', filename='img/6-small-on.png') }}",
+            "{{ url_for('static', filename='img/6-small.png') }}",
+            "{{ url_for('static', filename='img/7-small-on.png') }}",
+            "{{ url_for('static', filename='img/7-small.png') }}",
+            "{{ url_for('static', filename='img/8-small-on.png') }}",
+            "{{ url_for('static', filename='img/8-small.png') }}",
+            "{{ url_for('static', filename='img/9-small-on.png') }}",
+            "{{ url_for('static', filename='img/9-small.png') }}",
+            "{{ url_for('static', filename='img/star-small-on.png') }}",
+            "{{ url_for('static', filename='img/star-small.png') }}",
+            "{{ url_for('static', filename='img/pound-small-on.png') }}",
+            "{{ url_for('static', filename='img/pound-small.png') }}",
+            "{{ url_for('static', filename='img/f1-fire-small-on.png') }}",
+            "{{ url_for('static', filename='img/f1-fire-small.png') }}",
+            "{{ url_for('static', filename='img/f2-police-small-on.png') }}",
+            "{{ url_for('static', filename='img/f2-police-small.png') }}",
+            "{{ url_for('static', filename='img/f3-medical-small-on.png') }}",
+            "{{ url_for('static', filename='img/f3-medical-small.png') }}",
+            "{{ url_for('static', filename='img/f4-led-text-small-on.png') }}",
+            "{{ url_for('static', filename='img/f4-led-text-small.png') }}"
+        ];
         //setup audio beeping
         var beep1 = new Audio("{{ url_for('static', filename='sounds/1beep.wav') }}");
         var beep2 = new Audio("{{ url_for('static', filename='sounds/2beep.wav') }}");
@@ -73,6 +219,54 @@
             mobile = isMobile();
             tablet = isTablet();
 
+            $(function() {
+                FastClick.attach(document.body);
+            });
+            //preload led images
+            preloadImages(ledImages);
+
+            //if mobile only preload small images, otherwise large
+            if( mobile )
+            {
+                preloadImages(buttonImageListSmall);
+            }
+            else
+            {
+                preloadImages(buttonImageListLarge);
+            }
+
+            //set image sources for buttons after preloaded
+            if( mobile )
+            {
+                $('#button-0').attr("src", buttonImageListSmall[1]);
+                $('#button-1').attr("src", buttonImageListSmall[3]);
+                $('#button-2').attr("src", buttonImageListSmall[5]);
+                $('#button-3').attr("src", buttonImageListSmall[7]);
+                $('#button-4').attr("src", buttonImageListSmall[9]);
+                $('#button-5').attr("src", buttonImageListSmall[11]);
+                $('#button-6').attr("src", buttonImageListSmall[13]);
+                $('#button-7').attr("src", buttonImageListSmall[15]);
+                $('#button-8').attr("src", buttonImageListSmall[17]);
+                $('#button-9').attr("src", buttonImageListSmall[19]);
+                $('#button-star').attr("src", buttonImageListSmall[21]);
+                $('#button-pound').attr("src", buttonImageListSmall[23]);
+            }
+            else
+            {
+                $('#button-0').attr("src", buttonImageListLarge[1]);
+                $('#button-1').attr("src", buttonImageListLarge[3]);
+                $('#button-2').attr("src", buttonImageListLarge[5]);
+                $('#button-3').attr("src", buttonImageListLarge[7]);
+                $('#button-4').attr("src", buttonImageListLarge[9]);
+                $('#button-5').attr("src", buttonImageListLarge[11]);
+                $('#button-6').attr("src", buttonImageListLarge[13]);
+                $('#button-7').attr("src", buttonImageListLarge[15]);
+                $('#button-8').attr("src", buttonImageListLarge[17]);
+                $('#button-9').attr("src", buttonImageListLarge[19]);
+                $('#button-star').attr("src", buttonImageListLarge[21]);
+                $('#button-pound').attr("src", buttonImageListLarge[23]);
+            }
+
             //check to see if we're going to play sounds or not if we've set the checkbox
             if( storageSupported() )
             {
@@ -84,6 +278,7 @@
                 else
                     $('#check-mute').prop('checked', false);
             }
+            //handle messages from the AlarmDecoder
             PubSub.subscribe('message', function(type, msg) {
                 if( msg.message_type == 'panel')
                 {
@@ -156,19 +351,19 @@
 
                     if( armed )
                     {
-                        $('#status-image1').attr("src", "{{ url_for('static', filename='img/led-on-red.png') }}");
+                        $('#status-image1').attr("src", ledImages[0]);
                     }
                     else
                     {
-                        $('#status-image1').attr("src", "{{ url_for('static', filename='img/led-off.png') }}");
+                        $('#status-image1').attr("src", ledImages[1]);
                     }
                     if( ready )
                     {
-                        $('#status-image2').attr("src", "{{ url_for('static', filename='img/led-on.png') }}");
+                        $('#status-image2').attr("src", ledImages[2]);
                     }
                     else
                     {
-                        $('#status-image2').attr("src", "{{ url_for('static', filename='img/led-off.png') }}");
+                        $('#status-image2').attr("src", ledImages[1]);
                     }
                     if( lines[0] != '' )
                     {
@@ -217,12 +412,10 @@
                         if(charCode == 56)
                         {
                             $('#button-star').trigger('mouseup');
-                            decoder.emit('keypress', '*');
                         }
                         if(charCode == 51)
                         {
                             $('#button-pound').trigger('mouseup');
-                            decoder.emit('keypress', '#');
                         }
                     }
                     else
@@ -315,307 +508,34 @@
                         if(charCode == 56)
                         {
                             $('#button-star').trigger('mousedown');
-                            decoder.emit('keypress', '*');
                         }
                         if(charCode == 51)
                         {
                             $('#button-pound').trigger('mousedown');
-                            decoder.emit('keypress', '#');
                         }
                     }
                     else
                     {
                         $('#button-' + realCharCode).trigger('mousedown');
-                        decoder.emit('keypress', realCharCode);
                     }
                 }
             });
-            $('#button-1').on('click', function() {
-                decoder.emit('keypress', '1');
-            });
-            $('#button-1').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/1-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/1-large-on.png') }}) no-repeat");
-                }
-	        });
-	        $('#button-1').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/1-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/1-large.png') }}) no-repeat");
-                }
-            });
-            $('#button-2').on('click', function() {
-                decoder.emit('keypress', '2');
-            });
-            $('#button-2').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/2-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-    		        $(this).css('background', "url({{ url_for('static', filename='img/2-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-2').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/2-small.png') }}) no-repeat");
-                }
-                else
-                {
-    		        $(this).css('background', "url({{ url_for('static', filename='img/2-large.png') }}) no-repeat");
-                }
-            });
-            $('#button-3').on('click', function() {
-                decoder.emit('keypress', '3');
-            });
-            $('#button-3').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/3-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/3-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-3').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/3-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/3-large.png') }}) no-repeat");
-                }
-            });
 
-            $('#button-4').on('click', function() {
-                decoder.emit('keypress', '4');
-            });
-            $('#button-4').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/4-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/4-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-4').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/4-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/4-large.png') }}) no-repeat");
-                }
-            });
+//bind our events to our buttons
+            bindButtonEvents('#button-1', '1', buttonImageListSmall[2], buttonImageListLarge[2], buttonImageListSmall[3], buttonImageListLarge[3] );
+            bindButtonEvents('#button-2', '2', buttonImageListSmall[4], buttonImageListLarge[4], buttonImageListSmall[5], buttonImageListLarge[5] );
+            bindButtonEvents('#button-3', '3', buttonImageListSmall[6], buttonImageListLarge[6], buttonImageListSmall[7], buttonImageListLarge[7] );
+            bindButtonEvents('#button-4', '4', buttonImageListSmall[8], buttonImageListLarge[8], buttonImageListSmall[9], buttonImageListLarge[9] );
+            bindButtonEvents('#button-5', '5', buttonImageListSmall[10], buttonImageListLarge[10], buttonImageListSmall[11], buttonImageListLarge[11] );
+            bindButtonEvents('#button-6', '6', buttonImageListSmall[12], buttonImageListLarge[12], buttonImageListSmall[13], buttonImageListLarge[13] );
+            bindButtonEvents('#button-7', '7', buttonImageListSmall[14], buttonImageListLarge[14], buttonImageListSmall[15], buttonImageListLarge[15] );
+            bindButtonEvents('#button-8', '8', buttonImageListSmall[16], buttonImageListLarge[16], buttonImageListSmall[17], buttonImageListLarge[17] );
+            bindButtonEvents('#button-9', '9', buttonImageListSmall[18], buttonImageListLarge[18], buttonImageListSmall[19], buttonImageListLarge[19] );
+            bindButtonEvents('#button-0', '0', buttonImageListSmall[0], buttonImageListLarge[0], buttonImageListSmall[1], buttonImageListLarge[1] );
+            bindButtonEvents('#button-star', '*', buttonImageListSmall[20], buttonImageListLarge[20], buttonImageListSmall[21], buttonImageListLarge[21] );
+            bindButtonEvents('#button-pound', '#', buttonImageListSmall[22], buttonImageListLarge[22], buttonImageListSmall[23], buttonImageListLarge[23] );
 
-            $('#button-5').on('click', function() {
-                decoder.emit('keypress', '5');
-            });
-            $('#button-5').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/5-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/5-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-5').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/5-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/5-large.png') }}) no-repeat");
-                }
-            });
-
-            $('#button-6').on('click', function() {
-                decoder.emit('keypress', '6');
-            });
-            $('#button-6').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/6-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/6-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-6').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/6-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/6-large.png') }}) no-repeat");
-                }
-            });
-
-            $('#button-7').on('click', function() {
-                decoder.emit('keypress', '7');
-            });
-            $('#button-7').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/7-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/7-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-7').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/7-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/7-large.png') }}) no-repeat");
-                }
-            });
-
-            $('#button-8').on('click', function() {
-                decoder.emit('keypress', '8');
-            });
-            $('#button-8').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/8-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/8-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-8').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/8-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/8-large.png') }}) no-repeat");
-                }
-            });
-
-            $('#button-9').on('click', function() {
-                decoder.emit('keypress', '9');
-            });
-            $('#button-9').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/9-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/9-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-9').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/9-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/9-large.png') }}) no-repeat");
-                }
-            });
-
-            $('#button-0').on('click', function() {
-                decoder.emit('keypress', '0');
-            });
-            $('#button-0').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/0-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/0-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-0').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/0-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/0-large.png') }}) no-repeat");
-                }
-            });
-
-            $('#button-star').on('click', function() {
-                decoder.emit('keypress', '*');
-            });
-            $('#button-star').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/star-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/star-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-star').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/star-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/star-large.png') }}) no-repeat");
-                }
-            });
-
-            $('#button-pound').on('click', function() {
-                decoder.emit('keypress', '#');
-            });
-            $('#button-pound').on('mousedown', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/pound-small-on.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/pound-large-on.png') }}) no-repeat");
-                }
-            });
-            $('#button-pound').on('mouseup', function() {
-                if( mobile )
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/pound-small.png') }}) no-repeat");
-                }
-                else
-                {
-                    $(this).css('background', "url({{ url_for('static', filename='img/pound-large.png') }}) no-repeat");
-                }
-            });
-
+//set up confirmations for F1-F4
             $("#button-F1").confirm({
                 text: "Are you sure?",
                 title: "Call the Fire Department",
@@ -675,81 +595,81 @@
 	        $('#button-F1').on('mousedown', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f1-fire-small-on.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListSmall[24] + ") no-repeat 65% center");
                 }
                 else
                 {
-            		$(this).css('background', "url({{ url_for('static', filename='img/f1-fire-on.png') }}) no-repeat 65% center");
+            		$(this).css('background', "url(" + buttonImageListLarge[24] + ") no-repeat 65% center");
                 }
     	    });
             $('#button-F1').on('mouseup', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f1-fire-small.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListSmall[25] + ") no-repeat 65% center");
                 }
                 else
                 {
-    	        	$(this).css('background', "url({{ url_for('static', filename='img/f1-fire.png') }}) no-repeat 65% center");
+    	        	$(this).css('background', "url(" + buttonImageListLarge[25] + ") no-repeat 65% center");
                 }
             });
             $('#button-F2').on('mousedown', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f2-police-small-on.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListSmall[26] + ") no-repeat 65% center");
                 }
                 else
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f2-police-on.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListLarge[26] + ") no-repeat 65% center");
                 }
             });
             $('#button-F2').on('mouseup', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f2-police-small.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListSmall[27] + ") no-repeat 65% center");
                 }
                 else
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f2-police.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListLarge[27] + ") no-repeat 65% center");
                 }
             });
             $('#button-F3').on('mousedown', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f3-medical-small-on.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListSmall[28] + ") no-repeat 65% center");
                 }
                 else
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f3-medical-on.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListLarge[28] + ") no-repeat 65% center");
                 }
             });
             $('#button-F3').on('mouseup', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f3-medical-small.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListSmall[29] + ") no-repeat 65% center");
                 }
                 else
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f3-medical.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListLarge[29] + ") no-repeat 65% center");
                 }
             });
             $('#button-F4').on('mousedown', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f4-led-text-small-on.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListSmall[30] + ") no-repeat 65% center");
                 }
                 else
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f4-led-text-on.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListLarge[30] + ") no-repeat 65% center");
                 }
             });
             $('#button-F4').on('mouseup', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f4-led-text-small.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListSmall[31] + ") no-repeat 65% center");
                 }
                 else
                 {
-                    $(this).css('background', "url({{ url_for('static', filename='img/f4-led-text.png') }}) no-repeat 65% center");
+                    $(this).css('background', "url(" + buttonImageListLarge[31] + ") no-repeat 65% center");
                 }
             });
             $('#check-mute').on("click", function() {
@@ -767,35 +687,35 @@
 {% endblock %}
 
 {% block body %}
-<div>
+<div style="-webkit-user-select: none; user-select: none; -moz-user-select: none;">
     <div id="keypad-line1">Please Wait</div>
     <div id="keypad-line2">Loading...</div>
     <hr>
-    <div id="status-indicator">Armed: <img id="status-image1" src="../static/img/led-off.png"> Ready: <img id="status-image2" src="../static/img/led-off.png"></div>
+    <div id="status-indicator">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"> Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
     <div id="keypad-buttons">
         <div id="keypad-button-row">
             <input id="button-F1" class="keypad-button" type="button" value="" class="confirmF1"></input>
-            <input id="button-1" class="keypad-button" type="button" value=""></input>
-            <input id="button-2" class="keypad-button" type="button" value=""></input>
-            <input id="button-3" class="keypad-button" type="button" value=""></input>
+            <img id="button-1" class="keypad-button"/>
+            <img id="button-2" class="keypad-button"/>
+            <img id="button-3" class="keypad-button"/>
         </div>
         <div id="keypad-button-row">
             <input id="button-F2" class="keypad-button" type="button" value="" class="confirmF2"></input>
-            <input id="button-4" class="keypad-button" type="button" value=""></input>
-            <input id="button-5" class="keypad-button" type="button" value=""></input>
-            <input id="button-6" class="keypad-button" type="button" value=""></input>
+            <img id="button-4" class="keypad-button"/>
+            <img id="button-5" class="keypad-button"/>
+            <img id="button-6" class="keypad-button"/>
         </div>
         <div id="keypad-button-row">
             <input id="button-F3" class="keypad-button" type="button" value="" class="confirmF3"></input>
-            <input id="button-7" class="keypad-button" type="button" value=""></input>
-            <input id="button-8" class="keypad-button" type="button" value=""></input>
-            <input id="button-9" class="keypad-button" type="button" value=""></input>
+            <img id="button-7" class="keypad-button"/>
+            <img id="button-8" class="keypad-button"/>
+            <img id="button-9" class="keypad-button"/>
         </div>
         <div id="keypad-button-row">
             <input id="button-F4" class="keypad-button" type="button" value="" class="confirmF4"></input>
-            <input id="button-star" class="keypad-button" type="button" value=""></input>
-            <input id="button-0" class="keypad-button" type="button" value=""></input>
-            <input id="button-pound" class="keypad-button" type="button" value=""></input>
+            <img id="button-star" class="keypad-button"/>
+            <img id="button-0" class="keypad-button"/>
+            <img id="button-pound" class="keypad-button"/>
         </div>
         <div id="mute-row">
             <input type="checkbox" id="check-mute" name="check-mute"/><label for="check-mute" id="check-mute-label">Mute Sounds</label>

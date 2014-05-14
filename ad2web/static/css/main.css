@@ -274,13 +274,13 @@ cursor: pointer;
     top: 5px;
     left: 175px;
 }
-.tablet dataTables_paginate {
+.tablet .dataTables_paginate {
     position: relative;
     display: inline-block;
     vertical-align: middle;
     text-align: center;
     top: 5px !important;
-    left: 175px !important;
+    left: 40px !important;
 }
 
 .mobile .dataTables_paginate {
