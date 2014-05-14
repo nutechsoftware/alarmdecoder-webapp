@@ -298,6 +298,15 @@ cursor: pointer;
     margin-bottom: 5px !important;
 }
 
+#custom_button {
+    position: relative;
+    top: 1px;    
+}
+
+.tablet #custom_button {
+    position: relative;
+    top: 7px;
+}
 .mobile #clear {
     display: none;
     margin-top: 45px !important;
