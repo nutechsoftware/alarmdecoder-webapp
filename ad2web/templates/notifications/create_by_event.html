@@ -2,6 +2,9 @@
 
 {% extends 'settings/layout.html' %}
 
+{% block css %}
+{% endblock %}
+
 {% block pagejs %}
 <script type="text/javascript">
 </script>
@@ -11,4 +14,7 @@
 <div class="settings_wrapper">
     {{ render_form(url_for('notifications.create_custom_by_event', notification_event=notification_event), form) }}
 </div>
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}

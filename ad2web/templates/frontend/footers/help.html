@@ -1,6 +1,11 @@
 {% set page_title = "Help" %}
 
 {% extends 'layouts/base.html' %}
+
+{% block css %}
+ <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+{% endblock %}
+
 {% block pagejs %}
 <script type="text/javascript">
     $(document).ready(function() {
@@ -39,4 +44,8 @@
     </div>
 </div>
 </div>
+{% endblock %}
+
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
 {% endblock %}

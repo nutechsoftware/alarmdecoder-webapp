@@ -1,7 +1,12 @@
 {% set page_title = user.name %}
 
 {% extends "layouts/base.html" %}
+{% block css %}
+{% endblock %}
 
 {% block body %}
 <h2>Profile<small> / {{ user.name }}</small></h2>
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}

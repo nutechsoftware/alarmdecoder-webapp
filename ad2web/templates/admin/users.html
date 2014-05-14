@@ -63,7 +63,7 @@
                 <td>{{ user.status }}</td>
                 <td>{{ user.role }}</td>
                 <td>{{ user.created_time.strftime('%m-%d-%Y %H:%m') }}</td>
-                <td><a href="{{ url_for('admin.remove', user_id=user.id)}}"><img style="text-align: center; float: right; margin-right: 15px;" src="../../static/img/red_x.png"/></a></td>
+                <td><a href="{{ url_for('admin.remove', user_id=user.id)}}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a></td>
             </tr>
             {% endfor %}
         </table>
@@ -71,4 +71,11 @@
     <br>
     <a id="clear" class="btn btn-primary" href="{{ url_for('admin.user') }}">New User</a>
 </div>
+{% endblock %}
+
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
 {% endblock %}

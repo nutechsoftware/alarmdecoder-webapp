@@ -4,8 +4,14 @@
 
 {% extends "layouts/base.html" %}
 
+{% block css %}
+{% endblock %}
+
 {% block body %}
 <h2>{{ page_title }}<small> or <a href="{{ url_for('frontend.login') }}">Email</a>.</h2>
 {% if error %}<p style="color:red"><strong>Error:</strong> {{ error }}</p>{% endif %}
 {{ render_form(url_for('frontend.login_openid'), form)}}
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}

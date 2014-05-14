@@ -2,6 +2,9 @@
 
 {% extends 'layouts/base.html' %}
 
+{% block css %}
+{% endblock %}
+
 {% if keywords %}
     {% set page_title = _('Search results for "%(keywords)s"', keywords=keywords) %}
 {% else %}
@@ -24,4 +27,7 @@
     </ul>
     {% endtrans %}
     {% endif %}
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}

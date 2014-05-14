@@ -2,6 +2,9 @@
 
 {% extends 'settings/layout.html' %}
 
+{% block css %}
+{% endblock %}
+
 {% block pagejs %}
 <script type="text/javascript">
     $(document).ready(function() {
@@ -59,4 +62,7 @@
         {{ render_form(url_for('settings.device'), form) }}
     </div>
 </div>
+{% endblock %}
+
+{% block js_btm %}
 {% endblock %}
