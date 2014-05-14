@@ -294,6 +294,7 @@ def _generate_certs():
                     type=CA)
         ca_cert.generate(common_name='AlarmDecoder CA')
         db.session.add(ca_cert)
+        db.session.commit()
 
         server_cert = Certificate(
                 name="AlarmDecoder Server",
