@@ -29,7 +29,7 @@
 .mobile #keypad-line1 {
     font-family: lcd-font;
     text-align: center;
-    font-size: 45px;
+    font-size: 38px !important;
     margin-bottom: 19px;
     width: 100% !important;
     padding-top: 15px;
@@ -63,7 +63,7 @@
 .mobile #keypad-line2 {
     font-family: lcd-font;
     text-align: center;
-    font-size: 45px;
+    font-size: 38px !important;
     padding-top: 35px;
     margin-bottom: 5px !important;
     width: 100%;
@@ -121,7 +121,6 @@
     width: 100px !important;
     height: 80px;
     -webkit-user-select: none !important;
-    -webkit-user-select: none !important;
     -moz-user-select: none !important;
     user-select: none !important;
     -ms-user-select: none !important;
@@ -130,7 +129,6 @@
 .tablet .keypad-button {
     width: 150px !important;
     height: 80px;
-    -webkit-user-select: none !important;
     -webkit-user-select: none !important;
     -moz-user-select: none !important;
     user-select: none !important;
@@ -141,179 +139,149 @@
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/0-large.png') no-repeat;
 }
 .tablet #button-0 {
     margin: 0 auto;
     border: none;
-    background:url('../img/0-large.png') no-repeat !important;
 }
 .mobile #button-0
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/0-small.png') no-repeat;
 }
 #button-1
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/1-large.png') no-repeat;
 }
 
 .tablet #button-1 {
     margin: 0 auto;
     border: none;
-    background:url('../img/1-large.png') no-repeat !important;
 }
 
 .mobile #button-1 {
     margin: 0 auto;
     border: none;
-    background:url('../img/1-small.png') no-repeat;
 }
 
 #button-2
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/2-large.png') no-repeat;
 }
 
 .tablet #button-2 {
     margin: 0 auto;
     border: none;
-    background:url('../img/2-large.png') no-repeat !important;
 }
 
 .mobile #button-2 {
     margin: 0 auto;
     border: none;
-    background:url('../img/2-small.png') no-repeat;
 }
 #button-3
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/3-large.png') no-repeat;
 }
 
 .tablet #button-3 {
     margin: 0 auto;
     border: none;
-    background:url('../img/3-large.png') no-repeat !important;
 }
 .mobile #button-3 {
     margin: 0 auto;
     border: none;
-    background:url('../img/3-small.png') no-repeat;
 }
 
 #button-4
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/4-large.png') no-repeat;
 }
 
 .tablet #button-4 {
     margin: 0 auto;
     border: none;
-    background:url('../img/4-large.png') no-repeat !important;
 }
 .mobile #button-4 {
     margin: 0 auto;
     border: none;
-    background:url('../img/4-small.png') no-repeat;
 }
 #button-5
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/5-large.png') no-repeat;
 }
 
 .tablet #button-5 {
     margin: 0 auto;
     border: none;
-    background:url('../img/5-large.png') no-repeat !important;
 }
 .mobile #button-5 {
     margin: 0 auto;
     border: none;
-    background:url('../img/5-small.png') no-repeat;
 }
 #button-6
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/6-large.png') no-repeat;
 }
 
 .tablet #button-6 {
     margin: 0 auto;
     border: none;
-    background:url('../img/6-large.png') no-repeat !important;
 }
 
 .mobile #button-6 {
     margin: 0 auto;
     border: none;
-    background:url('../img/6-small.png') no-repeat;
 }
 
 #button-7
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/7-large.png') no-repeat;
 }
 .tablet #button-7 {
     margin: 0 auto;
     border: none;
-    background:url('../img/7-large.png') no-repeat !important;
 }
 
 .mobile #button-7 {
     margin: 0 auto;
     border: none;
-    background:url('../img/7-small.png') no-repeat;
 }
 
 #button-8
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/8-large.png') no-repeat;
 }
 
 .tablet #button-8 {
     margin: 0 auto;
     border: none;
-    background:url('../img/8-large.png') no-repeat !important;
 }
 .mobile #button-8 {
     margin: 0 auto;
     border: none;
-    background:url('../img/8-small.png') no-repeat;
 }
 
 #button-9
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/9-large.png') no-repeat;
 }
 .tablet #button-9 {
     margin: 0 auto;
     border: none;
-    background:url('../img/9-large.png') no-repeat !important;
 }
 
 .mobile #button-9 {
     margin: 0 auto;
     border: none;
-    background:url('../img/9-small.png') no-repeat;
 }
 #button-F1
 {
@@ -392,35 +360,29 @@
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/star-large.png') no-repeat;
 }
 
 .tablet #button-star {
     margin: 0 auto;
     border: none;
-    background:url('../img/star-large.png') no-repeat !important;
 }
 .mobile #button-star {
     margin: 0 auto;
     border: none;
-    background:url('../img/star-small.png') no-repeat;
 }
 #button-pound
 {
     margin: 0 auto;
     border: none;
-    background:url('../img/pound-large.png') no-repeat;
 }
 
 .tablet #button-pound {
     margin: 0 auto;
     border: none;
-    background:url('../img/pound-large.png') no-repeat !important;
 }
 .mobile #button-pound {
     margin: 0 auto;
     border: none;
-    background:url('../img/pound-small.png') no-repeat;
 }
 
 .blink {

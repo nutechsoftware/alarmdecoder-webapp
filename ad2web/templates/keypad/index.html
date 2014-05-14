@@ -180,6 +180,38 @@
                 preloadImages(buttonImageListLarge);
             }
 
+            //set image sources for buttons after preloaded
+            if( mobile )
+            {
+                $('#button-0').attr("src", buttonImageListSmall[1]);
+                $('#button-1').attr("src", buttonImageListSmall[3]);
+                $('#button-2').attr("src", buttonImageListSmall[5]);
+                $('#button-3').attr("src", buttonImageListSmall[7]);
+                $('#button-4').attr("src", buttonImageListSmall[9]);
+                $('#button-5').attr("src", buttonImageListSmall[11]);
+                $('#button-6').attr("src", buttonImageListSmall[13]);
+                $('#button-7').attr("src", buttonImageListSmall[15]);
+                $('#button-8').attr("src", buttonImageListSmall[17]);
+                $('#button-9').attr("src", buttonImageListSmall[19]);
+                $('#button-star').attr("src", buttonImageListSmall[21]);
+                $('#button-pound').attr("src", buttonImageListSmall[23]);
+            }
+            else
+            {
+                $('#button-0').attr("src", buttonImageListLarge[1]);
+                $('#button-1').attr("src", buttonImageListLarge[3]);
+                $('#button-2').attr("src", buttonImageListLarge[5]);
+                $('#button-3').attr("src", buttonImageListLarge[7]);
+                $('#button-4').attr("src", buttonImageListLarge[9]);
+                $('#button-5').attr("src", buttonImageListLarge[11]);
+                $('#button-6').attr("src", buttonImageListLarge[13]);
+                $('#button-7').attr("src", buttonImageListLarge[15]);
+                $('#button-8').attr("src", buttonImageListLarge[17]);
+                $('#button-9').attr("src", buttonImageListLarge[19]);
+                $('#button-star').attr("src", buttonImageListLarge[21]);
+                $('#button-pound').attr("src", buttonImageListLarge[23]);
+            }
+
             //check to see if we're going to play sounds or not if we've set the checkbox
             if( storageSupported() )
             {
@@ -191,6 +223,7 @@
                 else
                     $('#check-mute').prop('checked', false);
             }
+            //handle messages from the AlarmDecoder
             PubSub.subscribe('message', function(type, msg) {
                 if( msg.message_type == 'panel')
                 {
@@ -441,288 +474,288 @@
                 decoder.emit('keypress', '1');
             });
 
-            $('#button-1').on('mousedown', function() {
+            $('#button-1').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[2] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[2] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[2] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[2] );
                 }
 	        });
 
-	        $('#button-1').on('mouseup', function() {
+	        $('#button-1').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[3] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[3] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[3] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[3] );
                 }
             });
 
             $('#button-2').on('click', function() {
                 decoder.emit('keypress', '2');
             });
-            $('#button-2').on('mousedown', function() {
+            $('#button-2').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[4] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[4]);
                 }
                 else
                 {
-    		        $(this).css('background', "url(" + buttonImageListLarge[4] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[4]);
                 }
             });
-            $('#button-2').on('mouseup', function() {
+            $('#button-2').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[5] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[5] );
                 }
                 else
                 {
-    		        $(this).css('background', "url(" + buttonImageListLarge[5] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[5] );
                 }
             });
             $('#button-3').on('click', function() {
                 decoder.emit('keypress', '3');
             });
-            $('#button-3').on('mousedown', function() {
+            $('#button-3').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[6] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[6] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[6] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[6] );
                 }
             });
-            $('#button-3').on('mouseup', function() {
+            $('#button-3').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[7] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[7] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[7] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[7] );
                 }
             });
 
             $('#button-4').on('click', function() {
                 decoder.emit('keypress', '4');
             });
-            $('#button-4').on('mousedown', function() {
+            $('#button-4').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[8] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[8] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[8] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[8] );
                 }
             });
-            $('#button-4').on('mouseup', function() {
+            $('#button-4').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[9] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[9] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[9] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[9] );
                 }
             });
 
             $('#button-5').on('click', function() {
                 decoder.emit('keypress', '5');
             });
-            $('#button-5').on('mousedown', function() {
+            $('#button-5').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[10] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[10] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[10] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[10] );
                 }
             });
-            $('#button-5').on('mouseup', function() {
+            $('#button-5').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[11] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[11] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[11] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[11] );
                 }
             });
 
             $('#button-6').on('click', function() {
                 decoder.emit('keypress', '6');
             });
-            $('#button-6').on('mousedown', function() {
+            $('#button-6').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[12] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[12] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[12] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[12] );
                 }
             });
-            $('#button-6').on('mouseup', function() {
+            $('#button-6').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[13] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[13] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[13] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[13] );
                 }
             });
 
             $('#button-7').on('click', function() {
                 decoder.emit('keypress', '7');
             });
-            $('#button-7').on('mousedown', function() {
+            $('#button-7').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[14] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[14] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[14] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[14] );
                 }
             });
-            $('#button-7').on('mouseup', function() {
+            $('#button-7').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[15] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[15] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[15] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[15] );
                 }
             });
 
             $('#button-8').on('click', function() {
                 decoder.emit('keypress', '8');
             });
-            $('#button-8').on('mousedown', function() {
+            $('#button-8').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[16] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[16] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[16] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[16] );
                 }
             });
-            $('#button-8').on('mouseup', function() {
+            $('#button-8').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[17] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[17] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[17] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[17] );
                 }
             });
 
             $('#button-9').on('click', function() {
                 decoder.emit('keypress', '9');
             });
-            $('#button-9').on('mousedown', function() {
+            $('#button-9').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[18] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[18] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[18] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[18] );
                 }
             });
-            $('#button-9').on('mouseup', function() {
+            $('#button-9').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[19] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[19] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[19] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[19] );
                 }
             });
 
             $('#button-0').on('click', function() {
                 decoder.emit('keypress', '0');
             });
-            $('#button-0').on('mousedown', function() {
+            $('#button-0').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[0] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[0] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[0] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[0] );
                 }
             });
-            $('#button-0').on('mouseup', function() {
+            $('#button-0').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[1] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[1] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[1] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[1] );
                 }
             });
 
             $('#button-star').on('click', function() {
                 decoder.emit('keypress', '*');
             });
-            $('#button-star').on('mousedown', function() {
+            $('#button-star').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[20] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[20] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[20] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[20] );
                 }
             });
-            $('#button-star').on('mouseup', function() {
+            $('#button-star').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[21] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[21] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[21] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[21] );
                 }
             });
 
             $('#button-pound').on('click', function() {
                 decoder.emit('keypress', '#');
             });
-            $('#button-pound').on('mousedown', function() {
+            $('#button-pound').on('mousedown touchstart', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[22] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[22] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[22] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[22] );
                 }
             });
-            $('#button-pound').on('mouseup', function() {
+            $('#button-pound').on('mouseup touchend', function() {
                 if( mobile )
                 {
-                    $(this).css('background', "url(" + buttonImageListSmall[23] + ") no-repeat");
+                    $(this).attr("src", buttonImageListSmall[23] );
                 }
                 else
                 {
-                    $(this).css('background', "url(" + buttonImageListLarge[23] + ") no-repeat");
+                    $(this).attr("src", buttonImageListLarge[23] );
                 }
             });
 
@@ -885,27 +918,27 @@
     <div id="keypad-buttons">
         <div id="keypad-button-row">
             <input id="button-F1" class="keypad-button" type="button" value="" class="confirmF1"></input>
-            <input id="button-1" class="keypad-button" type="button" value=""></input>
-            <input id="button-2" class="keypad-button" type="button" value=""></input>
-            <input id="button-3" class="keypad-button" type="button" value=""></input>
+            <img id="button-1" class="keypad-button"/>
+            <img id="button-2" class="keypad-button"/>
+            <img id="button-3" class="keypad-button"/>
         </div>
         <div id="keypad-button-row">
             <input id="button-F2" class="keypad-button" type="button" value="" class="confirmF2"></input>
-            <input id="button-4" class="keypad-button" type="button" value=""></input>
-            <input id="button-5" class="keypad-button" type="button" value=""></input>
-            <input id="button-6" class="keypad-button" type="button" value=""></input>
+            <img id="button-4" class="keypad-button"/>
+            <img id="button-5" class="keypad-button"/>
+            <img id="button-6" class="keypad-button"/>
         </div>
         <div id="keypad-button-row">
             <input id="button-F3" class="keypad-button" type="button" value="" class="confirmF3"></input>
-            <input id="button-7" class="keypad-button" type="button" value=""></input>
-            <input id="button-8" class="keypad-button" type="button" value=""></input>
-            <input id="button-9" class="keypad-button" type="button" value=""></input>
+            <img id="button-7" class="keypad-button"/>
+            <img id="button-8" class="keypad-button"/>
+            <img id="button-9" class="keypad-button"/>
         </div>
         <div id="keypad-button-row">
             <input id="button-F4" class="keypad-button" type="button" value="" class="confirmF4"></input>
-            <input id="button-star" class="keypad-button" type="button" value=""></input>
-            <input id="button-0" class="keypad-button" type="button" value=""></input>
-            <input id="button-pound" class="keypad-button" type="button" value=""></input>
+            <img id="button-star" class="keypad-button"/>
+            <img id="button-0" class="keypad-button"/>
+            <img id="button-pound" class="keypad-button"/>
         </div>
         <div id="mute-row">
             <input type="checkbox" id="check-mute" name="check-mute"/><label for="check-mute" id="check-mute-label">Mute Sounds</label>
