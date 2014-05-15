@@ -67,6 +67,8 @@ def edit(id):
         db.session.add(notification)
         db.session.commit()
 
+        current_app.decoder.refresh_notifier(id)
+
         flash('Notification saved.', 'success')
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
@@ -117,6 +119,8 @@ def create_by_type(type):
         db.session.add(obj)
         db.session.commit()
 
+        current_app.decoder.refresh_notifier(obj.id)
+
         flash('Notification created.', 'success')
 
         return redirect(url_for('notifications.index'))
@@ -138,6 +142,8 @@ def remove(id):
 
     db.session.delete(notification)
     db.session.commit()
+
+    current_app.decoder.refresh_notifier(id)
 
     flash('Notification deleted.', 'success')
     return redirect(url_for('notifications.index'))

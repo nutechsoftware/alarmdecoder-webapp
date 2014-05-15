@@ -14,24 +14,34 @@ from ..zones import Zone
 
 class NotificationSystem(object):
     def __init__(self):
-        self._notifiers = []
+        self._notifiers = {}
         self._messages = DEFAULT_EVENT_MESSAGES
 
         self._init_notifiers()
 
     def send(self, type, **kwargs):
-        for n in self._notifiers:
-            if n.subscribes_to(type):
+        for id, n in self._notifiers.iteritems():
+            if n and n.subscribes_to(type):
                 message = self._build_message(type, **kwargs)
 
                 if message:
                     n.send(type, message)
 
+    def refresh_notifier(self, id):
+        n = Notification.query.filter_by(id=id).first()
+        if n:
+            self._notifiers[id] = TYPE_MAP[n.type](n)
+        else:
+            try:
+                del self._notifiers[id]
+            except KeyError:
+                pass
+
     def _init_notifiers(self):
-        self._notifiers = [LogNotification()]   # Force LogNotification to always be present
+        self._notifiers = {-1: LogNotification()}   # Force LogNotification to always be present
 
         for n in Notification.query.all():
-            self._notifiers.append(TYPE_MAP[n.type](n))
+            self._notifiers[n.id] = TYPE_MAP[n.type](n)
 
     def _build_message(self, type, **kwargs):
         message = NotificationMessage.query.filter_by(id=type).first()

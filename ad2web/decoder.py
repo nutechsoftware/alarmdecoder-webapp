@@ -207,6 +207,9 @@ class Decoder(object):
             device_handler = getattr(self.device, device_event_name)
             device_handler += build_event_handler(event)
 
+    def refresh_notifier(self, id):
+        self._notifier_system.refresh_notifier(id)
+
     def _on_device_open(self, sender):
         """
         Internal event handler for when the device opens.
