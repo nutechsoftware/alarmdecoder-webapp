@@ -33,4 +33,8 @@ $(document).ready(function() {
     //
     decoder = new AlarmDecoder();
     decoder.init();
+
+    $('.alert').on('click', function(e) {
+        $(this).hide();
+    });
 })
