@@ -671,6 +671,11 @@
                     $(this).css('background', "url(" + buttonImageListLarge[31] + ") no-repeat 65% center");
                 }
             });
+
+            if( isiPad || isiPhone )
+            {
+                $('#mute-row').css('display', 'none');
+            }
             $('#check-mute').on("click", function() {
                 if( $(this).is(':checked') )
                     mute = 1;
