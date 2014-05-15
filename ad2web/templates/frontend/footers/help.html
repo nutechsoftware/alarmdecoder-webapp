@@ -13,6 +13,8 @@
             "collapsible" : true,
             "active" : false,
         });
+
+        $('#user-agent').append(navigator.userAgent).show();
     });
 </script>
 {% endblock %}
@@ -44,6 +46,7 @@
         </p>
     </div>
 </div>
+<div id="user-agent"><strong>User Agent:&nbsp;</strong></div>
 </div>
 {% endblock %}
 

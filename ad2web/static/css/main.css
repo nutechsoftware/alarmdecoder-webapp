@@ -548,3 +548,10 @@ div#subscriptions span label {
     float: right;
     width: 100%;
 }
+
+#user-agent {
+    position: relative;
+    top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
