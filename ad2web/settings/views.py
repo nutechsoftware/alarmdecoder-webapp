@@ -14,6 +14,7 @@ from flask.ext.login import login_required, current_user
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.exc import SQLAlchemyError
 
+from ..ser2sock import ser2sock
 from ..extensions import db
 from ..user import User, UserDetail
 from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
@@ -22,7 +23,7 @@ from ..settings import Setting
 from .forms import ProfileForm, PasswordForm, ImportSettingsForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP
-from ..certificate import Certificate
+from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
 
@@ -161,6 +162,8 @@ def import_backup():
 
                 db.session.commit()
 
+                _import_refresh()
+
                 current_app.logger.info('Successfully imported backup file.')
                 flash('Import finished.', 'success')
 
@@ -198,3 +201,23 @@ def _import_model(tar, tarinfo, model):
                 setattr(m, k, v)
 
         db.session.add(m)
+
+def _import_refresh():
+    config_path = Setting.get_by_name('ser2sock_config_path')
+    if config_path:
+        kwargs = {}
+
+        kwargs['device_path'] = Setting.get_by_name('device_path', '/dev/ttyAMA0').value
+        kwargs['device_baudrate'] = Setting.get_by_name('device_baudrate', 115200).value
+        kwargs['device_port'] = Setting.get_by_name('device_port', 10000).value
+        kwargs['use_ssl'] = Setting.get_by_name('use_ssl', False).value
+        if kwargs['use_ssl']:
+            kwargs['ca_cert'] = Certificate.query.filter_by(type=CA).first()
+            kwargs['server_cert'] = Certificate.query.filter_by(type=SERVER).first()
+
+            Certificate.save_certificate_index()
+            Certificate.save_revocation_list()
+
+        ser2sock.update_config(config_path.value, **kwargs)
+        current_app.decoder.close()
+        current_app.decoder.init()

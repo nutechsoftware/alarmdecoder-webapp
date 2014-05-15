@@ -7,9 +7,6 @@ import sh
 from collections import OrderedDict
 from OpenSSL import crypto
 
-from ..certificate.models import Certificate
-from ..certificate.constants import CRL_CODE, ACTIVE, REVOKED, CA
-
 DEFAULT_SETTINGS = OrderedDict([
     ('daemonize', 1),
     ('device', ''),
@@ -114,61 +111,6 @@ def hup():
     if not found:
         start()
 
-def save_certificate_index(path):
-    """
-    Saves the certificate index
-
-    :param path: The path to the ser2sock configuration directory.
-    :type path: string
-    """
-    path = os.path.join(path, 'certs', 'certindex')
-
-    with open(path, 'w') as cert_index:
-        for cert in Certificate.query.all():
-            if cert.type != CA:
-                revoked_time = ''
-                if cert.revoked_on:
-                    revoked_time = time.strftime('%y%m%d%H%M%SZ', cert.revoked_on.utctimetuple())
-
-                subject = '/'.join(['='.join(t) for t in [()] + cert.certificate_obj.get_subject().get_components()])
-                cert_index.write("\t".join([
-                    CRL_CODE[cert.status],
-                    cert.certificate_obj.get_notAfter()[2:],    # trim off the first two characters in the year.
-                    revoked_time,
-                    cert.serial_number.zfill(2),
-                    'unknown',
-                    subject
-                ]) + "\n")
-
-def save_revocation_list(path):
-    """
-    Saves the certificate revocation list
-
-    :param path: Path to the ser2sock configuration directory
-    :type path: string
-    """
-    path = os.path.join(path, 'ser2sock.crl')
-
-    ca_cert = Certificate.query.filter_by(type=CA).first()
-
-    with open(path, 'w') as crl_file:
-        crl = crypto.CRL()
-
-        for cert in Certificate.query.all():
-            if cert.type != CA:
-                if cert.status == REVOKED:
-                    revoked = crypto.Revoked()
-
-                    revoked.set_reason(None)
-                    # NOTE: crypto.Revoked() expects YYYY instead of YY as needed by the cert index above.
-                    revoked.set_rev_date(time.strftime('%Y%m%d%H%M%SZ', cert.revoked_on.utctimetuple()))
-                    revoked.set_serial(cert.serial_number)
-
-                    crl.add_revoked(revoked)
-
-        crl_data = crl.export(ca_cert.certificate_obj, ca_cert.key_obj)
-        crl_file.write(crl_data)
-
 def update_config(path, *args, **kwargs):
     """
     Updates the ser2sock configuration with new settings, saves the index
@@ -219,9 +161,6 @@ def update_config(path, *args, **kwargs):
                     config_values['ca_certificate'] = os.path.join(cert_path, '{0}.pem'.format(ca_cert.name))
                     config_values['ssl_certificate'] = os.path.join(cert_path, '{0}.pem'.format(server_cert.name))
                     config_values['ssl_key'] = os.path.join(cert_path, '{0}.key'.format(server_cert.name))
-
-                    save_certificate_index(path)
-                    save_revocation_list(path)
 
             save_config(os.path.join(path, 'ser2sock.conf'), config_values)
             hup()

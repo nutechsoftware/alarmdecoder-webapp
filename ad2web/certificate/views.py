@@ -167,6 +167,8 @@ def generateCA():
 
     config_path = Setting.get_by_name('ser2sock_config_path')
     if config_path:
+        Certificate.save_certificate_index()
+        Certificate.save_revocation_list()
         ser2sock.update_config(config_path.value, ca_cert=ca_cert, server_cert=server_cert, use_ssl=True)
 
     db.session.commit()
