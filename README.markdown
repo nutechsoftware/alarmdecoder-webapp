@@ -1,148 +1,46 @@
-# INTRODUCTION
+# AlarmDecoder Webapp
 
-Fbone (Flask bone) is a [Flask](http://flask.pocoo.org) (Python microframework) template/bootstrap/boilerplate application, with best practices.
+## Summary
 
-You can use it for
+This is the home of the official webapp for the [AlarmDecoder](http://www.alarmdecoder.com) family of home security devices.
 
-- learning Flask.
-- kicking off your new project faster.
+![Keypad Screenshot](http://github.com/nutechsoftware/alarmdecoder-webapp/raw/master/screenshot.png "Keypad Screenshot")
 
-![Flask bone homepage screenshot](http://github.com/imwilsonxu/fbone/raw/master/screenshots/flask-bone-homepage-screenshot.png)
+## Features
 
-## FEATURES
+- Supports all of the [AlarmDecoder](http://www.alarmdecoder.com) devices: AD2USB, AD2SERIAL and AD2PI.
+- Web-based keypad for your alarm system
+- Notifications on alarm events
+- Multiple user accounts and per-user notifications and certificates (if configured)
 
-### Frontend Framework
+## Installation
 
-- [HTML5 Boilerplate](https://github.com/h5bp/html5-boilerplate).
-- [jQuery](http://jquery.com/). 
-- [bootstrap](https://github.com/twitter/bootstrap).
+### Pre-installed Image
 
-### Flask Extensions
+If you're running on a Raspberry Pi the easiest way to get started is to download our pre-configured Raspbian image.  The image can be found at [here](http://www.alarmdecoder.com/wiki/index.php/Raspberry_Pi).
 
-- Handle **orm** with [SQLAlchemy](http://www.sqlalchemy.org).
-- Handle **web forms** with [WTForms](http://wtforms.simplecodes.com/).
-- Implement **user session management (signin/signout/rememberme)** with [Flask-Login](https://github.com/maxcountryman/flask-login).
-- Implement **reset password via email** with [Flask-Mail](http://packages.python.org/Flask-Mail/).
-- Implement **unit testing** with [Flask-Testing](http://packages.python.org/Flask-Testing/).
-- Implement **external script (initdb/testing/etc)** with [Flask-Script](http://flask-script.readthedocs.org/en/latest/).
-- Handle **i18n** with [Flask-Babel](http://packages.python.org/Flask-Babel/).
+### Manual Installation
 
-### Others
+If you'd rather do it by hand you can follow these steps:
 
-- Well designed structure for **large project**.
-- Quickly Deploy via [mod\_wsgi](http://flask.pocoo.org/docs/deploying/mod_wsgi/) and [fabric](http://flask.pocoo.org/docs/patterns/fabric/).
-- Admin interface.
-- Home-bake logger.
+1. sudo apt-get install nginx gunicorn
+2. cd /opt/
+3. sudo git clone http://github.com/nutechsoftware/alarmdecoder-webapp.git
+4. sudo chown -R \`whoami\` alarmdecoder-webapp
+5. cd alarmdecoder-webapp
+6. sudo pip install -r requirements.txt
+7. sudo cp contrib/nginx/alarmdecoder /etc/nginx/sites-available/
+8. sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
+9. sudo rm /etc/nginx/sites-enabled/default
+10. sudo cp contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
+11. Optionally configure (ser2sock)[http://github.com/alarmdecoder/ser2sock.git]
+12. sudo service nginx restart
+13. sudo service gunicorn restart
 
-## USAGE
+## Support
 
-Pre-required:
+Please visit our (forums)[http://www.alarmdecoder.com/forums/].
 
-- Ubuntu (should be fine in other linux distro)
-- git
-- pip
-- fabric
-- sqlite
-- virtualenv
-- apache + mod\_wsgi
+## Contributing
 
-Clone.
-
-    git clone https://github.com/imwilsonxu/fbone.git fbone
-
-virtualenv.
-
-    fab setup
-
-Debug.
-
-    fab d
-
-Open `http://127.0.0.1:5000`, done!
-
-## Deploy with WSGI
-
-Clone.
-
-    cd /var/www
-    git clone https://github.com/imwilsonxu/fbone.git fbone
-    sudo chown `whoami` -R fbone
-
-vhost.
-
-    WSGIDaemonProcess fbone user=wilson group=wilson threads=5
-    WSGIScriptAlias /fbone /var/www/fbone/app.wsgi
-
-    <Directory /var/www/fbone/>
-        WSGIScriptReloading On
-        WSGIProcessGroup fbone
-        WSGIApplicationGroup %{GLOBAL}
-        Order deny,allow
-        Allow from all
-    </Directory>
-
-virtualenv.
-
-    fab setup
-
-**IMPORTANT**:
-
-- Change `INSTANCE_FOLDER_PATH` in `fbone/utils.py` to suit yourself.
-- Put `production.cfg` under `INSTANCE_FOLDER_PATH`.
-
-## STRUCTURE
-
-    ├── app.wsgi                (mod_wsgi wsgi config)
-    ├── CHANGES
-    ├── fabfile.py              (fabric file)
-    ├── fbone                   (main app)
-    │   ├── api                 (api module)
-    │   ├── app.py              (create flask app)
-    │   ├── config.py           (config module)
-    │   ├── decorators.py
-    │   ├── extensions.py       (init flask extensions)
-    │   ├── frontend            (frontend module)
-    │   ├── __init__.py
-    │   ├── settings            (settings module)
-    │   ├── static
-    │   │   ├── css
-    │   │   ├── favicon.png
-    │   │   ├── humans.txt
-    │   │   ├── img
-    │   │   ├── js
-    │   │   └── robots.txt
-    │   ├── templates
-    │   │   ├── errors
-    │   │   ├── frontend
-    │   │   ├── index.html
-    │   │   ├── layouts 
-    │   │   ├── macros
-    │   │   ├── settings
-    │   │   └── user
-    │   ├── translations        (i18n)
-    │   ├── user                (user module)
-    │   │   ├── constants.py
-    │   │   ├── forms.py        (wtforms)
-    │   │   ├── __init__.py
-    │   │   ├── models.py
-    │   │   ├── views.py
-    │   ├── utils.py
-    ├── LICENSE
-    ├── manage.py               (manage via flask-script)
-    ├── MANIFEST.in
-    ├── README.markdown
-    ├── screenshots
-    ├── setup.py
-    └── tests                   (unit tests, run via `nosetest`)
-
-## LICENSE
-
-[MIT LICENSE](http://www.tldrlegal.com/license/mit-license)
-
-## ACKNOWLEDGEMENTS
-
-Thanks to Python, Flask, its [extensions](http://flask.pocoo.org/extensions/), and other goodies.
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/imwilsonxu/fbone/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
+We love the open-source community and welcome any contributions!  Just submit a pull request through [Github](http://github.com).
