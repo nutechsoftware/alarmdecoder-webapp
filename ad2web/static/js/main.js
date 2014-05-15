@@ -3,7 +3,7 @@
 /* Add a flash message notification to the DOM */
 function add_flash_message(message, category)
 {
-    var htmlStr = '<div class="alert alert-' + category + '"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>';
+    var htmlStr = '<div class="alert alert-' + category + '" data-dismiss="alert"><button type="button" class="close" data-dismiss="alert">x</button>' + message + '</div>';
     $('#flash_message_container').append(htmlStr);
 }
 
