@@ -393,6 +393,8 @@
 }
 
 #mute-row {
+    position: relative;
+    left: -99px;
     margin-top: 10px;
 }
 #check-mute {
