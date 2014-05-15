@@ -83,7 +83,7 @@
                 {
                     $(this).attr("src", desktop_image );
                 }
-                if( !tablet )
+                if( !tablet && !mobile )
                     decoder.emit('keypress', String(key));
             });
         }
@@ -100,8 +100,7 @@
                 {
                     $(this).attr("src", desktop_image );
                 }
-                if( tablet )
-                    decoder.emit('keypress', String(key));
+                decoder.emit('keypress', String(key));
             });
         }
 
