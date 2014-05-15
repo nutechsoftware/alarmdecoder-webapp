@@ -274,13 +274,13 @@ cursor: pointer;
     top: 5px;
     left: 175px;
 }
-.tablet dataTables_paginate {
+.tablet .dataTables_paginate {
     position: relative;
     display: inline-block;
     vertical-align: middle;
     text-align: center;
     top: 5px !important;
-    left: 175px !important;
+    left: 40px !important;
 }
 
 .mobile .dataTables_paginate {
@@ -298,6 +298,15 @@ cursor: pointer;
     margin-bottom: 5px !important;
 }
 
+#custom_button {
+    position: relative;
+    top: 1px;    
+}
+
+.tablet #custom_button {
+    position: relative;
+    top: 7px;
+}
 .mobile #clear {
     display: none;
     margin-top: 45px !important;
@@ -538,4 +547,11 @@ div#subscriptions span {
 div#subscriptions span label {
     float: right;
     width: 100%;
+}
+
+#user-agent {
+    position: relative;
+    top: 10px;
+    margin-left: auto;
+    margin-right: auto;
 }
