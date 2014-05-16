@@ -15,6 +15,13 @@ This is the home of the official webapp for the [AlarmDecoder](http://www.alarmd
 
 ## Installation
 
+### Requirements
+
+- nginx >= 1.6
+- gunicorn
+
+NOTE: Other web and WSGI servers will likely work but will require configuration.
+
 ### Pre-installed Image
 
 If you're running on a Raspberry Pi the easiest way to get started is to download our pre-configured Raspbian image.  The image can be found at [here](http://www.alarmdecoder.com/wiki/index.php/Raspberry_Pi).
@@ -23,19 +30,21 @@ If you're running on a Raspberry Pi the easiest way to get started is to downloa
 
 If you'd rather do it by hand you can follow these steps:
 
-1. sudo apt-get install nginx gunicorn
+1. sudo apt-get install nginx gunicorn sendmail
 2. cd /opt/
 3. sudo git clone http://github.com/nutechsoftware/alarmdecoder-webapp.git
-4. sudo chown -R \`whoami\` alarmdecoder-webapp
 5. cd alarmdecoder-webapp
 6. sudo pip install -r requirements.txt
-7. sudo cp contrib/nginx/alarmdecoder /etc/nginx/sites-available/
-8. sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
-9. sudo rm /etc/nginx/sites-enabled/default
-10. sudo cp contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
-11. Optionally configure (ser2sock)[http://github.com/alarmdecoder/ser2sock.git]
-12. sudo service nginx restart
-13. sudo service gunicorn restart
+7. sudo python manage.py initdb
+8. sudo cp contrib/nginx/alarmdecoder /etc/nginx/sites-available/
+9. sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
+10. sudo rm /etc/nginx/sites-enabled/default
+11. sudo cp contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
+12. Edit /etc/gunicorn.d/alarmdecoder and change the user/group you'd like it to run as.
+13. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
+14. Optionally install and set permissions for (ser2sock)[http://github.com/alarmdecoder/ser2sock.git]
+15. sudo service nginx restart
+16. sudo service gunicorn restart
 
 ## Support
 
