@@ -110,6 +110,10 @@
     margin-bottom: 0;
 }
 
+img.keypad-button {
+    cursor: pointer;
+}
+
 .keypad-button
 {
     width: 150px !important;
