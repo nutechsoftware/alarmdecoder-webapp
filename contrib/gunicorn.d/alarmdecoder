@@ -4,6 +4,7 @@ CONFIG = {
     'group': 'pi',
     'args': (
         '--worker-class=socketio.sgunicorn.GeventSocketIOWorker',
+        '--timeout=120',
         #'--debug',
         #'--log-level=debug',
         'wsgi:application',
