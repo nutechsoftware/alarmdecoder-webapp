@@ -42,13 +42,13 @@ If you'd rather do it by hand you can follow these steps:
 11. sudo cp contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
 12. Edit /etc/gunicorn.d/alarmdecoder and change the user/group you'd like it to run as.
 13. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
-14. Optionally install and set permissions for (ser2sock)[http://github.com/alarmdecoder/ser2sock.git]
+14. Optionally install and set permissions for [ser2sock](http://github.com/alarmdecoder/ser2sock.git)
 15. sudo service nginx restart
 16. sudo service gunicorn restart
 
 ## Support
 
-Please visit our (forums)[http://www.alarmdecoder.com/forums/].
+Please visit our [forums](http://www.alarmdecoder.com/forums/).
 
 ## Contributing
 
