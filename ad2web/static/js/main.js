@@ -26,15 +26,14 @@ function hide_flask_message_container() {
 }
 
 $(document).ready(function() {
-    /* Show and hide flash message. */
-    //$('#flash_message_container').slideDown(function() {
-        //setTimeout(hide_flask_message_container, 3000);
-    //});
-    //
     decoder = new AlarmDecoder();
     decoder.init();
 
     $('.alert').on('click', function(e) {
+        $(this).hide();
+    });
+
+    $('.alert').on('touchend', function(e) {
         $(this).hide();
     });
 })
