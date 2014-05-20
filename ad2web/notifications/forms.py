@@ -12,6 +12,7 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
 from wtforms.widgets import ListWidget, CheckboxInput
 from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK)
 from .models import NotificationSetting
+from ..widgets import CancelButton
 
 class MultiCheckboxField(SelectMultipleField):
     """
@@ -27,6 +28,7 @@ class CreateNotificationForm(Form):
     type = SelectField(u'Notification Type', choices=[nt for t, nt in NOTIFICATIONS.iteritems()])
 
     submit = SubmitField(u'Next')
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
 
 class EditNotificationMessageForm(Form):
     id = HiddenField()
@@ -75,6 +77,7 @@ class EmailNotificationForm(EditNotificationForm):
     password = PasswordField(u'Password', [Optional(), Length(max=255)], description=u'Optional: Password for the email server')
 
     submit = SubmitField(u'Save')
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -100,6 +103,7 @@ class GoogleTalkNotificationForm(EditNotificationForm):
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Messages will be sent to this address')
 
     submit = SubmitField(u'Save')
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
 
     def populate_settings(self, settings, id=None):
         settings['source'] = self.populate_setting('source', self.source.data)

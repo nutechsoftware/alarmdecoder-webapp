@@ -8,6 +8,7 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
 from ..user import USER_ROLE, USER_STATUS, USER, ACTIVE
 from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX
 
+from ..widgets import CancelButton
 
 class UserForm(Form):
     next = HiddenField()
@@ -21,3 +22,4 @@ class UserForm(Form):
             choices=[(str(val), label) for val, label in USER_STATUS.items()], default=ACTIVE)
 
     submit = SubmitField(u'Save')
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
