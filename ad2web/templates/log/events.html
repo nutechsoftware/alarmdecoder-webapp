@@ -19,7 +19,11 @@
             }
             $('#loading').spin('flower');
             var oTable = $('#events-table').dataTable({
+                "bSort": false,
                 "bJQueryUI": true,
+                "bServerSide": true,
+                "bProcessing": true,
+                "sAjaxSource": "/log/retrieve_events_paging_data",
                 "sPaginationType": "full_numbers",
                 "sDom" : '<"H"lr>t<"F"fip>',
                 "aaSorting": [[0, "desc" ]],
@@ -76,13 +80,11 @@
                     <th>Message</th>
                 </tr>
             </thead>
-            {% for entry in event_log %}
                 <tr>
-                    <td>{{ entry.timestamp }}</td>
-                    <td>{{ TYPES[entry.type] }}</td>
-                    <td>{{ entry.message }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                 </tr>
-            {% endfor %}
         </table>
     </div>
     <div id="clear">
