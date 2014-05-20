@@ -28,13 +28,14 @@ class CreateNotificationForm(Form):
     type = SelectField(u'Notification Type', choices=[nt for t, nt in NOTIFICATIONS.iteritems()])
 
     submit = SubmitField(u'Next')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications'")
 
 class EditNotificationMessageForm(Form):
     id = HiddenField()
     text = TextAreaField(u'Message Text', [Required(), Length(max=255)])
 
     submit = SubmitField(u'Save')
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications/messages'")
 
 class EditNotificationForm(Form):
     type = HiddenField()
@@ -77,7 +78,7 @@ class EmailNotificationForm(EditNotificationForm):
     password = PasswordField(u'Password', [Optional(), Length(max=255)], description=u'Optional: Password for the email server')
 
     submit = SubmitField(u'Save')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -103,7 +104,7 @@ class GoogleTalkNotificationForm(EditNotificationForm):
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Messages will be sent to this address')
 
     submit = SubmitField(u'Save')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         settings['source'] = self.populate_setting('source', self.source.data)
