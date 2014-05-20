@@ -8,6 +8,19 @@
 
 {% block pagejs %}
     <script type="text/javascript">
+        function showHide(bShow)
+        {
+            if( bShow )
+            {
+                $('#loading').show();
+                $('#loading').spin('flower');
+            }
+            else
+            {
+                $('#loading').stop();
+                $('#loading').hide();
+            }
+        }
         $(document).ready(function() {
             $.fn.dataTableExt.oPagination.iFullNumbersShowPages = 3;
             $.fn.spin.presets.flower = {
@@ -18,7 +31,7 @@
                 className: 'spinner',
             }
             $('#loading').spin('flower');
-            var oTable = $('#events-table').dataTable({
+            var oTable = $('#events-table').bind('processing', function(e, oSettings, bShow) { showHide(bShow) }).dataTable({
                 "bSort": false,
                 "bJQueryUI": true,
                 "bServerSide": true,
@@ -33,6 +46,7 @@
                     "sInfoEmpty": "No Results",
                     "sInfoThousands": "",
                     "sEmptyTable": " ",
+                    "sProcessing": "",
                 },
                 "aoColumns": [
                     {"sWidth": "15%" },
