@@ -35,6 +35,8 @@ def avatar(user_id, filename):
 @user.route('/<int:user_id>/history')
 @login_required
 def history(user_id):
+    if user_id is None:
+        abort(404)
     if not current_user.is_authenticated():
         abort(403)
     if not current_user.is_admin() or current_user.id != user_id:

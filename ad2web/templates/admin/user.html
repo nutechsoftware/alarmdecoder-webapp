@@ -5,6 +5,8 @@
 {% block body %}
 <div id="data">
     {{ render_form(url_for('admin.user', user_id=user_id), form) }}
+    {% if user_id and user_id != 'None' %}
     <a href="/user/{{user_id}}/history">View Login History</a>
+    {% endif %}
 </div>
 {% endblock %}

@@ -22,4 +22,4 @@ class UserForm(Form):
             choices=[(str(val), label) for val, label in USER_STATUS.items()], default=ACTIVE)
 
     submit = SubmitField(u'Save')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/users'")

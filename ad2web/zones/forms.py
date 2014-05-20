@@ -20,4 +20,4 @@ class ZoneForm(Form):
     description = TextField(u'Description', [Length(max=255)])
 
     submit = SubmitField(u'Save')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/zones'")
