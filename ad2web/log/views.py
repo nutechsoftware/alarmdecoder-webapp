@@ -9,7 +9,6 @@ from ..decorators import admin_required
 from .constants import ARM, DISARM, POWER_CHANGED, ALARM, FIRE, BYPASS, BOOT, \
                         CONFIG_RECEIVED, ZONE_FAULT, ZONE_RESTORE, LOW_BATTERY, \
                         PANIC, RELAY_CHANGED, EVENT_TYPES
-from sqlalchemy import func
 from .models import EventLogEntry
 import json
 import collections
@@ -41,7 +40,7 @@ def log_context_processor():
 def events():
 #    event_log = None #EventLogEntry.query.order_by(EventLogEntry.timestamp.desc()).limit(50)
 
-    return render_template('log/events.html')
+    return render_template('log/events.html', active="events")
 
 @log.route('/live')
 @login_required
