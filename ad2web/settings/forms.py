@@ -14,6 +14,8 @@ from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX, AGE_MIN, AGE_MAX, DEPOSI
 from ..utils import allowed_file, ALLOWED_AVATAR_EXTENSIONS
 from ..utils import SEX_TYPE
 
+from ..widgets import CancelButton
+
 class ProfileForm(Form):
     multipart = True
     next = HiddenField()
@@ -45,7 +47,7 @@ class PasswordForm(Form):
     new_password = PasswordField('New password', [Required(), Length(PASSWORD_LEN_MIN, PASSWORD_LEN_MAX)])
     password_again = PasswordField('Password again', [Required(), Length(PASSWORD_LEN_MIN, PASSWORD_LEN_MAX), EqualTo('new_password')])
     submit = SubmitField(u'Save')
-
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings'")
     def validate_password(form, field):
         user = User.get_by_id(current_user.id)
         if not user.check_password(field.data):
