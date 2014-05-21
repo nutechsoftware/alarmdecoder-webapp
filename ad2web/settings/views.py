@@ -20,12 +20,15 @@ from ..user import User, UserDetail
 from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP
 from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
+import socket
+import sh
+from sh import hostname, service
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -100,6 +103,43 @@ def password():
 
     return render_template('settings/password.html', user=user,
             active="password", form=form, ssl=use_ssl)
+
+@settings.route('/host', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def host():
+    hostname = socket.getfqdn()
+    form = HostSettingsForm()
+    
+    if not form.is_submitted():
+        form.hostname.data = hostname
+
+    if form.validate_on_submit():
+        hosts_file = '/etc/hosts'
+        hostname_file = '/etc/hostname'
+        new_hostname = form.hostname.data
+
+        _sethostname(hosts_file, hostname, new_hostname)
+        _sethostname(hostname_file, hostname, new_hostname)
+
+        sh.hostname("-b", new_hostname)
+
+        return redirect(url_for('settings.index'))
+
+    return render_template('settings/host.html', hostname=hostname, form=form, active="host settings")
+
+def _sethostname(config_file, old_hostname, new_hostname):
+    #read the file and determine location where our old hostname is
+    f = open(config_file, 'r')
+    set_host = f.read()
+    f.close()
+    pointer_hostname = set_host.find(old_hostname)
+    #replace old hostname with new hostname and write
+    set_host = set_host.replace(old_hostname, new_hostname)
+    f = open(config_file, 'w')
+    f.seek(pointer_hostname)
+    f.write(set_host)
+    f.close()
 
 @settings.route('/export', methods=['GET', 'POST'])
 @login_required

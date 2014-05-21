@@ -57,3 +57,7 @@ class ImportSettingsForm(Form):
     import_file = FileField(u'Settings Archive', [Required()])
 
     submit = SubmitField(u'Import')
+
+class HostSettingsForm(Form):
+    hostname = TextField(u'Hostname', [Required(), Length(max=32)])
+    submit = SubmitField(u'Save') 

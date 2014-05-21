@@ -12,6 +12,7 @@
     ("users", url_for('admin.users'), True),
     ("password", url_for('settings.password'), False),
     ("setup", url_for('setup.index'), True),
+    ("host", url_for('settings.host'), False),
 ]%}
 {% else %}
 {% set tabs = [
@@ -21,5 +22,6 @@
     ("users", url_for('admin.users'), True),
     ("password", url_for('settings.password'), False),
     ("setup", url_for('setup.index'), True),
+    ("host", url_for('settings.host'), False),
 ]%}
 {% endif %}
