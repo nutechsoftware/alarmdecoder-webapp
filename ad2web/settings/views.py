@@ -28,7 +28,7 @@ from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
 import socket
 import sh
-from sh import hostname, service
+from sh import hostname, service, sudo
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -122,7 +122,7 @@ def host():
         _sethostname(hosts_file, hostname, new_hostname)
         _sethostname(hostname_file, hostname, new_hostname)
 
-        sh.hostname("-b", new_hostname)
+        sh.sudo.hostname("-b", new_hostname)
 
         return redirect(url_for('settings.index'))
 
