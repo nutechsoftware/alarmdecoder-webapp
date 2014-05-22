@@ -36,7 +36,8 @@ $(document).ready(function() {
     $('.alert').on('touchend', function(e) {
         $(this).hide();
     });
-    if( !isiPad )
+// hiding the x overflow on the wrap prevents ios from scrolling, but not having it on android does weird things, so add the style if it's not an ios device
+    if( !isiPad && !isiPhone )
     {
         $('#wrap').css('overflow-x', 'hidden');
     }
