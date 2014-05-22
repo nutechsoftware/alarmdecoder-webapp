@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import glob
 
 from flask import Blueprint, render_template, abort, g, request, flash, Response, redirect, url_for
 from flask import current_app
@@ -12,7 +13,7 @@ from ..settings.models import Setting
 from ..certificate.models import Certificate
 from ..certificate.constants import CA, SERVER, CLIENT, INTERNAL, ACTIVE as CERT_ACTIVE
 from .forms import (DeviceTypeForm, NetworkDeviceForm, LocalDeviceForm,
-                   SSLForm, SSLHostForm, DeviceForm, TestDeviceForm, CreateAccountForm)
+                   SSLForm, SSLHostForm, DeviceForm, TestDeviceForm, CreateAccountForm, LocalDeviceFormUSB)
 from .constants import (SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
                     SETUP_LOCAL, SETUP_DEVICE, SETUP_TEST, SETUP_COMPLETE, BAUDRATES,
                     DEFAULT_BAUDRATES, DEFAULT_PATHS, SETUP_ENDPOINT_STAGE)
@@ -73,15 +74,31 @@ def type():
 @setup.route('/local', methods=['GET', 'POST'])
 @admin_or_first_run_required
 def local():
-    form = LocalDeviceForm()
-    if not form.is_submitted():
-        device_type = Setting.get_by_name('device_type').value
+    device_search_path = '/sys/bus/usb-serial/devices/*'
+    device_type = Setting.get_by_name('device_type').value
 
-        device_path = Setting.get_by_name('device_path').value
-        if device_path:
-            form.device_path.data = device_path
+    form = None
+
+    if device_type != 'AD2USB':
+        form = LocalDeviceForm()
+    else:
+        form = LocalDeviceFormUSB()
+
+    if not form.is_submitted():
+        if device_type != 'AD2USB':
+            device_path = Setting.get_by_name('device_path').value
+            if device_path:
+                form.device_path.data = device_path
+            else:
+                form.device_path.data = DEFAULT_PATHS[device_type]
         else:
-            form.device_path.data = DEFAULT_PATHS[device_type]
+            usb_devices = _iterate_usb(device_search_path)
+            device_path = Setting.get_by_name('device_path').value
+            form.device_path.choices = [(usb_devices[i], usb_devices[i]) for i in usb_devices]
+            if device_path:
+                form.device_path.default = device_path
+            else:
+                form.device_path.default = DEFAULT_PATHS[device_type]
 
         baudrate = Setting.get_by_name('device_baudrate').value
         if baudrate:
@@ -124,6 +141,17 @@ def local():
         return redirect(url_for(next_stage))
 
     return render_template('setup/local.html', form=form)
+
+def _iterate_usb(device_path):
+    ports = glob.glob(device_path)
+    ports.sort()
+    devices = {}
+
+    for port in ports:
+        port_path = os.path.join('/dev', port.split('/')[-1])
+        devices[port_path] = port_path
+
+    return devices
 
 @setup.route('/network', methods=['GET', 'POST'])
 @admin_or_first_run_required
