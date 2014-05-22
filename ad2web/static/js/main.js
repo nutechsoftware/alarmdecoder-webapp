@@ -36,4 +36,8 @@ $(document).ready(function() {
     $('.alert').on('touchend', function(e) {
         $(this).hide();
     });
+    if( !isiPad )
+    {
+        $('#wrap').css('overflow-x', 'hidden');
+    }
 })
