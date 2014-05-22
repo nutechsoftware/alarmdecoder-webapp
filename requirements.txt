@@ -49,3 +49,4 @@ sleekxmpp==1.2.4
 smmap==0.8.2
 speaklater==1.3
 wsgiref==0.1.2
+netifaces==0.10.4

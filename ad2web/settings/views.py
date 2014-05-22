@@ -27,6 +27,7 @@ from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
 import socket
+import netifaces
 import sh
 from sh import hostname, service, sudo
 
@@ -140,6 +141,11 @@ def _sethostname(config_file, old_hostname, new_hostname):
     f.seek(pointer_hostname)
     f.write(set_host)
     f.close()
+
+def _list_network_interfaces():
+    interfaces = netifaces.interfaces()
+
+    return interfaces
 
 @settings.route('/export', methods=['GET', 'POST'])
 @login_required
