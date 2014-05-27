@@ -7,8 +7,8 @@
 
 {% block body %}
 <div class="settings_wrapper">
-    <div id="hostname" style="margin-bottom: 10px">
-        <b>Hostname: </b>{{hostname}} <a href="{{url_for('settings.hostname')}}" class="btn btn-primary">Change</a>
+    <div id="hostname" style="display: table-cell; padding-bottom: 25px; font-size: 28px;">
+        <span style="vertical-align: bottom"><b>Hostname: </b>{{hostname}} </span><span style="position: relative; top: 3px;"><a href="{{url_for('settings.hostname')}}" class="btn btn-primary">Change</a></span>
     </div>
     <div id="network_devices">
         {{ render_form(url_for('settings.host'), form) }}
