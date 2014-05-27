@@ -5,6 +5,10 @@ import hashlib
 import io
 import tarfile
 import json
+import re
+import socket
+import netifaces
+import sh
 
 from datetime import datetime
 
@@ -20,15 +24,12 @@ from ..user import User, UserDetail
 from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
-from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP
+from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE
 from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
-import socket
-import netifaces
-import sh
 from sh import hostname, service, sudo
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
@@ -110,24 +111,57 @@ def password():
 @admin_required
 def host():
     hostname = socket.getfqdn()
-    form = HostSettingsForm()
+    form = EthernetSelectionForm()
+
+    network_interfaces = _list_network_interfaces()
     
+    if not form.is_submitted():
+        form.ethernet_devices.choices = [(i, i) for i in network_interfaces]
+
+    if form.validate_on_submit():
+        return redirect(url_for('settings.configure_ethernet_device', device=form.ethernet_devices.data))
+
+    return render_template('settings/host.html', hostname=hostname, form=form, active="host settings")
+
+@settings.route('/hostname', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def hostname():
+    hostname = socket.getfqdn()
+    form = HostSettingsForm()
+
     if not form.is_submitted():
         form.hostname.data = hostname
 
     if form.validate_on_submit():
-        hosts_file = '/etc/hosts'
-        hostname_file = '/etc/hostname'
         new_hostname = form.hostname.data
 
-        _sethostname(hosts_file, hostname, new_hostname)
-        _sethostname(hostname_file, hostname, new_hostname)
+        _sethostname(HOSTS_FILE, hostname, new_hostname)
+        _sethostname(HOSTNAME_FILE, hostname, new_hostname)
 
         sh.sudo.hostname("-b", new_hostname)
 
-        return redirect(url_for('settings.index'))
+        return redirect(url_for('settings.host'))
 
-    return render_template('settings/host.html', hostname=hostname, form=form, active="host settings")
+    return render_template('settings/hostname.html', hostname=hostname, form=form, active="hostname")
+
+@settings.route('/get_ethernet_info/<string:device>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def get_ethernet_info(device):
+    addresses = netifaces.ifaddresses(device)
+
+    print addresses
+
+@settings.route('/network/<string:device>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def configure_ethernet_device(device):
+    form = EthernetConfigureForm()
+    if not form.is_submitted():
+        form.ethernet_device.data = device
+
+    return render_template('settings/configure_ethernet_device.html', form=form, device=device, active="network settings")
 
 def _sethostname(config_file, old_hostname, new_hostname):
     #read the file and determine location where our old hostname is
@@ -147,6 +181,24 @@ def _list_network_interfaces():
 
     return interfaces
 
+def _parse_network_file():
+    text = open(NETWORK_FILE, 'r').read()
+    #iface string should also contain dhcp/static address gateway netmask information according to the RE
+    indexes = [s.start() for s in re.finditer('auto|iface|source|mapping|allow-|wpa-', text)]
+    result = map(text.__getslice__, indexes, indexes[1:] + [len(text)])
+
+    return result
+
+def _get_ethernet_properties(device):
+    device_map = _parse_network_file()
+
+    properties = []
+    for device_string in device_map:
+        if( device ) in device_string:
+            properties.append[device_string]
+
+    return properties
+    
 @settings.route('/export', methods=['GET', 'POST'])
 @login_required
 @admin_required

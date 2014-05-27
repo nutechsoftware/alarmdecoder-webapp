@@ -7,6 +7,10 @@ from ..certificate import Certificate
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
 
+HOSTS_FILE = '/etc/hosts'
+HOSTNAME_FILE = '/etc/hostname'
+NETWORK_FILE = '/etc/network/interfaces'
+
 EXPORT_MAP = {
 	'settings.json': Setting,
 	'certificates.json': Certificate,

@@ -7,9 +7,30 @@
 
 {% block body %}
 <div class="settings_wrapper">
-    {{ render_form(url_for('settings.host'), form) }}
+    <div id="hostname" style="margin-bottom: 10px">
+        <b>Hostname: </b>{{hostname}} <a href="{{url_for('settings.hostname')}}" class="btn btn-primary">Change</a>
+    </div>
+    <div id="network_devices">
+        {{ render_form(url_for('settings.host'), form) }}
+    </div>
+    <div id="network_device_settings">
+    </div>
 </div>
 {% endblock %}
 
 {% block js_btm %}
+{% endblock %}
+
+{% block pagejs %}
+    $(document).ready(function() {
+/*
+        $('#ethernet_devices').on('change', function() {
+            $.ajax( {
+                dataType: "json",
+                data: $('#ethernet_devices').val()
+            }).done( function( data ) {
+            });
+        });
+*/
+    });
 {% endblock %}

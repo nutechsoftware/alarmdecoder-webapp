@@ -60,4 +60,14 @@ class ImportSettingsForm(Form):
 
 class HostSettingsForm(Form):
     hostname = TextField(u'Hostname', [Required(), Length(max=32)])
-    submit = SubmitField(u'Save') 
+    submit = SubmitField(u'Save')
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/host'")
+
+class EthernetSelectionForm(Form):
+    ethernet_devices =  SelectField(u'Network Device', choices=[('eth0', u'eth0')], default='eth0')
+    submit = SubmitField(u'Configure')
+
+class EthernetConfigureForm(Form):
+    ethernet_device = HiddenField()
+    submit = SubmitField(u'Save')
+    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/host'")

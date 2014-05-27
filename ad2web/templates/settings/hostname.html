@@ -1,0 +1,15 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    {{ render_form(url_for('settings.hostname'), form) }}
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}
