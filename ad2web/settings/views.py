@@ -156,7 +156,15 @@ def hostname():
             flash('Unable to write HOSTNAME FILE, check permissions', 'error')
 
         with sh.sudo:
-            sh.hostname("-b", new_hostname)
+            try:
+                sh.hostname("-b", new_hostname)
+            except sh.ErrorReturnCode_1:
+                flash('Error setting hostname with the hostname command.', 'error')
+
+            try:
+                sh.service("avahi-daemon restart")
+            except sh.ErrorReturnCode_1:
+                flash('Error restarting the avahi-daemon', 'error')
 
         return redirect(url_for('settings.host'))
 
