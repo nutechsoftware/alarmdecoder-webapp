@@ -149,9 +149,19 @@ def hostname():
 @login_required
 @admin_required
 def get_ethernet_info(device):
+#get ethernet properties of passed in device
+#prepare json array for XHR
     addresses = netifaces.ifaddresses(device)
+    gateways = netifaces.gateways()
+    eth_properties = {}
 
-    print addresses
+    eth_properties['device'] = device
+    eth_properties['ipv4'] = addresses[netifaces.AF_INET]
+    eth_properties['ipv6'] = addresses[netifaces.AF_INET6]
+    eth_properties['mac_address'] = addresses[netifaces.AF_LINK]
+    eth_properties['default_gateway'] = gateways['default'][netifaces.AF_INET]
+    
+    return json.dumps(eth_properties)
 
 @settings.route('/network/<string:device>', methods=['GET', 'POST'])
 @login_required
