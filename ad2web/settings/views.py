@@ -7,7 +7,11 @@ import tarfile
 import json
 import re
 import socket
-import netifaces
+try:
+    import netifaces
+    hasnetifaces = 1
+except ImportError:
+    hasnetifaces = 0
 import sh
 
 from datetime import datetime
@@ -110,18 +114,23 @@ def password():
 @login_required
 @admin_required
 def host():
-    hostname = socket.getfqdn()
-    form = EthernetSelectionForm()
+    #if missing netifaces dependency, we do not allow to view host settings
+    if hasnetifaces == 1:
+        hostname = socket.getfqdn()
+        form = EthernetSelectionForm()
 
-    network_interfaces = _list_network_interfaces()
+        network_interfaces = _list_network_interfaces()
     
-    if not form.is_submitted():
-        form.ethernet_devices.choices = [(i, i) for i in network_interfaces]
+        if not form.is_submitted():
+            form.ethernet_devices.choices = [(i, i) for i in network_interfaces]
 
-    if form.validate_on_submit():
-        return redirect(url_for('settings.configure_ethernet_device', device=form.ethernet_devices.data))
+        if form.validate_on_submit():
+            return redirect(url_for('settings.configure_ethernet_device', device=form.ethernet_devices.data))
 
-    return render_template('settings/host.html', hostname=hostname, form=form, active="host settings")
+        return render_template('settings/host.html', hostname=hostname, form=form, active="host settings")
+    else:
+        flash('Please install the netifaces module (sudo pip install netifaces) to view host settings information.', 'error')
+        return redirect(url_for('settings.index'))
 
 @settings.route('/hostname', methods=['GET', 'POST'])
 @login_required
@@ -136,10 +145,18 @@ def hostname():
     if form.validate_on_submit():
         new_hostname = form.hostname.data
 
-        _sethostname(HOSTS_FILE, hostname, new_hostname)
-        _sethostname(HOSTNAME_FILE, hostname, new_hostname)
+        if os.access(HOSTS_FILE, os.W_OK):
+            _sethostname(HOSTS_FILE, hostname, new_hostname)
+        else:
+            flash('Unable to write HOSTS FILE, check permissions', 'error')
 
-        sh.sudo.hostname("-b", new_hostname)
+        if os.access(HOSTNAME_FILE, os.W_OK):
+            _sethostname(HOSTNAME_FILE, hostname, new_hostname)
+        else:
+            flash('Unable to write HOSTNAME FILE, check permissions', 'error')
+
+        with sh.sudo:
+            sh.hostname("-b", new_hostname)
 
         return redirect(url_for('settings.host'))
 
@@ -151,15 +168,17 @@ def hostname():
 def get_ethernet_info(device):
 #get ethernet properties of passed in device
 #prepare json array for XHR
-    addresses = netifaces.ifaddresses(device)
-    gateways = netifaces.gateways()
     eth_properties = {}
 
-    eth_properties['device'] = device
-    eth_properties['ipv4'] = addresses[netifaces.AF_INET]
-    eth_properties['ipv6'] = addresses[netifaces.AF_INET6]
-    eth_properties['mac_address'] = addresses[netifaces.AF_LINK]
-    eth_properties['default_gateway'] = gateways['default'][netifaces.AF_INET]
+    if hasnetifaces == 1:
+        addresses = netifaces.ifaddresses(device)
+        gateways = netifaces.gateways()
+
+        eth_properties['device'] = device
+        eth_properties['ipv4'] = addresses[netifaces.AF_INET]
+        eth_properties['ipv6'] = addresses[netifaces.AF_INET6]
+        eth_properties['mac_address'] = addresses[netifaces.AF_LINK]
+        eth_properties['default_gateway'] = gateways['default'][netifaces.AF_INET]
     
     return json.dumps(eth_properties)
 
@@ -187,7 +206,10 @@ def _sethostname(config_file, old_hostname, new_hostname):
     f.close()
 
 def _list_network_interfaces():
-    interfaces = netifaces.interfaces()
+    interfaces = None
+
+    if hasnetifaces == 1:
+        interfaces = netifaces.interfaces()
 
     return interfaces
 
@@ -199,13 +221,18 @@ def _parse_network_file():
 
     return result
 
+#reading the network file and tokenizing for ability to update network settings
 def _get_ethernet_properties(device):
-    device_map = _parse_network_file()
+    device_map = None
+
+    if os.access(NETWORK_FILE, os.W_OK):
+        device_map = _parse_network_file()
 
     properties = []
-    for device_string in device_map:
-        if( device ) in device_string:
-            properties.append[device_string]
+    if device_map is not None:
+        for device_string in device_map:
+            if( device ) in device_string:
+                properties.append[device_string]
 
     return properties
     
