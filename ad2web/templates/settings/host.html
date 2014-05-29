@@ -37,7 +37,7 @@
             var default_gateway = data['default_gateway'][0];
             $('#network_device_settings').append('<b>Default Gateway: </b>' + default_gateway + '<br/>');
             var mac_address = data['mac_address'][0]['addr'];
-            $('#network_device_settings').append('<b>Mac Address: </b>' + mac_address + '<br/>');
+            $('#network_device_settings').append('<b>MAC Address: </b>' + mac_address + '<br/>');
             var ipv4 = []
             var ipv6 = []
             for( var i = 0; i < data['ipv4'].length; i++ )
@@ -48,21 +48,27 @@
             {
                 ipv6.push(data['ipv6'][i]);
             }
-            $('#network_device_settings').append('<br/><b>IPV4 Addresses:</b><br/>');
-            for( var i = 0; i < ipv4.length; i++)
+            if( ipv4.length > 0 )
             {
-                for( var key in ipv4[i] )
+                $('#network_device_settings').append('<br/><b>IPV4 Addresses:</b><br/>');
+                for( var i = 0; i < ipv4.length; i++)
                 {
-                    $('#network_device_settings').append('&nbsp;&nbsp;&nbsp;&nbsp;<b>' + key + ': </b>' + ipv4[i][key] + '<br/>');
+                    for( var key in ipv4[i] )
+                    {
+                        $('#network_device_settings').append('&nbsp;&nbsp;&nbsp;&nbsp;<b>' + key + ': </b>' + ipv4[i][key] + '<br/>');
+                    }
                 }
             }
 
-            $('#network_device_settings').append('<br/><b>IPV6 Addresses:</b><br/>');
-            for( var i = 0; i < ipv6.length; i++ )
+            if( ipv6.length > 0 )
             {
-                for( var key in ipv6[i] )
+                $('#network_device_settings').append('<br/><b>IPV6 Addresses:</b><br/>');
+                for( var i = 0; i < ipv6.length; i++ )
                 {
-                    $('#network_device_settings').append('&nbsp;&nbsp;&nbsp;&nbsp;<b>' + key + ': </b>' + ipv6[i][key] + '<br/>');
+                    for( var key in ipv6[i] )
+                    {
+                        $('#network_device_settings').append('&nbsp;&nbsp;&nbsp;&nbsp;<b>' + key + ': </b>' + ipv6[i][key] + '<br/>');
+                    }
                 }
             }
         });
