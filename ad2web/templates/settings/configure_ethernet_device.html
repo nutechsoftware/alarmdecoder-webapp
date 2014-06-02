@@ -7,7 +7,7 @@
 
 {% block body %}
 <div class="settings_wrapper">
-    {{ form.ethernet_device(disabled=true) }}
+    <h2>Settings for: {{device}}</h2>
     {{ render_form(url_for('settings.configure_ethernet_device', device=device), form) }}
 </div>
 {% endblock %}

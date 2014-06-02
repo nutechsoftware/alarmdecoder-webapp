@@ -69,5 +69,9 @@ class EthernetSelectionForm(Form):
 
 class EthernetConfigureForm(Form):
     ethernet_device = HiddenField()
+    connection_type = RadioField(u'Connection Type', choices=[('static', 'Static'), ('dhcp', 'DHCP')], default='dhcp')
+    ip_address = TextField()
+    gateway = TextField()
+    netmask = TextField()
     submit = SubmitField(u'Save')
     cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/host'")
