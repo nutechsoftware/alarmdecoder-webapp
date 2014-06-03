@@ -6,7 +6,7 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,
         FileField, DecimalField, BooleanField, SelectField, FormField, FieldList)
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
-        URL, AnyOf, Optional)
+        URL, AnyOf, Optional, IPAddress)
 from flask.ext.login import current_user
 
 from ..user import User
@@ -64,14 +64,14 @@ class HostSettingsForm(Form):
     cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/host'")
 
 class EthernetSelectionForm(Form):
-    ethernet_devices =  SelectField(u'Network Device', choices=[('eth0', u'eth0')], default='eth0')
+    ethernet_devices =  SelectField(u'Network Device', choices=[('eth0', u'eth0')], default='eth0', coerce=str)
     submit = SubmitField(u'Configure')
 
 class EthernetConfigureForm(Form):
     ethernet_device = HiddenField()
-    connection_type = RadioField(u'Connection Type', choices=[('static', 'Static'), ('dhcp', 'DHCP')], default='dhcp')
-    ip_address = TextField()
-    gateway = TextField()
-    netmask = TextField()
+    connection_type = RadioField(u'Connection Type', choices=[('static', 'Static'), ('dhcp', 'DHCP')], default='dhcp', coerce=str)
+    ip_address = TextField('IP Address', [IPAddress('Invalid IP Address')])
+    gateway = TextField('Default Gateway', [IPAddress('Invalid Gateway IP Format')])
+    netmask = TextField('Subnet Mask', [IPAddress('Invalid Subnet IP Format')])
     submit = SubmitField(u'Save')
     cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/host'")

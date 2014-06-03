@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import platform
 import hashlib
 import io
 import tarfile
@@ -114,15 +115,19 @@ def password():
 @login_required
 @admin_required
 def host():
+    operating_system = platform.system()
+
+    if operating_system.title() != 'Linux':
+        flash('Only supported on Linux systems!', 'error')
+        return redirect(url_for('settings.index'))
+
     #if missing netifaces dependency, we do not allow to view host settings
     if hasnetifaces == 1:
         hostname = socket.getfqdn()
         form = EthernetSelectionForm()
 
         network_interfaces = _list_network_interfaces()
-    
-        if not form.is_submitted():
-            form.ethernet_devices.choices = [(i, i) for i in network_interfaces]
+        form.ethernet_devices.choices = [(i, i) for i in network_interfaces]
 
         if form.validate_on_submit():
             return redirect(url_for('settings.configure_ethernet_device', device=form.ethernet_devices.data))
@@ -195,8 +200,32 @@ def get_ethernet_info(device):
 @admin_required
 def configure_ethernet_device(device):
     form = EthernetConfigureForm()
+    properties = _get_ethernet_properties(device)
+
     if not form.is_submitted():
+        if not properties:
+            if device == 'lo' or device == 'lo0':
+                flash('Unable to configure loopback device!', 'error')
+                return redirect(url_for('settings.host'))
+
+            flash('Device ' + device + ' not found in ' + NETWORK_FILE + ' you should use your OS tools to configure your network.', 'error')
+    #        return redirect(url_for('settings.host'))
+        else:
+            print properties
+            for s in properties:
+                if 'loopback' in s:
+                    flash('Unable to configure loopback device!', 'error')
+                    return redirect(url_for('settings.host'))
+                if 'static' in s:
+                    form.connection_type.data = 'static'
+                if 'dhcp' in s:
+                    form.connection_type.data = 'dhcp'
+
+
+    if form.validate_on_submit():
         form.ethernet_device.data = device
+
+    form.ethernet_device.data = device
 
     return render_template('settings/configure_ethernet_device.html', form=form, device=device, active="network settings")
 
@@ -235,12 +264,14 @@ def _get_ethernet_properties(device):
 
     if os.access(NETWORK_FILE, os.W_OK):
         device_map = _parse_network_file()
+    else:
+        flash(NETWORK_FILE + ' is not writable!', 'error')
 
     properties = []
     if device_map is not None:
-        for device_string in device_map:
-            if( device ) in device_string:
-                properties.append[device_string]
+        for s in device_map:
+            if device in s:
+                properties.append(s)
 
     return properties
     
