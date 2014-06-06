@@ -200,15 +200,40 @@ def get_ethernet_info(device):
 @admin_required
 def configure_ethernet_device(device):
     form = EthernetConfigureForm()
-    properties = _get_ethernet_properties(device)
+    device_map = None
+    dhcp = True
+
+    if os.access(NETWORK_FILE, os.W_OK):
+        device_map = _parse_network_file()
+    else:
+        flash(NETWORK_FILE + ' is not writable!', 'error')
+        return redirect(url_for('settings.host'))
+
+    properties = _get_ethernet_properties(device, device_map)
+    addresses = netifaces.ifaddresses(device)
+    ipv4 = addresses[netifaces.AF_INET]
+    print "Device map:\n"
+    print device_map
+
+#first address and gateway
+    ip_address = ipv4[0]['addr']
+    subnet_mask = ipv4[0]['netmask']
+    gateways = netifaces.gateways()
+    gateway = gateways['default'][netifaces.AF_INET]
+    default_gateway = gateway[0]
 
     if not form.is_submitted():
+        form.ip_address.data = ip_address
+        form.gateway.data = default_gateway
+        form.netmask.data = subnet_mask
+
         if not properties:
             if device == 'lo' or device == 'lo0':
                 flash('Unable to configure loopback device!', 'error')
                 return redirect(url_for('settings.host'))
 
             flash('Device ' + device + ' not found in ' + NETWORK_FILE + ' you should use your OS tools to configure your network.', 'error')
+#uncomment this return before release
     #        return redirect(url_for('settings.host'))
         else:
             print properties
@@ -218,11 +243,22 @@ def configure_ethernet_device(device):
                     return redirect(url_for('settings.host'))
                 if 'static' in s:
                     form.connection_type.data = 'static'
+                    dhcp = False
                 if 'dhcp' in s:
                     form.connection_type.data = 'dhcp'
 
-
     if form.validate_on_submit():
+        if form.connection_type.data == 'static':
+            dhcp = False
+        else:
+            dhcp = True
+#substitute values in the device_map, write the file and restart networking
+        with sh.sudo:
+            try:
+                sh.service("networking restart")
+            except sh.ErrorReturnCode_1:
+                flash('Unable to restart networking. Please try manually.', 'error')
+
         form.ethernet_device.data = device
 
     form.ethernet_device.data = device
@@ -238,7 +274,6 @@ def _sethostname(config_file, old_hostname, new_hostname):
     #replace old hostname with new hostname and write
     set_host = set_host.replace(old_hostname, new_hostname)
     f = open(config_file, 'w')
-    f.seek(pointer_hostname)
     f.write(set_host)
     f.close()
 
@@ -258,15 +293,22 @@ def _parse_network_file():
 
     return result
 
+def _write_network_file(device_map):
+    text = ''
+    f = open(NETWORK_FILE, 'r+')
+    #go to beginning of file, rewrite ethernet device map, truncate old since we'll have a whole copy of the file in the map
+    f.seek(0)
+
+    if device_map is not None:
+        for s in device_map:
+            text + s
+        f.write(text)
+        f.truncate()
+
+    f.close()
+
 #reading the network file and tokenizing for ability to update network settings
-def _get_ethernet_properties(device):
-    device_map = None
-
-    if os.access(NETWORK_FILE, os.W_OK):
-        device_map = _parse_network_file()
-    else:
-        flash(NETWORK_FILE + ' is not writable!', 'error')
-
+def _get_ethernet_properties(device, device_map):
     properties = []
     if device_map is not None:
         for s in device_map:
