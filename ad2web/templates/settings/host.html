@@ -15,6 +15,13 @@
     </div>
     <div id="network_device_settings">
     </div>
+    <br/>
+    <div id="system_info">
+        <p>
+            <b>System Uptime: </b>{{uptime}}<br/> 
+            <a href="{{url_for('settings.system_reboot')}}" class="btn btn-primary">Reboot</a>
+        </p>
+    </div>
 </div>
 {% endblock %}
 
@@ -44,9 +51,12 @@
             {
                 ipv4.push(data['ipv4'][i]);
             }
-            for( var i = 0; i < data['ipv6'].length; i++ )
+            if( data['ipv6'] )
             {
-                ipv6.push(data['ipv6'][i]);
+                for( var i = 0; i < data['ipv6'].length; i++ )
+                {
+                    ipv6.push(data['ipv6'][i]);
+                }
             }
             if( ipv4.length > 0 )
             {

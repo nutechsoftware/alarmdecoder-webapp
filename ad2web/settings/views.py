@@ -15,7 +15,7 @@ except ImportError:
     hasnetifaces = 0
 import sh
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, render_template, current_app, request, flash, Response, url_for, redirect
 from flask.ext.login import login_required, current_user
@@ -121,6 +121,8 @@ def host():
         flash('Only supported on Linux systems!', 'error')
         return redirect(url_for('settings.index'))
 
+    uptime = _get_system_uptime()
+
     #if missing netifaces dependency, we do not allow to view host settings
     if hasnetifaces == 1:
         hostname = socket.getfqdn()
@@ -132,7 +134,7 @@ def host():
         if form.validate_on_submit():
             return redirect(url_for('settings.configure_ethernet_device', device=form.ethernet_devices.data))
 
-        return render_template('settings/host.html', hostname=hostname, form=form, active="host settings")
+        return render_template('settings/host.html', hostname=hostname, uptime=uptime, form=form, active="host settings")
     else:
         flash('Please install the netifaces module (sudo pip install netifaces) to view host settings information.', 'error')
         return redirect(url_for('settings.index'))
@@ -189,11 +191,27 @@ def get_ethernet_info(device):
 
         eth_properties['device'] = device
         eth_properties['ipv4'] = addresses[netifaces.AF_INET]
-        eth_properties['ipv6'] = addresses[netifaces.AF_INET6]
+        if netifaces.AF_INET6 in addresses.keys():
+            eth_properties['ipv6'] = addresses[netifaces.AF_INET6]
         eth_properties['mac_address'] = addresses[netifaces.AF_LINK]
         eth_properties['default_gateway'] = gateways['default'][netifaces.AF_INET]
     
     return json.dumps(eth_properties)
+
+@settings.route('/reboot', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def system_reboot():
+    with sh.sudo:
+        try:
+            sh.sync()
+            sh.reboot()
+        except sh.ErrorReturnCode_1:
+            flash('Unable to reboot device!', 'error')
+            return redirect(url_for('settings.host'))
+
+    flash('Rebooting device!', 'success')
+    return redirect(url_for('settings.host'))
 
 @settings.route('/network/<string:device>', methods=['GET', 'POST'])
 @login_required
@@ -316,6 +334,15 @@ def _get_ethernet_properties(device, device_map):
                 properties.append(s)
 
     return properties
+
+#system uptime
+def _get_system_uptime():
+    with open('/proc/uptime', 'r') as f:
+        uptime_seconds = float(f.readline().split()[0])
+        uptime_string = str(timedelta(seconds = uptime_seconds))
+    
+    uptime_string = uptime_string[:-4]
+    return uptime_string
     
 @settings.route('/export', methods=['GET', 'POST'])
 @login_required
