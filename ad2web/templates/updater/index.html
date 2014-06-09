@@ -81,7 +81,7 @@
     {% if updates|length == 0 %}
         <p>No updates available!</p>
     {% else %}
-        <table>
+        <table style="text-align: left">
         <tr><th>Component</th><th>Branch</th><th>Status</th><th></th></tr>
         {% for component, (needs_update, branch, revision, new_revision, status) in updates.iteritems() %}
             <tr>
