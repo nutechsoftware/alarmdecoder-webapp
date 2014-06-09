@@ -83,9 +83,8 @@ def search():
     return render_template('frontend/search.html', pagination=pagination, keywords=keywords)
 
 
-def login_history_add(user):
+def login_history_add(user, ip):
     user_history = UserHistory()
-    ip = gethostbyname(gethostname())
     user_history.user_id = user.id
     user_history.ip_address = ip
     userAgentString = request.headers.get('User-Agent')
@@ -109,7 +108,7 @@ def login():
             remember = request.form.get('remember') == 'y'
             if login_user(user, remember=remember):
                 flash(_("Logged in"), 'success')
-                login_history_add(user)
+                login_history_add(user, request.remote_addr)
                 license = Setting.get_by_name('license_agreement', default=False).value
                 if not license:
                     return redirect(url_for('frontend.license'))
