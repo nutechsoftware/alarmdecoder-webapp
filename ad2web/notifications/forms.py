@@ -109,6 +109,7 @@ class EmailNotificationForm(EditNotificationForm):
         self.port.data = self.populate_from_setting(id, 'port')
         self.authentication_required.data = self.populate_from_setting(id, 'authentication_required')
         self.username.data = self.populate_from_setting(id, 'username')
+        self.password.widget.hide_value = False
         self.password.data = self.populate_from_setting(id, 'password')
 
 
@@ -127,5 +128,6 @@ class GoogleTalkNotificationForm(EditNotificationForm):
 
     def populate_from_settings(self, id):
         self.source.data = self.populate_from_setting(id, 'source')
+        self.password.widget.hide_value = False
         self.password.data = self.populate_from_setting(id, 'password')
         self.destination.data = self.populate_from_setting(id, 'destination')
