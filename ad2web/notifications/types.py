@@ -5,6 +5,7 @@ import smtplib
 from email.mime.text import MIMEText
 import sleekxmpp
 import json
+import re
 
 from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES
 from .models import Notification, NotificationSetting, NotificationMessage
@@ -90,11 +91,14 @@ class EmailNotification(BaseNotification):
 
         self.id = obj.id
         self.description = obj.description
-        self.source = obj.settings['source'].value
-        self.destination = obj.settings['destination'].value
-        self.server = obj.settings['server'].value
-        self.username = obj.settings['username'].value
-        self.password = obj.settings['password'].value
+        self.source = obj.get_setting('source')
+        self.destination = obj.get_setting('destination')
+        self.server = obj.get_setting('server')
+        self.port = obj.get_setting('port')
+        self.tls = obj.get_setting('tls')
+        self.authentication_required = obj.get_setting('authentication_required')
+        self.username = obj.get_setting('username')
+        self.password = obj.get_setting('password')
 
     def send(self, type, text):
         try:
@@ -102,14 +106,17 @@ class EmailNotification(BaseNotification):
 
             msg['Subject'] = 'AlarmDecoder: Alarm Event'
             msg['From'] = self.source
-            msg['To'] = self.destination #', '.join(self.destination)
+            recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
+            msg['To'] = ', '.join(recipients)
 
-            s = smtplib.SMTP(self.server)
+            s = smtplib.SMTP(self.server, self.port)
+            if self.tls:
+                s.starttls()
 
-            if self.username != '':
-                s.login(self.username, self.password)
+            if self.authentication_required:
+                s.login(str(self.username), str(self.password))
 
-            s.sendmail(self.source, self.destination, msg.as_string())
+            s.sendmail(self.source, recipients, msg.as_string())
             s.quit()
         except smtplib.SMTPException, err:
             import traceback
@@ -121,9 +128,9 @@ class GoogleTalkNotification(BaseNotification):
 
         self.id = obj.id
         self.description = obj.description
-        self.source = obj.settings['source'].value
-        self.password = obj.settings['password'].value
-        self.destination = obj.settings['destination'].value
+        self.source = obj.get_setting('source')
+        self.password = obj.get_setting('password')
+        self.destination = obj.get_setting('destination')
         self.client = None
 
     def send(self, type, text):

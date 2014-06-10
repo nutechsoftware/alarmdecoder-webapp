@@ -70,6 +70,7 @@ def edit(id):
         current_app.decoder.refresh_notifier(id)
 
         flash('Notification saved.', 'success')
+        return redirect(url_for('notifications.index'))
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 

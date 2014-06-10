@@ -24,11 +24,13 @@ class MultiCheckboxField(SelectMultipleField):
     widget = ListWidget(prefix_label=True)
     option_widget = CheckboxInput()
 
+
 class CreateNotificationForm(Form):
     type = SelectField(u'Notification Type', choices=[nt for t, nt in NOTIFICATIONS.iteritems()])
 
     submit = SubmitField(u'Next')
     cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications'")
+
 
 class EditNotificationMessageForm(Form):
     id = HiddenField()
@@ -36,6 +38,7 @@ class EditNotificationMessageForm(Form):
 
     submit = SubmitField(u'Save')
     cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications/messages'")
+
 
 class EditNotificationForm(Form):
     type = HiddenField()
@@ -69,11 +72,15 @@ class EditNotificationForm(Form):
 
         return ret
 
+
 class EmailNotificationForm(EditNotificationForm):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
 
     server = TextField(u'Email Server', [Required(), Length(max=255)], default='localhost', description=u'Email server to use for sending')
+    port = IntegerField(u'Server Port', [Required(), NumberRange(1, 65535)], default=25, description=u'Server email port')
+    authentication_required = BooleanField(u'Authenticate with email server?', default=False, description=u'Is authentication required to send email?')
+    tls = BooleanField(u'Use TLS?', default=False, description=u'Use TLS for connection to the server?')
     username = TextField(u'Username', [Optional(), Length(max=255)], description=u'Optional: Username for the email server')
     password = PasswordField(u'Password', [Optional(), Length(max=255)], description=u'Optional: Password for the email server')
 
@@ -86,6 +93,9 @@ class EmailNotificationForm(EditNotificationForm):
         settings['source'] = self.populate_setting('source', self.source.data)
         settings['destination'] = self.populate_setting('destination', self.destination.data)
         settings['server'] = self.populate_setting('server', self.server.data)
+        settings['port'] = self.populate_setting('port', self.port.data)
+        settings['tls'] = self.populate_setting('tls', self.tls.data)
+        settings['authentication_required'] = self.populate_setting('authentication_required', self.authentication_required.data)
         settings['username'] = self.populate_setting('username', self.username.data)
         settings['password'] = self.populate_setting('password', self.password.data)
 
@@ -95,8 +105,12 @@ class EmailNotificationForm(EditNotificationForm):
         self.source.data = self.populate_from_setting(id, 'source')
         self.destination.data = self.populate_from_setting(id, 'destination')
         self.server.data = self.populate_from_setting(id, 'server')
+        self.tls.data = self.populate_from_setting(id, 'tls')
+        self.port.data = self.populate_from_setting(id, 'port')
+        self.authentication_required.data = self.populate_from_setting(id, 'authentication_required')
         self.username.data = self.populate_from_setting(id, 'username')
         self.password.data = self.populate_from_setting(id, 'password')
+
 
 class GoogleTalkNotificationForm(EditNotificationForm):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Messages will originate from this address')
