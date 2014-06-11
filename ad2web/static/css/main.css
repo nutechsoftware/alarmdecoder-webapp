@@ -554,3 +554,20 @@ div#subscriptions span label {
     margin-left: auto;
     margin-right: auto;
 }
+
+/* Notification Buttons */
+span#buttons-cancel-group, span#cancel-group {
+    float: left;
+    margin-bottom: 0;
+}
+
+span#buttons-submit-group, span#submit-group {
+    float: right;
+    margin-bottom: 0;
+}
+
+span#buttons-test-group, span#test-group {
+    float: right;
+    margin-bottom: 0;
+    margin-right: 5px;
+}

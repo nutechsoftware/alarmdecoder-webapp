@@ -109,7 +109,7 @@
                     {{ render_radio(field) }}
                 {% elif field.type == "BooleanField" %}
                     {{ render_checkbox(field) }}
-                {% elif field.type == "SubmitField" or field.type == "BackButtonField" %}
+                {% elif field.type == "SubmitField" or field.type == "BackButtonField" or field.type == "CancelButtonField" %}
                     {{ render_action(field) }}
                 {% elif field.type == "TextAreaField" %}
                     {{ render_textarea(field) }}

@@ -3,6 +3,7 @@
 import json
 from flask.ext.wtf import Form
 from flask.ext.wtf.html5 import URLField, EmailField, TelField
+import wtforms
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,
         FileField, DecimalField, BooleanField, SelectField, FormField, FieldList,
@@ -12,7 +13,7 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
 from wtforms.widgets import ListWidget, CheckboxInput
 from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK)
 from .models import NotificationSetting
-from ..widgets import CancelButton
+from ..widgets import CancelButtonField
 
 class MultiCheckboxField(SelectMultipleField):
     """
@@ -25,11 +26,17 @@ class MultiCheckboxField(SelectMultipleField):
     option_widget = CheckboxInput()
 
 
+class NotificationButtonForm(Form):
+    cancel = CancelButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
+    submit = SubmitField(u'Save')
+    test = SubmitField(u'Test')
+
+
 class CreateNotificationForm(Form):
     type = SelectField(u'Notification Type', choices=[nt for t, nt in NOTIFICATIONS.iteritems()])
 
     submit = SubmitField(u'Next')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications'")
+    cancel = CancelButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
 
 class EditNotificationMessageForm(Form):
@@ -37,13 +44,15 @@ class EditNotificationMessageForm(Form):
     text = TextAreaField(u'Message Text', [Required(), Length(max=255)])
 
     submit = SubmitField(u'Save')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications/messages'")
+    cancel = CancelButtonField(u'Cancel', onclick="location.href='/settings/notifications/messages'")
 
 
 class EditNotificationForm(Form):
     type = HiddenField()
     description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')
     subscriptions = MultiCheckboxField(u'Notify on..', choices=[(str(k), v) for k, v in SUBSCRIPTIONS.iteritems()])
+
+    #buttons = FormField(NotificationButtonForm)
 
     def populate_settings(self, settings, id=None):
         settings['subscriptions'] = self.populate_setting('subscriptions', json.dumps({str(k): True for k in self.subscriptions.data}))
@@ -77,15 +86,14 @@ class EmailNotificationForm(EditNotificationForm):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
 
-    server = TextField(u'Email Server', [Required(), Length(max=255)], default='localhost', description=u'Email server to use for sending')
-    port = IntegerField(u'Server Port', [Required(), NumberRange(1, 65535)], default=25, description=u'Server email port')
-    authentication_required = BooleanField(u'Authenticate with email server?', default=False, description=u'Is authentication required to send email?')
-    tls = BooleanField(u'Use TLS?', default=False, description=u'Use TLS for connection to the server?')
-    username = TextField(u'Username', [Optional(), Length(max=255)], description=u'Optional: Username for the email server')
-    password = PasswordField(u'Password', [Optional(), Length(max=255)], description=u'Optional: Password for the email server')
+    server = TextField(u'Email Server', [Required(), Length(max=255)], default='localhost')
+    port = IntegerField(u'Server Port', [Required(), NumberRange(1, 65535)], default=25)
+    tls = BooleanField(u'Use TLS?', default=False)
+    authentication_required = BooleanField(u'Authenticate with email server?', default=False)
+    username = TextField(u'Username', [Optional(), Length(max=255)])
+    password = PasswordField(u'Password', [Optional(), Length(max=255)])
 
-    submit = SubmitField(u'Save')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications'")
+    buttons = FormField(NotificationButtonForm)
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -118,8 +126,7 @@ class GoogleTalkNotificationForm(EditNotificationForm):
     password = PasswordField(u'Password', [Required(), Length(max=255)], description=u'Password for the source account')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Messages will be sent to this address')
 
-    submit = SubmitField(u'Save')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/notifications'")
+    buttons = FormField(NotificationButtonForm)
 
     def populate_settings(self, settings, id=None):
         settings['source'] = self.populate_setting('source', self.source.data)

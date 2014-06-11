@@ -38,6 +38,11 @@ class NotificationSystem(object):
             except KeyError:
                 pass
 
+    def test_notifier(self, id):
+        n = self._notifiers.get(id)
+        if n:
+            n.send(None, 'Test Notification')
+
     def _init_notifiers(self):
         self._notifiers = {-1: LogNotification()}   # Force LogNotification to always be present
 
@@ -94,9 +99,9 @@ class EmailNotification(BaseNotification):
         self.source = obj.get_setting('source')
         self.destination = obj.get_setting('destination')
         self.server = obj.get_setting('server')
-        self.port = obj.get_setting('port')
-        self.tls = obj.get_setting('tls')
-        self.authentication_required = obj.get_setting('authentication_required')
+        self.port = obj.get_setting('port', default=25)
+        self.tls = obj.get_setting('tls', default=False)
+        self.authentication_required = obj.get_setting('authentication_required', default=False)
         self.username = obj.get_setting('username')
         self.password = obj.get_setting('password')
 
