@@ -52,8 +52,6 @@ class EditNotificationForm(Form):
     description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')
     subscriptions = MultiCheckboxField(u'Notify on..', choices=[(str(k), v) for k, v in SUBSCRIPTIONS.iteritems()])
 
-    #buttons = FormField(NotificationButtonForm)
-
     def populate_settings(self, settings, id=None):
         settings['subscriptions'] = self.populate_setting('subscriptions', json.dumps({str(k): True for k in self.subscriptions.data}))
 
