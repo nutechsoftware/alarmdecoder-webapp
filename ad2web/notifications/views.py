@@ -61,7 +61,7 @@ def edit(id):
         form.populate_from_settings(id)
 
     if form.validate_on_submit():
-        form.populate_obj(notification)
+        notification.description = form.description.data
         form.populate_settings(notification.settings, id=id)
 
         db.session.add(notification)
@@ -69,10 +69,13 @@ def edit(id):
 
         current_app.decoder.refresh_notifier(id)
 
-        if form.test.data:
-            current_app.decoder.test_notifier(id)
-
-            flash('Test notification sent.', 'success')
+        if form.buttons.test.data:
+            try:
+                current_app.decoder.test_notifier(id)
+            except Exception, err:
+                flash('Error sending test notification: {0}'.format(err), 'error')
+            else:
+                flash('Test notification sent.', 'success')
         else:
             flash('Notification saved.', 'success')
             return redirect(url_for('notifications.index'))

@@ -26,10 +26,10 @@ class MultiCheckboxField(SelectMultipleField):
     option_widget = CheckboxInput()
 
 
-class NotificationButtonForm(Form):
+class NotificationButtonForm(wtforms.Form):
     cancel = CancelButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
     submit = SubmitField(u'Save')
-    test = SubmitField(u'Test')
+    test = SubmitField(u'Save & Test')
 
 
 class CreateNotificationForm(Form):

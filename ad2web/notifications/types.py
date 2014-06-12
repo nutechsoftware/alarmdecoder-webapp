@@ -123,9 +123,10 @@ class EmailNotification(BaseNotification):
 
             s.sendmail(self.source, recipients, msg.as_string())
             s.quit()
+
         except smtplib.SMTPException, err:
-            import traceback
-            traceback.print_exc()
+            raise
+
 
 class GoogleTalkNotification(BaseNotification):
     def __init__(self, obj):

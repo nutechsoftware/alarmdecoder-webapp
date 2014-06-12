@@ -15,7 +15,8 @@ class CancelButtonWidget(object):
         if 'onclick' not in kwargs:
             kwargs['onclick'] = self.onclick
 
-        return Markup('<button type="button" class="btn btn-primary" {0}>{1}</button>'.format(self.html_params(name=field.name, **kwargs), self.text))
+        return Markup('<button type="button" class="btn" {0}>{1}</button>'.format(self.html_params(name=field.name, **kwargs), self.text))
+
 
 class CancelButtonField(Field):
     widget = CancelButtonWidget()
