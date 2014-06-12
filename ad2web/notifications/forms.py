@@ -13,21 +13,11 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
 from wtforms.widgets import ListWidget, CheckboxInput
 from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK)
 from .models import NotificationSetting
-from ..widgets import CancelButtonField
-
-class MultiCheckboxField(SelectMultipleField):
-    """
-    A multiple-select, except displays a list of checkboxes.
-
-    Iterating the field will produce subfields, allowing custom rendering of
-    the enclosed checkbox fields.
-    """
-    widget = ListWidget(prefix_label=True)
-    option_widget = CheckboxInput()
+from ..widgets import ButtonField, MultiCheckboxField
 
 
 class NotificationButtonForm(wtforms.Form):
-    cancel = CancelButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
     submit = SubmitField(u'Save')
     test = SubmitField(u'Save & Test')
 
@@ -36,7 +26,7 @@ class CreateNotificationForm(Form):
     type = SelectField(u'Notification Type', choices=[nt for t, nt in NOTIFICATIONS.iteritems()])
 
     submit = SubmitField(u'Next')
-    cancel = CancelButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
 
 class EditNotificationMessageForm(Form):
@@ -44,7 +34,7 @@ class EditNotificationMessageForm(Form):
     text = TextAreaField(u'Message Text', [Required(), Length(max=255)])
 
     submit = SubmitField(u'Save')
-    cancel = CancelButtonField(u'Cancel', onclick="location.href='/settings/notifications/messages'")
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications/messages'")
 
 
 class EditNotificationForm(Form):
