@@ -1,0 +1,791 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = 'Keypad' %}
+
+{% extends "layouts/base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dsc_keypad.css') }}">
+{% endblock %}
+{% block pagejs %}
+    <script type="text/javascript">
+        //detect if mobile
+        function isMobile()
+        {
+            if( $('html').hasClass('mobile') == true && $('html').hasClass('tablet') == false )
+                return true;
+
+            return false;
+        }
+        //detect if tablet
+        function isTablet()
+        {
+            if( $('html').hasClass('tablet') == true )
+                return true;
+
+            return false;
+        }
+        //is local storage supported?
+        function storageSupported()
+        {
+            if( Modernizr.localstorage)
+                return true;
+            return false;
+        }
+        //visual beep or veep an element
+        function veep(elem, times, speed) 
+        {
+            if( times > 0 || times < 0 ) 
+            {
+                if( $(elem).hasClass("blink") ) 
+                    $(elem).removeClass("blink");
+                else
+                    $(elem).addClass("blink");
+            }
+
+            clearTimeout(function() {
+                veep( elem, times, speed );
+            });
+
+            if( times > 0 || times < 0 ) 
+            {
+                setTimeout(function() {
+                    veep( elem, times, speed );
+                }, speed);
+
+                times -= .5;
+            }
+        }
+
+        //preload our images into cache
+        function preloadImages(array)
+        {
+            if( !preloadImages.list)
+            {
+                preloadImages.list = [];
+            }
+            for( var i = 0; i < array.length; i++ )
+            {
+                var img = new Image();
+                img.src = array[i];
+                preloadImages.list.push(img);   
+            }
+        }
+
+        function bindMouseDown(id, key, mobile_image, desktop_image )
+        {
+            $(id).on('mousedown', function() {
+                if( mobile )
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+                if( !tablet && !mobile )
+                    decoder.emit('keypress', String(key));
+            });
+        }
+
+//had to break this out from mousedown so it doesn't fire twice on touch devices
+        function bindTouchStart(id, key, mobile_image, desktop_image )
+        {
+            $(id).on('touchstart', function() {
+                if( mobile)
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+                decoder.emit('keypress', String(key));
+            });
+        }
+
+        function bindMouseUpTouchEnd(id, mobile_image, desktop_image )
+        {
+            $(id).on('mouseup touchend', function() {
+                if( mobile )
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+
+            });
+        }
+
+        function bindButtonEvents(id, key, mobile_image_down, desktop_image_down, mobile_image_up, desktop_image_up )
+        {
+            bindMouseDown(id, key, mobile_image_down, desktop_image_down );
+            bindTouchStart(id, key, mobile_image_down, desktop_image_down );
+            bindMouseUpTouchEnd(id, mobile_image_up, desktop_image_up );
+        }
+
+        //arrays of images to preload
+        var ledImages = [
+            "{{ url_for('static', filename='img/led-on-red.png') }}",
+            "{{ url_for('static', filename='img/led-off.png') }}",
+            "{{ url_for('static', filename='img/led-on.png') }}"
+        ];
+
+        var buttonImageListLarge = [
+            "{{ url_for('static', filename='img/0-large-on.png') }}",
+            "{{ url_for('static', filename='img/0-large.png') }}",
+            "{{ url_for('static', filename='img/1-large-on.png') }}",
+            "{{ url_for('static', filename='img/1-large.png') }}",
+            "{{ url_for('static', filename='img/2-large-on.png') }}",
+            "{{ url_for('static', filename='img/2-large.png') }}",
+            "{{ url_for('static', filename='img/3-large-on.png') }}",
+            "{{ url_for('static', filename='img/3-large.png') }}",
+            "{{ url_for('static', filename='img/4-large-on.png') }}",
+            "{{ url_for('static', filename='img/4-large.png') }}",
+            "{{ url_for('static', filename='img/5-large-on.png') }}",
+            "{{ url_for('static', filename='img/5-large.png') }}",
+            "{{ url_for('static', filename='img/6-large-on.png') }}",
+            "{{ url_for('static', filename='img/6-large.png') }}",
+            "{{ url_for('static', filename='img/7-large-on.png') }}",
+            "{{ url_for('static', filename='img/7-large.png') }}",
+            "{{ url_for('static', filename='img/8-large-on.png') }}",
+            "{{ url_for('static', filename='img/8-large.png') }}",
+            "{{ url_for('static', filename='img/9-large-on.png') }}",
+            "{{ url_for('static', filename='img/9-large.png') }}",
+            "{{ url_for('static', filename='img/star-large-on.png') }}",
+            "{{ url_for('static', filename='img/star-large.png') }}",
+            "{{ url_for('static', filename='img/pound-large-on.png') }}",
+            "{{ url_for('static', filename='img/pound-large.png') }}",
+            "{{ url_for('static', filename='img/f1-fire-on.png') }}",
+            "{{ url_for('static', filename='img/f1-fire.png') }}",
+            "{{ url_for('static', filename='img/f2-police-on.png') }}",
+            "{{ url_for('static', filename='img/f2-police.png') }}",
+            "{{ url_for('static', filename='img/f3-medical-on.png') }}",
+            "{{ url_for('static', filename='img/f3-medical.png') }}",
+            "{{ url_for('static', filename='img/f4-led-text-on.png') }}",
+            "{{ url_for('static', filename='img/f4-led-text.png') }}"
+        ];
+
+        var buttonImageListSmall = [
+            "{{ url_for('static', filename='img/0-small-on.png') }}",
+            "{{ url_for('static', filename='img/0-small.png') }}",
+            "{{ url_for('static', filename='img/1-small-on.png') }}",
+            "{{ url_for('static', filename='img/1-small.png') }}",
+            "{{ url_for('static', filename='img/2-small-on.png') }}",
+            "{{ url_for('static', filename='img/2-small.png') }}",
+            "{{ url_for('static', filename='img/3-small-on.png') }}",
+            "{{ url_for('static', filename='img/3-small.png') }}",
+            "{{ url_for('static', filename='img/4-small-on.png') }}",
+            "{{ url_for('static', filename='img/4-small.png') }}",
+            "{{ url_for('static', filename='img/5-small-on.png') }}",
+            "{{ url_for('static', filename='img/5-small.png') }}",
+            "{{ url_for('static', filename='img/6-small-on.png') }}",
+            "{{ url_for('static', filename='img/6-small.png') }}",
+            "{{ url_for('static', filename='img/7-small-on.png') }}",
+            "{{ url_for('static', filename='img/7-small.png') }}",
+            "{{ url_for('static', filename='img/8-small-on.png') }}",
+            "{{ url_for('static', filename='img/8-small.png') }}",
+            "{{ url_for('static', filename='img/9-small-on.png') }}",
+            "{{ url_for('static', filename='img/9-small.png') }}",
+            "{{ url_for('static', filename='img/star-small-on.png') }}",
+            "{{ url_for('static', filename='img/star-small.png') }}",
+            "{{ url_for('static', filename='img/pound-small-on.png') }}",
+            "{{ url_for('static', filename='img/pound-small.png') }}",
+            "{{ url_for('static', filename='img/f1-fire-small-on.png') }}",
+            "{{ url_for('static', filename='img/f1-fire-small.png') }}",
+            "{{ url_for('static', filename='img/f2-police-small-on.png') }}",
+            "{{ url_for('static', filename='img/f2-police-small.png') }}",
+            "{{ url_for('static', filename='img/f3-medical-small-on.png') }}",
+            "{{ url_for('static', filename='img/f3-medical-small.png') }}",
+            "{{ url_for('static', filename='img/f4-led-text-small-on.png') }}",
+            "{{ url_for('static', filename='img/f4-led-text-small.png') }}"
+        ];
+        //setup audio beeping
+        var beep1 = new Audio("{{ url_for('static', filename='sounds/1beep.wav') }}");
+        var beep2 = new Audio("{{ url_for('static', filename='sounds/2beep.wav') }}");
+        var beep3 = new Audio("{{ url_for('static', filename='sounds/3beep.wav') }}");
+        var beep4 = new Audio("{{ url_for('static', filename='sounds/4beep.wav') }}");
+        var beep5 = new Audio("{{ url_for('static', filename='sounds/5beep.wav') }}");
+        var beep6 = new Audio("{{ url_for('static', filename='sounds/6beep.wav') }}");
+        var beep7 = new Audio("{{ url_for('static', filename='sounds/7beep.wav') }}");
+        var mute = 0;
+        var mobile = false;
+        var tablet = false;
+        $(document).ready(function() {
+            //detect mobile and tablet
+            mobile = isMobile();
+            tablet = isTablet();
+
+            $(function() {
+                FastClick.attach(document.body);
+            });
+            //preload led images
+            preloadImages(ledImages);
+
+            //if mobile only preload small images, otherwise large
+            if( mobile )
+            {
+                preloadImages(buttonImageListSmall);
+            }
+            else
+            {
+                preloadImages(buttonImageListLarge);
+            }
+
+            //set image sources for buttons after preloaded
+            if( mobile )
+            {
+                $('#button-0').attr("src", buttonImageListSmall[1]);
+                $('#button-1').attr("src", buttonImageListSmall[3]);
+                $('#button-2').attr("src", buttonImageListSmall[5]);
+                $('#button-3').attr("src", buttonImageListSmall[7]);
+                $('#button-4').attr("src", buttonImageListSmall[9]);
+                $('#button-5').attr("src", buttonImageListSmall[11]);
+                $('#button-6').attr("src", buttonImageListSmall[13]);
+                $('#button-7').attr("src", buttonImageListSmall[15]);
+                $('#button-8').attr("src", buttonImageListSmall[17]);
+                $('#button-9').attr("src", buttonImageListSmall[19]);
+                $('#button-star').attr("src", buttonImageListSmall[21]);
+                $('#button-pound').attr("src", buttonImageListSmall[23]);
+            }
+            else
+            {
+                $('#button-0').attr("src", buttonImageListLarge[1]);
+                $('#button-1').attr("src", buttonImageListLarge[3]);
+                $('#button-2').attr("src", buttonImageListLarge[5]);
+                $('#button-3').attr("src", buttonImageListLarge[7]);
+                $('#button-4').attr("src", buttonImageListLarge[9]);
+                $('#button-5').attr("src", buttonImageListLarge[11]);
+                $('#button-6').attr("src", buttonImageListLarge[13]);
+                $('#button-7').attr("src", buttonImageListLarge[15]);
+                $('#button-8').attr("src", buttonImageListLarge[17]);
+                $('#button-9').attr("src", buttonImageListLarge[19]);
+                $('#button-star').attr("src", buttonImageListLarge[21]);
+                $('#button-pound').attr("src", buttonImageListLarge[23]);
+            }
+
+            //check to see if we're going to play sounds or not if we've set the checkbox
+            if( storageSupported() )
+            {
+                if( (checkmute = localStorage.getItem("mute")) !== null )
+                    mute = parseInt(checkmute);
+
+                if( mute == 1 )
+                    $('#check-mute').prop('checked', true);
+                else
+                    $('#check-mute').prop('checked', false);
+            }
+            //handle messages from the AlarmDecoder
+            PubSub.subscribe('message', function(type, msg) {
+                if( msg.message_type == 'panel')
+                {
+                    var lines = ['', '']
+                    var armed = msg.armed_away | msg.armed_home;
+                    var ready = msg.ready;
+                    var beeps = 0;
+
+                    if( msg.beeps )
+                    {
+                        beeps = msg.beeps;
+                    }
+
+                    if( beeps > 0 )
+                    {
+                        veep('#keypad-line1', beeps, 100);
+                        veep('#keypad-line2', beeps, 100);
+                    }
+                    if( mute == 0 )
+                    {
+                        try
+                        {
+                            switch(beeps)
+                            {
+                                case 1:
+                                    beep1.load();
+                                    beep1.play();
+                                    break;
+                                case 2:
+                                    beep2.load();
+                                    beep2.play();
+                                    break;
+                                case 3:
+                                    beep3.load();
+                                    beep3.play();
+                                    break;
+                                case 4:
+                                    beep4.load();
+                                    beep4.play();
+                                    break;
+                                case 5:
+                                    beep5.load();
+                                    beep5.play();
+                                    break;
+                                case 6:
+                                    beep6.load();
+                                    beep6.play();
+                                    break;
+                                case 7:
+                                    beep7.load();
+                                    beep7.play();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        catch(e)
+                        {
+                            if( window.console && console.log("Error: " + e ) );
+                        }
+                    }
+
+                    if(msg.text.length >= 16) {
+                        lines[0] = msg.text.substring(0, 16);
+                        lines[1] = msg.text.substring(16);
+                    }
+                    else {
+                        lines[0] = msg.text;
+                    }
+
+                    if( armed )
+                    {
+                        $('#status-image1').attr("src", ledImages[0]);
+                    }
+                    else
+                    {
+                        $('#status-image1').attr("src", ledImages[1]);
+                    }
+                    if( ready )
+                    {
+                        $('#status-image2').attr("src", ledImages[2]);
+                    }
+                    else
+                    {
+                        $('#status-image2').attr("src", ledImages[1]);
+                    }
+                    if( lines[0] != '' )
+                    {
+                        $('#keypad-line1').text(lines[0]);
+                        $('#keypad-line1').css("color", "black");
+
+                        //hackery to get page to stop shifting when only 1 line of text present
+                        if( lines[1].match(/ /g).length == 16 )
+                            lines[1] = '';
+                        if( lines[1].length > 0 )
+                        {
+                            $('#keypad-line2').css("color", "black");
+                            $('#keypad-line2').css("visibility", "visible");
+                            $('#keypad-line2').text(lines[1]);
+                        }
+                        else
+                        {
+                            $('#keypad-line2').css("color", "white");
+                            $('#keypad-line2').css("visibility", "hidden");
+                            $('#keypad-line2').text('---');
+                        }
+                    }
+                }
+            });
+
+//lets make the buttons animate when we use keyboard
+            $(document).keyup(function(event) {
+                var shiftKey = event.shiftKey;
+                var charCode = (typeof event.which == "number") ? event.which : event.keyCode;
+                var realCharCode = String.fromCharCode(charCode);
+//DSC Stay/Away/Chime/Reset/Exit
+                if( charCode == 83 && !event.ctrlKey)
+                {
+                    $('#button-stay').trigger('mouseup');
+                }
+                if( charCode == 65 && !event.ctrlKey)
+                {
+                    $('#button-away').trigger('mouseup');
+                }
+                if( charCode == 67 && !event.ctrlKey)
+                {
+                    $('#button-chime').trigger('mouseup');
+                }
+                if( charCode == 82 && !event.ctrlKey)
+                {
+                    $('#button-reset').trigger('mouseup');
+                }
+                if( charCode == 69 && !event.ctrlKey )
+                {
+                    $('#button-exit').trigger('mouseup');
+                }
+
+//F1-F4
+                if( charCode == 112 )
+                    $('#button-F1').trigger('mouseup');
+                if( charCode == 113 )
+                    $('#button-F2').trigger('mouseup');
+                if( charCode == 114 )
+                    $('#button-F3').trigger('mouseup');
+                if( charCode == 115 )
+                    $('#button-F4').trigger('mouseup');
+
+//the rest
+                if( charCode == 8 || charCode == 9 || charCode == 46 || charCode == 37 || charCode == 39 || (charCode >= 48 && charCode <= 57) || (charCode >= 96 && charCode <= 105 ))
+                {
+                    if( shiftKey )
+                    {
+                        if(charCode == 56)
+                        {
+                            $('#button-star').trigger('mouseup');
+                        }
+                        if(charCode == 51)
+                        {
+                            $('#button-pound').trigger('mouseup');
+                        }
+                    }
+                    else
+                    {
+                        $('#button-' + realCharCode).trigger('mouseup');
+                    }
+                }
+
+            });
+            $(document).keydown(function(event) {
+                var shiftKey = event.shiftKey;
+                var charCode = (typeof event.which == "number") ? event.which : event.keyCode;
+                var realCharCode = String.fromCharCode(charCode);
+//DSC Stay/Away/Chime/Reset/Exit
+                if( charCode == 83 && !event.ctrlKey)
+                {
+                    $('#button-stay').trigger('mousedown');
+                }
+                if( charCode == 65 && !event.ctrlKey)
+                {
+                    $('#button-away').trigger('mousedown');
+                }
+                if( charCode == 67 && !event.ctrlKey)
+                {
+                    $('#button-chime').trigger('mousedown');
+                }
+                if( charCode == 82 && !event.ctrlKey)
+                {
+                    $('#button-reset').trigger('mousedown');
+                }
+                if( charCode == 69 && !event.ctrlKey )
+                {
+                    $('#button-exit').trigger('mousedown');
+                }
+//F1-F4
+                if( charCode == 112 )
+                {
+                    $('#button-F1').trigger('mousedown');
+                    
+                    $.confirm({
+                        text: "Are you sure?",
+                        title: "Call the Fire Department",
+                        confirm: function(button) {
+                            add_flash_message("Fire Department notified.", "error");
+                            decoder.emit('keypress', 1);
+                        },
+                        cancel: function(button) {
+                        },
+                        confirmButton: "Yes I am",
+                        cancelButton: "No",
+                        post: false,
+                    });
+                }
+                if( charCode == 113 )
+                {
+                    $('#button-F2').trigger('mousedown');
+                    $.confirm({
+                        text: "Are you sure?",
+                        title: "Call the Police Department",
+                        confirm: function(button) {
+                            add_flash_message("Police Department notified.", "error");
+                            decoder.emit('keypress', 2);
+                        },
+                        cancel: function(button) {
+                        },
+                        confirmButton: "Yes I am",
+                        cancelButton: "No",
+                        post: false,
+                    });
+                }
+                if( charCode == 114 )
+                {
+                    $('#button-F3').trigger('mousedown');
+                    $.confirm({
+                        text: "Are you sure?",
+                        title: "Call the Medics",
+                        confirm: function(button) {
+                            add_flash_message("Medical Help notified.", "error");
+                            decoder.emit('keypress', 3);
+                        },
+                        cancel: function(button) {
+                        },
+                        confirmButton: "Yes I am",
+                        cancelButton: "No",
+                        post: false,
+                    });
+                }
+                if( charCode == 115 )
+                {
+                    $('#button-F4').trigger('mousedown');
+                    $.confirm({
+                        text: "Are you sure?",
+                        title: "Confirmation required",
+                        confirm: function(button) {
+                            add_flash_message("Notification sent.", "error");
+                            decoder.emit('keypress', 4);
+                        },
+                        cancel: function(button) {
+                        },
+                        confirmButton: "Yes I am",
+                        cancelButton: "No",
+                        post: false,
+                    });
+                }
+
+//the rest
+                if( charCode == 8 || charCode == 9 || charCode == 46 || charCode == 37 || charCode == 39 || (charCode >= 48 && charCode <= 57) || (charCode >= 96 && charCode <= 105 ))
+                {
+                    if( shiftKey )
+                    {
+                        if(charCode == 56)
+                        {
+                            $('#button-star').trigger('mousedown');
+                        }
+                        if(charCode == 51)
+                        {
+                            $('#button-pound').trigger('mousedown');
+                        }
+                    }
+                    else
+                    {
+                        $('#button-' + realCharCode).trigger('mousedown');
+                    }
+                }
+            });
+
+//bind our events to our buttons
+            bindButtonEvents('#button-1', '1', buttonImageListSmall[2], buttonImageListLarge[2], buttonImageListSmall[3], buttonImageListLarge[3] );
+            bindButtonEvents('#button-2', '2', buttonImageListSmall[4], buttonImageListLarge[4], buttonImageListSmall[5], buttonImageListLarge[5] );
+            bindButtonEvents('#button-3', '3', buttonImageListSmall[6], buttonImageListLarge[6], buttonImageListSmall[7], buttonImageListLarge[7] );
+            bindButtonEvents('#button-4', '4', buttonImageListSmall[8], buttonImageListLarge[8], buttonImageListSmall[9], buttonImageListLarge[9] );
+            bindButtonEvents('#button-5', '5', buttonImageListSmall[10], buttonImageListLarge[10], buttonImageListSmall[11], buttonImageListLarge[11] );
+            bindButtonEvents('#button-6', '6', buttonImageListSmall[12], buttonImageListLarge[12], buttonImageListSmall[13], buttonImageListLarge[13] );
+            bindButtonEvents('#button-7', '7', buttonImageListSmall[14], buttonImageListLarge[14], buttonImageListSmall[15], buttonImageListLarge[15] );
+            bindButtonEvents('#button-8', '8', buttonImageListSmall[16], buttonImageListLarge[16], buttonImageListSmall[17], buttonImageListLarge[17] );
+            bindButtonEvents('#button-9', '9', buttonImageListSmall[18], buttonImageListLarge[18], buttonImageListSmall[19], buttonImageListLarge[19] );
+            bindButtonEvents('#button-0', '0', buttonImageListSmall[0], buttonImageListLarge[0], buttonImageListSmall[1], buttonImageListLarge[1] );
+            bindButtonEvents('#button-star', '*', buttonImageListSmall[20], buttonImageListLarge[20], buttonImageListSmall[21], buttonImageListLarge[21] );
+            bindButtonEvents('#button-pound', '#', buttonImageListSmall[22], buttonImageListLarge[22], buttonImageListSmall[23], buttonImageListLarge[23] );
+            bindButtonEvents('#button-stay',  's', '', '', '', '');
+            bindButtonEvents('#button-away',  'a', '', '', '', '');
+            bindButtonEvents('#button-chime', 'c', '', '', '', '');
+            bindButtonEvents('#button-reset', 'r', '', '', '', '');
+            bindButtonEvents('#button-exit',  'e', '', '', '', '');
+//set up confirmations for F1-F4
+            $("#button-F1").confirm({
+                text: "Are you sure?",
+                title: "Call the Fire Department",
+                confirm: function(button) {
+                    add_flash_message("Fire Department notified.", "error");
+                    decoder.emit('keypress', 1);
+                },
+                cancel: function(button) {
+                },
+                confirmButton: "Yes I am",
+                cancelButton: "No",
+                post: false,
+            });
+
+            $("#button-F2").confirm({
+                text: "Are you sure?",
+                title: "Call the Police Department",
+                confirm: function(button) {
+                    add_flash_message("Police Department notified.", "error");
+                    decoder.emit('keypress', 2);
+                },
+                cancel: function(button) {
+                },
+                confirmButton: "Yes I am",
+                cancelButton: "No",
+                post: false,
+            });
+
+            $("#button-F3").confirm({
+                text: "Are you sure?",
+                title: "Call the Medics",
+                confirm: function(button) {
+                    add_flash_message("Medical Help notified.", "error");
+                    decoder.emit('keypress', 3);
+                },
+                cancel: function(button) {
+                },
+                confirmButton: "Yes I am",
+                cancelButton: "No",
+                post: false,
+            });
+
+            $("#button-F4").confirm({
+                text: "Are you sure?",
+                title: "Confirmation required",
+                confirm: function(button) {
+                    add_flash_message("Notification sent.", "error");
+                    decoder.emit('keypress', 4);
+                },
+                cancel: function(button) {
+                },
+                confirmButton: "Yes I am",
+                cancelButton: "No",
+                post: false,
+            });
+
+	        $('#button-F1').on('mousedown', function() {
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[24] + ") no-repeat 65% center");
+                }
+                else
+                {
+            		$(this).css('background', "url(" + buttonImageListLarge[24] + ") no-repeat 65% center");
+                }
+    	    });
+            $('#button-F1').on('mouseup', function() {
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[25] + ") no-repeat 65% center");
+                }
+                else
+                {
+    	        	$(this).css('background', "url(" + buttonImageListLarge[25] + ") no-repeat 65% center");
+                }
+            });
+            $('#button-F2').on('mousedown', function() {
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[26] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[26] + ") no-repeat 65% center");
+                }
+            });
+            $('#button-F2').on('mouseup', function() {
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[27] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[27] + ") no-repeat 65% center");
+                }
+            });
+            $('#button-F3').on('mousedown', function() {
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[28] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[28] + ") no-repeat 65% center");
+                }
+            });
+            $('#button-F3').on('mouseup', function() {
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[29] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[29] + ") no-repeat 65% center");
+                }
+            });
+            $('#button-F4').on('mousedown', function() {
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[30] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[30] + ") no-repeat 65% center");
+                }
+            });
+            $('#button-F4').on('mouseup', function() {
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[31] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[31] + ") no-repeat 65% center");
+                }
+            });
+
+            if( isiPad || isiPhone )
+            {
+                $('#mute-row').css('display', 'none');
+            }
+            $('#check-mute').on("click", function() {
+                if( $(this).is(':checked') )
+                    mute = 1;
+                else
+                    mute = 0;
+
+                if( storageSupported() )
+                    localStorage.setItem("mute", mute);
+            });
+
+        })
+    </script>
+{% endblock %}
+
+{% block body %}
+<div style="-webkit-user-select: none; user-select: none; -moz-user-select: none;">
+    <div id="keypad-line1">Please Wait</div>
+    <div id="keypad-line2">Loading...</div>
+    <hr>
+    <div id="status-indicator">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"> Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
+    <div id="keypad-buttons">
+        <div id="keypad-button-row">
+            <!-- Arrow Keys -->
+            <input id="button-left" class="half_keypad-button" type="button" value="<"></input>
+            <input id="button-right" class="half_keypad-button" type="button" value=">"></input>
+            <!-- Normal Keys -->
+            <img id="button-1" class="keypad-button"/>
+            <img id="button-2" class="keypad-button"/>
+            <img id="button-3" class="keypad-button"/>
+            <input id="button-stay" class="keypad-button" type="button" value="Stay"></input>
+        </div>
+        <div id="keypad-button-row">
+            <input id="button-F1" class="keypad-button" type="button" value="" class="confirmF1"></input>
+            <img id="button-4" class="keypad-button"/>
+            <img id="button-5" class="keypad-button"/>
+            <img id="button-6" class="keypad-button"/>
+            <input id="button-away" class="keypad-button" type="button" value="Away"></input>
+        </div>
+        <div id="keypad-button-row">
+            <input id="button-F3" class="keypad-button" type="button" value="" class="confirmF3"></input>
+            <img id="button-7" class="keypad-button"/>
+            <img id="button-8" class="keypad-button"/>
+            <img id="button-9" class="keypad-button"/>
+            <input id="button-chime" class="keypad-button" type="button" value="Chime"></input>
+        </div>
+        <div id="keypad-button-row">
+            <input id="button-F2" class="keypad-button" type="button" value="" class="confirmF2"></input>
+            <img id="button-star" class="keypad-button"/>
+            <img id="button-0" class="keypad-button"/>
+            <img id="button-pound" class="keypad-button"/>
+            <input id="button-reset" class="keypad-button" type="button" value="Reset"></input>
+        </div>
+        <div id="keypad-button-row1">
+            <input id="button-exit" class="keypad-button" type="button" value="Exit" style="display: none;"></input>
+        </div>
+        <div id="mute-row">
+            <input type="checkbox" id="check-mute" name="check-mute"/><label for="check-mute" id="check-mute-label">Mute Sounds</label>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
+{% endblock %}

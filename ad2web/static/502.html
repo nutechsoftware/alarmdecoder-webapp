@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>502 Bad Gateway</title>
+    <meta name="description" content="Fbone (Flask bone) is a Flask (Python microframework) template/bootstrap/boilerplate application.">
+    <meta name="author" content="Wilson Xu">
+    <meta name="viewport" content="width=extend-to-zoom, initial-scale=0.5, target-densitydpi=device-dpi, user-scalable=no, maximum-scale=0.5">
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="MobileOptimized" content="width"/>
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <link rel="Shortcut Icon" href="/static/favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="/static/css/normalize.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+
+    <script src="/static/js/vendor/jquery-2.0.3.min.js"></script>
+    <script src="/static/js/vendor/modernizr-latest.js"></script>
+
+    <script type="text/javascript">
+        var isiPad = navigator.userAgent.match(/iPad/i) != null;
+        var isiPhone = navigator.userAgent.match(/iPhone/i) != null;
+
+        if( isiPad )
+        {
+            viewport = document.querySelector("meta[name=viewport]");
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, target-densitydpi=device-dpi, user-scalable=no, maximum-scale=1.0');
+        }
+    </script>
+</head>
+<body>
+    <div id='wrap'>
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class='brand' href='/'><img src="/static/img/logo.png" /></a>
+
+                    <div class="nav-collapse collapse pull-right">
+                        <ul class="nav">
+                            <li><a href="/login">Sign in</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+
+            <noscript><div id="nojs"><p>This application makes heavy use of Javascript and the majority of it will not function without it.  Please enable Javascript in your browser.</p></div></noscript>
+
+            <p style="text-align: center">
+                Services might still be starting - please wait and try again.  If this continues, please let us know on <a href="https://github.com/nutechsoftware/alarmdecoder-webapp">GitHub</a>. You can also email us at <a href="mailto:ad2usb@support.nutech.com">Support</a>.
+            </p>
+        </div>
+        <div id="push"></div>
+    </div>
+
+    <footer id="footer">
+        <ul class="footer-links">
+            <li>© 2014</li>
+            <li><a href='http://www.alarmdecoder.com/'>AlarmDecoder</a></li>
+            <li class="muted">&middot;</li>
+            <li><a href='/help'>Help</a></li>
+            <li class="muted">&middot;</li>
+            <li><a href='/license'>Terms</a></li>
+        </ul>
+    </footer>
+</body>
+</html>
