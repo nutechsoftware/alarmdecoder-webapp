@@ -151,6 +151,37 @@ img.keypad-button {
     -ms-user-select: none !important;
 }
 
+.half_keypad-button
+{
+    width: 73px !important;
+    height: 40px;
+    vertical-align: top;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
+}
+
+.mobile .half_keypad-button {
+    width: 48px !important;
+    height: 40px;
+    vertical-align: top;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
+}
+
+.tablet .half_keypad-button {
+    width: 73px !important;
+    height: 40px;
+    vertical-align: top;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
+}
+
 #button-0
 {
     margin: 0 auto;

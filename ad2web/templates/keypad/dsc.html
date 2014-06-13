@@ -745,35 +745,38 @@
     <div id="status-indicator">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"> Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
     <div id="keypad-buttons">
         <div id="keypad-button-row">
-            <input id="button-F1" class="keypad-button" type="button" value="" class="confirmF1"></input>
+            <!-- Arrow Keys -->
+            <input id="button-left" class="half_keypad-button" type="button" value="<"></input>
+            <input id="button-right" class="half_keypad-button" type="button" value=">"></input>
+            <!-- Normal Keys -->
             <img id="button-1" class="keypad-button"/>
             <img id="button-2" class="keypad-button"/>
             <img id="button-3" class="keypad-button"/>
             <input id="button-stay" class="keypad-button" type="button" value="Stay"></input>
         </div>
         <div id="keypad-button-row">
-            <input id="button-F3" class="keypad-button" type="button" value="" class="confirmF3"></input>
+            <input id="button-F1" class="keypad-button" type="button" value="" class="confirmF1"></input>
             <img id="button-4" class="keypad-button"/>
             <img id="button-5" class="keypad-button"/>
             <img id="button-6" class="keypad-button"/>
             <input id="button-away" class="keypad-button" type="button" value="Away"></input>
         </div>
         <div id="keypad-button-row">
-            <input id="button-F2" class="keypad-button" type="button" value="" class="confirmF2"></input>
+            <input id="button-F3" class="keypad-button" type="button" value="" class="confirmF3"></input>
             <img id="button-7" class="keypad-button"/>
             <img id="button-8" class="keypad-button"/>
             <img id="button-9" class="keypad-button"/>
             <input id="button-chime" class="keypad-button" type="button" value="Chime"></input>
         </div>
         <div id="keypad-button-row">
-            <input id="button-F4" class="keypad-button" type="button" value="" class="confirmF4" style="visibility: hidden;"></input>
+            <input id="button-F2" class="keypad-button" type="button" value="" class="confirmF2"></input>
             <img id="button-star" class="keypad-button"/>
             <img id="button-0" class="keypad-button"/>
             <img id="button-pound" class="keypad-button"/>
             <input id="button-reset" class="keypad-button" type="button" value="Reset"></input>
         </div>
         <div id="keypad-button-row1">
-            <input id="button-exit" class="keypad-button" type="button" value="Exit"></input>
+            <input id="button-exit" class="keypad-button" type="button" value="Exit" style="display: none;"></input>
         </div>
         <div id="mute-row">
             <input type="checkbox" id="check-mute" name="check-mute"/><label for="check-mute" id="check-mute-label">Mute Sounds</label>
