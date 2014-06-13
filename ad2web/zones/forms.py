@@ -12,7 +12,7 @@ from flask.ext.login import current_user
 from ..user import User
 from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX, AGE_MIN, AGE_MAX, DEPOSIT_MIN, DEPOSIT_MAX
 
-from ..widgets import CancelButton
+from ..widgets import ButtonField
 
 class ZoneForm(Form):
     zone_id = IntegerField(u'Zone ID', [Required(), NumberRange(1, 65535)])
@@ -20,4 +20,4 @@ class ZoneForm(Form):
     description = TextField(u'Description', [Length(max=255)])
 
     submit = SubmitField(u'Save')
-    cancel = CancelButton(text=u'Cancel', onclick="location.href='/settings/zones'")
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/zones'")

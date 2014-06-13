@@ -61,7 +61,7 @@ def edit(id):
         form.populate_from_settings(id)
 
     if form.validate_on_submit():
-        form.populate_obj(notification)
+        notification.description = form.description.data
         form.populate_settings(notification.settings, id=id)
 
         db.session.add(notification)
@@ -69,7 +69,16 @@ def edit(id):
 
         current_app.decoder.refresh_notifier(id)
 
-        flash('Notification saved.', 'success')
+        if form.buttons.test.data:
+            error = current_app.decoder.test_notifier(id)
+
+            if error:
+                flash('Error sending test notification: {0}'.format(error), 'error')
+            else:
+                flash('Test notification sent.', 'success')
+        else:
+            flash('Notification saved.', 'success')
+            return redirect(url_for('notifications.index'))
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
@@ -112,7 +121,8 @@ def create_by_type(type):
     if form.validate_on_submit():
         obj = Notification()
 
-        form.populate_obj(obj)
+        obj.type = form.type.data
+        obj.description = form.description.data
         obj.user = current_user
         form.populate_settings(obj.settings)
 

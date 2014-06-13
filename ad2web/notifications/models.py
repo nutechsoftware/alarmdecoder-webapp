@@ -19,6 +19,12 @@ class Notification(db.Model):
                                 collection_class=attribute_mapped_collection('name'),
                                 cascade="all, delete-orphan")
 
+    def get_setting(self, name, default=None):
+        if name in self.settings.keys():
+            return self.settings[name].value
+
+        return default
+
 class NotificationSetting(db.Model):
     __tablename__ = 'notification_settings'
 

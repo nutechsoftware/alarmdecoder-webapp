@@ -10,44 +10,16 @@ from wtforms import (Field, ValidationError, HiddenField, TextField, HiddenField
         FormField)
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
-from wtforms.widgets import ListWidget, CheckboxInput, html_params
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES, DEFAULT_BAUDRATES
 from ..validators import PathExists, Hex
 from ..utils import STRING_LEN, PASSWORD_LEN_MIN, PASSWORD_LEN_MAX
+from ..widgets import ButtonField, MultiCheckboxField
 from alarmdecoder.panels import ADEMCO, DSC
 
-class BackButtonWidget(object):
-    html_params = staticmethod(html_params)
-
-    def __init__(self, text=''):
-        self.text = text
-
-    def __call__(self, field, **kwargs):
-        kwargs.setdefault('id', field.id)
-
-        return Markup('<button type="button" onclick="history.back();" {0}>{1}</button>'.format(self.html_params(name=field.name, **kwargs), self.text))
-
-class BackButtonField(Field):
-    widget = BackButtonWidget()
-
-    def __init__(self, label='', validators=None, **kwargs):
-        super(BackButtonField, self).__init__('', validators, **kwargs)
-
-        self.widget = BackButtonWidget(text=label)
 
 class SetupButtonForm(wtforms.Form):
-    previous = BackButtonField(u'Previous')
+    previous = ButtonField(u'Previous', onclick='history.go(-1);')
     next = SubmitField(u'Next')
-
-class MultiCheckboxField(SelectMultipleField):
-    """
-    A multiple-select, except displays a list of checkboxes.
-
-    Iterating the field will produce subfields, allowing custom rendering of
-    the enclosed checkbox fields.
-    """
-    widget = ListWidget(prefix_label=True)
-    option_widget = CheckboxInput()
 
 class DeviceTypeForm(Form):
     device_type = SelectField(u'Device Type', choices=[('AD2USB', u'AD2USB'), ('AD2PI', u'AD2PI'), ('AD2SERIAL', u'AD2SERIAL')], default='AD2USB')
@@ -93,7 +65,7 @@ class LocalDeviceFormUSB(Form):
 
 class TestDeviceForm(Form):
     # NOTE: Not using SetupButtonForm because of excess padding with no actual form elements.
-    previous = BackButtonField(u'Previous')
+    previous = ButtonField(u'Previous', onclick='history.go(-1);')
     next = SubmitField(u'Next')
 
 class DeviceForm(Form):

@@ -210,6 +210,9 @@ class Decoder(object):
     def refresh_notifier(self, id):
         self._notifier_system.refresh_notifier(id)
 
+    def test_notifier(self, id):
+        return self._notifier_system.test_notifier(id)
+
     def _on_device_open(self, sender):
         """
         Internal event handler for when the device opens.
@@ -270,7 +273,9 @@ class Decoder(object):
             self._last_message = time.time()
 
             with self.app.app_context():
-                self._notifier_system.send(ftype, **kwargs)
+                errors = self._notifier_system.send(ftype, **kwargs)
+                for e in errors:
+                    self.app.logger.error(e)
 
             self.broadcast('event', kwargs)
 

@@ -5,12 +5,14 @@ import smtplib
 from email.mime.text import MIMEText
 import sleekxmpp
 import json
+import re
 
 from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
 from ..log.models import EventLogEntry
 from ..zones import Zone
+
 
 class NotificationSystem(object):
     def __init__(self):
@@ -20,12 +22,20 @@ class NotificationSystem(object):
         self._init_notifiers()
 
     def send(self, type, **kwargs):
+        errors = []
+
         for id, n in self._notifiers.iteritems():
             if n and n.subscribes_to(type):
-                message = self._build_message(type, **kwargs)
+                try:
+                    message = self._build_message(type, **kwargs)
 
-                if message:
-                    n.send(type, message)
+                    if message:
+                        n.send(type, message)
+
+                except Exception, err:
+                    errors.append('Error sending notification for {0}: {1}'.format(n.description, str(err)))
+
+        return errors
 
     def refresh_notifier(self, id):
         n = Notification.query.filter_by(id=id).first()
@@ -36,6 +46,17 @@ class NotificationSystem(object):
                 del self._notifiers[id]
             except KeyError:
                 pass
+
+    def test_notifier(self, id):
+        try:
+            n = self._notifiers.get(id)
+            if n:
+                n.send(None, 'Test Notification')
+
+        except Exception, err:
+            return str(err)
+        else:
+            return None
 
     def _init_notifiers(self):
         self._notifiers = {-1: LogNotification()}   # Force LogNotification to always be present
@@ -72,7 +93,7 @@ class BaseNotification(object):
 
 class LogNotification(object):
     def __init__(self):
-        pass
+        self.description = 'Logger'
 
     def subscribes_to(self, type):
         return True
@@ -90,30 +111,33 @@ class EmailNotification(BaseNotification):
 
         self.id = obj.id
         self.description = obj.description
-        self.source = obj.settings['source'].value
-        self.destination = obj.settings['destination'].value
-        self.server = obj.settings['server'].value
-        self.username = obj.settings['username'].value
-        self.password = obj.settings['password'].value
+        self.source = obj.get_setting('source')
+        self.destination = obj.get_setting('destination')
+        self.server = obj.get_setting('server')
+        self.port = obj.get_setting('port', default=25)
+        self.tls = obj.get_setting('tls', default=False)
+        self.authentication_required = obj.get_setting('authentication_required', default=False)
+        self.username = obj.get_setting('username')
+        self.password = obj.get_setting('password')
 
     def send(self, type, text):
-        try:
-            msg = MIMEText(text)
+        msg = MIMEText(text)
 
-            msg['Subject'] = 'AlarmDecoder: Alarm Event'
-            msg['From'] = self.source
-            msg['To'] = self.destination #', '.join(self.destination)
+        msg['Subject'] = 'AlarmDecoder: Alarm Event'
+        msg['From'] = self.source
+        recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
+        msg['To'] = ', '.join(recipients)
 
-            s = smtplib.SMTP(self.server)
+        s = smtplib.SMTP(self.server, self.port)
+        if self.tls:
+            s.starttls()
 
-            if self.username != '':
-                s.login(self.username, self.password)
+        if self.authentication_required:
+            s.login(str(self.username), str(self.password))
 
-            s.sendmail(self.source, self.destination, msg.as_string())
-            s.quit()
-        except smtplib.SMTPException, err:
-            import traceback
-            traceback.print_exc()
+        s.sendmail(self.source, recipients, msg.as_string())
+        s.quit()
+
 
 class GoogleTalkNotification(BaseNotification):
     def __init__(self, obj):
@@ -121,36 +145,26 @@ class GoogleTalkNotification(BaseNotification):
 
         self.id = obj.id
         self.description = obj.description
-        self.source = obj.settings['source'].value
-        self.password = obj.settings['password'].value
-        self.destination = obj.settings['destination'].value
+        self.source = obj.get_setting('source')
+        self.password = obj.get_setting('password')
+        self.destination = obj.get_setting('destination')
         self.client = None
 
     def send(self, type, text):
         self.msg_to_send = text
-        try:
-            self.client = sleekxmpp.ClientXMPP(self.source, self.password)
-            self.client.add_event_handler("session_start", self._send)
+        self.client = sleekxmpp.ClientXMPP(self.source, self.password)
+        self.client.add_event_handler("session_start", self._send)
 
-            self.client.connect(('talk.google.com', 5222))
-            self.client.process(block=True)
-
-        except Exception, err:
-            import traceback
-            traceback.print_exc()
+        self.client.connect(('talk.google.com', 5222))
+        self.client.process(block=True)
 
     def _send(self, event):
-        try:
-            self.client.send_presence()
-            self.client.get_roster()
+        self.client.send_presence()
+        self.client.get_roster()
 
-            self.client.send_message(mto=self.destination, mbody=self.msg_to_send)
+        self.client.send_message(mto=self.destination, mbody=self.msg_to_send)
+        self.client.disconnect(wait=True)
 
-            self.client.disconnect(wait=True)
-
-        except Exception, err:
-            import traceback
-            traceback.print_exc()
 
 TYPE_MAP = {
     EMAIL: EmailNotification,
