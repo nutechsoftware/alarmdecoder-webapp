@@ -134,7 +134,7 @@ img.keypad-button {
 }
 
 .mobile .keypad-button {
-    width: 100px !important;
+    width: 80px !important;
     height: 80px;
     -webkit-user-select: none !important;
     -moz-user-select: none !important;
@@ -154,7 +154,7 @@ img.keypad-button {
 .half_keypad-button
 {
     width: 73px !important;
-    height: 40px;
+    height: 50px;
     vertical-align: top;
     -webkit-user-select: none !important;
     -moz-user-select: none !important;
@@ -163,8 +163,8 @@ img.keypad-button {
 }
 
 .mobile .half_keypad-button {
-    width: 48px !important;
-    height: 40px;
+    width: 63px !important;
+    height: 60px;
     vertical-align: top;
     -webkit-user-select: none !important;
     -moz-user-select: none !important;
@@ -174,7 +174,38 @@ img.keypad-button {
 
 .tablet .half_keypad-button {
     width: 73px !important;
-    height: 40px;
+    height: 50px;
+    vertical-align: top;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
+}
+
+.half_keypad-button_arrow
+{
+    width: 73px !important;
+    height: 50px;
+    vertical-align: top;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
+}
+
+.mobile .half_keypad-button_arrow {
+    width: 38px !important;
+    height: 60px;
+    vertical-align: top;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
+}
+
+.tablet .half_keypad-button_arrow {
+    width: 73px !important;
+    height: 50px;
     vertical-align: top;
     -webkit-user-select: none !important;
     -moz-user-select: none !important;
@@ -438,7 +469,13 @@ img.keypad-button {
 
 #mute-row {
     position: relative;
-    left: -175px;
+    left: -135px;
+    margin-top: 10px;
+}
+
+.mobile #mute-row {
+    position: relative;
+    left: -60px;
     margin-top: 10px;
 }
 #check-mute {
