@@ -13,6 +13,7 @@ from ..extensions import db
 from ..log.models import EventLogEntry
 from ..zones import Zone
 
+
 class NotificationSystem(object):
     def __init__(self):
         self._notifiers = {}
@@ -21,12 +22,20 @@ class NotificationSystem(object):
         self._init_notifiers()
 
     def send(self, type, **kwargs):
+        errors = []
+
         for id, n in self._notifiers.iteritems():
             if n and n.subscribes_to(type):
-                message = self._build_message(type, **kwargs)
+                try:
+                    message = self._build_message(type, **kwargs)
 
-                if message:
-                    n.send(type, message)
+                    if message:
+                        n.send(type, message)
+
+                except Exception, err:
+                    errors.append('Error sending notification for {0}: {1}'.format(n.description, str(err)))
+
+        return errors
 
     def refresh_notifier(self, id):
         n = Notification.query.filter_by(id=id).first()
@@ -39,9 +48,15 @@ class NotificationSystem(object):
                 pass
 
     def test_notifier(self, id):
-        n = self._notifiers.get(id)
-        if n:
-            n.send(None, 'Test Notification')
+        try:
+            n = self._notifiers.get(id)
+            if n:
+                n.send(None, 'Test Notification')
+
+        except Exception, err:
+            return str(err)
+        else:
+            return None
 
     def _init_notifiers(self):
         self._notifiers = {-1: LogNotification()}   # Force LogNotification to always be present
@@ -78,7 +93,7 @@ class BaseNotification(object):
 
 class LogNotification(object):
     def __init__(self):
-        pass
+        self.description = 'Logger'
 
     def subscribes_to(self, type):
         return True
@@ -106,26 +121,22 @@ class EmailNotification(BaseNotification):
         self.password = obj.get_setting('password')
 
     def send(self, type, text):
-        try:
-            msg = MIMEText(text)
+        msg = MIMEText(text)
 
-            msg['Subject'] = 'AlarmDecoder: Alarm Event'
-            msg['From'] = self.source
-            recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
-            msg['To'] = ', '.join(recipients)
+        msg['Subject'] = 'AlarmDecoder: Alarm Event'
+        msg['From'] = self.source
+        recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
+        msg['To'] = ', '.join(recipients)
 
-            s = smtplib.SMTP(self.server, self.port)
-            if self.tls:
-                s.starttls()
+        s = smtplib.SMTP(self.server, self.port)
+        if self.tls:
+            s.starttls()
 
-            if self.authentication_required:
-                s.login(str(self.username), str(self.password))
+        if self.authentication_required:
+            s.login(str(self.username), str(self.password))
 
-            s.sendmail(self.source, recipients, msg.as_string())
-            s.quit()
-
-        except smtplib.SMTPException, err:
-            raise
+        s.sendmail(self.source, recipients, msg.as_string())
+        s.quit()
 
 
 class GoogleTalkNotification(BaseNotification):
@@ -141,29 +152,19 @@ class GoogleTalkNotification(BaseNotification):
 
     def send(self, type, text):
         self.msg_to_send = text
-        try:
-            self.client = sleekxmpp.ClientXMPP(self.source, self.password)
-            self.client.add_event_handler("session_start", self._send)
+        self.client = sleekxmpp.ClientXMPP(self.source, self.password)
+        self.client.add_event_handler("session_start", self._send)
 
-            self.client.connect(('talk.google.com', 5222))
-            self.client.process(block=True)
-
-        except Exception, err:
-            import traceback
-            traceback.print_exc()
+        self.client.connect(('talk.google.com', 5222))
+        self.client.process(block=True)
 
     def _send(self, event):
-        try:
-            self.client.send_presence()
-            self.client.get_roster()
+        self.client.send_presence()
+        self.client.get_roster()
 
-            self.client.send_message(mto=self.destination, mbody=self.msg_to_send)
+        self.client.send_message(mto=self.destination, mbody=self.msg_to_send)
+        self.client.disconnect(wait=True)
 
-            self.client.disconnect(wait=True)
-
-        except Exception, err:
-            import traceback
-            traceback.print_exc()
 
 TYPE_MAP = {
     EMAIL: EmailNotification,

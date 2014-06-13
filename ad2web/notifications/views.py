@@ -70,10 +70,10 @@ def edit(id):
         current_app.decoder.refresh_notifier(id)
 
         if form.buttons.test.data:
-            try:
-                current_app.decoder.test_notifier(id)
-            except Exception, err:
-                flash('Error sending test notification: {0}'.format(err), 'error')
+            error = current_app.decoder.test_notifier(id)
+
+            if error:
+                flash('Error sending test notification: {0}'.format(error), 'error')
             else:
                 flash('Test notification sent.', 'success')
         else:
@@ -121,7 +121,8 @@ def create_by_type(type):
     if form.validate_on_submit():
         obj = Notification()
 
-        form.populate_obj(obj)
+        obj.type = form.type.data
+        obj.description = form.description.data
         obj.user = current_user
         form.populate_settings(obj.settings)
 
