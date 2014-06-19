@@ -305,6 +305,13 @@ def configure_ethernet_device(device):
                 device_map.insert(interface_index + i, properties[i])
 
             #write the network file with the new device map
+            for i in range(0, len(device_map)):
+                if device_map[i].find("iface default inet dhcp") != -1:
+                    x = device_map[i].replace('dhcp', 'static')
+                    del device_map[i]
+                    device_map.append(x)
+                    break
+
             _write_network_file(device_map);
         else:
             for i in range(0, len(properties)):
@@ -321,7 +328,14 @@ def configure_ethernet_device(device):
                     for i in range(0, len(properties)):
                         device_map.insert(interface_index + i, properties[i])
 
-                    _write_network_file(device_map)
+            for i in range(0, len(device_map)):
+                if device_map[i].find("iface default inet static") != -1:
+                    x = device_map[i].replace('static', 'dhcp')
+                    del device_map[i]
+                    device_map.append(x)
+                    break
+
+            _write_network_file(device_map)
 #substitute values in the device_map, write the file and restart networking
         with sh.sudo:
             try:
