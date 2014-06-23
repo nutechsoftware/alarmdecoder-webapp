@@ -52,6 +52,18 @@
 
             $this.mouseup(mouseUpHandler);
         });
+
+        $('#stop_refresh').click(function() {
+            var isChecked = $('#stop_refresh').prop('checked') ? true : false;
+
+            if( isChecked )
+                window.clearTimeout(timeout);
+            else
+            {
+                num_lines = $('#num_lines').val();
+                get_log_data(num_lines);
+            }
+        });
     });
 </script>
 {% endblock %}
@@ -66,6 +78,7 @@
         <option value="200">200</option>
     </select>
     <textarea id="log_data" style="width: 98%; height: 300px; resize: none;"></textarea>
+    <div><strong>Stop Refresh: </strong><input type="checkbox" id="stop_refresh" style="position: relative;  top: -3px;"/></div>
 </div>
 {% endblock %}
 
