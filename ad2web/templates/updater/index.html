@@ -80,7 +80,7 @@
                 data: JSON.stringify({ 'component': component }),
                 contentType: 'application/json;charset=UTF-8',
                 complete: function() {
-                    $('#app_running').text('App is Restarting <span style="color:red">&#10008;</span>');
+                    $('#app_running').text('App is Restarting <img src="{{ url_for(\'static\', filename=\'img/spinner.gif\') }}">');
                     timeoutVar = setTimeout(function() { poll_app_restarted(); }, 10000);
                 }
             });
