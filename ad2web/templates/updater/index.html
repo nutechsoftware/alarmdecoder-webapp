@@ -1,6 +1,9 @@
 {% from "macros/_form.html" import render_form %}
 
+
 {% extends 'layouts/base.html' %}
+
+{% set page_title = 'AlarmDecoder Updater' %}
 
 {% block css %}
 {% endblock %}
@@ -80,7 +83,7 @@
                 data: JSON.stringify({ 'component': component }),
                 contentType: 'application/json;charset=UTF-8',
                 complete: function() {
-                    $('#app_running').text('App is Restarting <img src="{{ url_for(\'static\', filename=\'img/spinner.gif\') }}">');
+                    $('#app_running').text('App is Restarting <img src="' + {{ url_for('static', filename='img/spinner.gif') }} + '">');
                     timeoutVar = setTimeout(function() { poll_app_restarted(); }, 10000);
                 }
             });
