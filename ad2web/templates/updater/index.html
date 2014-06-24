@@ -17,9 +17,13 @@
             dataType: "json",
             success: function(data) {
                 if( data['status'] )
+                {
                     if( data['status'] == 'PASS' )
+                    {
                         clearTimeout(timeoutVar);
                         window.location.reload();
+                    }
+                }
             },
         });
     }
