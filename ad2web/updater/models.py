@@ -271,10 +271,13 @@ class SourceUpdater(object):
         if not self._git:
             return True
 
-        remotes = self._git.remote(v=True)
-        for r in remotes.strip().split("\n"):
-            name, path = r.split("\t")
-            if name == 'origin' and '@' in path:
+        try:
+            remotes = self._git.remote(v=True)
+            for r in remotes.strip().split("\n"):
+                name, path = r.split("\t")
+                if name == 'origin' and '@' in path:
+                    return False
+        except sh.ErrorReturnCode_128:
                 return False
 
         return True
