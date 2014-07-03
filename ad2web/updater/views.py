@@ -40,3 +40,9 @@ def restart():
     APP.decoder.trigger_restart = True
 
     return json.dumps({ 'status': 'PASS' })
+
+@updater.route('/checkavailable', methods=['GET'])
+@login_required
+@admin_required
+def checkavailable():
+    return json.dumps({ 'status': 'PASS' })
