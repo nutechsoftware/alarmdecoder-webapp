@@ -131,7 +131,16 @@ def create_by_type(type):
 
         current_app.decoder.refresh_notifier(obj.id)
 
-        flash('Notification created.', 'success')
+        if form.buttons.test.data:
+            error = current_app.decoder.test_notifier(obj.id)
+
+            if error:
+                flash('Error sending test notification: {0}'.format(error), 'error')
+            else:
+                flash('Test notification sent.', 'success')
+        else:
+            flash('Notification created.', 'success')
+            return redirect(url_for('notifications.index'))
 
         return redirect(url_for('notifications.index'))
 
