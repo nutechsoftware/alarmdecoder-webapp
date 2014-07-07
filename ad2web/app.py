@@ -230,7 +230,6 @@ def configure_hook(app):
 
 
 def configure_error_handlers(app):
-
     @app.errorhandler(403)
     def forbidden_page(error):
         return render_template("errors/forbidden_page.html"), 403

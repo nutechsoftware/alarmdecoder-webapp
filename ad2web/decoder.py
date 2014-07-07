@@ -10,6 +10,7 @@ from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
 from socketio.mixins import BroadcastMixin
 from socketio.server import SocketIOServer
+from socketioflaskdebug.debugger import SocketIODebugger
 
 from flask import Blueprint, Response, request, g, current_app
 import jsonpickle
@@ -49,7 +50,9 @@ EVENT_MAP = {
 decodersocket = Blueprint('sock', __name__, url_prefix='/socket.io')
 
 def create_decoder_socket(app):
-    return SocketIOServer(('', 5000), app, resource="socket.io")
+    debugged_app = SocketIODebugger(app, namespace=DecoderNamespace)
+
+    return SocketIOServer(('', 5000), debugged_app, resource="socket.io")
 
 class Decoder(object):
     """
