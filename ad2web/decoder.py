@@ -26,16 +26,19 @@ from .settings.models import Setting
 from .certificate.models import Certificate
 from .updater import Updater
 
-from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, FIRE,
-                                        BYPASS, BOOT, CONFIG_RECEIVED, ZONE_FAULT,
-                                        ZONE_RESTORE, LOW_BATTERY, PANIC,
-                                        RELAY_CHANGED)
+from .notifications.models import NotificationMessage
+from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_RESTORED,
+                                        FIRE, BYPASS, BOOT, CONFIG_RECEIVED, ZONE_FAULT,
+                                        ZONE_RESTORE, LOW_BATTERY, PANIC, RELAY_CHANGED,
+                                        DEFAULT_EVENT_MESSAGES)
+
 
 EVENT_MAP = {
     ARM: 'on_arm',
     DISARM: 'on_disarm',
     POWER_CHANGED: 'on_power_changed',
     ALARM: 'on_alarm',
+    ALARM_RESTORED: 'on_alarm_restored',
     FIRE: 'on_fire',
     BYPASS: 'on_bypass',
     BOOT: 'on_boot',
@@ -129,6 +132,12 @@ class Decoder(object):
         with self.app.app_context():
             device_type = Setting.get_by_name('device_type').value
 
+            # Add any default event messages that may be missing due to additions.
+            for event, message in DEFAULT_EVENT_MESSAGES.iteritems():
+                if not NotificationMessage.query.filter_by(id=event).first():
+                    db.session.add(NotificationMessage(id=event, text=message))
+            db.session.commit()
+
             if device_type:
                 self.trigger_reopen_device = True
 
@@ -194,8 +203,8 @@ class Decoder(object):
         Binds the internal event handlers so that we can handle events from the
         AlarmDecoder library.
         """
-        build_event_handler = lambda ftype: lambda sender, *args, **kwargs: self._handle_event(ftype, sender, *args, **kwargs)
-        build_message_handler = lambda ftype: lambda sender, *args, **kwargs: self._on_message(ftype, sender, *args, **kwargs)
+        build_event_handler = lambda ftype: lambda sender, **kwargs: self._handle_event(ftype, sender, **kwargs)
+        build_message_handler = lambda ftype: lambda sender, **kwargs: self._on_message(ftype, sender, **kwargs)
 
         self.device.on_message += build_message_handler('panel')
         self.device.on_lrr_message += build_message_handler('lrr')
@@ -240,7 +249,7 @@ class Decoder(object):
         self.broadcast('device_close')
         self.trigger_reopen_device = True
 
-    def _on_message(self, ftype, sender, *args, **kwargs):
+    def _on_message(self, ftype, sender, **kwargs):
         """
         Internal event handler for when the device receives a message.
 
@@ -259,7 +268,7 @@ class Decoder(object):
         except Exception, err:
             self.app.logger.error('Error while broadcasting message.', exc_info=True)
 
-    def _handle_event(self, ftype, sender, *args, **kwargs):
+    def _handle_event(self, ftype, sender, **kwargs):
         """
         Internal event handler for other events from the AlarmDecoder.
 

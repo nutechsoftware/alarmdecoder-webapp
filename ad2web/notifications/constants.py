@@ -15,6 +15,7 @@ ZONE_RESTORE = 9
 LOW_BATTERY = 10
 PANIC = 11
 RELAY_CHANGED = 12
+ALARM_RESTORED = 13
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
@@ -23,7 +24,8 @@ DEFAULT_EVENT_MESSAGES = {
     ARM: 'The alarm system has been armed.',
     DISARM: 'The alarm system has been disarmed.',
     POWER_CHANGED: 'Power status has changed to {status}.',
-    ALARM: 'Alarm is triggered!',
+    ALARM: 'The alarm system has been triggered on zone {zone_name} ({zone})!',
+    ALARM_RESTORED: 'The alarm system has stopped signaling the alarm for zone {zone_name} ({zone}).',
     FIRE: 'There is a fire!',
     BYPASS: 'A zone has been bypassed.',
     BOOT: 'The AlarmDecoder has finished booting.',
@@ -48,7 +50,8 @@ EVENT_TYPES = {
     ZONE_RESTORE: 'zone restore',
     LOW_BATTERY: 'low battery',
     PANIC: 'panic',
-    RELAY_CHANGED: 'relay changed'
+    RELAY_CHANGED: 'relay changed',
+    ALARM_RESTORED: 'alarm restored'
 }
 
 EMAIL = 0
@@ -68,6 +71,7 @@ DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
 
 SUBSCRIPTIONS = OrderedDict([
     (ALARM, 'Alarm system is triggered?'),
+    (ALARM_RESTORED, 'Alarm system stops signaling?'),
     (PANIC, 'A panic has been detected?'),
     (FIRE, 'A fire is detected?'),
     (ARM, 'Alarm system is armed?'),
