@@ -20,7 +20,8 @@
             dataType: "json",
             statusCode: {
                 502: function() {
-                    $('#app_running').text('App is Restarting <img src="{{ url_for("static", filename="img/spinner.gif") }}">');
+                    $('#app_running').html('App is Restarting <img src="{{ url_for("static", filename="img/spinner.gif") }}">');
+                    timeoutVar = setTimeout(function() { poll_app_restarted(); }, 10000);
                 }
             },
             success: function(data) {
@@ -88,7 +89,7 @@
                 data: JSON.stringify({ 'component': component }),
                 contentType: 'application/json;charset=UTF-8',
                 complete: function() {
-                    $('#app_running').text('App is Restarting <img src="{{ url_for("static", filename="img/spinner.gif") }}">');
+                    $('#app_running').html('App is Restarting <img src="{{ url_for("static", filename="img/spinner.gif") }}">');
                     timeoutVar = setTimeout(function() { poll_app_restarted(); }, 10000);
                 }
             });
