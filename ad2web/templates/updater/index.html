@@ -24,9 +24,11 @@
                 }
             },
             success: function(data) {
-                if( data['status'] )
+                var jsondata = JSON.parse(data);
+
+                if( jsondata['status'] )
                 {
-                    if( data['status'] == 'PASS' )
+                    if( jsondata['status'] == 'PASS' )
                     {
                         clearTimeout(timeoutVar);
                         window.location.reload();
