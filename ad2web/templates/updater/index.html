@@ -20,7 +20,7 @@
             dataType: "json",
             statusCode: {
                 502: function() {
-                    $('#app_running').text('App is Restarting <img src="' + {{ url_for('static', filename='img/spinner.gif') }} + '">');
+                    $('#app_running').text('App is Restarting <img src="{{ url_for('static', filename='img/spinner.gif') }}">');
                 }
             },
             success: function(data) {
