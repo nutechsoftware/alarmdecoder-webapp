@@ -17,7 +17,6 @@
         $.ajax({
             url: "{{ url_for('update.checkavailable') }}",
             type: "GET",
-            dataType: "json",
             statusCode: {
                 502: function() {
                     $('#app_running').html('App is Restarting <img src="{{ url_for("static", filename="img/spinner.gif") }}">');
