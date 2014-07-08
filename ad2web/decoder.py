@@ -216,8 +216,12 @@ class Decoder(object):
 
         # Bind the event handler to all of our events.
         for event, device_event_name in EVENT_MAP.iteritems():
-            device_handler = getattr(self.device, device_event_name)
-            device_handler += build_event_handler(event)
+            try:
+                device_handler = getattr(self.device, device_event_name)
+                device_handler += build_event_handler(event)
+
+            except AttributeError, ex:
+                self.app.logger.warning('Could not bind event "%s": alarmdecoder library is probably out of date.', device_event_name)
 
     def refresh_notifier(self, id):
         self._notifier_system.refresh_notifier(id)
