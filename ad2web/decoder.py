@@ -10,6 +10,7 @@ from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
 from socketio.mixins import BroadcastMixin
 from socketio.server import SocketIOServer
+from socketioflaskdebug.debugger import SocketIODebugger
 
 from flask import Blueprint, Response, request, g, current_app
 import jsonpickle
@@ -25,16 +26,19 @@ from .settings.models import Setting
 from .certificate.models import Certificate
 from .updater import Updater
 
-from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, FIRE,
-                                        BYPASS, BOOT, CONFIG_RECEIVED, ZONE_FAULT,
-                                        ZONE_RESTORE, LOW_BATTERY, PANIC,
-                                        RELAY_CHANGED)
+from .notifications.models import NotificationMessage
+from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_RESTORED,
+                                        FIRE, BYPASS, BOOT, CONFIG_RECEIVED, ZONE_FAULT,
+                                        ZONE_RESTORE, LOW_BATTERY, PANIC, RELAY_CHANGED,
+                                        DEFAULT_EVENT_MESSAGES)
+
 
 EVENT_MAP = {
     ARM: 'on_arm',
     DISARM: 'on_disarm',
     POWER_CHANGED: 'on_power_changed',
     ALARM: 'on_alarm',
+    ALARM_RESTORED: 'on_alarm_restored',
     FIRE: 'on_fire',
     BYPASS: 'on_bypass',
     BOOT: 'on_boot',
@@ -49,7 +53,9 @@ EVENT_MAP = {
 decodersocket = Blueprint('sock', __name__, url_prefix='/socket.io')
 
 def create_decoder_socket(app):
-    return SocketIOServer(('', 5000), app, resource="socket.io")
+    debugged_app = SocketIODebugger(app, namespace=DecoderNamespace)
+
+    return SocketIOServer(('', 5000), debugged_app, resource="socket.io")
 
 class Decoder(object):
     """
@@ -126,6 +132,12 @@ class Decoder(object):
         with self.app.app_context():
             device_type = Setting.get_by_name('device_type').value
 
+            # Add any default event messages that may be missing due to additions.
+            for event, message in DEFAULT_EVENT_MESSAGES.iteritems():
+                if not NotificationMessage.query.filter_by(id=event).first():
+                    db.session.add(NotificationMessage(id=event, text=message))
+            db.session.commit()
+
             if device_type:
                 self.trigger_reopen_device = True
 
@@ -191,8 +203,8 @@ class Decoder(object):
         Binds the internal event handlers so that we can handle events from the
         AlarmDecoder library.
         """
-        build_event_handler = lambda ftype: lambda sender, *args, **kwargs: self._handle_event(ftype, sender, *args, **kwargs)
-        build_message_handler = lambda ftype: lambda sender, *args, **kwargs: self._on_message(ftype, sender, *args, **kwargs)
+        build_event_handler = lambda ftype: lambda sender, **kwargs: self._handle_event(ftype, sender, **kwargs)
+        build_message_handler = lambda ftype: lambda sender, **kwargs: self._on_message(ftype, sender, **kwargs)
 
         self.device.on_message += build_message_handler('panel')
         self.device.on_lrr_message += build_message_handler('lrr')
@@ -204,8 +216,12 @@ class Decoder(object):
 
         # Bind the event handler to all of our events.
         for event, device_event_name in EVENT_MAP.iteritems():
-            device_handler = getattr(self.device, device_event_name)
-            device_handler += build_event_handler(event)
+            try:
+                device_handler = getattr(self.device, device_event_name)
+                device_handler += build_event_handler(event)
+
+            except AttributeError, ex:
+                self.app.logger.warning('Could not bind event "%s": alarmdecoder library is probably out of date.', device_event_name)
 
     def refresh_notifier(self, id):
         self._notifier_system.refresh_notifier(id)
@@ -237,7 +253,7 @@ class Decoder(object):
         self.broadcast('device_close')
         self.trigger_reopen_device = True
 
-    def _on_message(self, ftype, sender, *args, **kwargs):
+    def _on_message(self, ftype, sender, **kwargs):
         """
         Internal event handler for when the device receives a message.
 
@@ -256,7 +272,7 @@ class Decoder(object):
         except Exception, err:
             self.app.logger.error('Error while broadcasting message.', exc_info=True)
 
-    def _handle_event(self, ftype, sender, *args, **kwargs):
+    def _handle_event(self, ftype, sender, **kwargs):
         """
         Internal event handler for other events from the AlarmDecoder.
 

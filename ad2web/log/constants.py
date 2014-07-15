@@ -13,6 +13,7 @@ ZONE_RESTORE = 9
 LOW_BATTERY = 10
 PANIC = 11
 RELAY_CHANGED = 12
+ALARM_RESTORED = 13
 
 EVENT_TYPES = {
     ARM: 'arm',
@@ -27,5 +28,6 @@ EVENT_TYPES = {
     ZONE_RESTORE: 'zone restore',
     LOW_BATTERY: 'low battery',
     PANIC: 'panic',
-    RELAY_CHANGED: 'relay changed'
+    RELAY_CHANGED: 'relay changed',
+    ALARM_RESTORED: 'alarm restored'
 }

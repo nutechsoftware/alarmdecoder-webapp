@@ -1,12 +1,43 @@
 {% from "macros/_form.html" import render_form %}
 
+
 {% extends 'layouts/base.html' %}
+
+{% set page_title = 'AlarmDecoder Updater' %}
 
 {% block css %}
 {% endblock %}
 
 {% block pagejs %}
 <script type="text/javascript">
+    var timeoutVar;
+
+    function poll_app_restarted()
+    {
+        $.ajax({
+            url: "{{ url_for('update.checkavailable') }}",
+            type: "GET",
+            statusCode: {
+                502: function() {
+                    $('#app_running').html('App is Restarting <img src="{{ url_for("static", filename="img/spinner.gif") }}">');
+                    timeoutVar = setTimeout(function() { poll_app_restarted(); }, 10000);
+                }
+            },
+            success: function(data) {
+                var jsondata = JSON.parse(data);
+
+                if( jsondata['status'] )
+                {
+                    if( jsondata['status'] == 'PASS' )
+                    {
+                        clearTimeout(timeoutVar);
+                        window.location.reload();
+                    }
+                }
+            },
+        });
+    }
+
     function build_update_button(component, enabled) {
         if (enabled === true) {
             $('#' + component + '-update-submit').show();
@@ -59,7 +90,8 @@
                 data: JSON.stringify({ 'component': component }),
                 contentType: 'application/json;charset=UTF-8',
                 complete: function() {
-                    setTimeout(function() { window.location.reload(); }, 10000);
+                    $('#app_running').html('App is Restarting <img src="{{ url_for("static", filename="img/spinner.gif") }}">');
+                    timeoutVar = setTimeout(function() { poll_app_restarted(); }, 10000);
                 }
             });
 
@@ -81,6 +113,7 @@
     {% if updates|length == 0 %}
         <p>No updates available!</p>
     {% else %}
+        <div id="app_running">App is Running <span style="color:green">&#10004;</span></div><br/>
         <table style="text-align: left">
         <tr><th>Component</th><th>Branch</th><th>Status</th><th></th></tr>
         {% for component, (needs_update, branch, revision, new_revision, status) in updates.iteritems() %}

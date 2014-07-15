@@ -66,7 +66,7 @@ class HostSettingsForm(Form):
 
 class EthernetSelectionForm(Form):
     ethernet_devices =  SelectField(u'Network Device', choices=[('eth0', u'eth0')], default='eth0', coerce=str)
-#    submit = SubmitField(u'Configure')
+    submit = SubmitField(u'Configure')
 
 class EthernetConfigureForm(Form):
     ethernet_device = HiddenField()

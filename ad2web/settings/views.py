@@ -219,7 +219,6 @@ def system_reboot():
 def configure_ethernet_device(device):
     form = EthernetConfigureForm()
     device_map = None
-    dhcp = True
 
     if os.access(NETWORK_FILE, os.W_OK):
         device_map = _parse_network_file()
@@ -230,8 +229,6 @@ def configure_ethernet_device(device):
     properties = _get_ethernet_properties(device, device_map)
     addresses = netifaces.ifaddresses(device)
     ipv4 = addresses[netifaces.AF_INET]
-    print "Device map:\n"
-    print device_map
 
 #first address and gateway
     ip_address = ipv4[0]['addr']
@@ -251,31 +248,104 @@ def configure_ethernet_device(device):
                 return redirect(url_for('settings.host'))
 
             flash('Device ' + device + ' not found in ' + NETWORK_FILE + ' you should use your OS tools to configure your network.', 'error')
-#uncomment this return before release
-    #        return redirect(url_for('settings.host'))
+            return redirect(url_for('settings.host'))
         else:
-            print properties
             for s in properties:
                 if 'loopback' in s:
                     flash('Unable to configure loopback device!', 'error')
                     return redirect(url_for('settings.host'))
                 if 'static' in s:
                     form.connection_type.data = 'static'
-                    dhcp = False
                 if 'dhcp' in s:
                     form.connection_type.data = 'dhcp'
 
     if form.validate_on_submit():
         if form.connection_type.data == 'static':
-            dhcp = False
+            i = 0
+            interface_index = 0
+
+#find our iface definition string for "device"
+            for i in range(0, len(properties)):
+                if properties[i].find("dhcp") != -1 and properties[i].find(device) != -1:
+                    interface_index = device_map.index(properties[i])
+                    x = properties[i].replace('dhcp', 'static')
+                    #replace dhcp with static, remove original add copy
+                    del properties[i]
+#delete our interface from the map, add it to new properties list for re-adding to map later
+                    del device_map[interface_index]
+                    properties.append(x)
+                    break
+                else:
+                    if properties[i].find("static") != -1 and properties[i].find(device) != -1:
+                        interface_index = device_map.index(properties[i])
+                        truncated = properties[i].splitlines()
+                        #truncate off address/netmask/gateway, we add after
+                        del properties[i]
+#if we're static but we just want to change our address
+                        del device_map[interface_index]
+                        properties.append(truncated[0] + "\n")
+                        break
+
+            for i in range(0, len(device_map)):
+                if device_map[i].find("auto " + device) != -1:
+                    del device_map[i]
+                    break
+
+            #append address values to interface string
+            address = str("\taddress " + form.ip_address.data + "\n")
+            netmask = str("\tnetmask " + form.netmask.data + "\n")
+            gateway = str("\tgateway " + form.gateway.data + "\n")
+
+            properties.append(address)
+            properties.append(netmask)
+            properties.append(gateway)
+
+            #append new interface string with address information included
+            for i in range(0, len(properties)):
+                device_map.insert(interface_index + i, properties[i])
+
+            #write the network file with the new device map
+            for i in range(0, len(device_map)):
+                if device_map[i].find("iface default inet dhcp") != -1:
+                    x = device_map[i].replace('dhcp', 'static')
+                    del device_map[i]
+                    device_map.append(x)
+                    break
+
+            _write_network_file(device_map);
         else:
-            dhcp = True
+            for i in range(0, len(properties)):
+                if properties[i].find("static") != -1 and properties[i].find(device) != -1:
+                    interface_index = device_map.index(properties[i])
+                    truncated = properties[0].splitlines()
+                    x = truncated[0].replace('static', 'dhcp')
+
+                    del properties
+                    properties = []
+                    properties.append("auto " + device + "\n" + x + "\n")
+            
+                    del device_map[interface_index]
+                    for i in range(0, len(properties)):
+                        device_map.insert(interface_index + i, properties[i])
+
+            for i in range(0, len(device_map)):
+                if device_map[i].find("iface default inet static") != -1:
+                    x = device_map[i].replace('static', 'dhcp')
+                    del device_map[i]
+                    device_map.append(x)
+                    break
+
+            _write_network_file(device_map)
 #substitute values in the device_map, write the file and restart networking
         with sh.sudo:
             try:
-                sh.service("networking restart")
+                sh.ifdown(str(device))
             except sh.ErrorReturnCode_1:
                 flash('Unable to restart networking. Please try manually.', 'error')
+            try:
+                sh.ifup(str(device))
+            except sh.ErrorReturnCode_1:
+                flash('Unable to restart networking.  Please try manually.', 'error')
 
         form.ethernet_device.data = device
 
@@ -316,10 +386,11 @@ def _write_network_file(device_map):
     f = open(NETWORK_FILE, 'r+')
     #go to beginning of file, rewrite ethernet device map, truncate old since we'll have a whole copy of the file in the map
     f.seek(0)
-
+    
     if device_map is not None:
-        for s in device_map:
-            text + s
+        for i in range(0, len(device_map)):
+            text = text + device_map[i]
+
         f.write(text)
         f.truncate()
 
@@ -330,7 +401,7 @@ def _get_ethernet_properties(device, device_map):
     properties = []
     if device_map is not None:
         for s in device_map:
-            if device in s:
+            if device in s and s.find("auto") == -1:
                 properties.append(s)
 
     return properties
