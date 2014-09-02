@@ -35,7 +35,14 @@ from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HO
 from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
-from sh import hostname, service, sudo
+from sh import hostname, sudo
+
+try:
+    from sh import service
+    hasservice = 1
+except ImportError:
+    hasservice = 0
+
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -168,10 +175,11 @@ def hostname():
             except sh.ErrorReturnCode_1:
                 flash('Error setting hostname with the hostname command.', 'error')
 
-            try:
-                sh.service("avahi-daemon restart")
-            except sh.ErrorReturnCode_1:
-                flash('Error restarting the avahi-daemon', 'error')
+            if hasservice == 1:
+                try:
+                    sh.service("avahi-daemon restart")
+                except sh.ErrorReturnCode_1:
+                    flash('Error restarting the avahi-daemon', 'error')
 
         return redirect(url_for('settings.host'))
 
