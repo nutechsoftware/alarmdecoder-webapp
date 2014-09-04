@@ -13,6 +13,7 @@
     ("password", url_for('settings.password'), False),
     ("setup", url_for('setup.index'), True),
     ("host", url_for('settings.host'), False),
+    ("keypad", url_for('keypad.custom_index'), False),
 ]%}
 {% else %}
 {% set tabs = [
@@ -23,5 +24,6 @@
     ("password", url_for('settings.password'), False),
     ("setup", url_for('setup.index'), True),
     ("host", url_for('settings.host'), False),
+    ("keypad", url_for('keypad.custom_index'), False),
 ]%}
 {% endif %}

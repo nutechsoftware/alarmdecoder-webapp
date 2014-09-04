@@ -478,6 +478,19 @@ img.keypad-button {
     left: -60px;
     margin-top: 10px;
 }
+
+#custom-button-row {
+    position: relative;
+    left: -135px;
+    margin-top: 10px;
+}
+
+.mobile #custom-button-row {
+    position: relative;
+    left: -60px;
+    margin-top: 10px;
+}
+
 #check-mute {
     margin-top: -2px;
 }
