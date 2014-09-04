@@ -47,6 +47,8 @@
             $('#loading').spin('flower');
             var oTable = $('#events-table').bind('processing', function(e, oSettings, bShow) { showHide(bShow) }).dataTable({
                 "bSort": false,
+                "bStateSave": true,
+                "iCookieDuration": 60*60*24,
                 "bJQueryUI": true,
                 "bServerSide": true,
                 "bProcessing": true,

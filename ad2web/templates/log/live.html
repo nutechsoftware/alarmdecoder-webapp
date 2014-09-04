@@ -72,6 +72,8 @@
             $('#loading').spin('flower');
             var oTable = $('#panel-log').dataTable({
                 "bJQueryUI": true,
+                "bStateSave": true,
+                "iCookieDuration": 60*60*24,
                 "sPaginationType": "full_numbers",
                 "aaSorting": [[0, "desc" ]],
                 "sDom" : '<"H"lr>t<"F"fip>',
