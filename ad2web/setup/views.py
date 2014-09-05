@@ -125,8 +125,11 @@ def local():
 
     if form.validate_on_submit():
         device_path = Setting.get_by_name('device_path')
-        usb_devices = _iterate_usb(device_search_path)
-        form.device_path.choices = [(usb_devices[i], usb_devices[i]) for i in usb_devices]
+
+        if device_type == 'AD2USB':
+            usb_devices = _iterate_usb(device_search_path)
+            form.device_path.choices = [(usb_devices[i], usb_devices[i]) for i in usb_devices]
+
         baudrate = Setting.get_by_name('device_baudrate')
         managed = Setting.get_by_name('managed_ser2sock')
         device_path.value = form.device_path.data
