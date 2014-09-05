@@ -2,6 +2,7 @@
 
 import os
 import glob
+import platform
 
 from flask import Blueprint, render_template, abort, g, request, flash, Response, redirect, url_for
 from flask import current_app
@@ -74,7 +75,14 @@ def type():
 @setup.route('/local', methods=['GET', 'POST'])
 @admin_or_first_run_required
 def local():
-    device_search_path = '/sys/bus/usb-serial/devices/*'
+    operating_system = platform.system()
+    device_search_path = None
+
+    if operating_system != 'Darwin' and operating_system != 'Windows':
+        device_search_path = '/dev/ttyUSB*'
+    else:
+        device_search_path = '/dev/tty.usb*'
+
     device_type = Setting.get_by_name('device_type').value
 
     form = None
@@ -83,6 +91,8 @@ def local():
         form = LocalDeviceForm()
     else:
         form = LocalDeviceFormUSB()
+        usb_devices = _iterate_usb(device_search_path)
+        form.device_path.choices = [(usb_devices[i], usb_devices[i]) for i in usb_devices]
 
     if not form.is_submitted():
         if device_type != 'AD2USB':
@@ -115,9 +125,10 @@ def local():
 
     if form.validate_on_submit():
         device_path = Setting.get_by_name('device_path')
+        usb_devices = _iterate_usb(device_search_path)
+        form.device_path.choices = [(usb_devices[i], usb_devices[i]) for i in usb_devices]
         baudrate = Setting.get_by_name('device_baudrate')
         managed = Setting.get_by_name('managed_ser2sock')
-
         device_path.value = form.device_path.data
         baudrate.value = form.baudrate.data
         managed.value = form.confirm_management.data
@@ -130,10 +141,11 @@ def local():
         if form.confirm_management.data == True:
             next_stage = 'setup.sslserver'
         else:
-            try:
-                ser2sock.stop()
-            except OSError:
-                flash("We've detected that ser2sock is running and failed to stop it.  There may be communication issues unless it is killed manually.", 'warning')
+            if ser2sock.exists():
+                try:
+                    ser2sock.stop()
+                except OSError:
+                    flash("We've detected that ser2sock is running and failed to stop it.  There may be communication issues unless it is killed manually.", 'warning')
 
         set_stage(SETUP_ENDPOINT_STAGE[next_stage])
         db.session.commit()
