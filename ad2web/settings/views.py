@@ -39,9 +39,9 @@ from sh import hostname, sudo
 
 try:
     from sh import service
-    hasservice = 1
+    hasservice = True
 except ImportError:
-    hasservice = 0
+    hasservice = False
 
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
@@ -175,7 +175,7 @@ def hostname():
             except sh.ErrorReturnCode_1:
                 flash('Error setting hostname with the hostname command.', 'error')
 
-            if hasservice == 1:
+            if hasservice:
                 try:
                     sh.service("avahi-daemon restart")
                 except sh.ErrorReturnCode_1:
