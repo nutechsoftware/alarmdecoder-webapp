@@ -1,3 +1,6 @@
+import os
+import sys
+
 import sh
 import sqlalchemy.exc
 from sqlalchemy import create_engine, pool
@@ -81,6 +84,7 @@ class SourceUpdater(object):
         self._enabled, self._status = self._check_enabled()
 
         self._db_updater = DBUpdater()
+        self._requirements_updater = RequirementsUpdater()
 
     @property
     def branch(self):
@@ -134,6 +138,7 @@ class SourceUpdater(object):
         self._retrieve_remote_revision()
         self._retrieve_commit_count()
 
+        self._requirements_updater.refresh()
         self._db_updater.refresh()
 
     def update(self):
@@ -148,6 +153,7 @@ class SourceUpdater(object):
         try:
             results = self._git.merge('origin/{0}'.format(self.branch))
 
+            self._requirements_updater.update()
             self._db_updater.update()
         except sh.ErrorReturnCode, err:
             return { 'status': 'FAIL', 'restart_required': False }
@@ -359,3 +365,99 @@ class DBUpdater(object):
         """
         self._connection.close()
         self._connection = self._context = None
+
+
+class RequirementsUpdater(object):
+    def __init__(self):
+        self.local_options = self._get_local_options()
+        self.finder = self._get_package_finder()
+        self.requirement_list = []
+
+    def refresh(self):
+        return self._check_requirements()
+
+    def needs_update(self):
+        return bool(self.requirements_needed)
+
+    def update(self):
+        for r in self.requirements_needed:
+            self._install_requirement(r)
+
+        return True
+
+    def _install_requirement(self, requirement):
+        if not local_options:
+            local_options = []
+
+        if self._check_requirement(requirement):
+            return True
+
+        try:
+            # Parse requirement
+            requirement = InstallRequirement.from_line(str(requirement), None)
+
+            # Build the requirement set.  We're doing this one at a time so we can actually detect
+            # which ones fail.
+            requirement_set = RequirementSet(build_dir=build_prefix, src_dir=src_prefix, download_dir=None)        
+            requirement_set.add_requirement(requirement)
+
+        try:
+            # Download and build requirement
+            try:
+                requirement_set.prepare_files(package_finder, force_root_egg_info=False, bundle=False)
+            except PreviousBuildDirError, err:
+                # Remove previous build directories if they're detected.. shouldn't be an issue
+                # now that we've removed upstream dependencies from requirements.txt.
+                import shutil
+                location = requirement.build_location(build_prefix, True)
+
+                shutil.rmtree(location)
+                requirement_set.prepare_files(package_finder, force_root_egg_info=False, bundle=False)
+
+            # Finally, install the requirement.
+            requirement_set.install(local_options, [])
+
+        except Exception, err:
+            return False
+
+        return True
+
+    def _check_requirements(self):
+        # TODO: Fix hardcoded path
+        self.requirement_list = [r.strip() for r in open('requirements.txt').readlines()]
+        self.requirements_needed = [r for r in self.requirement_list if self._check_requirement(r)]
+
+        return bool(self.requirements_needed)
+
+    def _check_requirement(self, requirement):
+        dist = None
+        try:
+            dist = working_set.find(Requirement.parse(requirement))
+        except ValueError, err:
+            pass
+
+        return dist
+
+    def _get_local_options(self):
+        local_options = []
+        # Force install into the user directory if this isn't a virtualenv and we're not root.
+        if not hasattr(sys, 'real_prefix') and not os.geteuid() == 0:
+            local_options.append('--user')
+
+        return local_options
+
+    def _get_package_finder(self):
+        finder_options = {
+            'find_links': [],
+            'index_urls': ['http://pypi.python.org/simple/'],
+        }
+
+        # Handle pip 1.5 deprecating dependency_links and force it to process them for alarmdecoder/pyftdi.
+        try:
+            from pip.cmdoptions import process_dependency_links
+            finder_options['process_dependency_links'] = True
+        except ImportError:
+            pass
+
+        # Create package finder to search for packages for us.
+        return PackageFinder(**finder_options)
