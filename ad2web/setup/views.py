@@ -302,6 +302,7 @@ def sslserver():
                 'device_port': device_port.value,
                 'device_baudrate': Setting.get_by_name('device_baudrate').value,
                 'device_port': device_port.value,
+                'raw_device_mode': 1,
                 'use_ssl': use_ssl.value,
                 'ca_cert': ca,
                 'server_cert': server_cert
