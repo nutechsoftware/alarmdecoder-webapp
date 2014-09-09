@@ -52,6 +52,7 @@ def user(user_id):
         db.session.commit()
 
         flash('User created.' if user_id is None else 'User updated.', 'success')
+        return redirect(url_for('admin.users'))
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
