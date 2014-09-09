@@ -56,6 +56,9 @@
                     {% if current_user.is_authenticated() %}
                     <div class="nav-collapse collapse pull-right">
                         <ul class="nav">
+                            {% if update_available and current_user.is_admin() %}
+                            <li><a href="{{ url_for('update.index') }}" style="color: #86D47F;">Update available!</a></li>
+                            {% endif %}
                             <li><a href="{{ url_for('keypad.index') }}">Keypad</a></li>
                             <li><a href="{{ url_for('log.events') }}">Log</a></li>
                             <li><a href="{{ url_for('settings.index') }}">Settings</a></li>

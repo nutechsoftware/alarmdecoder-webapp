@@ -17,10 +17,6 @@ keypad = Blueprint('keypad', __name__, url_prefix='/keypad')
 @keypad.route('/')
 @login_required
 def index():
-    if current_user.is_admin():
-        if not all(not needs_update for component, (needs_update, branch, revision, new_revision, status) in APP.decoder.updates.iteritems()):
-            flash(Markup('There is a <a href="{0}">software update</a> available.'.format(url_for('update.index'))), 'warning')
-
     panel_mode = Setting.get_by_name('panel_mode').value
     custom_buttons = KeypadButton.query.filter_by(user_id=current_user.id).all()
 
