@@ -1,0 +1,85 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+        $('#loading').spin('flower');
+        $('#buttons-table').dataTable({
+            "bStateSave": true,
+            "iCookieDuration": 60*60*24,
+            "bJQueryUI": true,
+            "sPaginationType": "full_numbers",
+            "sDom": '<"H"lr>t<"F"fip>',
+            "oLanguage": {
+                "sInfoFiltered": "",
+                "sInfo": "_START_ to _END_ of _TOTAL_",
+                "sInfoEmpty": "No Results",
+                "sEmptyTable": " ",
+            },
+            "aoColumns": [
+                { "sWidth": "10%" },
+                { "sWidth": "50%" },
+                null,
+                { "sWidth": "10%" },
+            ],
+            "fnInitComplete": function() {
+                $('#loading').stop();
+                $('#loading').hide();
+                $('#clear').css('display', 'inline-block');
+                $('#datatable').show();
+                this.fnAdjustColumnSizing();
+            },
+        });
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="buttons-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Label</th>
+                    <th>Code</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for button in buttons %}
+                    <tr>
+                        <td><a href="{{ url_for('keypad.edit_button', id=button.button_id) }}">{{ button.button_id }}</a></td>
+                        <td>{{ button.label }}</td>
+                        <td>{{ button.code }}</td>
+                        <td><a href="{{ url_for('keypad.remove_button', id=button.button_id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br/>
+    <a id="clear" class="btn btn-primary" href="{{ url_for('keypad.create_button') }}">New Button</a>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
+{% endblock %}
