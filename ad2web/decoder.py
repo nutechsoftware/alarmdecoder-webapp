@@ -422,10 +422,9 @@ class VersionChecker(threading.Thread):
             self._decoder.updates = self._updater.check_updates()
 
             with self._decoder.app.app_context():
-                if not all(not needs_update for component, (needs_update, branch, revision, new_revision, status) in self._decoder.updates.iteritems()):
-                    current_app.jinja_env.globals['update_available'] = True
-                else:
-                    current_app.jinja_env.globals['update_available'] = False
+                update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status) in self._decoder.updates.iteritems())
+
+                current_app.jinja_env.globals['update_available'] = update_available
 
             time.sleep(self.TIMEOUT)
 
