@@ -6,6 +6,7 @@ from ..settings import Setting
 from ..certificate import Certificate
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
+from ..keypad import KeypadButton
 
 HOSTS_FILE = '/etc/hosts'
 HOSTNAME_FILE = '/etc/hostname'
@@ -18,5 +19,6 @@ EXPORT_MAP = {
 	'notification_settings.json': NotificationSetting,
 	'users.json': User,
 	'user_details.json': UserDetail,
-	'zones.json': Zone
+	'zones.json': Zone,
+    'buttons.json': KeypadButton
 }

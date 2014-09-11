@@ -533,6 +533,8 @@ def _import_refresh():
         kwargs['device_baudrate'] = Setting.get_by_name('device_baudrate', 115200).value
         kwargs['device_port'] = Setting.get_by_name('device_port', 10000).value
         kwargs['use_ssl'] = Setting.get_by_name('use_ssl', False).value
+        kwargs['raw_device_mode'] = Setting.get_by_name('raw_device_mode', 1).value
+
         if kwargs['use_ssl']:
             kwargs['ca_cert'] = Certificate.query.filter_by(type=CA).first()
             kwargs['server_cert'] = Certificate.query.filter_by(type=SERVER).first()
