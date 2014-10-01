@@ -17,22 +17,21 @@
             className: 'spinner',
         }
         $('#loading').spin('flower');
-        $('#zones-table').dataTable({
-            "bJQueryUI": true,
+        $('#buttons-table').dataTable({
             "bStateSave": true,
             "iCookieDuration": 60*60*24,
+            "bJQueryUI": true,
             "sPaginationType": "full_numbers",
-            "sDom" : '<"H"lr>t<"F"fip>',
+            "sDom": '<"H"lr>t<"F"fip>',
             "oLanguage": {
                 "sInfoFiltered": "",
                 "sInfo": "_START_ to _END_ of _TOTAL_",
                 "sInfoEmpty": "No Results",
                 "sEmptyTable": " ",
             },
-            "aaSorting": [[1, "asc" ]],
             "aoColumns": [
-                { "sWidth": "15%" },
-                { "sWidth": "15%" },
+                { "sWidth": "10%" },
+                { "sWidth": "50%" },
                 null,
                 { "sWidth": "10%" },
             ],
@@ -52,28 +51,29 @@
 <div class="settings_wrapper">
     <div id="loading"></div>
     <div id="datatable" style="display: none;">
-        <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="zones-table">
+        <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="buttons-table">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Zone Name</th>
-                    <th>Description</th>
+                    <th>Label</th>
+                    <th>Code</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-            {% for zone in zones %}
-                <tr>
-                    <td><a href="{{ url_for('zones.edit', id=zone.zone_id) }}">{{ zone.zone_id }}</a></td>
-                    <td>{{ zone.name }}</td>
-                    <td>{{ zone.description }}</td>
-                    <td><a href="{{ url_for('zones.remove', id=zone.zone_id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a></td>
-            {% endfor %}
+                {% for button in buttons %}
+                    <tr>
+                        <td><a href="{{ url_for('keypad.edit_button', id=button.button_id) }}">{{ button.button_id }}</a></td>
+                        <td>{{ button.label }}</td>
+                        <td>{{ button.code }}</td>
+                        <td><a href="{{ url_for('keypad.remove_button', id=button.button_id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a></td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
-    <br>
-    <a id="clear" class="btn btn-primary" href="{{ url_for('zones.create') }}">New Zone</a>
+    <br/>
+    <a id="clear" class="btn btn-primary" href="{{ url_for('keypad.create_button') }}">New Button</a>
 </div>
 {% endblock %}
 

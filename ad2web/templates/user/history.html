@@ -20,6 +20,8 @@
 
             var oTable = $('#history-table').dataTable({
                 "bJQueryUI": true,
+                "bStateSave": true,
+                "iCookieDuration": 60*60*24,
                 "sPaginationType": "full_numbers",
                 "sDom" : '<"H"lr>t<"F"fip>',
                 "oLanguage": {

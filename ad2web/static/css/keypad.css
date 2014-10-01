@@ -401,6 +401,13 @@ img.keypad-button {
     left: -99px;
     margin-top: 10px;
 }
+
+#custom-button-row {
+    position: relative;
+    left: -94px;
+    margin-top: 10px;
+}
+
 #check-mute {
     margin-top: -2px;
 }

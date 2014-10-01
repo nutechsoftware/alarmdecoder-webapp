@@ -6,6 +6,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dsc_keypad.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
 {% endblock %}
 {% block pagejs %}
     <script type="text/javascript">
@@ -581,6 +582,66 @@
             bindButtonEvents('#button-chime', 'c', '', '', '', '');
             bindButtonEvents('#button-reset', 'r', '', '', '', '');
             bindButtonEvents('#button-exit',  'e', '', '', '', '');
+
+//custom buttons
+            {% if buttons %}
+                $("#exit").on('mousedown', function() {
+                    $('#dialog').dialog("close");
+                });
+                $("#exit").on('touchstart', function() {
+                    $('#dialog').dialog("close");
+                });
+
+                {% for button in buttons %}
+                    $("#custom_{{button.button_id}}").on('mousedown', function() {
+                        var code = '{{button.code}}';
+                        if( !tablet && !mobile )
+                            decoder.emit('keypress', String(code));
+                        $('#dialog').dialog("close");
+                    });
+                    $("#custom_{{button.button_id}}").on('touchstart', function() {
+                        var code = '{{button.code}}';
+                        decoder.emit('keypress', String(code));
+                        $('#dialog').dialog("close");
+                    });
+                {% endfor %}
+
+                if( !tablet && !mobile )
+                {
+                    $('#custom_buttons').click(function() {
+                        $('#dialog').dialog({
+                            modal: true,
+                            minWidth: 650,
+                            maxWidth: 650,
+                            position: { my: "center", at: "bottom", of: $('#button-0') },
+                        });
+                    });
+                }
+                else
+                {
+                    if( mobile )
+                    {
+                        $('#custom_buttons').on('touchend', function() {
+                            $('#dialog').dialog({
+                                modal: true,
+                                minWidth: 200,
+                                position: { my: "center", at: "bottom", of: $('#button-0') },
+                            });
+                        });
+                    }
+                    if( tablet )
+                    {
+                        $('#custom_buttons').on('touchstart', function() {
+                            $('#dialog').dialog({
+                                modal: true,
+                                minWidth: 650,
+                                position: { my: "center", at: "bottom", of: window },
+                            });
+                        });
+                    }
+                }
+            {% endif %}
+
 //set up confirmations for F1-F4
             $("#button-F1").confirm({
                 text: "Are you sure?",
@@ -781,6 +842,17 @@
         <div id="mute-row">
             <input type="checkbox" id="check-mute" name="check-mute"/><label for="check-mute" id="check-mute-label">Mute Sounds</label>
         </div>
+    {% if buttons %}
+        <div id="dialog" style="display: none;" title="Custom Buttons">
+            <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" /><br/><br/>
+        {% for button in buttons%}
+            <input id="custom_{{button.button_id}}" class="keypad-button" type="button" value="{{button.label}}"></input>
+        {% endfor%}
+        </div>
+        <div id="custom-button-row">
+            <input type="button" id="custom_buttons" name="custom_buttons" value="Custom Buttons"/>
+        </div>
+    {% endif %}
     </div>
 </div>
 {% endblock %}

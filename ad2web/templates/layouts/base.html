@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/normalize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_custom.css') }}">
     {% endblock %}
 
     {% block css %}
@@ -56,6 +57,9 @@
                     {% if current_user.is_authenticated() %}
                     <div class="nav-collapse collapse pull-right">
                         <ul class="nav">
+                            {% if update_available and current_user.is_admin() %}
+                            <li><a href="{{ url_for('update.index') }}" style="color: #86D47F;">Update available!</a></li>
+                            {% endif %}
                             <li><a href="{{ url_for('keypad.index') }}">Keypad</a></li>
                             <li><a href="{{ url_for('log.events') }}">Log</a></li>
                             <li><a href="{{ url_for('settings.index') }}">Settings</a></li>

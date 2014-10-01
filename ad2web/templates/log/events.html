@@ -8,6 +8,20 @@
 
 {% block pagejs %}
     <script type="text/javascript">
+        function RenderDateLocal(oObj)
+        {
+            //parse date from python to format Date object understands
+            var match = oObj.aData[oObj.iDataColumn].match(/^(\d+)-(\d+)-(\d+) (\d+)\:(\d+)\:(\d+)$/);
+            var localDate = new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
+
+            //take care of timezone offset in minutes to hours by negating and then adding to the hours
+            var tzo = (localDate.getTimezoneOffset()/60) *-1;
+            localDate.setHours(localDate.getHours() + tzo );
+
+            //reformat date for consistency
+            var dateStr = localDate.getFullYear() + "-" + (localDate.getMonth() + 1) + "-" + localDate.getDate() + " " + localDate.toLocaleTimeString();
+            return dateStr;
+        }
         function showHide(bShow)
         {
             if( bShow )
@@ -33,9 +47,14 @@
             $('#loading').spin('flower');
             var oTable = $('#events-table').bind('processing', function(e, oSettings, bShow) { showHide(bShow) }).dataTable({
                 "bSort": false,
+                "bStateSave": true,
+                "iCookieDuration": 60*60*24,
                 "bJQueryUI": true,
                 "bServerSide": true,
                 "bProcessing": true,
+                "columns":  [
+                    {"type": "date" },
+                ],
                 "sAjaxSource": "/log/retrieve_events_paging_data",
                 "sPaginationType": "full_numbers",
                 "sDom" : '<"H"lr>t<"F"fip>',
@@ -49,7 +68,7 @@
                     "sProcessing": "",
                 },
                 "aoColumns": [
-                    {"sWidth": "15%" },
+                    {"sWidth": "20%", "fnRender": RenderDateLocal },
                     {"sWidth": "15%" },
                     null
                 ],

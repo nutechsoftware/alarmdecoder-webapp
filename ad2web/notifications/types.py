@@ -141,7 +141,7 @@ class EmailNotification(BaseNotification):
 
 class GoogleTalkNotification(BaseNotification):
     def __init__(self, obj):
-        BaseNotification.__init__(self)
+        BaseNotification.__init__(self, obj)
 
         self.id = obj.id
         self.description = obj.description

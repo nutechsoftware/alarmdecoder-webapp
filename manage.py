@@ -39,6 +39,12 @@ def initdb():
     db.drop_all()
     db.create_all()
 
+    # Initialize alembic revision
+    from alembic.config import Config
+    from alembic import command
+    alembic_cfg = Config('alembic.ini')
+    command.stamp(alembic_cfg, "head")
+
     from ad2web.notifications.models import NotificationMessage
     from ad2web.notifications.constants import DEFAULT_EVENT_MESSAGES
 
