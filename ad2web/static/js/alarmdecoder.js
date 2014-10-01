@@ -50,6 +50,10 @@ var AlarmDecoder = function() {
         });
     };
 
+    AlarmDecoder.disconnect = function() {
+        _socket.disconnect();
+    };
+
     AlarmDecoder.emit = function(type, arg) {
         _socket.emit(type, arg);
     };

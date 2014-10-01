@@ -138,6 +138,15 @@ class Decoder(object):
                     db.session.add(NotificationMessage(id=event, text=message))
             db.session.commit()
 
+            # HACK: giant hack.. fix when we know this works.
+            self.updater._components['webapp']._db_updater.refresh()
+            if self.updater._components['webapp']._db_updater.needs_update:
+                current_app.logger.debug('Database needs updating!!!!')
+
+                self.updater._components['webapp']._db_updater.update()
+            else:
+                current_app.logger.debug('Database is good!!!!!!')
+
             if device_type:
                 self.trigger_reopen_device = True
 
@@ -378,6 +387,8 @@ class DecoderThread(threading.Thread):
 
                     # Handle service restart events
                     if self._decoder.trigger_restart:
+                        self._decoder.updates = {}
+                        self._decoder.app.jinja_env.globals['update_available'] = False
                         self._decoder.app.logger.info('Restarting service..')
                         self._decoder.stop(restart=True)
 
@@ -419,9 +430,8 @@ class VersionChecker(threading.Thread):
         self._running = True
 
         while self._running:
-            self._decoder.updates = self._updater.check_updates()
-
             with self._decoder.app.app_context():
+                self._decoder.updates = self._updater.check_updates()
                 update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status) in self._decoder.updates.iteritems())
 
                 current_app.jinja_env.globals['update_available'] = update_available
