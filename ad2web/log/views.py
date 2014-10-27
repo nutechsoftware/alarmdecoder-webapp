@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 from flask import Blueprint, render_template, abort, g, request, flash, Response, url_for, redirect
 from flask import current_app as APP
 from flask.ext.login import login_required, current_user
@@ -11,6 +13,7 @@ from .constants import ARM, DISARM, POWER_CHANGED, ALARM, FIRE, BYPASS, BOOT, \
                         PANIC, RELAY_CHANGED, EVENT_TYPES
 from .models import EventLogEntry
 from ..logwatch import LogWatcher
+from ..utils import INSTANCE_FOLDER_PATH
 
 import json
 import collections
@@ -68,13 +71,12 @@ def alarmdecoder_logfile():
 @login_required
 @admin_required
 def get_log_data(lines):
-    log_dir = '/var/log/gunicorn/'
-    log_file = 'alarmdecoder.log'
+    log_file = os.path.join(INSTANCE_FOLDER_PATH, 'logs', 'info.log')
 
     try:
-        log_text = LogWatcher.tail(log_dir + log_file, lines)
-    except IOError:
-        return json.dumps(str("Error"))
+        log_text = LogWatcher.tail(log_file, lines)
+    except IOError, err:
+        return json.dumps([str(err)])
 
     return json.dumps(log_text)
 
