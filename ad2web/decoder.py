@@ -471,7 +471,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                 else:
                     self._alarmdecoder.device.send(key)
 
-            except CommError, err:
+            except (CommError, AttributeError), err:
                 self._alarmdecoder.app.logger.error('Error sending keypress to device', exc_info=True)
 
     def on_test(self, *args):
