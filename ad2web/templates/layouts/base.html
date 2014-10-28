@@ -7,8 +7,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>{% block title %}{{ page_title|default(_('Project')) }}{% endblock %}</title>
-    <meta name="description" content="Fbone (Flask bone) is a Flask (Python microframework) template/bootstrap/boilerplate application.">
-    <meta name="author" content="Wilson Xu">
+    <meta name="description" content="The AlarmDecoder Webapp provides a standard interface across all of your devices for your alarm panel.">
+    <meta name="author" content="Nu Tech Software Solutions, Inc.">
     <meta name="viewport" content="width=extend-to-zoom, initial-scale=0.5, target-densitydpi=device-dpi, user-scalable=no, maximum-scale=0.5">
     <meta name="HandheldFriendly" content="true"/>
     <meta name="MobileOptimized" content="width"/>
@@ -127,11 +127,14 @@
     <footer id="footer">
         <ul class="footer-links">
             <li>© 2014</li>
+            <li class="muted">&middot;</li>
             <li><a href='http://www.alarmdecoder.com/'>AlarmDecoder</a></li>
             <li class="muted">&middot;</li>
             <li><a href='{{ url_for('frontend.help') }}'>Help</a></li>
             <li class="muted">&middot;</li>
             <li><a href='{{ url_for('frontend.license') }}'>Terms</a></li>
+            <li class="muted">&middot;</li>
+            <li class="muted">v{{ version }}</li>
         </ul>
     </footer>
 

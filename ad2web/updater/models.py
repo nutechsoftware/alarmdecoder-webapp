@@ -133,6 +133,17 @@ class WebappUpdater(object):
 
         return False
 
+    @property
+    def version(self):
+        version = ''
+
+        try:
+            version = sh.git('describe', tags=True, always=True, long=True)
+        except:
+            pass
+
+        return version.strip()
+
     def refresh(self):
         """
         Refreshes the component status

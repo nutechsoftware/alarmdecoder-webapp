@@ -77,6 +77,7 @@ class Decoder(object):
             self.device = None
             self.updater = Updater()
             self.updates = {}
+            self.version = ''
 
             self.trigger_reopen_device = False
             self.trigger_restart = False
@@ -138,8 +139,14 @@ class Decoder(object):
                     db.session.add(NotificationMessage(id=event, text=message))
             db.session.commit()
 
+            self.version = self.updater._components['webapp'].version
+            current_app.jinja_env.globals['version'] = self.version
+
+            current_app.logger.info('AlarmDecoder Webapp booting up - v{0}'.format(self.version))
+
             # HACK: giant hack.. fix when we know this works.
             self.updater._components['webapp']._db_updater.refresh()
+
             if self.updater._components['webapp']._db_updater.needs_update:
                 current_app.logger.debug('Database needs updating!!!!')
 
