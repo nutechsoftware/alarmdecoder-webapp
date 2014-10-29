@@ -20,7 +20,7 @@
             timeout: 3000,
             statusCode: {
                 502: function() {
-                    $('#app_running').html('App is Restarting <img src="{{ url_for("static", filename="img/spinner.gif") }}">');
+                    $('#app_running').html('<img src="{{ url_for("static", filename="img/spinner.gif") }}"> Application is restarting...');
                     timeoutVar = setTimeout(function() { poll_app_restarted(); }, 5000);
                 }
             },
@@ -92,15 +92,14 @@
             $('#' + component + '-restart-submit').hide();
             $('#' + component + '-update-anim').show();
 
-            decoder.disconnect();
-
             $.ajax({
                 url: "{{ url_for('update.restart') }}",
                 type: 'POST',
                 data: JSON.stringify({ 'component': component }),
                 contentType: 'application/json;charset=UTF-8',
                 complete: function() {
-                    $('#app_running').html('App is Restarting <img src="{{ url_for("static", filename="img/spinner.gif") }}">');
+                    decoder.disconnect();
+                    $('#app_running').html('<img src="{{ url_for("static", filename="img/spinner.gif") }}"> Application is restarting...');
                     timeoutVar = setTimeout(function() { poll_app_restarted(); }, 5000);
                 }
             });
