@@ -402,10 +402,56 @@ img.keypad-button {
     margin-top: 10px;
 }
 
+.mobile #mute-row {
+    position: relative;
+    left: -50px !important;
+    margin-top: 10px !important;
+}
+
+.ui-front {
+    z-index: 100000 !important;
+}
 #custom-button-row {
     position: relative;
     left: -94px;
     margin-top: 10px;
+}
+
+.mobile #custom-button-row {
+    position: relative;
+    left: -45px !important;
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+.tablet #custom-button-row {
+    position: relative;
+    left: -80px !important;
+    margin-top: 25px !important;
+}
+
+#custom_buttons {
+    -webkit-appearance: none;
+    display: inline-block !important;
+    height: 25px !important;
+    background-image: -ms-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -moz-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -o-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -webkit-gradient(linear, left top, right bottom, color-stop(-.5, #707070), color-stop(1.1, #FCFCFC));
+    background-image: -webkit-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: linear-gradient(to bottom right, #707070 -50%, #FCFCFC 110.00000000000001%);
+}
+
+.tablet #custom_buttons {
+    -webkit-appearance: none;
+    display: inline-block !important;
+    height: 50px !important;
+    background-image: -ms-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -moz-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -o-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -webkit-gradient(linear, left top, right bottom, color-stop(-.5, #707070), color-stop(1.1, #FCFCFC));
+    background-image: -webkit-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: linear-gradient(to bottom right, #707070 -50%, #FCFCFC 110.00000000000001%);
 }
 
 #check-mute {

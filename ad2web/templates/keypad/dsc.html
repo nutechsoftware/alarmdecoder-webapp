@@ -622,10 +622,14 @@
                     if( mobile )
                     {
                         $('#custom_buttons').on('touchend', function() {
+                            $('#keypad-buttons').hide();
                             $('#dialog').dialog({
                                 modal: true,
                                 minWidth: 200,
-                                position: { my: "center", at: "bottom", of: $('#button-0') },
+                                position: { my: "center", at: "center", of: window },
+                                close: function() {
+                                    $('#keypad-buttons').show();
+                                },
                             });
                         });
                     }
@@ -843,6 +847,7 @@
             <input type="checkbox" id="check-mute" name="check-mute"/><label for="check-mute" id="check-mute-label">Mute Sounds</label>
         </div>
     {% if buttons %}
+        <br/>
         <div id="dialog" style="display: none;" title="Custom Buttons">
             <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" /><br/><br/>
         {% for button in buttons%}

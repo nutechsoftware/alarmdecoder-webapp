@@ -550,7 +550,7 @@
                             decoder.emit('keypress', String(code));
                         $('#dialog').dialog("close");
                     });
-                    $("#custom_{{button.button_id}}").on('touchstart', function() {
+                    $("#custom_{{button.button_id}}").on('touchend', function() {
                         var code = '{{button.code}}';
                         decoder.emit('keypress', String(code));
                         $('#dialog').dialog("close");
@@ -573,10 +573,14 @@
                     if( mobile )
                     {
                         $('#custom_buttons').on('touchend', function() {
+                            $('#keypad-buttons').hide();
                             $('#dialog').dialog({
                                 modal: true,
                                 minWidth: 200,
-                                position: { my: "center", at: "bottom", of: $('#button-0') },
+                                position: { my: "center", at: "center", of: window },
+                                close: function() {
+                                    $('#keypad-buttons').show();
+                                }
                             });
                         });
                     }
@@ -792,6 +796,7 @@
             <input type="checkbox" id="check-mute" name="check-mute"/><label for="check-mute" id="check-mute-label">Mute Sounds</label>
         </div>
     {% if buttons %}
+        <br/>
         <div id="custom-button-row">
             <input type="button" id="custom_buttons" name="custom_buttons" value="Custom Buttons"/>
         </div>
