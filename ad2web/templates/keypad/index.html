@@ -570,13 +570,27 @@
                 }
                 else
                 {
-                    if( mobile )
+                    if( mobile && !isiPhone )
                     {
-                        $('#custom_buttons').on('touchend', function() {
+                        $('#custom_buttons').on('touchstart', function() {
                             $('#keypad-buttons').hide();
                             $('#dialog').dialog({
                                 modal: true,
                                 minWidth: 200,
+                                position: { my: "center", at: "center", of: window },
+                                close: function() {
+                                    $('#keypad-buttons').show();
+                                }
+                            });
+                        });
+                    }
+                    if( mobile && isiPhone )
+                    {
+                        $('#custom_buttons').on('touchstart', function() {
+                            $('#keypad-buttons').hide();
+                            $('#dialog').dialog({
+                                modal: true,
+                                minWidth: 400,
                                 position: { my: "center", at: "center", of: window },
                                 close: function() {
                                     $('#keypad-buttons').show();
@@ -589,7 +603,7 @@
                         $('#custom_buttons').on('touchstart', function() {
                             $('#dialog').dialog({
                                 modal: true,
-                                minWidth: 650,
+                                minWidth: 725,
                                 position: { my: "center", at: "bottom", of: window },
                             });
                         });
@@ -786,9 +800,9 @@
         </div>
     {% if buttons %}
         <div id="dialog" style="display: none;" title="Custom Buttons">
-            <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" /><br/><br/>
+            <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" height="24" width="24"/><br/><br/>
         {% for button in buttons%}
-            <input id="custom_{{button.button_id}}" class="keypad-button" type="button" value="{{button.label}}"></input>
+            <input id="custom_{{button.button_id}}" class="custom_button" type="button" value="{{button.label}}"></input>
         {% endfor%}
         </div>
     {% endif %}

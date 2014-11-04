@@ -489,6 +489,14 @@ img.keypad-button {
     position: relative;
     left: -60px;
     margin-top: 10px;
+    margin-bottom: 10px !important;
+}
+
+.tablet #custom-button-row {
+    position: relative;
+    left: -125px !important;
+    margin-top: 10px;
+    margin-bottom: 10px !important;
 }
 
 #check-mute {
@@ -502,3 +510,50 @@ img.keypad-button {
     color: black;
     font-weight: normal;
 }
+
+#custom_buttons {
+    -webkit-appearance: none;
+    display: inline-block !important;
+    height: 25px !important;
+    background-image: -ms-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -moz-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -o-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -webkit-gradient(linear, left top, right bottom, color-stop(-.5, #707070), color-stop(1.1, #FCFCFC));
+    background-image: -webkit-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: linear-gradient(to bottom right, #707070 -50%, #FCFCFC 110.00000000000001%);
+}
+
+.tablet #custom_buttons {
+    -webkit-appearance: none;
+    display: inline-block !important;
+    height: 50px !important;
+    background-image: -ms-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -moz-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -o-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -webkit-gradient(linear, left top, right bottom, color-stop(-.5, #707070), color-stop(1.1, #FCFCFC));
+    background-image: -webkit-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: linear-gradient(to bottom right, #707070 -50%, #FCFCFC 110.00000000000001%);
+}
+
+.mobile #custom_buttons {
+    -webkit-appearance: none;
+    display: inline-block !important;
+    height: 35px !important;
+    background-image: -ms-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -moz-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -o-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: -webkit-gradient(linear, left top, right bottom, color-stop(-.5, #707070), color-stop(1.1, #FCFCFC));
+    background-image: -webkit-linear-gradient(top left, #707070 -50%, #FCFCFC 110.00000000000001%);
+    background-image: linear-gradient(to bottom right, #707070 -50%, #FCFCFC 110.00000000000001%);
+}   
+
+.custom_button
+{
+    width: 150px !important;
+    height: 80px;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    user-select: none !important;
+    -ms-user-select: none !important;
+}
+

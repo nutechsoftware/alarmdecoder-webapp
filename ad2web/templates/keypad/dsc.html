@@ -599,7 +599,7 @@
                             decoder.emit('keypress', String(code));
                         $('#dialog').dialog("close");
                     });
-                    $("#custom_{{button.button_id}}").on('touchstart', function() {
+                    $("#custom_{{button.button_id}}").on('touchend', function() {
                         var code = '{{button.code}}';
                         decoder.emit('keypress', String(code));
                         $('#dialog').dialog("close");
@@ -619,7 +619,7 @@
                 }
                 else
                 {
-                    if( mobile )
+                    if( mobile && !isiPhone )
                     {
                         $('#custom_buttons').on('touchend', function() {
                             $('#keypad-buttons').hide();
@@ -633,12 +633,26 @@
                             });
                         });
                     }
+                    if( mobile && isiPhone )
+                    {
+                        $('#custom_buttons').on('touchstart', function() {
+                            $('#keypad-buttons').hide();
+                            $('#dialog').dialog({
+                                modal: true,
+                                minWidth: 400,
+                                position: { my: "center", at: "center", of: window },
+                                close: function() {
+                                    $('#keypad-buttons').show();
+                                }
+                            });
+                        });
+                    }
                     if( tablet )
                     {
                         $('#custom_buttons').on('touchstart', function() {
                             $('#dialog').dialog({
                                 modal: true,
-                                minWidth: 650,
+                                minWidth: 725,
                                 position: { my: "center", at: "bottom", of: window },
                             });
                         });
@@ -849,9 +863,9 @@
     {% if buttons %}
         <br/>
         <div id="dialog" style="display: none;" title="Custom Buttons">
-            <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" /><br/><br/>
+            <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" height="24" width="24"/><br/><br/>
         {% for button in buttons%}
-            <input id="custom_{{button.button_id}}" class="keypad-button" type="button" value="{{button.label}}"></input>
+            <input id="custom_{{button.button_id}}" class="custom_button" type="button" value="{{button.label}}"></input>
         {% endfor%}
         </div>
         <div id="custom-button-row">
