@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import string
 from flask.ext.wtf import Form
 from flask.ext.wtf.html5 import URLField, EmailField, TelField
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
@@ -60,9 +61,25 @@ class ImportSettingsForm(Form):
     submit = SubmitField(u'Import')
 
 class HostSettingsForm(Form):
-    hostname = TextField(u'Hostname', [Required(), Length(max=32)])
+    hostname = TextField(u'Hostname', [Required(), Length(max=63)])
     submit = SubmitField(u'Save')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/host'")
+
+    def validate_hostname(form, field):
+        invalid = " !'\"?;:,@#$%^&*()+<>/|\\{}[]_"
+        message = "Hostname must be between 1 and 63 characters long, not contain ( " + invalid + " ), or start and end with punctuation."
+
+        invalid_set = set(invalid)
+        h = field.data and len(field.data) or 0
+        if h < 1 or h > 63:
+            raise ValidationError(message)
+
+        if field.data[0] in string.punctuation:
+            raise ValidationError(message)
+        if field.data[-1] in string.punctuation:
+            raise ValidationError(message)
+        if any((c in invalid_set) for c in field.data):
+            raise ValidationError("Invalid characters found - Please remove any of the following: " + invalid)
 
 class EthernetSelectionForm(Form):
     ethernet_devices =  SelectField(u'Network Device', choices=[('eth0', u'eth0')], default='eth0', coerce=str)

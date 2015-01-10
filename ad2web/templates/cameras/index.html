@@ -1,0 +1,178 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = 'Cameras' %}
+
+{% extends "layouts/base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+<style>
+.ui-widget-header {
+    width: 99.5%;
+}
+
+li {
+    line-height: 12px;
+}
+</style>
+{% endblock %}
+
+{% block pagejs %}
+    <script type="text/javascript">
+        //detect if mobile
+        function isMobile()
+        {
+            if( $('html').hasClass('mobile') == true && $('html').hasClass('tablet') == false )
+                return true;
+
+            return false;
+        }
+        //detect if tablet
+        function isTablet()
+        {
+            if( $('html').hasClass('tablet') == true )
+                return true;
+
+            return false;
+        }
+        //is local storage supported?
+        function storageSupported()
+        {
+            if( Modernizr.localstorage)
+                return true;
+            return false;
+        }
+
+        $(document).ready(function() {
+            //detect mobile and tablet
+            mobile = isMobile();
+            tablet = isTablet();
+
+            $(function() {
+                FastClick.attach(document.body);
+            });
+//tab our camera interface
+            $('#camera_tabs').tabs();
+//custom buttons
+            {% if buttons %}
+                $("#exit").on('mousedown', function() {
+                    $('#dialog').dialog("close");
+                });
+                $("#exit").on('touchstart', function() {
+                    $('#dialog').dialog("close");
+                });
+
+                {% for button in buttons %}
+                    $("#custom_{{button.button_id}}").on('mousedown', function() {
+                        var code = '{{button.code}}';
+                        if( !tablet && !mobile )
+                            decoder.emit('keypress', String(code));
+                        $('#dialog').dialog("close");
+                    });
+                    $("#custom_{{button.button_id}}").on('touchend', function() {
+                        var code = '{{button.code}}';
+                        decoder.emit('keypress', String(code));
+                        $('#dialog').dialog("close");
+                    });
+                {% endfor %}
+
+                if( !tablet && !mobile )
+                {
+                    $('#custom_buttons').click(function() {
+                        $('#dialog').dialog({
+                            modal: true,
+                            minWidth: 650,
+                            maxWidth: 650,
+                            position: { my: "center", at: "bottom", of: $('#camera_tabs') },
+                        });
+                    });
+                }
+                else
+                {
+                    if( mobile && !isiPhone )
+                    {
+                        $('#custom_buttons').on('touchstart', function() {
+                            $('#dialog').dialog({
+                                modal: true,
+                                minWidth: 200,
+                                position: { my: "center", at: "center", of: window },
+                                close: function() {
+                                }
+                            });
+                        });
+                    }
+                    if( mobile && isiPhone )
+                    {
+                        $('#custom_buttons').on('touchstart', function() {
+                            $('#dialog').dialog({
+                                modal: true,
+                                minWidth: 400,
+                                position: { my: "center", at: "center", of: window },
+                                close: function() {
+                                }
+                            });
+                        });
+                    }
+                    if( tablet )
+                    {
+                        $('#custom_buttons').on('touchstart', function() {
+                            $('#dialog').dialog({
+                                modal: true,
+                                minWidth: 725,
+                                position: { my: "center", at: "bottom", of: window },
+                            });
+                        });
+                    }
+                }
+            {% endif %}
+
+//replace special characters from database to make actual tags
+            {% for camera in camera_list %}
+                $('#{{camera.name}}').each(function() {
+                    var $this = $(this);
+                    var t = $this.text();
+                    $this.html(t.replace('&lt', '<').replace('&gt', '>').replace('#34', '"').replace('&amp', '&'));
+                });
+            {% endfor %}
+
+        });
+
+    </script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <div id="camera_tabs">
+        <ul>
+        {% for camera in camera_list %}
+            <li><a href="#{{camera.name}}">{{camera.name}}</a></li>
+        {% endfor %}
+        </ul>
+        {% for camera in camera_list %}
+            <div id="{{camera.name}}" style="text-align: center;">
+                <p>
+                {{camera.embed_code}}
+                </p>
+            </div>
+        {% endfor %}
+    </div>
+{% if buttons %}
+    <div id="dialog" style="display: none;" title="Custom Buttons">
+        <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" height="24" width="24"/><br/><br/>
+    {% for button in buttons%}
+        <input id="custom_{{button.button_id}}" class="custom_button" type="button" value="{{button.label}}"></input>
+    {% endfor%}
+    </div>
+    <br/>
+    <div id="custom-button-row" style="text-align: center;">
+        <input type="button" id="custom_buttons" name="custom_buttons" value="Custom Buttons"/>
+    </div>
+{% endif %}
+
+</div>
+{% endblock %}
+
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
+{% endblock %}

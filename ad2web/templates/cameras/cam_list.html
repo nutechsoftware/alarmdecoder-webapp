@@ -1,0 +1,89 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+        $('#loading').spin('flower');
+        $('#cameras-table').dataTable({
+            "bStateSave": true,
+            "iCookieDuration": 60*60*24,
+            "bJQueryUI": true,
+            "sPaginationType": "full_numbers",
+            "sDom": '<"H"lr>t<"F"fip>',
+            "oLanguage": {
+                "sInfoFiltered": "",
+                "sInfo": "_START_ to _END_ of _TOTAL_",
+                "sInfoEmpty": "No Results",
+                "sEmptyTable": " ",
+            },
+            "aoColumns": [
+                { "sWidth": "5%" },
+                { "sWidth": "15%" },
+                null,
+                null,
+                { "sWidth": "10%" },
+            ],
+            "fnInitComplete": function() {
+                $('#loading').stop();
+                $('#loading').hide();
+                $('#clear').css('display', 'inline-block');
+                $('#datatable').show();
+                this.fnAdjustColumnSizing();
+            },
+        });
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="cameras-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Embed HTML Code</th>
+                    <th>Get JPG URL</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for camera in camera_list %}
+                    <tr>
+                        <td><a href="{{ url_for('cameras.edit_camera', id=camera.id) }}">{{ camera.id }}</a></td>
+                        <td>{{ camera.name }}</td>
+                        <td>{{ camera.embed_code }}</td>
+                        <td>{{ camera.get_jpg_url }}</td>
+                        <td><a href="{{ url_for('cameras.remove_camera', id=camera.id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <br/>
+    <a id="clear" class="btn btn-primary" href="{{ url_for('cameras.create_camera') }}">New Camera</a>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
+{% endblock %}
+

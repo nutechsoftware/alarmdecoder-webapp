@@ -32,6 +32,7 @@ from .setup import setup
 from .updater import updater
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
+from .cameras import cameras
 
 
 # For import *
@@ -51,6 +52,7 @@ DEFAULT_BLUEPRINTS = (
     zones,
     setup,
     updater,
+    cameras,
 )
 
 def create_app(config=None, app_name=None, blueprints=None):
