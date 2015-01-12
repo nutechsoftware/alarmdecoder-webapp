@@ -11,6 +11,7 @@ from ..settings.models import Setting
 from alarmdecoder.panels import ADEMCO, DSC
 from .forms import KeypadButtonForm
 from .models import KeypadButton
+from ..cameras import Camera
 
 keypad = Blueprint('keypad', __name__, url_prefix='/keypad')
 
@@ -19,14 +20,15 @@ keypad = Blueprint('keypad', __name__, url_prefix='/keypad')
 def index():
     panel_mode = Setting.get_by_name('panel_mode').value
     custom_buttons = KeypadButton.query.filter_by(user_id=current_user.id).all()
+    camera_list = Camera.query.filter_by(user_id=current_user.id).all()
 
     if panel_mode is None:
-        return render_template('keypad/index.html', buttons=custom_buttons)
+        return render_template('keypad/index.html', buttons=custom_buttons, cams=camera_list)
 
     if panel_mode == DSC:
-        return render_template('keypad/dsc.html', buttons=custom_buttons)
+        return render_template('keypad/dsc.html', buttons=custom_buttons, cams=camera_list)
     else:
-        return render_template('keypad/index.html', buttons=custom_buttons)
+        return render_template('keypad/index.html', buttons=custom_buttons, cams=camera_list)
 
 @keypad.route('/button_index')
 @login_required

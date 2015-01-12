@@ -821,7 +821,7 @@
     <div id="keypad-line1">Please Wait</div>
     <div id="keypad-line2">Loading...</div>
     <hr>
-    <div id="status-indicator">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"> Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
+    <div id="status-indicator">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"> Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}">{% if cams %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('cameras.index') }}"><img id="security_cam" src="{{ url_for('static', filename='img/surveillance_camera.png') }}" width="40px" height="30px"></a>{% endif %}</div>
     <div id="keypad-buttons">
         <div id="keypad-button-row">
             <!-- Arrow Keys -->
