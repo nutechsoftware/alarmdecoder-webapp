@@ -128,7 +128,7 @@ li {
 
 //replace special characters from database to make actual tags
             {% for camera in camera_list %}
-                $('#{{camera.name}}').each(function() {
+                $('#{{camera.id}}').each(function() {
                     var $this = $(this);
                     var t = $this.text();
                     $this.html(t.replace('&lt', '<').replace('&gt', '>').replace('#34', '"').replace('&amp', '&'));
@@ -145,11 +145,11 @@ li {
     <div id="camera_tabs">
         <ul>
         {% for camera in camera_list %}
-            <li><a href="#{{camera.name}}">{{camera.name}}</a></li>
+            <li><a href="#{{camera.id}}">{{camera.name}}</a></li>
         {% endfor %}
         </ul>
         {% for camera in camera_list %}
-            <div id="{{camera.name}}" style="text-align: center;">
+            <div id="{{camera.id}}" style="text-align: center;">
                 <p>
                 {{camera.embed_code}}
                 </p>

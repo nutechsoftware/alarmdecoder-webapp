@@ -22,6 +22,9 @@
                 <li><a href="{{ url_for('certificate.index') }}">Certificates</a>: Use to configure SSL Certificates.</li>
             {% endif %}
             <li><a href="{{ url_for('admin.users') }}">Users</a>: Use to configure users on the system.</li>
+            <li><a href="{{ url_for('settings.host') }}">Host</a>: Use to configure host settings.</li>
+            <li><a href="{{ url_for('keypad.custom_index') }}">Keypad</a>: Use to create custom buttons.</li>
+            <li><a href="{{ url_for('cameras.cam_list') }}">Cameras</a>: Use to administer camera settings.</li>
             <li><a href="{{ url_for('settings.password') }}">Password</a>: Use to change your user password.</li>
             <li><a href="{{ url_for('settings.import') }}">Import</a> and <a href="{{ url_for('settings.export') }}">Export</a> your settings.</li>
         <ul>

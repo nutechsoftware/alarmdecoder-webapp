@@ -21,8 +21,3 @@ class CameraForm(Form):
 
     submit = SubmitField(u'Save')
     cancel = ButtonField(u'Cancel', onclick="location.href='/cameras/camera_list'")
-
-    def validate_name(form,field):
-        message = "No spaces allowed in name."
-        if " " in field.data:
-            raise ValidationError(message)
