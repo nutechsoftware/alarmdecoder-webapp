@@ -10,6 +10,12 @@
 .container #keypad-buttons {
     text-align: center;
 }
+
+.cursor_location {
+    color: green !important;
+    text-decoration: underline !important;
+}
+
 #status-indicator
 {
     width: 100%;

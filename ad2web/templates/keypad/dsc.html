@@ -10,6 +10,10 @@
 {% endblock %}
 {% block pagejs %}
     <script type="text/javascript">
+        String.prototype.replaceAt = function(index, str) {
+            return this.substr(0, index) + str + this.substr(index+str.length);
+        }
+
         //detect if mobile
         function isMobile()
         {
@@ -280,8 +284,12 @@
             }
             //handle messages from the AlarmDecoder
             PubSub.subscribe('message', function(type, msg) {
+                cursor_location = -1;
                 if( msg.message_type == 'panel')
                 {
+                    if( msg.cursor_location )
+                        cursor_location = msg.cursor_location;
+
                     var lines = ['', '']
                     var armed = msg.armed_away | msg.armed_home;
                     var ready = msg.ready;
@@ -342,11 +350,20 @@
                     }
 
                     if(msg.text.length >= 16) {
-                        lines[0] = msg.text.substring(0, 16);
-                        lines[1] = msg.text.substring(16);
+                        str = msg.text;
+
+                        if( cursor_location != -1 )
+                            str = str.replaceAt(cursor_location, "<span class='cursor_location'>" + str[cursor_location] + "</span>");
+
+                        lines[0] = str.substring(0, 16);
+                        lines[1] = str.substring(16);
                     }
                     else {
-                        lines[0] = msg.text;
+                        str = msg.text;
+                        if( cursor_location != -1 )
+                            str = str.replaceAt(cursor_location, "<span class='cursor_location'>" + str[cursor_location] + "</span>");
+
+                        lines[0] = str;
                     }
 
                     if( armed )
@@ -367,7 +384,7 @@
                     }
                     if( lines[0] != '' )
                     {
-                        $('#keypad-line1').text(lines[0]);
+                        $('#keypad-line1').html(lines[0]);
                         $('#keypad-line1').css("color", "black");
 
                         //hackery to get page to stop shifting when only 1 line of text present
@@ -377,13 +394,13 @@
                         {
                             $('#keypad-line2').css("color", "black");
                             $('#keypad-line2').css("visibility", "visible");
-                            $('#keypad-line2').text(lines[1]);
+                            $('#keypad-line2').html(lines[1]);
                         }
                         else
                         {
                             $('#keypad-line2').css("color", "white");
                             $('#keypad-line2').css("visibility", "hidden");
-                            $('#keypad-line2').text('---');
+                            $('#keypad-line2').html('---');
                         }
                     }
                 }
