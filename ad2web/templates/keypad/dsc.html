@@ -11,7 +11,7 @@
 {% block pagejs %}
     <script type="text/javascript">
         String.prototype.replaceAt = function(index, str) {
-            return this.substr(0, index) + str + this.substr(index+str.length);
+            return this.substr(0, index) + str + this.substr(index+1);
         }
 
         //detect if mobile
