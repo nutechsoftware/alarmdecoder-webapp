@@ -41,6 +41,10 @@
             viewport = document.querySelector("meta[name=viewport]");
             viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, target-densitydpi=device-dpi, user-scalable=no, maximum-scale=1.0');
         }
+        function createFormTooltip(element, text)
+        {
+            $(element).prop('title', text );
+        }
     </script>
     {% endblock %}
 </head>

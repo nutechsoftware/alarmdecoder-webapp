@@ -7,6 +7,11 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#name', 'Enter the name of your camera.');
+        createFormTooltip('#embed_code', 'HTML Code to display on page.\n\nExample:\n <iframe style="display: none;" src="http://user:pass@ipaddress/goform/video"></iframe> <img src="http://ipaddress/goform/video" width="800"></img>');
+        createFormTooltip('#get_jpg_url', 'Enter the URL where you can take snapshots (not required).\n\n Example: \n http://ipaddress/goform/snapshot');
+    });
 </script>
 {% endblock %}
 
