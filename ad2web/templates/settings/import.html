@@ -5,6 +5,13 @@
 {% block css %}
 {% endblock %}
 
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#import_file', 'Please choose a file that contains your settings to import.');
+    });
+</script>
+{% endblock %}
 {% block body %}
 <div class="settings_wrapper">
     <h3>Import Settings</h3>

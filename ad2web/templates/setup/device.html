@@ -7,6 +7,15 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('[id^=panel_mode]', 'Which type of panel do you have?');
+        createFormTooltip('#keypad_address', 'The address of your keypad.  18 default.\n\nFor SE Panels, Address 31 must be set.');
+        createFormTooltip('#address_mask', 'This features allows you to select specific keypad addresses to listen to. 32-bit Hex Number. \n\nDefault: FFFFFFFF');
+        createFormTooltip('[id^=zone_expanders]', 'Enable zone expander emulation support?');
+        createFormTooltip('[id^=relay_expanders]', 'Enable relay expander emulation support?');
+        createFormTooltip('#lrr_enabled', 'Enable Long Range Radio emulation support?');
+        createFormTooltip('#deduplicate', 'The availability to remove repetitive messages. This in conjunction with the Address Mask will remove duplicate alarm messages the panel produces.');
+    });
     $('body').ready(function() {
         function set_form_visible(val) {
             $('#keypad_address').closest('.control-group').toggle(val);

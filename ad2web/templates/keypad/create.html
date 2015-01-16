@@ -7,6 +7,10 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#label', 'The text on the button.');
+        createFormTooltip('#code', 'The alarm keys to send on press of button.');
+    });
 </script>
 {% endblock %}
 

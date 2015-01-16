@@ -7,6 +7,10 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#device_path', 'The serial port location of your AlarmDecoder device.');
+        createFormTooltip('#baudrate', 'The data baudrate to communicate with your device.  Default 115200.');
+    });
 </script>
 {% endblock %}
 

@@ -85,6 +85,7 @@
     }
 
     $(document).ready(function() {
+        createFormTooltip('#ethernet_devices', 'Please select a device.');
         get_ethernet_properties($('#ethernet_devices').val());
         $('#ethernet_devices').on('change', function() {
             var selectedVal = $('#ethernet_devices').val();

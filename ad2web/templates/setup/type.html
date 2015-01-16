@@ -7,6 +7,10 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#device_type', 'The physical AlarmDecoder device.');
+        createFormTooltip('#device_location', 'Network for connecting to a remote device.\n\nLocal for connecting to a device connected to this machine.');
+    });
 </script>
 {% endblock %}
 

@@ -7,6 +7,11 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#device_address', 'The Name or IP Address of the machine serving your AlarmDecoder product via ser2sock.');
+        createFormTooltip('#device_port', 'The port number of the ser2sock instance.');
+        createFormTooltip('#ssl', 'Enable ssl support for network communications.');
+    });
 </script>
 {% endblock %}
 

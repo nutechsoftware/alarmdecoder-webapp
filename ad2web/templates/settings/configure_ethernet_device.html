@@ -5,6 +5,17 @@
 {% block css %}
 {% endblock %}
 
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        createFormTooltip('#connection_type-0', 'Static or DHCP address type.');
+        createFormTooltip('#connection_type-1', 'Static or DHCP address type.');
+        createFormTooltip('#ip_address', 'IP Address, version 4.\n\n  Example:  127.0.0.1');
+        createFormTooltip('#gateway', 'Internet Gateway Address.\n\n Example: 192.168.0.1');
+        createFormTooltip('#netmask', 'Subnet Mask.\n\n Example: 255.255.255.0');
+    });
+</script>
+{% endblock %}
 {% block body %}
 <div class="settings_wrapper">
     <h2>Settings for: {{device}}</h2>

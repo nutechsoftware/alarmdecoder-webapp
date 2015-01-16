@@ -2,6 +2,21 @@
 
 {% extends "settings/layout.html" %}
 
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#name', 'The name for the user.');
+        createFormTooltip('#email', 'The email for the user.');
+        createFormTooltip('#password', 'The password for the user.');
+        createFormTooltip('#password_again', 'Confirm password for the user.');
+        createFormTooltip('#role_code-0', 'Is the user an admin?');
+        createFormTooltip('#role_code-1', 'Is this just a normal user?');
+        createFormTooltip('#status_code-0', 'Mark user inactive, unable to login.');
+        createFormTooltip('#status_code-1', 'Mark as a new user.');
+        createFormTooltip('#status_code-2', 'Mark as active user.');
+    });
+</script>
+{% endblock %}
 {% block body %}
 <div id="data">
     {{ render_form(url_for('admin.user', user_id=user_id), form) }}

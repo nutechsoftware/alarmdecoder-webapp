@@ -7,6 +7,11 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#zone_id', 'The numeric zone id passed through the system.');
+        createFormTooltip('#name', 'The name to associate with the zone.\n\nEx: Front Door.');
+        createFormTooltip('#description', 'The detailed description of a zone.');
+    });
 </script>
 {% endblock %}
 

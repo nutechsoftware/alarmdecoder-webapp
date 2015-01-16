@@ -7,6 +7,27 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#description', 'Name of notification for display in list of notifications.');
+
+        if( '{{ TYPES[notification.type] }}' == 'email' )
+        {
+            createFormTooltip('#source', 'Emails will come from this address.');
+            createFormTooltip('#destination', 'Emails will go to this address.');
+            createFormTooltip('#server', 'Email server to use.\n\nGmail Example: smtp.gmail.com');
+            createFormTooltip('#port', 'Port email server listens on.\nMany ISPs filter default ports, please verify what port your server utilizes.\n\nGmail Example: 587');
+            createFormTooltip('#tls', 'Enable TLS security?  Yes for Gmail!');
+            createFormTooltip('#authentication_required', 'Does your server require authentication for your user?\n\nGmail Example: Yes');
+            createFormTooltip('#username', 'Username to authenticate with to the mail server.\n\nFor Gmail this is the part before @gmail.com');
+            createFormTooltip('#password', 'The password for your email user.');
+        }
+        if( '{{ TYPES[notification.type] }}' == 'googletalk' )
+        {
+            createFormTooltip('#source', 'Address you would like messages to originate from.');
+            createFormTooltip('#password', 'The password for the source address.');
+            createFormTooltip('#destination', 'The address you would like to send messages to.');
+        }
+    });
 </script>
 {% endblock %}
 

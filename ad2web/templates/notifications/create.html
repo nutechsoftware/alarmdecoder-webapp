@@ -7,6 +7,9 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#type', 'Please choose a notification type.');
+    });
 </script>
 {% endblock %}
 
