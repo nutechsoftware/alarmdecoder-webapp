@@ -32,6 +32,9 @@ from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_R
                                         ZONE_RESTORE, LOW_BATTERY, PANIC, RELAY_CHANGED,
                                         DEFAULT_EVENT_MESSAGES)
 
+from .cameras import CameraSystem
+from .cameras.models import Camera
+
 
 EVENT_MAP = {
     ARM: 'on_arm',
@@ -89,6 +92,7 @@ class Decoder(object):
             self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
             self._notifier_system = None
+            self._camera_thread = CameraChecker(self)
 
     def start(self):
         """
@@ -96,6 +100,7 @@ class Decoder(object):
         """
         self._event_thread.start()
         self._version_thread.start()
+        self._camera_thread.start()
 
     def stop(self, restart=False):
         """
@@ -111,11 +116,13 @@ class Decoder(object):
 
         self._event_thread.stop()
         self._version_thread.stop()
+        self._camera_thread.stop()
 
         if restart:
             try:
                 self._event_thread.join(5)
                 self._version_thread.join(5)
+                self._camera_thread.join(5)
             except RuntimeError:
                 pass
 
@@ -445,6 +452,44 @@ class VersionChecker(threading.Thread):
 
             time.sleep(self.TIMEOUT)
 
+class CameraChecker(threading.Thread):
+    """
+    Thread responsible for polling camera streams.
+    """
+    TIMEOUT = .5
+    """Camera checker thread sleep time."""
+
+    def __init__(self, decoder):
+        """
+        Constructor
+        :param decoder: Parent decoder object
+        :type decoder: Decoder
+        """
+        threading.Thread.__init__(self)
+        self._decoder = decoder
+        self._running = False
+        self._cameras = CameraSystem()
+
+    def stop(self):
+        """
+        Stops the thread.
+        """
+        self._running = False
+
+    def run(self):
+        """
+        The thread processing loop.
+        """
+        self._running = True
+
+        while self._running:
+            with self._decoder.app.app_context():
+                self._cameras.refresh_camera_ids()
+                for n in self._cameras.get_camera_ids():
+                    self._cameras.write_image(n)
+
+            time.sleep(self.TIMEOUT)
+        
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
     """
     Socket.IO namespace

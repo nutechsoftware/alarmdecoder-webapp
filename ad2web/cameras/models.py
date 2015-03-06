@@ -10,7 +10,8 @@ class Camera(db.Model):
 
     id = Column(db.Integer, primary_key=True)
     name = Column(db.String(32), nullable=False)
-    embed_code = Column(db.String(255), nullable=False)
+    username = Column(db.String(32))
+    password = Column(db.String(255))
     get_jpg_url = Column(db.String(255))
     user_id = Column(db.Integer, nullable=False)
 

@@ -52,7 +52,13 @@ li {
                 FastClick.attach(document.body);
             });
 //tab our camera interface
-            $('#camera_tabs').tabs();
+            $('#camera_tabs').tabs({
+//remember which tab we were on
+                active: localStorage.getItem("currentCamTabIndex"),
+                activate: function(event, ui) {
+                    localStorage.setItem("currentCamTabIndex", $("#camera_tabs").tabs("option", "active"));
+                }
+            });
 //custom buttons
             {% if buttons %}
                 $("#exit").on('mousedown', function() {
@@ -126,15 +132,22 @@ li {
                 }
             {% endif %}
 
-//replace special characters from database to make actual tags
-            {% for camera in camera_list %}
-                $('#{{camera.id}}').each(function() {
-                    var $this = $(this);
-                    var t = $this.text();
-                    $this.html(t.replace('&lt', '<').replace('&gt', '>').replace('#34', '"').replace('&amp', '&'));
-                });
-            {% endfor %}
+            window.setInterval(function() {
+                {% for camera in camera_list %}
+                    $("#cam_image{{camera.id}}").each(function() {
+                        var jqt = $(this);
+                        var src = jqt.attr('src');
+                        var newsrc = '';
 
+                        if( src.indexOf('?') != -1 )
+                            newsrc = src.substr(0, src.indexOf('?'));
+                        else
+                            newsrc = src;
+                        newsrc += '?_ts=' + new Date().getTime();
+                        jqt.attr('src', newsrc);
+                    });
+                {% endfor %}
+            }, 250);
         });
 
     </script>
@@ -151,7 +164,7 @@ li {
         {% for camera in camera_list %}
             <div id="{{camera.id}}" style="text-align: center;">
                 <p>
-                {{camera.embed_code}}
+                <img id="cam_image{{camera.id}}" src="{{ url_for('static', filename='cameras/cam' + camera.id|string() + '.jpg' ) }}" />
                 </p>
             </div>
         {% endfor %}

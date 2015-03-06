@@ -33,7 +33,6 @@
                 { "sWidth": "5%" },
                 { "sWidth": "15%" },
                 null,
-                null,
                 { "sWidth": "10%" },
             ],
             "fnInitComplete": function() {
@@ -57,7 +56,6 @@
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
-                    <th>Embed HTML Code</th>
                     <th>Get JPG URL</th>
                     <th>Actions</th>
                 </tr>
@@ -67,7 +65,6 @@
                     <tr>
                         <td><a href="{{ url_for('cameras.edit_camera', id=camera.id) }}">{{ camera.id }}</a></td>
                         <td>{{ camera.name }}</td>
-                        <td>{{ camera.embed_code }}</td>
                         <td>{{ camera.get_jpg_url }}</td>
                         <td><a href="{{ url_for('cameras.remove_camera', id=camera.id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a></td>
                     </tr>
@@ -86,4 +83,3 @@
 <script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
 {% endblock %}
-
