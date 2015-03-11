@@ -56,15 +56,18 @@ EVENT_TYPES = {
 
 EMAIL = 0
 GOOGLETALK = 1
+PUSHOVER = 2
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
     GOOGLETALK: 'googletalk',
+    PUSHOVER: 'pushover',
 }
 
 NOTIFICATIONS = {
     EMAIL: ('email', u'Email'),
     GOOGLETALK: ('googletalk', u'Google Talk'),
+    PUSHOVER: ('pushover', u'Pushover.net'),
 }
 
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
@@ -84,3 +87,6 @@ SUBSCRIPTIONS = OrderedDict([
     (BOOT, 'The AlarmDecoder has rebooted?'),
     (RELAY_CHANGED, 'A relay has been changed?'),
 ])
+
+PUSHOVER_URL = "api.pushover.net:443"
+PUSHOVER_PATH = "/1/messages.json"

@@ -6,8 +6,9 @@ from email.mime.text import MIMEText
 import sleekxmpp
 import json
 import re
+from chump import Application
 
-from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES
+from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
 from ..log.models import EventLogEntry
@@ -165,8 +166,35 @@ class GoogleTalkNotification(BaseNotification):
         self.client.send_message(mto=self.destination, mbody=self.msg_to_send)
         self.client.disconnect(wait=True)
 
+class PushoverNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+
+        self.id = obj.id
+        self.description = obj.description
+        self.token = obj.get_setting('token')
+        self.user_key = obj.get_setting('user_key')
+        self.title = obj.get_setting('title')
+
+    def send(self, type, text):
+        self.msg_to_send = text
+
+        app = Application(self.token)
+        if app.is_authenticated:
+            user = app.get_user(self.user_key)
+
+            if user.is_authenticated:
+                message = user.create_message(
+                    title=self.title,
+                    message=self.msg_to_send,
+                    html=True
+                )
+
+                message.send()
+
 
 TYPE_MAP = {
     EMAIL: EmailNotification,
-    GOOGLETALK: GoogleTalkNotification
+    GOOGLETALK: GoogleTalkNotification,
+    PUSHOVER: PushoverNotification
 }

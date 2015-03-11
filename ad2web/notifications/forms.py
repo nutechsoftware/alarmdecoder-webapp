@@ -11,7 +11,7 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from wtforms.widgets import ListWidget, CheckboxInput
-from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK)
+from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER)
 from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
 
@@ -126,3 +126,20 @@ class GoogleTalkNotificationForm(EditNotificationForm):
         self.password.widget.hide_value = False
         self.password.data = self.populate_from_setting(id, 'password')
         self.destination.data = self.populate_from_setting(id, 'destination')
+
+class PushoverNotificationForm(EditNotificationForm):
+    token = TextField(u'API Token', [Required(), Length(max=30)], description=u'Your Application\'s API Token')
+    user_key = TextField(u'User/Group Key', [Required(), Length(max=30)], description=u'Your user or group key')
+    title = TextField(u'Title of Message', [Length(max=255)], description=u'Title of Notification Messages')
+
+    buttons = FormField(NotificationButtonForm)
+
+    def populate_settings(self, settings, id=None):
+        settings['token'] = self.populate_setting('token', self.token.data)
+        settings['user_key'] = self.populate_setting('user_key', self.user_key.data)
+        settings['title'] = self.populate_setting('title', self.title.data)
+
+    def populate_from_settings(self, id):
+        self.token.data = self.populate_from_setting(id, 'token')
+        self.user_key.data = self.populate_from_setting(id, 'user_key')
+        self.title.data = self.populate_from_setting(id, 'title')
