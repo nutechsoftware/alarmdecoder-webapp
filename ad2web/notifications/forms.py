@@ -74,6 +74,8 @@ class EmailNotificationForm(EditNotificationForm):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
 
+    subject = TextField(u'Email Subject', [Required(), Length(max=255)], default='AlarmDecoder: Alarm Event', description=u'Emails will contain this text as the subject')
+
     server = TextField(u'Email Server', [Required(), Length(max=255)], default='localhost')
     port = IntegerField(u'Server Port', [Required(), NumberRange(1, 65535)], default=25)
     tls = BooleanField(u'Use TLS?', default=False)
@@ -88,6 +90,7 @@ class EmailNotificationForm(EditNotificationForm):
 
         settings['source'] = self.populate_setting('source', self.source.data)
         settings['destination'] = self.populate_setting('destination', self.destination.data)
+        settings['subject'] = self.populate_setting('subject', self.subject.data)
         settings['server'] = self.populate_setting('server', self.server.data)
         settings['port'] = self.populate_setting('port', self.port.data)
         settings['tls'] = self.populate_setting('tls', self.tls.data)
@@ -100,6 +103,7 @@ class EmailNotificationForm(EditNotificationForm):
 
         self.source.data = self.populate_from_setting(id, 'source')
         self.destination.data = self.populate_from_setting(id, 'destination')
+        self.subject.data = self.populate_from_setting(id, 'subject')
         self.server.data = self.populate_from_setting(id, 'server')
         self.tls.data = self.populate_from_setting(id, 'tls')
         self.port.data = self.populate_from_setting(id, 'port')

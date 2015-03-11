@@ -114,6 +114,7 @@ class EmailNotification(BaseNotification):
         self.description = obj.description
         self.source = obj.get_setting('source')
         self.destination = obj.get_setting('destination')
+        self.subject = obj.get_setting('subject')
         self.server = obj.get_setting('server')
         self.port = obj.get_setting('port', default=25)
         self.tls = obj.get_setting('tls', default=False)
@@ -124,7 +125,7 @@ class EmailNotification(BaseNotification):
     def send(self, type, text):
         msg = MIMEText(text)
 
-        msg['Subject'] = 'AlarmDecoder: Alarm Event'
+        msg['Subject'] = self.subject
         msg['From'] = self.source
         recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
         msg['To'] = ', '.join(recipients)
