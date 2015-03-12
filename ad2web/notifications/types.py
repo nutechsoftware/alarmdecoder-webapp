@@ -11,7 +11,19 @@ import twilio
 from twilio.rest import TwilioRestClient
 import time
 
-from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO
+from xml.dom.minidom import parseString
+
+try:
+    from http.client import HTTPSConnection
+except ImportError:
+    from httplib import HTTPSConnection
+
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
+
+from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, NMA, NMA_URL, NMA_PATH, NMA_EVENT, NMA_METHOD, NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
 from ..log.models import EventLogEntry
@@ -220,9 +232,69 @@ class TwilioNotification(BaseNotification):
         except twilio.TwilioRestException as e:
             pass
 
+class NMANotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+        self.id = obj.id
+        self.description = obj.description
+        self.api_key = obj.get_setting('api_key')
+        self.app_name = obj.get_setting('app_name')
+        self.priority = obj.get_setting('priority')
+
+    def send(self, type, text):
+        self.msg_to_send = text[:10000].encode('utf8')
+        self.event = NMA_EVENT.encode('utf8')
+        self.content_type = NMA_CONTENT_TYPE
+
+        notify_data = {
+            'application': self.app_name,
+            'description': self.msg_to_send,
+            'event': self.event,
+            'priority': self.priority,
+            'content-type': self.content_type,
+            'apikey': self.api_key
+        }
+
+        headers = { 'User-Agent': NMA_USER_AGENT }
+        headers['Content-type'] = NMA_HEADER_CONTENT_TYPE
+        http_handler = HTTPSConnection(NMA_URL)
+        http_handler.request(NMA_METHOD, NMA_PATH, urlencode(notify_data), headers)
+
+        http_response = http_handler.getresponse()
+
+        try:
+            res = self._parse_response(http_response.read())
+        except Exception as e:
+            res = {
+                'type': 'NMA Notify Error',
+                'code': 800,
+                'message': str(e)
+            }
+            pass
+
+    def _parse_response(self, response):
+        root = parseString(response).firstChild
+
+        for elem in root.childNodes:
+            if elem.nodeType == elem.TEXT_NODE: continue
+            if elem.tagName == 'success':
+                res = dict(list(elem.attributes.items()))
+                res['message'] = ""
+                res['type'] = elem.tagName
+
+                return res
+
+            if elem.tagName == 'error':
+                res = dict(list(elem.attributes.items()))
+                res['message'] = elem.firstChild.nodeValue
+                res['type'] = elem.tagName
+
+                return res
+
 TYPE_MAP = {
     EMAIL: EmailNotification,
     GOOGLETALK: GoogleTalkNotification,
     PUSHOVER: PushoverNotification,
-    TWILIO: TwilioNotification
+    TWILIO: TwilioNotification,
+    NMA: NMANotification
 }

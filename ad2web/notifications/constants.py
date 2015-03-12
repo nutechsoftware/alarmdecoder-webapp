@@ -59,12 +59,14 @@ EMAIL = 0
 GOOGLETALK = 1
 PUSHOVER = 2
 TWILIO = 3
+NMA = 4
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
     GOOGLETALK: 'googletalk',
     PUSHOVER: 'pushover',
     TWILIO: 'twilio',
+    NMA: 'NMA'
 }
 
 NOTIFICATIONS = {
@@ -72,6 +74,7 @@ NOTIFICATIONS = {
     GOOGLETALK: ('googletalk', u'Google Talk'),
     PUSHOVER: ('pushover', u'Pushover.net'),
     TWILIO: ('twilio', u'Twilio'),
+    NMA: ('NMA', u'NotifyMyAndroid')
 }
 
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
@@ -107,4 +110,21 @@ PUSHOVER_PRIORITIES = {
     NORMAL: (chump.NORMAL, u'NORMAL'),
     HIGH: (chump.HIGH, u'HIGH'),
     EMERGENCY: (chump.EMERGENCY, u'EMERGENCY')
+}
+
+NMA_URL = "www.notifymyandroid.com"
+NMA_PATH = "/publicapi/notify"
+
+NMA_USER_AGENT = "NMA/v1.0"
+NMA_EVENT = "AlarmDecoder: Alarm Event"
+NMA_METHOD = "POST"
+NMA_CONTENT_TYPE = "text/html"
+NMA_HEADER_CONTENT_TYPE = "application/x-www-form-urlencoded"
+
+NMA_PRIORITIES = {
+    LOWEST: (-2, u'VERY LOW'),
+    LOW: (-1, u'MODERATE'),
+    NORMAL: (0, u'NORMAL'),
+    HIGH: (1, u'HIGH'),
+    EMERGENCY: (2, u'EMERGENCY')
 }

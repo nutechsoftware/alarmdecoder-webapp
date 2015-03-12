@@ -11,7 +11,7 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from wtforms.widgets import ListWidget, CheckboxInput
-from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY)
+from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES, NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY)
 from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
 
@@ -174,3 +174,22 @@ class TwilioNotificationForm(EditNotificationForm):
         self.auth_token.data = self.populate_from_setting(id, 'auth_token')
         self.number_to.data = self.populate_from_setting(id, 'number_to')
         self.number_from.data = self.populate_from_setting(id, 'number_from')
+
+class NMANotificationForm(EditNotificationForm):
+    api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your NotifyMyAndroid API Key')
+    app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications')
+    priority = SelectField(u'Message Priority', choices=[NMA_PRIORITIES[LOWEST], NMA_PRIORITIES[LOW], NMA_PRIORITIES[NORMAL], NMA_PRIORITIES[HIGH], NMA_PRIORITIES[EMERGENCY]], default=NMA_PRIORITIES[LOW], description='NotifyMyAndroid message priority', coerce=int)
+    
+    buttons = FormField(NotificationButtonForm)
+
+    def populate_settings(self, settings, id=None):
+        EditNotificationForm.populate_settings(self, settings, id)
+        settings['api_key'] = self.populate_setting('api_key', self.api_key.data)
+        settings['app_name'] = self.populate_setting('app_name', self.app_name.data)
+        settings['priority'] = self.populate_setting('priority', self.priority.data)
+
+    def populate_from_settings(self, id):
+        EditNotificationForm.populate_from_settings(self, id)
+        self.api_key.data = self.populate_from_setting(id, 'api_key')
+        self.app_name.data = self.populate_from_setting(id, 'app_name')
+        self.priority.data = self.populate_from_setting(id, 'priority')
