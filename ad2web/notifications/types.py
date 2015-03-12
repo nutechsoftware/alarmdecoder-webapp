@@ -7,9 +7,11 @@ import sleekxmpp
 import json
 import re
 from chump import Application
+import twilio
+from twilio.rest import TwilioRestClient
 import time
 
-from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER
+from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
 from ..log.models import EventLogEntry
@@ -198,8 +200,29 @@ class PushoverNotification(BaseNotification):
                 message.send()
 
 
+class TwilioNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+
+        self.id = obj.id
+        self.description = obj.description
+        self.account_sid = obj.get_setting('account_sid')
+        self.auth_token = obj.get_setting('auth_token')
+        self.number_to = obj.get_setting('number_to')
+        self.number_from = obj.get_setting('number_from')
+
+    def send(self, type, text):
+        self.msg_to_send = text
+
+        try:
+            client = TwilioRestClient(self.account_sid, self.auth_token)
+            message = client.messages.create(to=self.number_to, from_=self.number_from, body=self.msg_to_send)
+        except twilio.TwilioRestException as e:
+            pass
+
 TYPE_MAP = {
     EMAIL: EmailNotification,
     GOOGLETALK: GoogleTalkNotification,
-    PUSHOVER: PushoverNotification
+    PUSHOVER: PushoverNotification,
+    TWILIO: TwilioNotification
 }

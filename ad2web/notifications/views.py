@@ -8,17 +8,19 @@ from ..extensions import db
 from ..settings import Setting
 from .forms import (CreateNotificationForm, EditNotificationForm,
                     EditNotificationMessageForm,
-                    EmailNotificationForm, GoogleTalkNotificationForm, PushoverNotificationForm)
+                    EmailNotificationForm, GoogleTalkNotificationForm, PushoverNotificationForm,
+                    TwilioNotificationForm)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 
 from .constants import (EVENT_TYPES, NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, 
-                        EMAIL, GOOGLETALK, PUSHOVER)
+                        EMAIL, GOOGLETALK, PUSHOVER, TWILIO)
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
     'googletalk': (GOOGLETALK, GoogleTalkNotificationForm),
-    'pushover': (PUSHOVER, PushoverNotificationForm)
+    'pushover': (PUSHOVER, PushoverNotificationForm),
+    'twilio': (TWILIO, TwilioNotificationForm)
 }
 
 notifications = Blueprint('notifications',

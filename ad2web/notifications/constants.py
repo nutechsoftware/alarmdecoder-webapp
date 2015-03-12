@@ -58,17 +58,20 @@ EVENT_TYPES = {
 EMAIL = 0
 GOOGLETALK = 1
 PUSHOVER = 2
+TWILIO = 3
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
     GOOGLETALK: 'googletalk',
     PUSHOVER: 'pushover',
+    TWILIO: 'twilio',
 }
 
 NOTIFICATIONS = {
     EMAIL: ('email', u'Email'),
     GOOGLETALK: ('googletalk', u'Google Talk'),
     PUSHOVER: ('pushover', u'Pushover.net'),
+    TWILIO: ('twilio', u'Twilio'),
 }
 
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]

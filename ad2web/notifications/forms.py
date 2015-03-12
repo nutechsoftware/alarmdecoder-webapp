@@ -152,3 +152,25 @@ class PushoverNotificationForm(EditNotificationForm):
         self.user_key.data = self.populate_from_setting(id, 'user_key')
         self.priority.data = self.populate_from_setting(id, 'priority')
         self.title.data = self.populate_from_setting(id, 'title')
+
+class TwilioNotificationForm(EditNotificationForm):
+    account_sid = TextField(u'Account SID', [Required(), Length(max=50)], description=u'Your Twilio Account SID')
+    auth_token = TextField(u'Auth Token', [Required(), Length(max=50)], description=u'Your Twilio User Auth Token')
+    number_to = TextField(u'To', [Required(), Length(max=15)], description=u'Number to send SMS to')
+    number_from = TextField(u'From', [Required(), Length(max=15)], description=u'Must Be A Valid Twilio Phone Number')
+
+    buttons = FormField(NotificationButtonForm)
+
+    def populate_settings(self, settings, id=None):
+        EditNotificationForm.populate_settings(self, settings, id)
+        settings['account_sid'] = self.populate_setting('account_sid', self.account_sid.data)
+        settings['auth_token'] = self.populate_setting('auth_token', self.auth_token.data)
+        settings['number_to'] = self.populate_setting('number_to', self.number_to.data)
+        settings['number_from'] = self.populate_setting('number_from', self.number_from.data)
+
+    def populate_from_settings(self, id):
+        EditNotificationForm.populate_from_settings(self, id)
+        self.account_sid.data = self.populate_from_setting(id, 'account_sid')
+        self.auth_token.data = self.populate_from_setting(id, 'auth_token')
+        self.number_to.data = self.populate_from_setting(id, 'number_to')
+        self.number_from.data = self.populate_from_setting(id, 'number_from')
