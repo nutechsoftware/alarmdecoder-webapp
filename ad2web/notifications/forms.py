@@ -11,7 +11,7 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from wtforms.widgets import ListWidget, CheckboxInput
-from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER)
+from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY)
 from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
 
@@ -134,16 +134,21 @@ class GoogleTalkNotificationForm(EditNotificationForm):
 class PushoverNotificationForm(EditNotificationForm):
     token = TextField(u'API Token', [Required(), Length(max=30)], description=u'Your Application\'s API Token')
     user_key = TextField(u'User/Group Key', [Required(), Length(max=30)], description=u'Your user or group key')
+    priority = SelectField(u'Message Priority', choices=[PUSHOVER_PRIORITIES[LOWEST], PUSHOVER_PRIORITIES[LOW], PUSHOVER_PRIORITIES[NORMAL], PUSHOVER_PRIORITIES[HIGH], PUSHOVER_PRIORITIES[EMERGENCY]], default=PUSHOVER_PRIORITIES[LOW], description='Pushover message priority', coerce=int)
     title = TextField(u'Title of Message', [Length(max=255)], description=u'Title of Notification Messages')
 
     buttons = FormField(NotificationButtonForm)
 
     def populate_settings(self, settings, id=None):
+        EditNotificationForm.populate_settings(self, settings, id)
         settings['token'] = self.populate_setting('token', self.token.data)
         settings['user_key'] = self.populate_setting('user_key', self.user_key.data)
+        settings['priority'] = self.populate_setting('priority', self.priority.data)
         settings['title'] = self.populate_setting('title', self.title.data)
 
     def populate_from_settings(self, id):
+        EditNotificationForm.populate_from_settings(self, id)
         self.token.data = self.populate_from_setting(id, 'token')
         self.user_key.data = self.populate_from_setting(id, 'user_key')
+        self.priority.data = self.populate_from_setting(id, 'priority')
         self.title.data = self.populate_from_setting(id, 'title')

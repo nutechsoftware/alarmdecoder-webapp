@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+import chump
 
 ARM = 0
 DISARM = 1
@@ -90,3 +91,17 @@ SUBSCRIPTIONS = OrderedDict([
 
 PUSHOVER_URL = "api.pushover.net:443"
 PUSHOVER_PATH = "/1/messages.json"
+
+LOWEST = 0
+LOW = 1
+NORMAL = 2
+HIGH = 3
+EMERGENCY = 4
+
+PUSHOVER_PRIORITIES = {
+    LOWEST: (chump.LOWEST, u'LOWEST'),
+    LOW: (chump.LOW, u'LOW'),
+    NORMAL: (chump.NORMAL, u'NORMAL'),
+    HIGH: (chump.HIGH, u'HIGH'),
+    EMERGENCY: (chump.EMERGENCY, u'EMERGENCY')
+}

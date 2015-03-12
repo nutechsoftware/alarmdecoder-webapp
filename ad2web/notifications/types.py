@@ -7,6 +7,7 @@ import sleekxmpp
 import json
 import re
 from chump import Application
+import time
 
 from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER
 from .models import Notification, NotificationSetting, NotificationMessage
@@ -175,6 +176,7 @@ class PushoverNotification(BaseNotification):
         self.description = obj.description
         self.token = obj.get_setting('token')
         self.user_key = obj.get_setting('user_key')
+        self.priority = obj.get_setting('priority')
         self.title = obj.get_setting('title')
 
     def send(self, type, text):
@@ -188,7 +190,9 @@ class PushoverNotification(BaseNotification):
                 message = user.create_message(
                     title=self.title,
                     message=self.msg_to_send,
-                    html=True
+                    html=True,
+                    priority=self.priority,
+                    timestamp=int(time.time())
                 )
 
                 message.send()
