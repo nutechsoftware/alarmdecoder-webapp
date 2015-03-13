@@ -60,13 +60,15 @@ GOOGLETALK = 1
 PUSHOVER = 2
 TWILIO = 3
 NMA = 4
+PROWL = 5
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
     GOOGLETALK: 'googletalk',
     PUSHOVER: 'pushover',
     TWILIO: 'twilio',
-    NMA: 'NMA'
+    NMA: 'NMA',
+    PROWL: 'prowl',
 }
 
 NOTIFICATIONS = {
@@ -74,7 +76,8 @@ NOTIFICATIONS = {
     GOOGLETALK: ('googletalk', u'Google Talk'),
     PUSHOVER: ('pushover', u'Pushover.net'),
     TWILIO: ('twilio', u'Twilio'),
-    NMA: ('NMA', u'NotifyMyAndroid')
+    NMA: ('NMA', u'NotifyMyAndroid'),
+    PROWL: ('prowl', u'Prowl')
 }
 
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
@@ -122,6 +125,23 @@ NMA_CONTENT_TYPE = "text/html"
 NMA_HEADER_CONTENT_TYPE = "application/x-www-form-urlencoded"
 
 NMA_PRIORITIES = {
+    LOWEST: (-2, u'VERY LOW'),
+    LOW: (-1, u'MODERATE'),
+    NORMAL: (0, u'NORMAL'),
+    HIGH: (1, u'HIGH'),
+    EMERGENCY: (2, u'EMERGENCY')
+}
+
+PROWL_URL = "api.prowlapp.com"
+PROWL_PATH = "/publicapi/add"
+
+PROWL_USER_AGENT = "PROWL/v1.0"
+PROWL_EVENT = "AlarmDecoder: Alarm Event"
+PROWL_METHOD = "POST"
+PROWL_CONTENT_TYPE = "text/html"
+PROWL_HEADER_CONTENT_TYPE = "application/x-www-form-urlencoded"
+
+PROWL_PRIORITIES = {
     LOWEST: (-2, u'VERY LOW'),
     LOW: (-1, u'MODERATE'),
     NORMAL: (0, u'NORMAL'),

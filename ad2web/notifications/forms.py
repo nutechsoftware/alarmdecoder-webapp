@@ -11,7 +11,8 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from wtforms.widgets import ListWidget, CheckboxInput
-from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES, NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY)
+from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES, 
+                        NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES)
 from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
 
@@ -177,8 +178,8 @@ class TwilioNotificationForm(EditNotificationForm):
 
 class NMANotificationForm(EditNotificationForm):
     api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your NotifyMyAndroid API Key')
-    app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications')
-    priority = SelectField(u'Message Priority', choices=[NMA_PRIORITIES[LOWEST], NMA_PRIORITIES[LOW], NMA_PRIORITIES[NORMAL], NMA_PRIORITIES[HIGH], NMA_PRIORITIES[EMERGENCY]], default=NMA_PRIORITIES[LOW], description='NotifyMyAndroid message priority', coerce=int)
+    app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications', default='AlarmDecoder')
+    nma_priority = SelectField(u'Message Priority', choices=[NMA_PRIORITIES[LOWEST], NMA_PRIORITIES[LOW], NMA_PRIORITIES[NORMAL], NMA_PRIORITIES[HIGH], NMA_PRIORITIES[EMERGENCY]], default=NMA_PRIORITIES[LOW], description='NotifyMyAndroid message priority', coerce=int)
     
     buttons = FormField(NotificationButtonForm)
 
@@ -186,10 +187,31 @@ class NMANotificationForm(EditNotificationForm):
         EditNotificationForm.populate_settings(self, settings, id)
         settings['api_key'] = self.populate_setting('api_key', self.api_key.data)
         settings['app_name'] = self.populate_setting('app_name', self.app_name.data)
-        settings['priority'] = self.populate_setting('priority', self.priority.data)
+        settings['nma_priority'] = self.populate_setting('nma_priority', self.nma_priority.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
         self.api_key.data = self.populate_from_setting(id, 'api_key')
         self.app_name.data = self.populate_from_setting(id, 'app_name')
-        self.priority.data = self.populate_from_setting(id, 'priority')
+        self.nma_priority.data = self.populate_from_setting(id, 'nma_priority')
+
+class ProwlNotificationForm(EditNotificationForm):
+    prowl_api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your Prowl API Key')
+    prowl_app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications', default='AlarmDecoder')
+    prowl_priority = SelectField(u'Message Priority', choices=[PROWL_PRIORITIES[LOWEST], PROWL_PRIORITIES[LOW], PROWL_PRIORITIES[NORMAL], PROWL_PRIORITIES[HIGH], PROWL_PRIORITIES[EMERGENCY]], default=PROWL_PRIORITIES[LOW], description='Prowl message priority', coerce=int)
+
+    buttons = FormField(NotificationButtonForm)
+
+    def populate_settings(self, settings, id=None):
+        EditNotificationForm.populate_settings(self, settings, id)
+
+        settings['prowl_api_key'] = self.populate_setting('prowl_api_key', self.prowl_api_key.data)
+        settings['prowl_app_name'] = self.populate_setting('prowl_app_name', self.prowl_app_name.data)
+        settings['prowl_priority'] = self.populate_setting('prowl_priority', self.prowl_priority.data)
+
+    def populate_from_settings(self, id):
+        EditNotificationForm.populate_from_settings(self, id)
+        
+        self.prowl_api_key.data = self.populate_from_setting(id, 'prowl_api_key')
+        self.prowl_app_name.data = self.populate_from_setting(id, 'prowl_app_name')
+        self.prowl_priority.data = self.populate_from_setting(id, 'prowl_priority')

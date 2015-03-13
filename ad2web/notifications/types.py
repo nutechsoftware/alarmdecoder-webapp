@@ -13,17 +13,27 @@ import time
 
 from xml.dom.minidom import parseString
 
+#https connection support - used for nma and prowl, also future POST to custom url
 try:
     from http.client import HTTPSConnection
 except ImportError:
     from httplib import HTTPSConnection
+
+
+#normal http connection support (future POST to custom url)
+try:
+    from http.client import HTTPConnection
+except ImportError:
+    from httplib import HTTPConnection
 
 try:
     from urllib.parse import urlencode
 except ImportError:
     from urllib import urlencode
 
-from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, NMA, NMA_URL, NMA_PATH, NMA_EVENT, NMA_METHOD, NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT
+from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, NMA, NMA_URL, NMA_PATH, NMA_EVENT, NMA_METHOD,
+                        NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
+                        PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT)
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
 from ..log.models import EventLogEntry
@@ -239,7 +249,7 @@ class NMANotification(BaseNotification):
         self.description = obj.description
         self.api_key = obj.get_setting('api_key')
         self.app_name = obj.get_setting('app_name')
-        self.priority = obj.get_setting('priority')
+        self.priority = obj.get_setting('nma_priority')
 
     def send(self, type, text):
         self.msg_to_send = text[:10000].encode('utf8')
@@ -270,6 +280,7 @@ class NMANotification(BaseNotification):
                 'code': 800,
                 'message': str(e)
             }
+            current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(str(e)))
             pass
 
     def _parse_response(self, response):
@@ -288,13 +299,52 @@ class NMANotification(BaseNotification):
                 res = dict(list(elem.attributes.items()))
                 res['message'] = elem.firstChild.nodeValue
                 res['type'] = elem.tagName
+                current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(res['message']))
 
                 return res
+
+class ProwlNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+        self.id = obj.id
+        self.description = obj.description
+        self.api_key = obj.get_setting('prowl_api_key')
+        self.app_name = obj.get_setting('prowl_app_name')[:256].encode('utf8')
+        self.priority = obj.get_setting('prowl_priority')
+        self.event = PROWL_EVENT[:1024].encode('utf8')
+        self.content_type = PROWL_CONTENT_TYPE
+        self.headers = {
+            'User-Agent': PROWL_USER_AGENT,
+            'Content-type': PROWL_HEADER_CONTENT_TYPE
+        }
+
+    def send(self, type, text):
+        self.msg_to_send = text[:10000].encode('utf8')
+
+        notify_data = {
+            'apikey': self.api_key,
+            'application': self.app_name,
+            'event': self.event,
+            'description': self.msg_to_send,
+            'priority': self.priority
+        }
+
+        http_handler = HTTPSConnection(PROWL_URL)
+        http_handler.request(PROWL_METHOD, PROWL_PATH, headers=self.headers,body=urlencode(notify_data))
+
+        http_response = http_handler.getresponse()
+
+        if http_response.status == 200:
+            return True
+        else:
+            current_app.logger.info('Event Prowl Notification Failed: {0}'. format(http_response.reason))
+
 
 TYPE_MAP = {
     EMAIL: EmailNotification,
     GOOGLETALK: GoogleTalkNotification,
     PUSHOVER: PushoverNotification,
     TWILIO: TwilioNotification,
-    NMA: NMANotification
+    NMA: NMANotification,
+    PROWL: ProwlNotification
 }

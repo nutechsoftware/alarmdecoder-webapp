@@ -9,19 +9,20 @@ from ..settings import Setting
 from .forms import (CreateNotificationForm, EditNotificationForm,
                     EditNotificationMessageForm,
                     EmailNotificationForm, GoogleTalkNotificationForm, PushoverNotificationForm,
-                    TwilioNotificationForm, NMANotificationForm)
+                    TwilioNotificationForm, NMANotificationForm, ProwlNotificationForm)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 
 from .constants import (EVENT_TYPES, NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, 
-                        EMAIL, GOOGLETALK, PUSHOVER, TWILIO, NMA)
+                        EMAIL, GOOGLETALK, PUSHOVER, TWILIO, NMA, PROWL)
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
     'googletalk': (GOOGLETALK, GoogleTalkNotificationForm),
     'pushover': (PUSHOVER, PushoverNotificationForm),
     'twilio': (TWILIO, TwilioNotificationForm),
-    'NMA': (NMA, NMANotificationForm)
+    'NMA': (NMA, NMANotificationForm),
+    'prowl': (PROWL, ProwlNotificationForm)
 }
 
 notifications = Blueprint('notifications',
