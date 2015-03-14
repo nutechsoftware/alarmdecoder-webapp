@@ -122,11 +122,13 @@ class GoogleTalkNotificationForm(EditNotificationForm):
     buttons = FormField(NotificationButtonForm)
 
     def populate_settings(self, settings, id=None):
+        EditNotificationForm.populate_settings(self, settings, id)
         settings['source'] = self.populate_setting('source', self.source.data)
         settings['password'] = self.populate_setting('password', self.password.data)
         settings['destination'] = self.populate_setting('destination', self.destination.data)
 
     def populate_from_settings(self, id):
+        EditNotificationForm.populate_from_settings(self, id)
         self.source.data = self.populate_from_setting(id, 'source')
         self.password.widget.hide_value = False
         self.password.data = self.populate_from_setting(id, 'password')
