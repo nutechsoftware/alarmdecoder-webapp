@@ -366,14 +366,20 @@ class GrowlNotification(BaseNotification):
     def send(self, type, text):
         self.msg_to_send = text
 
-        self.growl.register()
-        self.growl.notify(
-            noteType = GROWL_DEFAULT_NOTIFICATIONS[0],
-            title = self.title,
-            description = self.msg_to_send,
-            priority = self.priority,
-            sticky = False
-        )
+        growl_status = self.growl.register()
+        if growl_status == True:
+            growl_notify_status = self.growl.notify(
+                noteType = GROWL_DEFAULT_NOTIFICATIONS[0],
+                title = self.title,
+                description = self.msg_to_send,
+                priority = self.priority,
+                sticky = False
+            )
+            if growl_notify_status != True:
+                current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_notify_status))
+
+        else:
+            current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_status))
 
 TYPE_MAP = {
     EMAIL: EmailNotification,
