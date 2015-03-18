@@ -12,7 +12,7 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from wtforms.widgets import ListWidget, CheckboxInput
 from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES, 
-                        NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES)
+                        NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES, GROWL, GROWL_PRIORITIES, GROWL_TITLE)
 from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
 
@@ -217,3 +217,31 @@ class ProwlNotificationForm(EditNotificationForm):
         self.prowl_api_key.data = self.populate_from_setting(id, 'prowl_api_key')
         self.prowl_app_name.data = self.populate_from_setting(id, 'prowl_app_name')
         self.prowl_priority.data = self.populate_from_setting(id, 'prowl_priority')
+
+class GrowlNotificationForm(EditNotificationForm):
+    growl_hostname = TextField(u'Hostname', [Required(), Length(max=255)], description=u'Growl server to send notification to')
+    growl_port = TextField(u'Port', [Required(), Length(max=10)], description=u'Growl server port', default=23053)
+    growl_password = PasswordField(u'Password', description=u'The password for the growl server') 
+    growl_title = TextField(u'Title', [Required(), Length(max=255)], description=u'Notification Title', default=GROWL_TITLE)
+    growl_priority = SelectField(u'Message Priority', choices=[GROWL_PRIORITIES[LOWEST], GROWL_PRIORITIES[LOW], GROWL_PRIORITIES[NORMAL], GROWL_PRIORITIES[HIGH], GROWL_PRIORITIES[EMERGENCY]], default=GROWL_PRIORITIES[LOW], description='Growl message priority', coerce=int)
+
+    buttons = FormField(NotificationButtonForm)
+
+    def populate_settings(self, settings, id=None):
+        EditNotificationForm.populate_settings(self, settings, id)
+
+        settings['growl_hostname'] = self.populate_setting('growl_hostname', self.growl_hostname.data)
+        settings['growl_port'] = self.populate_setting('growl_port', self.growl_port.data)
+        settings['growl_password'] = self.populate_setting('growl_password', self.growl_password.data)
+        settings['growl_title'] = self.populate_setting('growl_title', self.growl_title.data)
+        settings['growl_priority'] = self.populate_setting('growl_priority', self.growl_title.data)
+
+    def populate_from_settings(self, id):
+        EditNotificationForm.populate_from_settings(self, id)
+
+        self.growl_hostname.data = self.populate_from_setting(id, 'growl_hostname')
+        self.growl_port.data = self.populate_from_setting(id, 'growl_port')
+        self.growl_password.data = self.populate_from_setting(id, 'growl_password')
+        self.growl_title.data = self.populate_from_setting(id, 'growl_title')
+        self.growl_priority.data = self.populate_from_setting(id, 'growl_priority')
+

@@ -31,9 +31,14 @@ try:
 except ImportError:
     from urllib import urlencode
 
+import logging
+import gntp.notifier
+
 from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, NMA, NMA_URL, NMA_PATH, NMA_EVENT, NMA_METHOD,
                         NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
-                        PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT)
+                        PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
+                        GROWL_PRIORITIES, GROWL)
+
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
 from ..log.models import EventLogEntry
@@ -339,6 +344,35 @@ class ProwlNotification(BaseNotification):
         else:
             current_app.logger.info('Event Prowl Notification Failed: {0}'. format(http_response.reason))
 
+class GrowlNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+        self.id = obj.id
+        self.description = obj.description
+        self.priority = obj.get_setting('growl_priority')
+        self.hostname = obj.get_setting('growl_hostname')
+        self.port = obj.get_setting('growl_port')
+        self.password = obj.get_setting('growl_password')
+        self.title = obj.get_setting('growl_title')
+
+        self.growl = gntp.notifier.GrowlNotifier(
+            applicationName = GROWL_APP_NAME,
+            notifications = GROWL_DEFAULT_NOTIFICATIONS,
+            defaultNotifications = GROWL_DEFAULT_NOTIFICATIONS,
+            hostname = self.hostname,
+            password = self.password
+        )
+        
+    def send(self, type, text):
+        self.msg_to_send = text
+
+        self.growl.register()
+        self.growl.notify(
+            noteType = GROWL_DEFAULT_NOTIFICATIONS[0],
+            title = self.title,
+            description = self.msg_to_send,
+            priority = self.priority
+        )
 
 TYPE_MAP = {
     EMAIL: EmailNotification,
@@ -346,5 +380,6 @@ TYPE_MAP = {
     PUSHOVER: PushoverNotification,
     TWILIO: TwilioNotification,
     NMA: NMANotification,
-    PROWL: ProwlNotification
+    PROWL: ProwlNotification,
+    GROWL: GrowlNotification
 }

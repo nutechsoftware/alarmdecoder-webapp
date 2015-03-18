@@ -61,6 +61,7 @@ PUSHOVER = 2
 TWILIO = 3
 NMA = 4
 PROWL = 5
+GROWL = 6
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
@@ -69,6 +70,7 @@ NOTIFICATION_TYPES = {
     TWILIO: 'twilio',
     NMA: 'NMA',
     PROWL: 'prowl',
+    GROWL: 'growl',
 }
 
 NOTIFICATIONS = {
@@ -77,7 +79,8 @@ NOTIFICATIONS = {
     PUSHOVER: ('pushover', u'Pushover.net'),
     TWILIO: ('twilio', u'Twilio'),
     NMA: ('NMA', u'NotifyMyAndroid'),
-    PROWL: ('prowl', u'Prowl')
+    PROWL: ('prowl', u'Prowl'),
+    GROWL: ('growl', u'Growl')
 }
 
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
@@ -148,3 +151,16 @@ PROWL_PRIORITIES = {
     HIGH: (1, u'HIGH'),
     EMERGENCY: (2, u'EMERGENCY')
 }
+
+GROWL_APP_NAME = 'AlarmDecoder'
+GROWL_TITLE = 'AlarmDecoder: Alarm Event'
+GROWL_DEFAULT_NOTIFICATIONS = ["AlarmDecoder", "AlarmDecoder: Alarm Event"]
+
+GROWL_PRIORITIES = {
+    LOWEST: (-2, u'VERY LOW'),
+    LOW: (-1, u'MODERATE'),
+    NORMAL: (0, u'NORMAL'),
+    HIGH: (1, u'HIGH'),
+    EMERGENCY: (2, u'EMERGENCY')
+}
+
