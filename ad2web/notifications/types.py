@@ -371,7 +371,8 @@ class GrowlNotification(BaseNotification):
             noteType = GROWL_DEFAULT_NOTIFICATIONS[0],
             title = self.title,
             description = self.msg_to_send,
-            priority = self.priority
+            priority = self.priority,
+            sticky = False
         )
 
 TYPE_MAP = {
