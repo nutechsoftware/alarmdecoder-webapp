@@ -353,6 +353,10 @@ class GrowlNotification(BaseNotification):
         self.hostname = obj.get_setting('growl_hostname')
         self.port = obj.get_setting('growl_port')
         self.password = obj.get_setting('growl_password')
+
+        if self.password == '':
+            self.password = None
+
         self.title = obj.get_setting('growl_title')
 
         self.growl = gntp.notifier.GrowlNotifier(
