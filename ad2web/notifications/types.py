@@ -224,7 +224,11 @@ class PushoverNotification(BaseNotification):
                     timestamp=int(time.time())
                 )
 
-                message.send()
+                is_sent = message.send()
+
+                if is_sent != True:
+                    current_app.logger.info("Pushover Notification Failed")
+                    raise Exception('Pushover Notification Failed')
 
 
 class TwilioNotification(BaseNotification):
@@ -245,7 +249,8 @@ class TwilioNotification(BaseNotification):
             client = TwilioRestClient(self.account_sid, self.auth_token)
             message = client.messages.create(to=self.number_to, from_=self.number_from, body=self.msg_to_send)
         except twilio.TwilioRestException as e:
-            pass
+            current_app.logger.info('Event Twilio Notification Failed: {0}' . format(message))
+            raise Exception('Twilio Notification Failed: {0}' . format(message))
 
 class NMANotification(BaseNotification):
     def __init__(self, obj):
@@ -286,7 +291,7 @@ class NMANotification(BaseNotification):
                 'message': str(e)
             }
             current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(str(e)))
-            pass
+            raise Exception('NotifyMyAndroid Failed: {0}' . format(str(e)))
 
     def _parse_response(self, response):
         root = parseString(response).firstChild
@@ -305,8 +310,7 @@ class NMANotification(BaseNotification):
                 res['message'] = elem.firstChild.nodeValue
                 res['type'] = elem.tagName
                 current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(res['message']))
-
-                return res
+                raise Exception(res['message'])
 
 class ProwlNotification(BaseNotification):
     def __init__(self, obj):
@@ -343,6 +347,7 @@ class ProwlNotification(BaseNotification):
             return True
         else:
             current_app.logger.info('Event Prowl Notification Failed: {0}'. format(http_response.reason))
+            raise Exception('Prowl Notification Failed: {0}' . format(http_response.reason))
 
 class GrowlNotification(BaseNotification):
     def __init__(self, obj):
@@ -381,9 +386,11 @@ class GrowlNotification(BaseNotification):
             )
             if growl_notify_status != True:
                 current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_notify_status))
+                raise Exception('Growl Notification Failed: {0}' . format(growl_notify_status))
 
         else:
             current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_status))
+            raise Exception('Growl Notification Failed: {0}' . format(growl_status))
 
 TYPE_MAP = {
     EMAIL: EmailNotification,
