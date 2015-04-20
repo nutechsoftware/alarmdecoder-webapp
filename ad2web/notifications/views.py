@@ -2,19 +2,19 @@ from flask import (Blueprint, render_template, current_app, request, flash,
                     redirect, url_for, abort)
 from flask.ext.login import login_required, current_user
 
-from wtforms import FormField
+from wtforms import FormField, TextField
 
 from ..extensions import db
 from ..settings import Setting
 from .forms import (CreateNotificationForm, EditNotificationForm,
                     EditNotificationMessageForm,
                     EmailNotificationForm, GoogleTalkNotificationForm, PushoverNotificationForm,
-                    TwilioNotificationForm, NMANotificationForm, ProwlNotificationForm, GrowlNotificationForm)
+                    TwilioNotificationForm, NMANotificationForm, ProwlNotificationForm, GrowlNotificationForm, CustomPostForm)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 
 from .constants import (EVENT_TYPES, NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, 
-                        EMAIL, GOOGLETALK, PUSHOVER, TWILIO, NMA, PROWL, GROWL)
+                        EMAIL, GOOGLETALK, PUSHOVER, TWILIO, NMA, PROWL, GROWL, CUSTOM)
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
@@ -23,7 +23,8 @@ NOTIFICATION_TYPE_DETAILS = {
     'twilio': (TWILIO, TwilioNotificationForm),
     'NMA': (NMA, NMANotificationForm),
     'prowl': (PROWL, ProwlNotificationForm),
-    'growl': (GROWL, GrowlNotificationForm)
+    'growl': (GROWL, GrowlNotificationForm),
+    'custom': (CUSTOM, CustomPostForm)
 }
 
 notifications = Blueprint('notifications',
@@ -65,6 +66,7 @@ def edit(id):
 
     if not form.is_submitted():
         form.populate_from_settings(id)
+
 
     if form.validate_on_submit():
         notification.description = form.description.data

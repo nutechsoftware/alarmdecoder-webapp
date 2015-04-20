@@ -4,6 +4,7 @@ import json
 from flask.ext.wtf import Form
 from flask.ext.wtf.html5 import URLField, EmailField, TelField
 import wtforms
+import ast
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,
         FileField, DecimalField, BooleanField, SelectField, FormField, FieldList,
@@ -12,7 +13,8 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional)
 from wtforms.widgets import ListWidget, CheckboxInput
 from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES, 
-                        NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES, GROWL, GROWL_PRIORITIES, GROWL_TITLE)
+                        NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES, GROWL, GROWL_PRIORITIES, GROWL_TITLE,
+                        URLENCODE, JSON, XML)
 from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
 
@@ -245,3 +247,48 @@ class GrowlNotificationForm(EditNotificationForm):
         self.growl_title.data = self.populate_from_setting(id, 'growl_title')
         self.growl_priority.data = self.populate_from_setting(id, 'growl_priority')
 
+
+class CustomValueForm(Form):
+    custom_key = TextField(label=None)
+    custom_value = TextField(label=None)
+
+class CustomPostForm(EditNotificationForm):
+    custom_url = TextField(u'POST URL', [Required(), Length(max=255)], description=u'URL to POST data to (ex: www.alarmdecoder.com)')
+    custom_path = TextField(u'POST Path', [Required(), Length(max=255)], description=u'Path to post variables to (ex: /publicapi/add)')
+    is_ssl = BooleanField(u'SSL?', default=False, description=u'Is the URL SSL or No?')
+    post_type = RadioField(u'POST Type', choices=[(URLENCODE, 'urlencoded'), (JSON, 'JSON'), (XML, 'XML')], default=URLENCODE, coerce=int)
+
+    custom_values = FieldList(FormField(CustomValueForm), validators=[Optional()], label=None)
+    add_field = ButtonField(u'Add Field', onclick='addField();')
+
+    buttons = FormField(NotificationButtonForm)
+
+    def populate_settings(self, settings, id=None):
+        EditNotificationForm.populate_settings(self, settings, id)
+
+        settings['custom_url'] = self.populate_setting('custom_url', self.custom_url.data)
+        settings['custom_path'] = self.populate_setting('custom_path', self.custom_path.data)
+        settings['is_ssl'] = self.populate_setting('is_ssl', self.is_ssl.data)
+        settings['post_type'] = self.populate_setting('post_type', self.post_type.data)
+        settings['custom_values'] = self.populate_setting('custom_values', self.custom_values.data)
+
+    def populate_from_settings(self, id):
+        EditNotificationForm.populate_from_settings(self, id)
+
+        self.custom_url.data = self.populate_from_setting(id, 'custom_url')
+        self.custom_path.data = self.populate_from_setting(id, 'custom_path')
+        self.is_ssl.data = self.populate_from_setting(id, 'is_ssl')
+        self.post_type.data = self.populate_from_setting(id, 'post_type')
+
+        custom = self.populate_from_setting(id, 'custom_values')
+
+        if custom is not None:
+            custom = ast.literal_eval(custom)
+            custom = dict((str(i['custom_key']), i['custom_value']) for i in custom)
+
+            for key, value in custom.iteritems():
+                CVForm = CustomValueForm()
+                CVForm.custom_key = key
+                CVForm.custom_value = value
+
+                self.custom_values.append_entry(CVForm)

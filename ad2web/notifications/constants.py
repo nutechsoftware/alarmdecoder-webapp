@@ -62,6 +62,7 @@ TWILIO = 3
 NMA = 4
 PROWL = 5
 GROWL = 6
+CUSTOM = 7
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
@@ -71,6 +72,7 @@ NOTIFICATION_TYPES = {
     NMA: 'NMA',
     PROWL: 'prowl',
     GROWL: 'growl',
+    CUSTOM: 'custom'
 }
 
 NOTIFICATIONS = {
@@ -80,7 +82,8 @@ NOTIFICATIONS = {
     TWILIO: ('twilio', u'Twilio'),
     NMA: ('NMA', u'NotifyMyAndroid'),
     PROWL: ('prowl', u'Prowl'),
-    GROWL: ('growl', u'Growl')
+    GROWL: ('growl', u'Growl'),
+    CUSTOM: ('custom', u'Custom')
 }
 
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
@@ -164,3 +167,15 @@ GROWL_PRIORITIES = {
     EMERGENCY: (2, u'EMERGENCY')
 }
 
+URLENCODE = 0
+JSON = 1
+XML = 2
+
+CUSTOM_USER_AGENT = "AlarmDecoder/v1.0"
+CUSTOM_METHOD = "POST"
+
+CUSTOM_CONTENT_TYPES = {
+    URLENCODE: "application/x-www-form-urlencoded",
+    JSON: "application/json",
+    XML: "application/xml"
+}

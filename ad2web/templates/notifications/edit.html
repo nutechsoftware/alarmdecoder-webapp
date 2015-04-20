@@ -7,7 +7,22 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+    var iCnt = 0;
     $(document).ready(function() {
+        var inputs = document.getElementsByTagName('input');
+        for( var inputCnt = 0; inputCnt < inputs.length; inputCnt++)
+        {
+            if( inputs[inputCnt].type == 'text' && inputs[inputCnt].name.indexOf("custom_key") != -1 )
+                iCnt++;
+        }
+
+        $('#custom_values').css("list-style-type", "none");
+        for( var cnt = 0; cnt < iCnt; cnt++ )
+        {
+            $("label[for='custom_values-" + cnt + "']").hide();
+            $("label[for='custom_values-" + cnt + "-csrf_token']").hide();
+        }
+
         createFormTooltip('#description', 'Name of notification for display in list of notifications.');
 
         if( '{{ TYPES[notification.type] }}' == 'email' )
@@ -27,7 +42,69 @@
             createFormTooltip('#password', 'The password for the source address.');
             createFormTooltip('#destination', 'The address you would like to send messages to.');
         }
+        if( '{{ TYPES[notification.type] }}' == 'pushover' )
+        {
+            createFormTooltip('#token', 'Your pushover application API Token');
+            createFormTooltip('#user_key', 'Your user or group key');
+            createFormTooltip('#priority', 'Message Priority');
+            createFormTooltip('#title', 'Title of your Message');
+        }
+        if( '{{ TYPES[notification.type] }}' == 'twilio' )
+        {
+            createFormTooltip('#account_sid', 'The Twilio Account SID for this User.');
+            createFormTooltip('#auth_token', 'Your Twilio User Auth Token.');
+            createFormTooltip('#number_to', 'Number to send SMS to');
+            createFormTooltip('#number_from', 'Number SMS comes from - Must be a valid Twilio phone number.');
+        }
+        if( '{{ TYPES[notification.type] }}' == 'NMA' )
+        {
+            createFormTooltip('#api_key', 'The NotifyMyAndroid API Key');
+            createFormTooltip('#app_name', 'The Application Name to show in notifications.');
+            createFormTooltip('#nma_priority', 'Message Priority');
+        }
+        if( '{{ TYPES[notification.type] }}' == 'prowl')
+        {
+            createFormTooltip('#prowl_api_key', 'Your Prowl API Key');
+            createFormTooltip('#prowl_app_name', 'Application Name to show in notifications.');
+            createFormTooltip('#prowl_priority', 'Prowl Message Priority');
+        }
+        if( '{{ TYPES[notification.type] }}' == 'growl' )
+        {
+            createFormTooltip('#growl_hostname', 'Growl server to send notification to');
+            createFormTooltip('#growl_port', 'Growl server listen port');
+            createFormTooltip('#growl_password', 'The password for the growl server');
+            createFormTooltip('#growl_title', 'Notification Title');
+            createFormTooltip('#growl_priority', 'Growl Message Priority');
+        }
+        if( '{{ TYPES[notification.type] }}' == 'custom' )
+        {
+            createFormTooltip('#custom_url', 'The URL to POST data to.');
+            createFormTooltip('#custom_path', 'The Path on the server to POST to.');
+            createFormTooltip('#is_ssl', 'HTTP or HTTPS?');
+            createFormTooltip('#post_type', 'Does the URL expect urlencode, json, or xml data?');
+            createFormTooltip('#add_field', 'Click me to add custom fields to notification.');
+        }
+
+        $(document.body).on('click', '.remove_field', function(e) {
+            e.preventDefault();
+            $(this).parent('div').remove();
+            iCnt--;
+        });
+        $(document.body).on('touchend', '.remove_field', function(e) {
+            e.preventDefault();
+            $(this).parent('div').remove();
+            iCnt--;
+        });
+
     });
+
+function addField()
+{
+    var newInput = '<div class="control-group"><label for="custom_values-' + iCnt + '-custom_key" style="display: inline-block;" class="control-label">Custom Key&nbsp;</label><input type="text" id="custom_values-' + iCnt + '-custom_key" name="custom_values-' + iCnt + '-custom_key"/>&nbsp;<label for="custom_values-' + iCnt + '-custom_value" style="display: inline-block;" class="control-label">Custom Value&nbsp;</label><input type="text" id="custom_values-' + iCnt + '-custom_value" name="custom_values-' + iCnt + '-custom_value"/>&nbsp;<a href="#" id="remove_field' + iCnt + '" class="remove_field">Remove</a></div>';
+    $('#add_field-group').before(newInput);
+    iCnt++;
+}
+
 </script>
 {% endblock %}
 

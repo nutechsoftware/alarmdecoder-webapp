@@ -12,6 +12,9 @@ from twilio.rest import TwilioRestClient
 import time
 
 from xml.dom.minidom import parseString
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import tostring
+import ast
 
 #https connection support - used for nma and prowl, also future POST to custom url
 try:
@@ -37,7 +40,7 @@ import gntp.notifier
 from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, NMA, NMA_URL, NMA_PATH, NMA_EVENT, NMA_METHOD,
                         NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
-                        GROWL_PRIORITIES, GROWL)
+                        GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -392,6 +395,71 @@ class GrowlNotification(BaseNotification):
             current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_status))
             raise Exception('Growl Notification Failed: {0}' . format(growl_status))
 
+class CustomNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+        self.id = obj.id
+        self.description = obj.description
+        self.url = obj.get_setting('custom_url')
+        self.path = obj.get_setting('custom_path')
+        self.is_ssl = obj.get_setting('is_ssl')
+        self.post_type = obj.get_setting('post_type')
+        self.custom_values = obj.get_setting('custom_values')
+        self.content_type = CUSTOM_CONTENT_TYPES[self.post_type]
+
+        self.headers = {
+            'User-Agent': CUSTOM_USER_AGENT,
+            'Content-type': self.content_type
+        }
+
+    def _dict_to_xml(self,tag, d):
+        el = Element(tag)
+        for key, val in d.items():
+            child = Element(key)
+            child.text = str(val)
+            el.append(child)
+
+        return tostring(el)
+
+    def _dict_to_json(self, d):
+        return json.dumps(d)
+
+    def _do_post(self, data):
+        if self.is_ssl:
+            http_handler = HTTPSConnection(self.url)
+        else:
+            http_handler = HTTPConnection(self.url)
+
+        http_handler.request(CUSTOM_METHOD, self.path, headers=self.headers, body=data)
+        http_response = http_handler.getresponse()
+
+        if http_response.status == 200:
+            return True
+        else:
+            current_app.logger.info('Event Custom Notification Failed: {0}'. format(http_response.reason))
+            raise Exception('Custom Notification Failed: {0}' . format(http_response.reason))
+
+    def send(self, type, text):
+        self.msg_to_send = text
+
+        self.custom_values = ast.literal_eval(self.custom_values)
+        notify_data = dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values)
+        notify_data['message'] = self.msg_to_send
+        notify_data['sender'] = 'AlarmDecoder WebApp'
+
+        result = False
+
+        if self.post_type == URLENCODE:
+           result =  self._do_post(urlencode(notify_data))
+
+        if self.post_type == XML:
+           result =  self._do_post(self._dict_to_xml('notification', notify_data))
+
+        if self.post_type == JSON:
+            result = self._do_post(self._dict_to_json(notify_data) )
+
+        return result
+
 TYPE_MAP = {
     EMAIL: EmailNotification,
     GOOGLETALK: GoogleTalkNotification,
@@ -399,5 +467,6 @@ TYPE_MAP = {
     TWILIO: TwilioNotification,
     NMA: NMANotification,
     PROWL: ProwlNotification,
-    GROWL: GrowlNotification
+    GROWL: GrowlNotification,
+    CUSTOM: CustomNotification
 }
