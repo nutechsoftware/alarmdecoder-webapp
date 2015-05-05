@@ -156,6 +156,9 @@ class EmailNotification(BaseNotification):
         self.password = obj.get_setting('password')
 
     def send(self, type, text):
+        message_timestamp = time.ctime(time.time())
+        text = text + " Message Sent at: " + message_timestamp
+
         msg = MIMEText(text)
 
         msg['Subject'] = self.subject
@@ -186,7 +189,8 @@ class GoogleTalkNotification(BaseNotification):
         self.client = None
 
     def send(self, type, text):
-        self.msg_to_send = text
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text + " Message Sent at: " + message_timestamp
         self.client = sleekxmpp.ClientXMPP(self.source, self.password)
         self.client.add_event_handler("session_start", self._send)
 
@@ -246,7 +250,8 @@ class TwilioNotification(BaseNotification):
         self.number_from = obj.get_setting('number_from')
 
     def send(self, type, text):
-        self.msg_to_send = text
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text + " Message Sent at: " + message_timestamp
 
         try:
             client = TwilioRestClient(self.account_sid, self.auth_token)
@@ -265,7 +270,8 @@ class NMANotification(BaseNotification):
         self.priority = obj.get_setting('nma_priority')
 
     def send(self, type, text):
-        self.msg_to_send = text[:10000].encode('utf8')
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
         self.event = NMA_EVENT.encode('utf8')
         self.content_type = NMA_CONTENT_TYPE
 
@@ -331,7 +337,8 @@ class ProwlNotification(BaseNotification):
         }
 
     def send(self, type, text):
-        self.msg_to_send = text[:10000].encode('utf8')
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
 
         notify_data = {
             'apikey': self.api_key,
@@ -376,7 +383,8 @@ class GrowlNotification(BaseNotification):
         )
         
     def send(self, type, text):
-        self.msg_to_send = text
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text + " Message Sent at: " + message_timestamp
 
         growl_status = self.growl.register()
         if growl_status == True:
@@ -446,6 +454,7 @@ class CustomNotification(BaseNotification):
         notify_data = dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values)
         notify_data['message'] = self.msg_to_send
         notify_data['sender'] = 'AlarmDecoder WebApp'
+        notify_data['time'] = time.ctime(time.time())
 
         result = False
 
