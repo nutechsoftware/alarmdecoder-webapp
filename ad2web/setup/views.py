@@ -92,6 +92,9 @@ def local():
     else:
         form = LocalDeviceFormUSB()
         usb_devices = _iterate_usb(device_search_path)
+        if not usb_devices:
+            flash('No devices found - please make sure your AD2USB is plugged into a USB Port and refresh the page.', 'error')
+
         form.device_path.choices = [(usb_devices[i], usb_devices[i]) for i in usb_devices]
 
     if not form.is_submitted():
