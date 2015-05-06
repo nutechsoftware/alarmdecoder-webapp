@@ -65,7 +65,11 @@
                 <td>{{ user.status }}</td>
                 <td>{{ user.role }}</td>
                 <td>{{ user.created_time.strftime('%m-%d-%Y %H:%m') }}</td>
-                <td><a href="{{ url_for('admin.remove', user_id=user.id)}}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a></td>
+                <td>
+                    {% if user.id != 1 %}
+                    <a href="{{ url_for('admin.remove', user_id=user.id)}}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </table>
