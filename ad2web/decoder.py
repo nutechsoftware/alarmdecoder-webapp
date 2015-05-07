@@ -92,7 +92,6 @@ class Decoder(object):
             self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
             self._notifier_system = None
-            self._camera_thread = CameraChecker(self)
 
     def start(self):
         """
@@ -165,6 +164,7 @@ class Decoder(object):
                 self.trigger_reopen_device = True
 
             self._notifier_system = NotificationSystem()
+            self._camera_thread = CameraChecker(self)
 
     def open(self):
         """
