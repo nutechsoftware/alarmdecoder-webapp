@@ -18,22 +18,25 @@ class CameraSystem(object):
         self._cameras = {}
         self._camera_ids = []
         self._image_bytes = {}
+        self._xml_path = os.path.join(os.getcwd(), 'ad2web', 'cameras', RECT_XML_FILE)
         self._init_cameras()
 
     def _init_cameras(self):
         for cam in Camera.query.all():
-            cam_info = [cam.username, cam.password, cam.get_jpg_url]
-            self._cameras[cam.id] = cam_info
+            self._cameras[cam.id] = [cam.username, cam.password, cam.get_jpg_url]
             self._image_bytes[cam.id] = ''
             self._camera_ids.append(cam.id)
+
+        current_app.jinja_env.globals['cameras'] = len(self._cameras)
 
     def get_camera_ids(self):
         return self._camera_ids
 
     def refresh_camera_ids(self):
-        del self._camera_ids[:]
-        for cam in Camera.query.all():
-            self._camera_ids.append(cam.id)
+        self._camera_ids = []
+        self._cameras.clear()
+
+        self._init_cameras()
 
     def write_image(self, id):
         if hascv2 == True:
@@ -44,7 +47,7 @@ class CameraSystem(object):
                 url_slash_index += 2
                 stream_url = self._cameras[id][JPG_URL][:url_slash_index] + user_pass + self._cameras[id][JPG_URL][url_slash_index:]
                 stream = urllib.urlopen(stream_url)
-                cascade = cv2.CascadeClassifier(RECT_XML_FILE)
+                cascade = cv2.CascadeClassifier(self._xml_path)
 
                 #read the camera stream, hopefully capture a picture
                 while self._image_bytes[id].find(FOOT) == -1:
@@ -71,11 +74,10 @@ class CameraSystem(object):
 
                     if len(rects) != 0:
                         for x, y, w, h in rects:
-                            cv2.rectangle(img, (x, y), (x+w, y+h), (127, 255, 0), 2)
+                            cv2.rectangle(img, (x, y), (x+w, y+h), (127, 255, 0), 1)
 
                     if not os.path.exists(CAMDIR):
                         os.makedirs(CAMDIR)
 
                     #write camera image to temp directory "/tmp/cameras/cam1.jpg" for Camera ID 1 by default
                     cv2.imwrite(CAMDIR + '/cam' + str(id) + '.jpg', img)
-
