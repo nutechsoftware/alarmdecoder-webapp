@@ -65,7 +65,9 @@
                             <li><a href="{{ url_for('update.index') }}" style="color: #86D47F;">Update available!</a></li>
                             {% endif %}
                             <li><a href="{{ url_for('keypad.index') }}">Keypad</a></li>
+                            {% if cameras is defined and cameras != 0 %}
                             <li><a href="{{ url_for('cameras.index') }}">Cameras</a></li>
+                            {% endif %}
                             <li><a href="{{ url_for('log.events') }}">Log</a></li>
                             <li><a href="{{ url_for('settings.index') }}">Settings</a></li>
                             <li><a href="{{ url_for('frontend.logout') }}">Log out</a></li>

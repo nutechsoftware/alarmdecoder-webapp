@@ -156,18 +156,22 @@ li {
 {% block body %}
 <div class="settings_wrapper">
     <div id="camera_tabs">
-        <ul>
-        {% for camera in camera_list %}
-            <li><a href="#{{camera.id}}">{{camera.name}}</a></li>
-        {% endfor %}
-        </ul>
-        {% for camera in camera_list %}
-            <div id="{{camera.id}}" style="text-align: center;">
-                <p>
-                <img id="cam_image{{camera.id}}" src="{{ url_for('static', filename='cameras/cam' + camera.id|string() + '.jpg' ) }}" />
-                </p>
-            </div>
-        {% endfor %}
+        {% if cameras is defined and cameras == 0 %}
+            No cameras available.
+        {% else %}
+            <ul>
+            {% for camera in camera_list %}
+                <li><a href="#{{camera.id}}">{{camera.name}}</a></li>
+            {% endfor %}
+            </ul>
+            {% for camera in camera_list %}
+                <div id="{{camera.id}}" style="text-align: center;">
+                    <p>
+                    <img id="cam_image{{camera.id}}" src="{{ url_for('static', filename='cameras/cam' + camera.id|string() + '.jpg' ) }}" />
+                    </p>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
 {% if buttons %}
     <div id="dialog" style="display: none;" title="Custom Buttons">
