@@ -84,8 +84,8 @@ def create_app(config=None, app_name=None, blueprints=None):
     try:
         signal.signal(signal.SIGINT, signal_handler)
 
-        decoder.start()
         decoder.init()
+        decoder.start()
 
     except Exception, err:
         app.logger.error("Error", exc_info=True)

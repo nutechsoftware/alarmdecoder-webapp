@@ -20,15 +20,14 @@ keypad = Blueprint('keypad', __name__, url_prefix='/keypad')
 def index():
     panel_mode = Setting.get_by_name('panel_mode').value
     custom_buttons = KeypadButton.query.filter_by(user_id=current_user.id).all()
-    camera_list = Camera.query.filter_by(user_id=current_user.id).all()
 
     if panel_mode is None:
-        return render_template('keypad/index.html', buttons=custom_buttons, cams=camera_list)
+        return render_template('keypad/index.html', buttons=custom_buttons)
 
     if panel_mode == DSC:
-        return render_template('keypad/dsc.html', buttons=custom_buttons, cams=camera_list)
+        return render_template('keypad/dsc.html', buttons=custom_buttons)
     else:
-        return render_template('keypad/index.html', buttons=custom_buttons, cams=camera_list)
+        return render_template('keypad/index.html', buttons=custom_buttons)
 
 @keypad.route('/button_index')
 @login_required

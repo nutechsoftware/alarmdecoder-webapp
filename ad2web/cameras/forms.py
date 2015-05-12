@@ -16,8 +16,8 @@ from ..widgets import ButtonField
 
 class CameraForm(Form):
     name = TextField(u'Name', [Required(), Length(max=32)])
-    embed_code = TextField(u'HTML Code', [Required(), Length(max=255)])
     get_jpg_url = TextField(u'Snapshot URL', [Length(max=255)])
-
+    username = TextField(u'Auth Username', [Length(max=32)])
+    password = TextField(u'Auth Password', [Length(max=255)])
     submit = SubmitField(u'Save')
     cancel = ButtonField(u'Cancel', onclick="location.href='/cameras/camera_list'")
