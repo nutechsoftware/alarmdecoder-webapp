@@ -9,7 +9,7 @@ from wtforms import (Field, ValidationError, HiddenField, TextField, HiddenField
         FileField, DecimalField, SelectField, BooleanField, SelectMultipleField,
         FormField)
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
-        URL, AnyOf, Optional)
+        URL, AnyOf, Optional, NoneOf)
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, BAUDRATES, DEFAULT_BAUDRATES
 from ..validators import PathExists, Hex
 from ..utils import STRING_LEN, PASSWORD_LEN_MIN, PASSWORD_LEN_MAX
@@ -44,7 +44,7 @@ class SSLForm(Form):
 class SSLHostForm(Form):
     config_path = TextField(u'SER2SOCK Configuration Path', [Required(), PathExists()], default='/etc/ser2sock')
     device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
-    device_port = IntegerField(u'Port', [Required(), NumberRange(1024, 65535)], description=u'', default=10000)
+    device_port = IntegerField(u'Port', [Required(), NumberRange(1024, 65535), NoneOf(values=[80,443,5000], message="The port value is reserved by other services.  Please choose another port.")], description=u'', default=10000)
     ssl = BooleanField(u'Use SSL?')
 
     buttons = FormField(SetupButtonForm)
