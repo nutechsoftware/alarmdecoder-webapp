@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+import chump
 
 ARM = 0
 DISARM = 1
@@ -56,15 +57,33 @@ EVENT_TYPES = {
 
 EMAIL = 0
 GOOGLETALK = 1
+PUSHOVER = 2
+TWILIO = 3
+NMA = 4
+PROWL = 5
+GROWL = 6
+CUSTOM = 7
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
     GOOGLETALK: 'googletalk',
+    PUSHOVER: 'pushover',
+    TWILIO: 'twilio',
+    NMA: 'NMA',
+    PROWL: 'prowl',
+    GROWL: 'growl',
+    CUSTOM: 'custom'
 }
 
 NOTIFICATIONS = {
     EMAIL: ('email', u'Email'),
     GOOGLETALK: ('googletalk', u'Google Talk'),
+    PUSHOVER: ('pushover', u'Pushover.net'),
+    TWILIO: ('twilio', u'Twilio'),
+    NMA: ('NMA', u'NotifyMyAndroid'),
+    PROWL: ('prowl', u'Prowl'),
+    GROWL: ('growl', u'Growl'),
+    CUSTOM: ('custom', u'Custom')
 }
 
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
@@ -84,3 +103,79 @@ SUBSCRIPTIONS = OrderedDict([
     (BOOT, 'The AlarmDecoder has rebooted?'),
     (RELAY_CHANGED, 'A relay has been changed?'),
 ])
+
+PUSHOVER_URL = "api.pushover.net:443"
+PUSHOVER_PATH = "/1/messages.json"
+
+LOWEST = 0
+LOW = 1
+NORMAL = 2
+HIGH = 3
+EMERGENCY = 4
+
+PUSHOVER_PRIORITIES = {
+    LOWEST: (chump.LOWEST, u'LOWEST'),
+    LOW: (chump.LOW, u'LOW'),
+    NORMAL: (chump.NORMAL, u'NORMAL'),
+    HIGH: (chump.HIGH, u'HIGH'),
+    EMERGENCY: (chump.EMERGENCY, u'EMERGENCY')
+}
+
+NMA_URL = "www.notifymyandroid.com"
+NMA_PATH = "/publicapi/notify"
+
+NMA_USER_AGENT = "NMA/v1.0"
+NMA_EVENT = "AlarmDecoder: Alarm Event"
+NMA_METHOD = "POST"
+NMA_CONTENT_TYPE = "text/html"
+NMA_HEADER_CONTENT_TYPE = "application/x-www-form-urlencoded"
+
+NMA_PRIORITIES = {
+    LOWEST: (-2, u'VERY LOW'),
+    LOW: (-1, u'MODERATE'),
+    NORMAL: (0, u'NORMAL'),
+    HIGH: (1, u'HIGH'),
+    EMERGENCY: (2, u'EMERGENCY')
+}
+
+PROWL_URL = "api.prowlapp.com"
+PROWL_PATH = "/publicapi/add"
+
+PROWL_USER_AGENT = "PROWL/v1.0"
+PROWL_EVENT = "AlarmDecoder: Alarm Event"
+PROWL_METHOD = "POST"
+PROWL_CONTENT_TYPE = "text/html"
+PROWL_HEADER_CONTENT_TYPE = "application/x-www-form-urlencoded"
+
+PROWL_PRIORITIES = {
+    LOWEST: (-2, u'VERY LOW'),
+    LOW: (-1, u'MODERATE'),
+    NORMAL: (0, u'NORMAL'),
+    HIGH: (1, u'HIGH'),
+    EMERGENCY: (2, u'EMERGENCY')
+}
+
+GROWL_APP_NAME = 'AlarmDecoder'
+GROWL_TITLE = 'AlarmDecoder: Alarm Event'
+GROWL_DEFAULT_NOTIFICATIONS = ["AlarmDecoder", "AlarmDecoder: Alarm Event"]
+
+GROWL_PRIORITIES = {
+    LOWEST: (-2, u'VERY LOW'),
+    LOW: (-1, u'MODERATE'),
+    NORMAL: (0, u'NORMAL'),
+    HIGH: (1, u'HIGH'),
+    EMERGENCY: (2, u'EMERGENCY')
+}
+
+URLENCODE = 0
+JSON = 1
+XML = 2
+
+CUSTOM_USER_AGENT = "AlarmDecoder/v1.0"
+CUSTOM_METHOD = "POST"
+
+CUSTOM_CONTENT_TYPES = {
+    URLENCODE: "application/x-www-form-urlencoded",
+    JSON: "application/json",
+    XML: "application/xml"
+}

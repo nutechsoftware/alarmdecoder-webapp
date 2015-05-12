@@ -6,8 +6,42 @@ from email.mime.text import MIMEText
 import sleekxmpp
 import json
 import re
+from chump import Application
+import twilio
+from twilio.rest import TwilioRestClient
+import time
 
-from .constants import EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES
+from xml.dom.minidom import parseString
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import tostring
+import ast
+
+#https connection support - used for nma and prowl, also future POST to custom url
+try:
+    from http.client import HTTPSConnection
+except ImportError:
+    from httplib import HTTPSConnection
+
+
+#normal http connection support (future POST to custom url)
+try:
+    from http.client import HTTPConnection
+except ImportError:
+    from httplib import HTTPConnection
+
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
+
+import logging
+import gntp.notifier
+
+from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, NMA, NMA_URL, NMA_PATH, NMA_EVENT, NMA_METHOD,
+                        NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
+                        PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
+                        GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD)
+
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
 from ..log.models import EventLogEntry
@@ -113,6 +147,7 @@ class EmailNotification(BaseNotification):
         self.description = obj.description
         self.source = obj.get_setting('source')
         self.destination = obj.get_setting('destination')
+        self.subject = obj.get_setting('subject')
         self.server = obj.get_setting('server')
         self.port = obj.get_setting('port', default=25)
         self.tls = obj.get_setting('tls', default=False)
@@ -121,9 +156,12 @@ class EmailNotification(BaseNotification):
         self.password = obj.get_setting('password')
 
     def send(self, type, text):
+        message_timestamp = time.ctime(time.time())
+        text = text + " Message Sent at: " + message_timestamp
+
         msg = MIMEText(text)
 
-        msg['Subject'] = 'AlarmDecoder: Alarm Event'
+        msg['Subject'] = self.subject
         msg['From'] = self.source
         recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
         msg['To'] = ', '.join(recipients)
@@ -151,7 +189,8 @@ class GoogleTalkNotification(BaseNotification):
         self.client = None
 
     def send(self, type, text):
-        self.msg_to_send = text
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text + " Message Sent at: " + message_timestamp
         self.client = sleekxmpp.ClientXMPP(self.source, self.password)
         self.client.add_event_handler("session_start", self._send)
 
@@ -165,8 +204,278 @@ class GoogleTalkNotification(BaseNotification):
         self.client.send_message(mto=self.destination, mbody=self.msg_to_send)
         self.client.disconnect(wait=True)
 
+class PushoverNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+
+        self.id = obj.id
+        self.description = obj.description
+        self.token = obj.get_setting('token')
+        self.user_key = obj.get_setting('user_key')
+        self.priority = obj.get_setting('priority')
+        self.title = obj.get_setting('title')
+
+    def send(self, type, text):
+        self.msg_to_send = text
+
+        app = Application(self.token)
+        if app.is_authenticated:
+            user = app.get_user(self.user_key)
+
+            if user.is_authenticated:
+                message = user.create_message(
+                    title=self.title,
+                    message=self.msg_to_send,
+                    html=True,
+                    priority=self.priority,
+                    timestamp=int(time.time())
+                )
+
+                is_sent = message.send()
+
+                if is_sent != True:
+                    current_app.logger.info("Pushover Notification Failed")
+                    raise Exception('Pushover Notification Failed')
+
+
+class TwilioNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+
+        self.id = obj.id
+        self.description = obj.description
+        self.account_sid = obj.get_setting('account_sid')
+        self.auth_token = obj.get_setting('auth_token')
+        self.number_to = obj.get_setting('number_to')
+        self.number_from = obj.get_setting('number_from')
+
+    def send(self, type, text):
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text + " Message Sent at: " + message_timestamp
+
+        try:
+            client = TwilioRestClient(self.account_sid, self.auth_token)
+            message = client.messages.create(to=self.number_to, from_=self.number_from, body=self.msg_to_send)
+        except twilio.TwilioRestException as e:
+            current_app.logger.info('Event Twilio Notification Failed: {0}' . format(message))
+            raise Exception('Twilio Notification Failed: {0}' . format(message))
+
+class NMANotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+        self.id = obj.id
+        self.description = obj.description
+        self.api_key = obj.get_setting('api_key')
+        self.app_name = obj.get_setting('app_name')
+        self.priority = obj.get_setting('nma_priority')
+
+    def send(self, type, text):
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
+        self.event = NMA_EVENT.encode('utf8')
+        self.content_type = NMA_CONTENT_TYPE
+
+        notify_data = {
+            'application': self.app_name,
+            'description': self.msg_to_send,
+            'event': self.event,
+            'priority': self.priority,
+            'content-type': self.content_type,
+            'apikey': self.api_key
+        }
+
+        headers = { 'User-Agent': NMA_USER_AGENT }
+        headers['Content-type'] = NMA_HEADER_CONTENT_TYPE
+        http_handler = HTTPSConnection(NMA_URL)
+        http_handler.request(NMA_METHOD, NMA_PATH, urlencode(notify_data), headers)
+
+        http_response = http_handler.getresponse()
+
+        try:
+            res = self._parse_response(http_response.read())
+        except Exception as e:
+            res = {
+                'type': 'NMA Notify Error',
+                'code': 800,
+                'message': str(e)
+            }
+            current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(str(e)))
+            raise Exception('NotifyMyAndroid Failed: {0}' . format(str(e)))
+
+    def _parse_response(self, response):
+        root = parseString(response).firstChild
+
+        for elem in root.childNodes:
+            if elem.nodeType == elem.TEXT_NODE: continue
+            if elem.tagName == 'success':
+                res = dict(list(elem.attributes.items()))
+                res['message'] = ""
+                res['type'] = elem.tagName
+
+                return res
+
+            if elem.tagName == 'error':
+                res = dict(list(elem.attributes.items()))
+                res['message'] = elem.firstChild.nodeValue
+                res['type'] = elem.tagName
+                current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(res['message']))
+                raise Exception(res['message'])
+
+class ProwlNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+        self.id = obj.id
+        self.description = obj.description
+        self.api_key = obj.get_setting('prowl_api_key')
+        self.app_name = obj.get_setting('prowl_app_name')[:256].encode('utf8')
+        self.priority = obj.get_setting('prowl_priority')
+        self.event = PROWL_EVENT[:1024].encode('utf8')
+        self.content_type = PROWL_CONTENT_TYPE
+        self.headers = {
+            'User-Agent': PROWL_USER_AGENT,
+            'Content-type': PROWL_HEADER_CONTENT_TYPE
+        }
+
+    def send(self, type, text):
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
+
+        notify_data = {
+            'apikey': self.api_key,
+            'application': self.app_name,
+            'event': self.event,
+            'description': self.msg_to_send,
+            'priority': self.priority
+        }
+
+        http_handler = HTTPSConnection(PROWL_URL)
+        http_handler.request(PROWL_METHOD, PROWL_PATH, headers=self.headers,body=urlencode(notify_data))
+
+        http_response = http_handler.getresponse()
+
+        if http_response.status == 200:
+            return True
+        else:
+            current_app.logger.info('Event Prowl Notification Failed: {0}'. format(http_response.reason))
+            raise Exception('Prowl Notification Failed: {0}' . format(http_response.reason))
+
+class GrowlNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+        self.id = obj.id
+        self.description = obj.description
+        self.priority = obj.get_setting('growl_priority')
+        self.hostname = obj.get_setting('growl_hostname')
+        self.port = obj.get_setting('growl_port')
+        self.password = obj.get_setting('growl_password')
+
+        if self.password == '':
+            self.password = None
+
+        self.title = obj.get_setting('growl_title')
+
+        self.growl = gntp.notifier.GrowlNotifier(
+            applicationName = GROWL_APP_NAME,
+            notifications = GROWL_DEFAULT_NOTIFICATIONS,
+            defaultNotifications = GROWL_DEFAULT_NOTIFICATIONS,
+            hostname = self.hostname,
+            password = self.password
+        )
+        
+    def send(self, type, text):
+        message_timestamp = time.ctime(time.time())
+        self.msg_to_send = text + " Message Sent at: " + message_timestamp
+
+        growl_status = self.growl.register()
+        if growl_status == True:
+            growl_notify_status = self.growl.notify(
+                noteType = GROWL_DEFAULT_NOTIFICATIONS[0],
+                title = self.title,
+                description = self.msg_to_send,
+                priority = self.priority,
+                sticky = False
+            )
+            if growl_notify_status != True:
+                current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_notify_status))
+                raise Exception('Growl Notification Failed: {0}' . format(growl_notify_status))
+
+        else:
+            current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_status))
+            raise Exception('Growl Notification Failed: {0}' . format(growl_status))
+
+class CustomNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+        self.id = obj.id
+        self.description = obj.description
+        self.url = obj.get_setting('custom_url')
+        self.path = obj.get_setting('custom_path')
+        self.is_ssl = obj.get_setting('is_ssl')
+        self.post_type = obj.get_setting('post_type')
+        self.custom_values = obj.get_setting('custom_values')
+        self.content_type = CUSTOM_CONTENT_TYPES[self.post_type]
+
+        self.headers = {
+            'User-Agent': CUSTOM_USER_AGENT,
+            'Content-type': self.content_type
+        }
+
+    def _dict_to_xml(self,tag, d):
+        el = Element(tag)
+        for key, val in d.items():
+            child = Element(key)
+            child.text = str(val)
+            el.append(child)
+
+        return tostring(el)
+
+    def _dict_to_json(self, d):
+        return json.dumps(d)
+
+    def _do_post(self, data):
+        if self.is_ssl:
+            http_handler = HTTPSConnection(self.url)
+        else:
+            http_handler = HTTPConnection(self.url)
+
+        http_handler.request(CUSTOM_METHOD, self.path, headers=self.headers, body=data)
+        http_response = http_handler.getresponse()
+
+        if http_response.status == 200:
+            return True
+        else:
+            current_app.logger.info('Event Custom Notification Failed: {0}'. format(http_response.reason))
+            raise Exception('Custom Notification Failed: {0}' . format(http_response.reason))
+
+    def send(self, type, text):
+        self.msg_to_send = text
+
+        self.custom_values = ast.literal_eval(self.custom_values)
+        notify_data = dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values)
+        notify_data['message'] = self.msg_to_send
+        notify_data['sender'] = 'AlarmDecoder WebApp'
+        notify_data['time'] = time.ctime(time.time())
+
+        result = False
+
+        if self.post_type == URLENCODE:
+           result =  self._do_post(urlencode(notify_data))
+
+        if self.post_type == XML:
+           result =  self._do_post(self._dict_to_xml('notification', notify_data))
+
+        if self.post_type == JSON:
+            result = self._do_post(self._dict_to_json(notify_data) )
+
+        return result
 
 TYPE_MAP = {
     EMAIL: EmailNotification,
-    GOOGLETALK: GoogleTalkNotification
+    GOOGLETALK: GoogleTalkNotification,
+    PUSHOVER: PushoverNotification,
+    TWILIO: TwilioNotification,
+    NMA: NMANotification,
+    PROWL: ProwlNotification,
+    GROWL: GrowlNotification,
+    CUSTOM: CustomNotification
 }
