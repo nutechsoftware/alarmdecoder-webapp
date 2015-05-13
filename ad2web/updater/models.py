@@ -15,7 +15,7 @@ from pip.locations import build_prefix, src_prefix
 from pip.index import PackageFinder
 from pip.req import InstallRequirement, RequirementSet
 from pip.exceptions import DistributionNotFound
-from pkg_resources import working_set, Requirement, VersionConflict
+from pkg_resources import working_set, Requirement, VersionConflict, WorkingSet
 # Handle annoying previous build error in newer versions of pip.
 try:
     from pip.exceptions import PreviousBuildDirError
@@ -605,8 +605,16 @@ class RequirementsUpdater(object):
             return True, None
 
         try:
+            parsed_req = Requirement.parse(requirement)
+
             # Parse requirement
             requirement = InstallRequirement.from_line(str(requirement), None)
+
+            # Handle previously installed, out-of-date libs.
+            dist = working_set.find(Requirement.parse(parsed_req.project_name))
+            if dist is not None and dist not in parsed_req:
+                requirement.uninstall(auto_confirm=True)
+                requirement.commit_uninstall()
 
             # Build the requirement set.  We're doing this one at a time so we can actually detect
             # which ones fail.
@@ -627,11 +635,12 @@ class RequirementsUpdater(object):
             # Finally, install the requirement.
             requirement_set.install(self.local_options, [])
 
+            # Make sure we don't try to install it a second time.
+            working_set.require(requirement.name)
+
         except Exception, err:
             return False, err
 
-        # Make sure we don't try to install it a second time.
-        working_set.require(requirement.name)
 
         return True, None
 
@@ -641,7 +650,7 @@ class RequirementsUpdater(object):
 
             self.requirements_needed = []
             for r in self.requirement_list:
-                if self._check_requirement(r) is not None:
+                if self._check_requirement(r) is None:
                     self.requirements_needed.append(r)
 
         except IOError, err:
@@ -656,7 +665,12 @@ class RequirementsUpdater(object):
     def _check_requirement(self, requirement):
         dist = None
         try:
-            dist = working_set.find(Requirement.parse(requirement))
+            req = Requirement.parse(requirement)
+
+            # Check for out-of-date versions.
+            dist = working_set.find(Requirement.parse(req.project_name))
+            if dist not in req:
+                dist = None
         except (ValueError, VersionConflict), err:
             pass
 
