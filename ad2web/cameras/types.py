@@ -2,10 +2,10 @@
 
 from flask import current_app
 import urllib
-import numpy as np
 import os
 try:
     import cv2
+    import numpy as np
     hascv2 = True
 except ImportError:
     hascv2 = False
