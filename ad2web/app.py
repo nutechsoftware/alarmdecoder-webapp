@@ -14,8 +14,21 @@ from flask.ext.script import Manager
 from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SerialDevice
 
+try:
+    from .updater.models import RequirementsUpdater
+
+    requirements_updater = RequirementsUpdater()
+    requirements_updater.refresh()
+
+    if requirements_updater.needs_update:
+        requirements_updater.update()
+
+except Exception, err:
+    print 'Error running pre-exec requirements update: {0}'.format(err)
+
 from .config import DefaultConfig
 from .decoder import decodersocket, Decoder, create_decoder_socket
+from .updater.views import updater
 from .user import User, user
 from .settings import settings
 from .frontend import frontend
@@ -29,7 +42,6 @@ from .zones import zones
 from .settings.models import Setting
 from .setup.constants import SETUP_COMPLETE, SETUP_STAGE_ENDPOINT, SETUP_ENDPOINT_STAGE
 from .setup import setup
-from .updater import updater
 from .extensions import db, mail, cache, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
 from .cameras import cameras

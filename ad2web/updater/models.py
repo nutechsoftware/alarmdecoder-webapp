@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 import shutil
 
 import sh
@@ -16,11 +17,31 @@ from pip.index import PackageFinder
 from pip.req import InstallRequirement, RequirementSet
 from pip.exceptions import DistributionNotFound
 from pkg_resources import working_set, Requirement, VersionConflict, WorkingSet
+
 # Handle annoying previous build error in newer versions of pip.
 try:
     from pip.exceptions import PreviousBuildDirError
 except ImportError:
     PreviousBuildDirError = None
+
+try:
+    current_app._get_current_object()
+    running_in_context = True
+except RuntimeError:
+    running_in_context = False
+
+def _print(*args, **kwargs):
+    fmt, arguments = args[0], args[1:]
+    print fmt % arguments
+
+def _log(*args, **kwargs):
+    logLevel = kwargs.pop('logLevel', logging.INFO)
+
+    if running_in_context:
+        current_app.logger.log(logLevel, *args, **kwargs)
+    else:
+        _print(*args, **kwargs)
+
 
 class Updater(object):
     """
@@ -61,7 +82,7 @@ class Updater(object):
         """
         ret = {}
 
-        current_app.logger.info('Starting update process..')
+        _log('Starting update process..')
 
         if component_name is not None:
             component = self._components[component_name]
@@ -72,7 +93,7 @@ class Updater(object):
                 if component.needs_update():
                     ret[component_name] = component.update()
 
-        current_app.logger.info('Update process finished.')
+        _log('Update process finished.')
 
         return ret
 
@@ -161,12 +182,12 @@ class WebappUpdater(object):
 
         :returns: Returns the update results
         """
-        current_app.logger.info('WebappUpdater: starting..')
+        _log('WebappUpdater: starting..')
 
         ret = { 'status': 'FAIL', 'restart_required': False }
 
         if not self._enabled:
-            current_app.logger.info('WebappUpdater: disabled')
+            _log('WebappUpdater: disabled')
             return ret
 
         git_succeeded = False
@@ -185,7 +206,7 @@ class WebappUpdater(object):
             git_succeeded = False
 
         if not git_succeeded or not db_succeeded:
-            current_app.logger.info('WebappUpdater: failed - [{0},{1}]'.format(git_succeeded, db_succeeded))
+            _log('WebappUpdater: failed - [{0},{1}]'.format(git_succeeded, db_succeeded), logLevel=logging.ERROR)
 
             if not db_succeeded:
                 self._db_updater.downgrade(db_revision)
@@ -195,7 +216,7 @@ class WebappUpdater(object):
 
             return ret
 
-        current_app.logger.info('WebappUpdater: success')
+        _log('WebappUpdater: success')
 
         ret['status'] = 'PASS'
         ret['restart_required'] = True
@@ -290,10 +311,10 @@ class SourceUpdater(object):
 
         :returns: Returns the update results
         """
-        current_app.logger.info('SourceUpdater: starting..')
+        _log('SourceUpdater: starting..')
 
         if not self._enabled:
-            current_app.logger.info('SourceUpdater: disabled')
+            _log('SourceUpdater: disabled')
             return False
 
         git_succeeded = False
@@ -309,11 +330,11 @@ class SourceUpdater(object):
             git_succeeded = False
 
         if not git_succeeded or not requirements_succeeded:
-            current_app.logger.info('SourceUpdater: failed - [{0},{1}]'.format(git_succeeded, requirements_succeeded))
+            _log('SourceUpdater: failed - [{0},{1}]'.format(git_succeeded, requirements_succeeded), logLevel=logging.ERROR)
 
             return False
 
-        current_app.logger.info('SourceUpdater: success')
+        _log('SourceUpdater: success')
 
         return True
 
@@ -512,7 +533,7 @@ class DBUpdater(object):
         """
 
         if self._current_revision != self._newest_revision:
-            current_app.logger.info('DBUpdater: starting..')
+            _log('DBUpdater: starting..')
 
             try:
                 script_directory = ScriptDirectory.from_config(self._config)
@@ -524,19 +545,19 @@ class DBUpdater(object):
 
                 for rev in reversed(revision_list):
                     try:
-                        current_app.logger.info('Applying database revision: {0}'.format(rev))
+                        _log('Applying database revision: {0}'.format(rev))
                         command.upgrade(self._config, rev)
                     except sqlalchemy.exc.OperationalError, err:
                         if 'already exists' in str(err):
-                            current_app.logger.info('Table already exists.. stamping to revision.')
+                            _log('Table already exists.. stamping to revision.')
                             self._stamp_database(rev)
 
             except sqlalchemy.exc.OperationalError, err:
-                current_app.logger.error('DBUpdater: failure - {0}'.format(err))
+                _log('DBUpdater: failure - {0}'.format(err), logLevel=logging.ERROR)
 
                 return False
 
-            current_app.logger.info('DBUpdater: success')
+            _log('DBUpdater: success')
 
         return True
 
@@ -545,14 +566,14 @@ class DBUpdater(object):
             command.downgrade(self._config, rev)
 
         except sqlalchemy.exc.OperationalError, err:
-            current_app.logger.error('DBUpdater: failed to downgrade release: {0}'.format(err))
+            _log('DBUpdater: failed to downgrade release: {0}'.format(err), logLevel=logging.ERROR)
             raise err
 
     def _stamp_database(self, rev):
         try:
             command.stamp(self._config, rev)
         except sqlalchemy.exc.OperationalError, err:
-            current_app.logger.error('DBUpdater: stamp database - failure - {0}'.format(err))
+            _log('DBUpdater: stamp database - failure - {0}'.format(err), logLevel=logging.ERROR)
             raise err
 
     def _open(self):
@@ -585,15 +606,15 @@ class RequirementsUpdater(object):
         return bool(self.requirements_needed)
 
     def update(self):
-        current_app.logger.info('RequirementsUpdater: starting')
+        _log('RequirementsUpdater: starting')
 
         for r in self.requirements_needed:
             results, message = self._install_requirement(r)
             if not results:
-                current_app.logger.error('RequirementsUpdater: failure - {0} - {1}'.format(r, message))
+                _log('RequirementsUpdater: failure - {0} - {1}'.format(r, message), logLevel=logging.ERROR)
                 return False
 
-        current_app.logger.info('RequirementsUpdater: success')
+        _log('RequirementsUpdater: success')
 
         return True
 
