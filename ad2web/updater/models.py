@@ -32,7 +32,7 @@ except RuntimeError:
 
 def _print(*args, **kwargs):
     fmt, arguments = args[0], args[1:]
-    print fmt % arguments
+    print fmt.format(*arguments)
 
 def _log(*args, **kwargs):
     logLevel = kwargs.pop('logLevel', logging.INFO)
@@ -610,6 +610,7 @@ class RequirementsUpdater(object):
         _log('RequirementsUpdater: starting')
 
         for r in self.requirements_needed:
+            _log('RequirementsUpdater: installing requirement: {0}', r, logLevel=logging.DEBUG)
             results, message = self._install_requirement(r)
             if not results:
                 _log('RequirementsUpdater: failure - {0} - {1}'.format(r, message), logLevel=logging.ERROR)

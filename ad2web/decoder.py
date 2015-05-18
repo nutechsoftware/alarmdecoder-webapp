@@ -154,11 +154,11 @@ class Decoder(object):
             self.updater._components['webapp']._db_updater.refresh()
 
             if self.updater._components['webapp']._db_updater.needs_update:
-                current_app.logger.debug('Database needs updating!!!!')
+                current_app.logger.debug('Database needs updating!')
 
                 self.updater._components['webapp']._db_updater.update()
             else:
-                current_app.logger.debug('Database is good!!!!!!')
+                current_app.logger.debug('Database is good!')
 
             if device_type:
                 self.trigger_reopen_device = True
