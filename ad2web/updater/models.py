@@ -325,6 +325,7 @@ class SourceUpdater(object):
             self._git.merge('origin/{0}'.format(self.branch))
             git_succeeded = True
 
+            self._requirements_updater.refresh()
             requirements_succeeded = self._requirements_updater.update()
         except sh.ErrorReturnCode, err:
             git_succeeded = False
