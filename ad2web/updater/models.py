@@ -708,12 +708,19 @@ class RequirementsUpdater(object):
         return local_options
 
     def _get_package_finder(self):
-        from pip.download import PipSession
+        try:
+            from pip.download import PipSession
+            session = PipSession()
+        except ImportError:
+            session = None
+
         finder_options = {
             'find_links': [],
             'index_urls': ['http://pypi.python.org/simple/'],
-            'session': PipSession(),
         }
+
+        if session is not None:
+            finder_options['session'] = session
 
         # Handle pip 1.5 deprecating dependency_links and force it to process them for alarmdecoder/pyftdi.
         try:
