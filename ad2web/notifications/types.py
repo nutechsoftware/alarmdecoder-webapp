@@ -6,9 +6,20 @@ from email.mime.text import MIMEText
 import sleekxmpp
 import json
 import re
-from chump import Application
-import twilio
-from twilio.rest import TwilioRestClient
+try:
+    from chump import Application
+    have_chump = True
+except ImportError:
+    have_chump = False
+
+try:
+    import twilio
+    from twilio.rest import TwilioRestClient
+
+    have_twilio = True
+except ImportError:
+    have_twilio = False
+
 import time
 
 from xml.dom.minidom import parseString
@@ -35,7 +46,11 @@ except ImportError:
     from urllib import urlencode
 
 import logging
-import gntp.notifier
+try:
+    import gntp.notifier
+    have_gntp = True
+except ImportError:
+    have_gntp = False
 
 from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, NMA, NMA_URL, NMA_PATH, NMA_EVENT, NMA_METHOD,
                         NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
@@ -218,6 +233,9 @@ class PushoverNotification(BaseNotification):
     def send(self, type, text):
         self.msg_to_send = text
 
+        if not have_chump:
+            raise Exception('Missing Pushover library: chump')
+
         app = Application(self.token)
         if app.is_authenticated:
             user = app.get_user(self.user_key)
@@ -252,6 +270,9 @@ class TwilioNotification(BaseNotification):
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
         self.msg_to_send = text + " Message Sent at: " + message_timestamp
+
+        if have_twilio == False:
+            raise Exception('Missing Twilio library: twilio')
 
         try:
             client = TwilioRestClient(self.account_sid, self.auth_token)
@@ -374,17 +395,23 @@ class GrowlNotification(BaseNotification):
 
         self.title = obj.get_setting('growl_title')
 
-        self.growl = gntp.notifier.GrowlNotifier(
-            applicationName = GROWL_APP_NAME,
-            notifications = GROWL_DEFAULT_NOTIFICATIONS,
-            defaultNotifications = GROWL_DEFAULT_NOTIFICATIONS,
-            hostname = self.hostname,
-            password = self.password
-        )
+        if have_gntp:
+            self.growl = gntp.notifier.GrowlNotifier(
+                applicationName = GROWL_APP_NAME,
+                notifications = GROWL_DEFAULT_NOTIFICATIONS,
+                defaultNotifications = GROWL_DEFAULT_NOTIFICATIONS,
+                hostname = self.hostname,
+                password = self.password
+            )
+        else:
+            self.growl = None
         
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
         self.msg_to_send = text + " Message Sent at: " + message_timestamp
+
+        if not have_gntp:
+            raise Exception('Missing Growl library: gntp')
 
         growl_status = self.growl.register()
         if growl_status == True:

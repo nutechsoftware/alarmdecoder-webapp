@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-import chump
 
 ARM = 0
 DISARM = 1
@@ -114,11 +113,11 @@ HIGH = 3
 EMERGENCY = 4
 
 PUSHOVER_PRIORITIES = {
-    LOWEST: (chump.LOWEST, u'LOWEST'),
-    LOW: (chump.LOW, u'LOW'),
-    NORMAL: (chump.NORMAL, u'NORMAL'),
-    HIGH: (chump.HIGH, u'HIGH'),
-    EMERGENCY: (chump.EMERGENCY, u'EMERGENCY')
+    LOWEST: (-2, u'LOWEST'),
+    LOW: (-1, u'LOW'),
+    NORMAL: (0, u'NORMAL'),
+    HIGH: (1, u'HIGH'),
+    EMERGENCY: (2, u'EMERGENCY')
 }
 
 NMA_URL = "www.notifymyandroid.com"
