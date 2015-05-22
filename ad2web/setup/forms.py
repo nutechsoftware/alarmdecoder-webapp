@@ -69,7 +69,7 @@ class TestDeviceForm(Form):
     next = SubmitField(u'Next')
 
 class DeviceForm(Form):
-    panel_mode = RadioField(u'Panel Type', choices=[(ADEMCO, 'Ademco'), (DSC, 'DSC')], default=ADEMCO, coerce=int)
+    panel_mode = RadioField(u'Panel Type', choices=[(ADEMCO, 'Honeywell/Ademco'), (DSC, 'DSC')], default=ADEMCO, coerce=int)
     keypad_address = IntegerField(u'Keypad Address', [Required(), NumberRange(1, 99)], default=18)
     address_mask = TextField(u'Address Mask', [Required(), Length(max=8), Hex()], default=u'ffffffff')
     zone_expanders = MultiCheckboxField(u'Zone Expanders', choices=[('1', 'Emulate zone expander #1?'), ('2', 'Emulate zone expander #2?'), ('3', 'Emulate zone expander #3?'), ('4', 'Emulate zone expander #4?'), ('5', 'Emulate zone expander #5?')])
