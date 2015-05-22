@@ -3,11 +3,74 @@
 {% extends 'setup/layout.html' %}
 
 {% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
 {% endblock %}
 
 {% block pagejs %}
 <script type="text/javascript">
+    //detect if mobile
+    function isMobile()
+    {
+        if( $('html').hasClass('mobile') == true && $('html').hasClass('tablet') == false )
+            return true;
+        return false;
+    }
+    //detect if tablet
+    function isTablet()
+    {
+        if( $('html').hasClass('tablet') == true )
+            return true;
+
+        return false;
+    }
+    //is local storage supported?
+    function storageSupported()
+    {
+        if( Modernizr.localstorage)
+            return true;
+        return false;
+    }
+
+    function buttonAtRight(button, element)
+    {
+        $(button).position({
+            my: "right",
+            at: "right+150",
+            of: $(element)
+        });
+    }
+
+    function bindValueToInput(value, input)
+    {
+        $(input).val(value);
+    }
+
+    function calculateMask()
+    {
+        var mask = 0x00000000;
+        for( i = 1; i < 33; i++ )
+        {
+            if($("#address_checkbox_" + i).is(':checked'))
+                mask |= 1;
+            else
+                mask |= 0;
+                          
+            if( i < 32 ) 
+                mask <<= 1;
+        }
+        return (mask >>> 0).toString(16);
+
+    }
+
     $(document).ready(function() {
+
+        mobile = isMobile();
+        tablet = isTablet();
+
+        $(function() {
+            FastClick.attach(document.body);
+        });
+
         createFormTooltip('[id^=panel_mode]', 'Which type of panel do you have?');
         createFormTooltip('#keypad_address', 'The address of your keypad.  18 default.\n\nFor SE Panels, Address 31 must be set.');
         createFormTooltip('#address_mask', 'This features allows you to select specific keypad addresses to listen to. 32-bit Hex Number. \n\nDefault: FFFFFFFF');
@@ -15,11 +78,66 @@
         createFormTooltip('[id^=relay_expanders]', 'Enable relay expander emulation support?');
         createFormTooltip('#lrr_enabled', 'Enable Long Range Radio emulation support?');
         createFormTooltip('#deduplicate', 'The availability to remove repetitive messages. This in conjunction with the Address Mask will remove duplicate alarm messages the panel produces.');
+        buttonAtRight("#address_mask_builder", "#address_mask");
+
+        $("#exit").on('mousedown', function() {
+            $('#dialog').dialog("close");
+        });
+        $("#exit").on('touchstart', function() {
+            $('#dialog').dialog("close");
+        });
+
+        if( !tablet && !mobile )
+        {
+            $("#address_mask_builder").click(function() {
+                $('#dialog').dialog({
+                    modal: true,
+                    minWidth: 1000,
+                    maxWidth: 1000,
+                    close: function() {
+                        var mask = calculateMask();
+                        bindValueToInput( mask, "#address_mask");
+                    }
+                });
+            });
+        }
+        else
+        {
+            if( mobile )
+            {
+                $("#address_mask_builder").on('touchstart', function() {
+                    $('#dialog').dialog({
+                        modal: true,
+                        minWidth: 400,
+                        position: { my: "center", at: "center", of: window },
+                        close: function() {
+                            var mask = calculateMask();
+                            bindValueToInput( mask, "#address_mask");
+                        }
+                    });
+                });
+            }
+            if( tablet )
+            {
+                $("#address_mask_builder").on('touchstart', function() {
+                    $('#dialog').dialog({
+                        modal: true,
+                        minWidth: 725,
+                        position: { my: "center", at: "center", of: window },
+                        close: function() {
+                            var mask = calculateMask();
+                            bindValueToInput( mask, "#address_mask");
+                        }
+                    });
+                });
+            }
+        }
     });
     $('body').ready(function() {
         function set_form_visible(val) {
             $('#keypad_address').closest('.control-group').toggle(val);
             $('#address_mask').closest('.control-group').toggle(val);
+            $("#address_mask_builder").toggle(val);
             $('[id^=zone_expanders]').closest('.control-group').toggle(val);
             $('[id^=relay_expanders]').closest('.control-group').toggle(val);
             $('#lrr_enabled').closest('.control-group').toggle(val);
@@ -58,8 +176,30 @@
     </div>
     <br>
     {{ render_form(url_for('setup.device'), form) }}
+    <button id="address_mask_builder">Build Address Mask</button>
+</div>
+<div id="dialog" style="display:none" title="Keypad Addresses">
+    <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" height="24" width="24"/><br/><br/>
+    <p>Please select the keypad addresses you would like to see messages for:</p>
+    <table border="0">
+        <tr>
+    {% for n in range(33) %}
+        {% if n % 8 == 0 and n != 0 %}
+            </tr>
+            <tr>
+        {% endif %}
+        {% if n == 0 %}
+            <td></td>
+        {% endif %}
+        {% if n != 0 %}
+            <td><label style="display: inline-block;" for="address_checkbox_{{n}}">Address {{n}}</label><input style="display: inline-block; margin-left: 10px !important; margin-bottom: 3px;" type="checkbox" id="address_checkbox_{{n}}" name="address_checkbox_{{n}}" checked/></td>
+        {% endif %}
+    {% endfor %}
+        </tr>
+    </table>
 </div>
 {% endblock %}
 
 {% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
 {% endblock %}
