@@ -221,6 +221,21 @@ def system_reboot():
     flash('Rebooting device!', 'success')
     return redirect(url_for('settings.host'))
 
+@settings.route('/shutdown', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def system_shutdown():
+    with sh.sudo:
+        try:
+            sh.sync()
+            sh.halt()
+        except sh.ErrorReturnCode_1:
+            flash('Unable to shutdown device!', 'error')
+            return redirect(url_for('settings.host'))
+
+    flash('Shutting device down!', 'success')
+    return redirect(url_for('settings.host'))
+
 @settings.route('/network/<string:device>', methods=['GET', 'POST'])
 @login_required
 @admin_required
