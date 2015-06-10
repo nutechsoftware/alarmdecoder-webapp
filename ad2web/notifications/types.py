@@ -471,14 +471,19 @@ class CustomNotification(BaseNotification):
         if http_response.status == 200:
             return True
         else:
-            current_app.logger.info('Event Custom Notification Failed: {0}'. format(http_response.reason))
-            raise Exception('Custom Notification Failed: {0}' . format(http_response.reason))
+            current_app.logger.info('Event Custom Notification Failed')
+            raise Exception('Custom Notification Failed')
+#            raise Exception('Custom Notification Failed: {0}' . format(http_response.reason))
 
     def send(self, type, text):
         self.msg_to_send = text
 
-        self.custom_values = ast.literal_eval(self.custom_values)
-        notify_data = dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values)
+        notify_data = {}
+        if self.custom_values is not None:
+            if self.custom_values:
+                self.custom_values = ast.literal_eval(self.custom_values)
+                notify_data = dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values)
+
         notify_data['message'] = self.msg_to_send
         notify_data['sender'] = 'AlarmDecoder WebApp'
         notify_data['time'] = time.ctime(time.time())
