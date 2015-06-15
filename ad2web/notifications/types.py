@@ -278,8 +278,8 @@ class TwilioNotification(BaseNotification):
             client = TwilioRestClient(self.account_sid, self.auth_token)
             message = client.messages.create(to=self.number_to, from_=self.number_from, body=self.msg_to_send)
         except twilio.TwilioRestException as e:
-            current_app.logger.info('Event Twilio Notification Failed: {0}' . format(message))
-            raise Exception('Twilio Notification Failed: {0}' . format(message))
+            current_app.logger.info('Event Twilio Notification Failed: {0}' . format(e))
+            raise Exception('Twilio Notification Failed: {0}' . format(e))
 
 class NMANotification(BaseNotification):
     def __init__(self, obj):
