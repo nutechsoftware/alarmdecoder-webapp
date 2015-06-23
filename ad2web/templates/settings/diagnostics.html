@@ -1,0 +1,122 @@
+{% from "macros/_form.html" import render_form %}
+<title>Diagnostics</title>
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+
+        $('#loading').spin('flower');
+
+        //get list of modules, then test each module to see if present on system
+        $.ajax({
+            url: "{{url_for('settings.get_system_imports')}}",
+            dataType: 'json',
+            success: function(data) {
+                var i = 0;
+                $.each(data, function(index, element) {
+
+                    $.ajax({
+                        url: "{{url_for('settings.test_system_import')}}",
+                        data: "modname=" + element.modname,
+                        success: function(data) {
+                            if( i != 0 && i % 5 == 0 )
+                                $('#import_list_detail').append(data + "<br/>");
+                            else
+                                $('#import_list_detail').append(data + " " );
+                        }
+                
+                    });
+                    i++;
+                });
+                $('#loading').stop();
+                $('#loading').hide();
+            },
+        });
+
+        //device testing
+        PubSub.subscribe('test', function(type, msg) {
+
+  //          alert(msg.test);
+            result_text = {
+                'PASS': '<span style="color:green">&#10004;</span>',
+                'FAIL': '<span style="color:red">&#10008;</span>',
+                'TIMEOUT': '<span style="color:orange">&#9888;</span>'
+            };
+            test_results = $('table#test_results tr#test-' + msg.test);
+            $(test_results).children('td:eq(1)').html(result_text[msg.results]);
+            $(test_results).children('td:eq(2)').html(msg.details);
+
+        });
+
+        decoder.emit('test');
+        $('#test_decoder').on('click', function() {
+            var spinner = '<img src="{{url_for('static', filename='img/spinner.gif')}}"/>';
+            $('table#test_results tr#test-open').children('td:eq(1)').html(spinner);
+            $('table#test_results tr#test-open').children('td:eq(2)').html('');
+            $('table#test_results tr#test-config').children('td:eq(1)').html(spinner);
+            $('table#test_results tr#test-config').children('td:eq(2)').html('');
+            $('table#test_results tr#test-send').children('td:eq(1)').html(spinner);
+            $('table#test_results tr#test-send').children('td:eq(2)').html('');
+            $('table#test_results tr#test-recv').children('td:eq(1)').html(spinner);
+            $('table#test_results tr#test-recv').children('td:eq(2)').html('');
+            
+            decoder.emit('test');
+        });
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <div id="import_list">
+        <strong>Modules</strong>&nbsp;Here is a list of system used Python Modules.  If a module appears <font color="green">green</font> it is present.  If it appears <font color="red">red</font> then it is missing.  Missing modules might cause certain features to be unavailable.  We suggest installing all modules listed in the project requirements.txt.  Some modules such as <b>OpenCV</b> require more steps to install.<br/><br/>
+        <div id="loading"></div>
+        <div id="import_list_detail" style="overflow-x: hidden; height: 250px !important;">
+        </div>
+    </div>
+    <br/>
+    <div id="decoder">
+        <strong><button id="test_decoder" class="btn-primary">Test Device</button></strong>
+        <div id="decoder_detail">
+            <table id="test_results">
+                <tr id='test-open'>
+                    <td class='test-description'>Opening device</td>
+                    <td class='test-results'><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
+                    <td class='details'></td>
+                </tr>
+                <tr id='test-config'>
+                    <td class='test-description'>Saving device configuration</td>
+                    <td class='test-results'><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
+                    <td class='details'></td>
+                </tr>
+                <tr id='test-send'>
+                    <td class='test-description'>Keypad communication (Send)</td>
+                    <td class='test-results'><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
+                    <td class='details'></td>
+                </tr>
+                <tr id='test-recv'>
+                    <td class='test-description'>Keypad communication (Receive)</td>
+                    <td class='test-results'><img src="{{ url_for('static', filename='img/spinner.gif') }}"></td>
+                    <td class='details'></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
+{% endblock %}

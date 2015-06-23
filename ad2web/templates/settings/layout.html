@@ -15,6 +15,7 @@
     ("host", url_for('settings.host'), False),
     ("keypad", url_for('keypad.custom_index'), False),
     ("cameras", url_for('cameras.cam_list'), False),
+    ("diagnostics", url_for('settings.system_diagnostics'), False),
 ]%}
 {% else %}
 {% set tabs = [
@@ -27,5 +28,6 @@
     ("host", url_for('settings.host'), False),
     ("keypad", url_for('keypad.custom_index'), False),
     ("cameras", url_for('cameras.cam_list'), False),
+    ("diagnostics", url_for('settings.system_diagnostics'), False),
 ]%}
 {% endif %}

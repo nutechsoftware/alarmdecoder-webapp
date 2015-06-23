@@ -14,6 +14,13 @@ try:
 except ImportError:
     hasnetifaces = 0
 import sh
+import compiler
+import sys
+import types
+import importlib
+
+from compiler.ast import Discard, Const
+from compiler.visitor import ASTVisitor
 
 from datetime import datetime, timedelta
 
@@ -560,3 +567,151 @@ def _import_refresh():
         ser2sock.update_config(config_path.value, **kwargs)
         current_app.decoder.close()
         current_app.decoder.init()
+
+@settings.route('/diagnostics', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def system_diagnostics():
+     return render_template('settings/diagnostics.html')
+
+
+@settings.route('/get_imports_list', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def get_system_imports():
+    imported = {}
+    module_list = []
+    for module in sys.modules.keys():
+        module_name = module.split('.')[0] #everything left of a .
+        if module_name.find('_') == -1:  #ignore items containing _
+            if module_name not in module_list:  #unique module list
+                module_list.append(module_name)
+
+    module_list.sort()
+    for val in module_list:
+        imported[val] = {'modname': val }
+
+
+# this code block uses the .py parsing method below to try and find imports
+#    for d, f in pyfiles(os.getcwd()):
+#        if d.find("alembic") == -1:  #ignore the alembic directory
+#            imported[d + '/' + f] = parse_python_source(os.path.join(d,f))
+        
+    return json.dumps(imported)
+
+
+@settings.route('/test_system_import', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def test_system_import():
+    module = request.args.get('modname')
+    mod_str = ""
+    try:
+        importlib.import_module( module )
+        mod_str = "<font color='green'>" + module + "</font>";
+    except:
+        mod_str = "<font color='red'>" + module + "</font>";
+    return mod_str
+
+#below code used to parse .py files and find imported modules - currently does not catch things that are straight imports only froms
+#leaving in case we want to improve and use
+def pyfiles(startPath):
+    r = []
+    d = os.path.abspath(startPath)
+    if os.path.exists(d) and os.path.isdir(d):
+        for root, dirs, files in os.walk(d):
+            for f in files:
+                n, ext = os.path.splitext(f)
+                if ext == '.py':
+                    r.append([root, f])
+
+    return r
+
+class ImportVisitor(object):
+        def __init__(self):
+            self.modules = []
+            self.recent = []
+            self.exists = []
+        
+        def visitImport(self, node):
+            self.accept_imports()
+
+            mod = {}
+            for x in node.names:
+                mod['modname'] = x[0]
+                mod['importname'] = None
+                mod['viewname'] = x[1] or x[0]
+                mod['lineno'] = node.lineno
+                mod['level'] = 0
+
+                exist = {'modname': x[0], 'importname': None}
+                if exist not in self.exists:                
+                    self.recent.append(mod)
+                    self.exists.append(exist)
+
+        def visitFrom(self, node):
+            self.accept_imports()
+            modname = node.modname
+            if modname == '__future__':
+                return  #ignore!
+
+            #module name, import name, view name, line number of script, level
+            mod = {}
+            for name, as_ in node.names:
+                if name == '*':
+                    mod['modname'] = modname
+                    mod['importname'] = None
+                    mod['viewname'] = None
+                    mod['lineno'] = node.lineno
+                    mod['level'] = node.level
+                else:
+                    mod['modname'] = modname
+                    mod['importname'] = name
+                    mod['viewname'] = as_ or name
+                    mod['lineno'] = node.lineno
+                    mod['level'] = node.level
+            
+                exist = {'modname': mod['modname'], 'importname': mod['importname'] }
+
+                if exist not in self.exists:
+                    self.recent.append(mod)
+                    self.exists.append(exist)
+
+        def default(self, node):
+            pragma = None
+            if self.recent:
+                if isinstance(node, Discard):
+                    children = node.getChildren()
+                    if len(children) == 1 and isinstance(children[0], Const):
+                        const_node = children[0]
+                        pragma = const_node.value
+
+            self.accept_imports(pragma)
+
+        def accept_imports(self, pragma=None):
+            for item in self.recent:
+                self.modules.append(item)
+            self.recent = []
+
+        def finalize(self):
+            self.accept_imports();
+            return self.modules
+
+
+class ImportWalker(ASTVisitor):
+    def __init__(self, visitor):
+        ASTVisitor.__init__(self)
+        self._visitor = visitor
+
+    def default( self, node, *args):
+        self._visitor.default(node)
+        ASTVisitor.default(self, node, *args)
+
+
+def parse_python_source(fn):
+    contents = open(fn, 'rU').read()
+    ast = compiler.parse(contents)
+    vis = ImportVisitor()
+
+    compiler.walk(ast, vis, ImportWalker(vis))
+    return vis.finalize()
