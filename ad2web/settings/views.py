@@ -38,7 +38,7 @@ from ..decorators import admin_required
 from ..settings import Setting
 from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
-from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE
+from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES
 from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
@@ -581,16 +581,25 @@ def system_diagnostics():
 def get_system_imports():
     imported = {}
     module_list = []
-    for module in sys.modules.keys():
+    for module in sys.modules.keys():  #get list of all modules loaded into memory
         module_name = module.split('.')[0] #everything left of a .
         if module_name.find('_') == -1:  #ignore items containing _
             if module_name not in module_list:  #unique module list
                 module_list.append(module_name)
 
     module_list.sort()
-    for val in module_list:
-        imported[val] = {'modname': val }
+    for val in KNOWN_MODULES:  #see if module exists in known modules, try import if does, otherwise mark not found
+        found = 0
+        if val in module_list:
+            try:
+                importlib.import_module( val )
+                found = 1
+            except:
+                found = 0
+        else:
+            found = 0
 
+        imported[val] = {'modname': val, 'found': found }
 
 # this code block uses the .py parsing method below to try and find imports
 #    for d, f in pyfiles(os.getcwd()):
@@ -598,20 +607,6 @@ def get_system_imports():
 #            imported[d + '/' + f] = parse_python_source(os.path.join(d,f))
         
     return json.dumps(imported)
-
-
-@settings.route('/test_system_import', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def test_system_import():
-    module = request.args.get('modname')
-    mod_str = ""
-    try:
-        importlib.import_module( module )
-        mod_str = "<font color='green'>" + module + "</font>";
-    except:
-        mod_str = "<font color='red'>" + module + "</font>";
-    return mod_str
 
 #below code used to parse .py files and find imported modules - currently does not catch things that are straight imports only froms
 #leaving in case we want to improve and use
