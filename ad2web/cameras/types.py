@@ -67,10 +67,10 @@ class CameraSystem(object):
                     self._image_bytes[id] = '' 
 
                     #create an image from the jpg bytes
-                    img = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.CV_LOAD_IMAGE_COLOR)
+                    img = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), 1)
 
                     #determine rectangles for face recognition, if present, draw a rectangle around the face
-                    rects = cascade.detectMultiScale(img, 1.1, 5, cv2.cv.CV_HAAR_SCALE_IMAGE, (10, 10) )
+                    rects = cascade.detectMultiScale(img, 1.1, 5, 2, (10, 10) )
 
                     if len(rects) != 0:
                         for x, y, w, h in rects:
