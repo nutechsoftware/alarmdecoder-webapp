@@ -254,6 +254,13 @@ class PushoverNotification(BaseNotification):
                 if is_sent != True:
                     current_app.logger.info("Pushover Notification Failed")
                     raise Exception('Pushover Notification Failed')
+            else:
+                current_app.logger.info("Pushover Notification Failed - bad user key: " + self.user_key)
+                raise Exception("Pushover Notification Failed - bad user key: " + self.user_key)
+
+        else:
+            current_app.logger.info("Pushover Notification Failed - bad application token: " + self.token)
+            raise Exception("Pushover Notification Failed - bad application token: " + self.token)
 
 
 class TwilioNotification(BaseNotification):

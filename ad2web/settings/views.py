@@ -184,7 +184,7 @@ def hostname():
 
             if hasservice:
                 try:
-                    sh.service("avahi-daemon restart")
+                    sh.service("avahi-daemon", "restart")
                 except sh.ErrorReturnCode_1:
                     flash('Error restarting the avahi-daemon', 'error')
 
