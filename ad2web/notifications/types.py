@@ -55,7 +55,8 @@ except ImportError:
 from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, NMA, NMA_URL, NMA_PATH, NMA_EVENT, NMA_METHOD,
                         NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
-                        GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD)
+                        GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
+                        ZONE_FAULT, ZONE_RESTORE, BYPASS )
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -149,7 +150,10 @@ class LogNotification(object):
 
     def send(self, type, text):
         with current_app.app_context():
-            current_app.logger.info('Event: {0}'.format(text))
+            if type == ZONE_RESTORE or type == ZONE_FAULT or type == BYPASS:
+                current_app.logger.debug('Event: {0}'.format(text))
+            else:
+                current_app.logger.info('Event: {0}'.format(text))
 
         db.session.add(EventLogEntry(type=type, message=text))
         db.session.commit()
