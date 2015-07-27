@@ -8,6 +8,7 @@
 
 {% block pagejs %}
 <script type="text/javascript">
+
     //detect if mobile
     function isMobile()
     {
@@ -72,7 +73,7 @@
         });
 
         createFormTooltip('[id^=panel_mode]', 'Which type of panel do you have?');
-        createFormTooltip('#keypad_address', 'The address of your keypad.  18 default.\n\nFor SE Panels, Address 31 must be set.');
+        createFormTooltip('#keypad_address', 'The address of your keypad.  18 default.\n\nFor SE Panels, Address 31 must be set.\n\nDSC Partition between 1 and 8.');
         createFormTooltip('#address_mask', 'This features allows you to select specific keypad addresses to listen to. 32-bit Hex Number. \n\nDefault: FFFFFFFF');
         createFormTooltip('[id^=zone_expanders]', 'Enable zone expander emulation support?');
         createFormTooltip('[id^=relay_expanders]', 'Enable relay expander emulation support?');
@@ -134,8 +135,14 @@
         }
     });
     $('body').ready(function() {
+        var mode = $('#panel_mode-1:checked').val();
+        var label = $("label[for='keypad_address']");
+        if( mode == 1 )
+            label.html('Partition');
+        else
+            label.html('Keypad Address');
+
         function set_form_visible(val) {
-            $('#keypad_address').closest('.control-group').toggle(val);
             $('#address_mask').closest('.control-group').toggle(val);
             $("#address_mask_builder").toggle(val);
             $('[id^=zone_expanders]').closest('.control-group').toggle(val);
@@ -152,11 +159,32 @@
             switch($(event.target).val()) {
                 case '0':
                     set_form_visible(true);
+                    $('#keypad_address').val(18);
+                    label.html('Keypad Address');
                     break;
 
                 case '1':
+                    label.html('Partition');
+                    keypad_address_val = $('#keypad_address').val();
+                    if( keypad_address_val < 1 || keypad_address_val > 8 )
+                        $('#keypad_address').val(1);
+
                     set_form_visible(false);
                     break;
+            }
+        });
+
+        $('#buttons-next').on('click', function(event) {
+            keypad_address_val = $('#keypad_address').val();
+
+            mode = $('#panel_mode-1:checked').val();
+            if( mode == 1 )
+            {
+                if(keypad_address_val < 1 || keypad_address_val > 8 )
+                {
+                    alert('DSC Partition has to be between 1 and 8');
+                    event.preventDefault();
+                }
             }
         });
     });
