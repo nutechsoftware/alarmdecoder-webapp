@@ -56,7 +56,7 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
-                        ZONE_FAULT, ZONE_RESTORE, BYPASS )
+                        ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE )
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -452,6 +452,7 @@ class CustomNotification(BaseNotification):
         self.post_type = obj.get_setting('post_type')
         self.custom_values = obj.get_setting('custom_values')
         self.content_type = CUSTOM_CONTENT_TYPES[self.post_type]
+        self.method = obj.get_setting('method')
 
         self.headers = {
             'User-Agent': CUSTOM_USER_AGENT,
@@ -485,6 +486,22 @@ class CustomNotification(BaseNotification):
             current_app.logger.info('Event Custom Notification Failed')
             raise Exception('Custom Notification Failed')
 
+    def _do_get(self, data):
+        if self.is_ssl:
+            http_handler = HTTPSConnection(self.url)
+        else:
+            http_handler = HTTPConnection(self.url)
+
+        get_path = self.path + '?' + data
+        http_handler.request(CUSTOM_METHOD_GET, get_path, headers=self.headers)
+        http_response = http_handler.getresponse()
+
+        if http_response.status == 200:
+            return True
+        else:
+            current_app.logger.info('Event Custom Notification Failed on GET method')
+            raise Exception('Custom Notification Failed')
+
     def send(self, type, text):
         self.msg_to_send = text
 
@@ -498,20 +515,28 @@ class CustomNotification(BaseNotification):
 
                 notify_data = dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values)
 
-        notify_data['message'] = self.msg_to_send
-        notify_data['sender'] = 'AlarmDecoder WebApp'
-        notify_data['time'] = time.ctime(time.time())
-
         result = False
 
-        if self.post_type == URLENCODE:
-           result =  self._do_post(urlencode(notify_data))
+        if self.method == CUSTOM_METHOD_POST:
+            if self.post_type == URLENCODE:
+               result =  self._do_post(urlencode(notify_data))
 
-        if self.post_type == XML:
-           result =  self._do_post(self._dict_to_xml('notification', notify_data))
+            if self.post_type == XML:
+               result =  self._do_post(self._dict_to_xml('notification', notify_data))
 
-        if self.post_type == JSON:
-            result = self._do_post(self._dict_to_json(notify_data) )
+            if self.post_type == JSON:
+                result = self._do_post(self._dict_to_json(notify_data) )
+
+        if self.method == CUSTOM_METHOD_GET_TYPE:
+            if self.post_type == URLENCODE:
+                result = self._do_get(urlencode(notify_data))
+
+            #only allow urlencoding on GET requests
+            if self.post_type == XML:
+                return False
+
+            if self.post_type == JSON:
+                return False
 
         return result
 

@@ -14,7 +14,7 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
 from wtforms.widgets import ListWidget, CheckboxInput
 from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES, 
                         NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES, GROWL, GROWL_PRIORITIES, GROWL_TITLE,
-                        URLENCODE, JSON, XML)
+                        URLENCODE, JSON, XML, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE)
 from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
 
@@ -253,10 +253,11 @@ class CustomValueForm(Form):
     custom_value = TextField(label=None)
 
 class CustomPostForm(EditNotificationForm):
-    custom_url = TextField(u'POST URL', [Required(), Length(max=255)], description=u'URL to POST data to (ex: www.alarmdecoder.com)')
-    custom_path = TextField(u'POST Path', [Required(), Length(max=255)], description=u'Path to post variables to (ex: /publicapi/add)')
+    custom_url = TextField(u'URL', [Required(), Length(max=255)], description=u'URL to send data to (ex: www.alarmdecoder.com)')
+    custom_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Path to send variables to (ex: /publicapi/add)')
     is_ssl = BooleanField(u'SSL?', default=False, description=u'Is the URL SSL or No?')
-    post_type = RadioField(u'POST Type', choices=[(URLENCODE, 'urlencoded'), (JSON, 'JSON'), (XML, 'XML')], default=URLENCODE, coerce=int)
+    method = RadioField(u'Method', choices=[(CUSTOM_METHOD_POST, 'POST'), (CUSTOM_METHOD_GET_TYPE, 'GET')], default=CUSTOM_METHOD_POST, coerce=int)
+    post_type = RadioField(u'Type', choices=[(URLENCODE, 'urlencoded'), (JSON, 'JSON'), (XML, 'XML')], default=URLENCODE, coerce=int)
 
     custom_values = FieldList(FormField(CustomValueForm), validators=[Optional()], label=None)
     add_field = ButtonField(u'Add Field', onclick='addField();')
@@ -269,6 +270,7 @@ class CustomPostForm(EditNotificationForm):
         settings['custom_url'] = self.populate_setting('custom_url', self.custom_url.data)
         settings['custom_path'] = self.populate_setting('custom_path', self.custom_path.data)
         settings['is_ssl'] = self.populate_setting('is_ssl', self.is_ssl.data)
+        settings['method'] = self.populate_setting('method', self.method.data)
         settings['post_type'] = self.populate_setting('post_type', self.post_type.data)
         settings['custom_values'] = self.populate_setting('custom_values', self.custom_values.data)
 
@@ -278,6 +280,7 @@ class CustomPostForm(EditNotificationForm):
         self.custom_url.data = self.populate_from_setting(id, 'custom_url')
         self.custom_path.data = self.populate_from_setting(id, 'custom_path')
         self.is_ssl.data = self.populate_from_setting(id, 'is_ssl')
+        self.method.data = self.populate_from_setting(id, 'method')
         self.post_type.data = self.populate_from_setting(id, 'post_type')
 
         custom = self.populate_from_setting(id, 'custom_values')
