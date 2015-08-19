@@ -456,7 +456,7 @@ class CameraChecker(threading.Thread):
     """
     Thread responsible for polling camera streams.
     """
-    TIMEOUT = .5
+    TIMEOUT = 1
     """Camera checker thread sleep time."""
 
     def __init__(self, decoder):
