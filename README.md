@@ -30,7 +30,7 @@ If you're running on a Raspberry Pi the easiest way to get started is to downloa
 
 If you'd rather do it by hand you can follow these steps:
 
-1. sudo apt-get install nginx gunicorn sendmail libffi-dev python-dev
+1. sudo apt-get install nginx gunicorn sendmail libffi-dev python-dev build-essential libssl-dev
 2. cd /opt/
 3. sudo git clone http://github.com/nutechsoftware/alarmdecoder-webapp.git
 5. cd alarmdecoder-webapp
