@@ -21,7 +21,7 @@ if BASE_DIR not in sys.path:
 
 # give wsgi the "application"
 
-from ad2web import create_app
+from ad2web import create_app, init_app
 
 class SocketIOThread(threading.Thread):
 	def __init__(self, appsocket):
@@ -32,5 +32,6 @@ class SocketIOThread(threading.Thread):
 		self._appsocket.serve_forever()
 
 application, appsocket = create_app()
+init_app(application)
 socket_thread = SocketIOThread(appsocket)
 socket_thread.start()

@@ -103,6 +103,7 @@ def create_app(config=None, app_name=None, blueprints=None):
 
     app = Flask(app_name, instance_path=INSTANCE_FOLDER_PATH, instance_relative_config=True)
     app.wsgi_app = ReverseProxied(app.wsgi_app)
+
     configure_app(app, config)
     configure_hook(app)
     configure_blueprints(app, blueprints)
@@ -116,21 +117,28 @@ def create_app(config=None, app_name=None, blueprints=None):
     manager = Manager(app)
     app.decoder = decoder
 
+    return app, appsocket
+
+def init_app(app, appsocket):
     def signal_handler(signal, frame):
-        decoder.stop()
+        appsocket.stop()
+        app.decoder.stop()
         os._exit(0)
 
     try:
         signal.signal(signal.SIGINT, signal_handler)
 
-        decoder.init()
-        decoder.start()
+        # Make sure the database exists.
+        with app.app_context():
+            if db.metadata.tables['settings'].exists(db.engine):
+                app.decoder.init()
+                app.decoder.start()
+            else:
+                app.logger.error("Could not find 'settings' table in the database.  You may need to run 'python manage.py initdb'.")
+                os._exit(0)
 
     except Exception, err:
         app.logger.error("Error", exc_info=True)
-
-    return app, appsocket
-
 
 def configure_app(app, config=None):
     """Different ways of configurations."""
