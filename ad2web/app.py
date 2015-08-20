@@ -14,18 +14,6 @@ from flask.ext.script import Manager
 from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SerialDevice
 
-try:
-    from .updater.models import RequirementsUpdater
-
-    requirements_updater = RequirementsUpdater()
-    requirements_updater.refresh()
-
-    if requirements_updater.needs_update:
-        requirements_updater.update()
-
-except Exception, err:
-    print 'Error running pre-exec requirements update: {0}'.format(err)
-
 from .config import DefaultConfig
 from .decoder import decodersocket, Decoder, create_decoder_socket
 from .updater.views import updater

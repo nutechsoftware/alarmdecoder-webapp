@@ -12,18 +12,6 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 from flask import current_app
 
-from pip.locations import build_prefix, src_prefix
-from pip.index import PackageFinder
-from pip.req import InstallRequirement, RequirementSet
-from pip.exceptions import DistributionNotFound
-from pkg_resources import working_set, Requirement, VersionConflict, WorkingSet
-
-# Handle annoying previous build error in newer versions of pip.
-try:
-    from pip.exceptions import PreviousBuildDirError
-except ImportError:
-    PreviousBuildDirError = None
-
 try:
     current_app._get_current_object()
     running_in_context = True
@@ -249,8 +237,6 @@ class SourceUpdater(object):
         self._commits_behind = 0
         self._enabled, self._status = self._check_enabled()
 
-        self._requirements_updater = RequirementsUpdater()
-
     @property
     def branch(self):
         """Returns the current branch"""
@@ -303,8 +289,6 @@ class SourceUpdater(object):
         self._retrieve_remote_revision()
         self._retrieve_commit_count()
 
-        self._requirements_updater.refresh()
-
     def update(self):
         """
         Performs the update
@@ -318,20 +302,17 @@ class SourceUpdater(object):
             return False
 
         git_succeeded = False
-        requirements_succeeded = False
         git_revision = self.local_revision
 
         try:
             self._git.merge('origin/{0}'.format(self.branch))
             git_succeeded = True
 
-            self._requirements_updater.refresh()
-            requirements_succeeded = self._requirements_updater.update()
         except sh.ErrorReturnCode, err:
             git_succeeded = False
 
-        if not git_succeeded or not requirements_succeeded:
-            _log('SourceUpdater: failed - [{0},{1}]'.format(git_succeeded, requirements_succeeded), logLevel=logging.ERROR)
+        if not git_succeeded:
+            _log('SourceUpdater: failed.', logLevel=logging.ERROR)
 
             return False
 
@@ -590,144 +571,3 @@ class DBUpdater(object):
         """
         self._connection.close()
         self._connection = self._context = None
-
-
-class RequirementsUpdater(object):
-    def __init__(self, path='requirements.txt'):
-        self.path = path
-        self.local_options = self._get_local_options()
-        self.finder = self._get_package_finder()
-        self.requirement_list = []
-        self.requirements_needed = []
-
-    def refresh(self):
-        return self._check_requirements()
-
-    def needs_update(self):
-        return bool(self.requirements_needed)
-
-    def update(self):
-        _log('RequirementsUpdater: starting')
-
-        for r in self.requirements_needed:
-            _log('RequirementsUpdater: installing requirement: {0}', r, logLevel=logging.DEBUG)
-            results, message = self._install_requirement(r)
-            if not results:
-                _log('RequirementsUpdater: failure - {0} - {1}'.format(r, message), logLevel=logging.ERROR)
-                return False
-
-        _log('RequirementsUpdater: success')
-
-        return True
-
-    def _install_requirement(self, requirement):
-        if not self.local_options:
-            self.local_options = []
-
-        if self._check_requirement(requirement):
-            return True, None
-
-        try:
-            parsed_req = Requirement.parse(requirement)
-
-            # Parse requirement
-            requirement = InstallRequirement.from_line(str(requirement), None)
-
-            # Handle previously installed, out-of-date libs.
-            dist = working_set.find(Requirement.parse(parsed_req.project_name))
-            if dist is not None and dist not in parsed_req:
-                requirement.uninstall(auto_confirm=True)
-                requirement.commit_uninstall()
-
-            # Build the requirement set.  We're doing this one at a time so we can actually detect
-            # which ones fail.
-            requirement_set = RequirementSet(build_dir=build_prefix, src_dir=src_prefix, download_dir=None)        
-            requirement_set.add_requirement(requirement)
-
-            # Download and build requirement
-            try:
-                requirement_set.prepare_files(self.finder, force_root_egg_info=False, bundle=False)
-            except PreviousBuildDirError, err:
-                # Remove previous build directories if they're detected.. shouldn't be an issue
-                # now that we've removed upstream dependencies from requirements.txt.
-                location = requirement.build_location(build_prefix, True)
-
-                shutil.rmtree(location)
-                requirement_set.prepare_files(self.finder, force_root_egg_info=False, bundle=False)
-
-            # Finally, install the requirement.
-            requirement_set.install(self.local_options, [])
-
-            # Make sure we don't try to install it a second time.
-            working_set.require(requirement.name)
-
-        except Exception, err:
-            return False, err
-
-
-        return True, None
-
-    def _check_requirements(self):
-        try:
-            self.requirement_list = [r.strip() for r in open(self.path).readlines()]
-
-            self.requirements_needed = []
-            for r in self.requirement_list:
-                if self._check_requirement(r) is None:
-                    self.requirements_needed.append(r)
-
-        except IOError, err:
-            # couldn't open the requirements file.
-            self.requirement_list = []
-            self.requirements_needed = []
-
-            return False
-
-        return bool(self.requirements_needed)
-
-    def _check_requirement(self, requirement):
-        dist = None
-        try:
-            req = Requirement.parse(requirement)
-
-            # Check for out-of-date versions.
-            dist = working_set.find(Requirement.parse(req.project_name))
-            if dist not in req:
-                dist = None
-        except (ValueError, VersionConflict), err:
-            pass
-
-        return dist
-
-    def _get_local_options(self):
-        local_options = []
-        # Force install into the user directory if this isn't a virtualenv and we're not root.
-        if not hasattr(sys, 'real_prefix') and not os.geteuid() == 0:
-            local_options.append('--user')
-
-        return local_options
-
-    def _get_package_finder(self):
-        try:
-            from pip.download import PipSession
-            session = PipSession()
-        except ImportError:
-            session = None
-
-        finder_options = {
-            'find_links': [],
-            'index_urls': ['http://pypi.python.org/simple/'],
-        }
-
-        if session is not None:
-            finder_options['session'] = session
-
-        # Handle pip 1.5 deprecating dependency_links and force it to process them for alarmdecoder/pyftdi.
-        try:
-            from pip.cmdoptions import process_dependency_links
-            finder_options['process_dependency_links'] = True
-        except ImportError:
-            pass
-
-        # Create package finder to search for packages for us.
-        return PackageFinder(**finder_options)

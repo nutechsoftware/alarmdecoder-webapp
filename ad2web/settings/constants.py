@@ -38,7 +38,7 @@ KNOWN_MODULES = [ 'heapq', 'code', 'distutils', 'functools', 'random', 'cffi', '
  'pycparser', 'chump', 'pygments', 'operator', 'array', 'gntp', 'select', 'pkgutil', 'platform', 'errno', 'cv2', 'symbol', 'zlib',
  'json', 'Cookie', 'dns', 'tokenize', 'numpy', 'sleekxmpp', 'cPickle', 'sqlalchemy', 'simplejson', 'termios', 'site', 'hashlib',
  'pwd', 'pytz', 'copy', 'cryptography', 'smtplib', 'pycurl', 'keyword', 'socketio', 'imghdr', 'uu', 'stringprep', 'markupbase',
- 'chardet', 'fnmatch', 'getpass', 'mimetools', 'pickle', 'FixTk', 'parser', 'ad2web', 'contextlib', 'numbers', 'io', 'pip', 'pyexpat',
+ 'chardet', 'fnmatch', 'getpass', 'mimetools', 'pickle', 'FixTk', 'parser', 'ad2web', 'contextlib', 'numbers', 'io', 'pyexpat',
  'shutil', 'serial', 'mako', 'distlib', 'lxml', 'bz2', 'grp', 'alarmdecoder', 'six', 'genericpath', 'OpenSSL', 'gettext', 'sqlite3', 'getopt',
  'csv', 'mimetypes', 'rfc822', 'pyftdi', 'glob', 'time', 'htmlentitydefs', 'struct', 'sys', 'colorama', 'codeop', 'ssl', 'geventwebsocket',
  'types', 'strop', 'argparse', 'sitecustomize', 'pyasn1', 'xmlrpclib', 'difflib', 'urlparse', 'linecache', 'sh', 'netifaces', 'babel', 'gzip', 'hmac' ]
