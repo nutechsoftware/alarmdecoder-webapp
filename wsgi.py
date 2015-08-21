@@ -32,6 +32,6 @@ class SocketIOThread(threading.Thread):
 		self._appsocket.serve_forever()
 
 application, appsocket = create_app()
-init_app(application)
+init_app(application, appsocket)
 socket_thread = SocketIOThread(appsocket)
 socket_thread.start()

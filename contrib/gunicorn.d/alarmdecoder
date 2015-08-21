@@ -5,6 +5,7 @@ CONFIG = {
     'args': (
         '--worker-class=socketio.sgunicorn.GeventSocketIOWorker',
         '--timeout=120',
+        '--env=POLICY_SERVER=0',
         #'--debug',
         #'--log-level=debug',
         'wsgi:application',
