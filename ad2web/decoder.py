@@ -92,6 +92,7 @@ class Decoder(object):
             self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
             self._notifier_system = None
+            self._internal_address_mask = 0xFFFFFFFF
 
     def start(self):
         """
@@ -173,6 +174,7 @@ class Decoder(object):
         with self.app.app_context():
             self._device_type = Setting.get_by_name('device_type').value
             self._device_location = Setting.get_by_name('device_location').value
+            self._internal_address_mask = Setting.get_by_name('internal_address_mask', 0xFFFFFFFF).value
 
             if self._device_type:
                 interface = ('localhost', 10000)
@@ -202,6 +204,8 @@ class Decoder(object):
                         device.ssl_key = internal_cert.key_obj
 
                     self.device = AlarmDecoder(device)
+                    self.device.internal_address_mask = self._internal_address_mask
+
                     self.bind_events()
                     self.device.open(baudrate=self._device_baudrate)
 
