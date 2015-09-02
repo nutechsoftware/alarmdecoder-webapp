@@ -73,6 +73,39 @@ class EditNotificationForm(Form):
         return ret
 
 
+class ZoneFilterForm(Form):
+    zones = SelectMultipleField(choices=[], coerce=str)
+
+    buttons = FormField(NotificationButtonForm)
+
+    def populate_settings(self, settings, id=None):
+        settings['zone_filter'] = self.populate_setting('zone_filter', json.dumps(self.zones.data))
+
+    def populate_from_settings(self, id):
+        zone_filters = self.populate_from_setting(id, 'zone_filter')
+        if zone_filters:
+            self.zones.data = [str(k) for k in json.loads(zone_filters)]
+
+    def populate_setting(self, name, value, id=None):
+        if id is not None:
+            setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
+        else:
+            setting = NotificationSetting(name=name)
+
+        setting.value = value
+
+        return setting
+
+    def populate_from_setting(self, id, name, default=None):
+        ret = default
+
+        setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
+        if setting is not None:
+            ret = setting.value
+
+        return ret
+
+
 class EmailNotificationForm(EditNotificationForm):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
@@ -136,6 +169,7 @@ class GoogleTalkNotificationForm(EditNotificationForm):
         self.password.data = self.populate_from_setting(id, 'password')
         self.destination.data = self.populate_from_setting(id, 'destination')
 
+
 class PushoverNotificationForm(EditNotificationForm):
     token = TextField(u'API Token', [Required(), Length(max=30)], description=u'Your Application\'s API Token')
     user_key = TextField(u'User/Group Key', [Required(), Length(max=30)], description=u'Your user or group key')
@@ -157,6 +191,7 @@ class PushoverNotificationForm(EditNotificationForm):
         self.user_key.data = self.populate_from_setting(id, 'user_key')
         self.priority.data = self.populate_from_setting(id, 'priority')
         self.title.data = self.populate_from_setting(id, 'title')
+
 
 class TwilioNotificationForm(EditNotificationForm):
     account_sid = TextField(u'Account SID', [Required(), Length(max=50)], description=u'Your Twilio Account SID')
@@ -180,6 +215,7 @@ class TwilioNotificationForm(EditNotificationForm):
         self.number_to.data = self.populate_from_setting(id, 'number_to')
         self.number_from.data = self.populate_from_setting(id, 'number_from')
 
+
 class NMANotificationForm(EditNotificationForm):
     api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your NotifyMyAndroid API Key')
     app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications', default='AlarmDecoder')
@@ -198,6 +234,7 @@ class NMANotificationForm(EditNotificationForm):
         self.api_key.data = self.populate_from_setting(id, 'api_key')
         self.app_name.data = self.populate_from_setting(id, 'app_name')
         self.nma_priority.data = self.populate_from_setting(id, 'nma_priority')
+
 
 class ProwlNotificationForm(EditNotificationForm):
     prowl_api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your Prowl API Key')
@@ -219,6 +256,7 @@ class ProwlNotificationForm(EditNotificationForm):
         self.prowl_api_key.data = self.populate_from_setting(id, 'prowl_api_key')
         self.prowl_app_name.data = self.populate_from_setting(id, 'prowl_app_name')
         self.prowl_priority.data = self.populate_from_setting(id, 'prowl_priority')
+
 
 class GrowlNotificationForm(EditNotificationForm):
     growl_hostname = TextField(u'Hostname', [Required(), Length(max=255)], description=u'Growl server to send notification to')
@@ -251,6 +289,7 @@ class GrowlNotificationForm(EditNotificationForm):
 class CustomValueForm(Form):
     custom_key = TextField(label=None)
     custom_value = TextField(label=None)
+
 
 class CustomPostForm(EditNotificationForm):
     custom_url = TextField(u'URL', [Required(), Length(max=255)], description=u'URL to send data to (ex: www.alarmdecoder.com)')

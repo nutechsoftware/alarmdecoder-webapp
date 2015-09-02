@@ -6,15 +6,16 @@ from wtforms import FormField, TextField
 
 from ..extensions import db
 from ..settings import Setting
+from ..zones import Zone
 from .forms import (CreateNotificationForm, EditNotificationForm,
                     EditNotificationMessageForm,
                     EmailNotificationForm, GoogleTalkNotificationForm, PushoverNotificationForm,
-                    TwilioNotificationForm, NMANotificationForm, ProwlNotificationForm, GrowlNotificationForm, CustomPostForm)
+                    TwilioNotificationForm, NMANotificationForm, ProwlNotificationForm, GrowlNotificationForm, CustomPostForm, ZoneFilterForm)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 
 from .constants import (EVENT_TYPES, NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, 
-                        EMAIL, GOOGLETALK, PUSHOVER, TWILIO, NMA, PROWL, GROWL, CUSTOM)
+                        EMAIL, GOOGLETALK, PUSHOVER, TWILIO, NMA, PROWL, GROWL, CUSTOM, ZONE_FAULT, ZONE_RESTORE)
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
@@ -76,6 +77,9 @@ def edit(id):
         db.session.commit()
 
         current_app.decoder.refresh_notifier(id)
+
+        if str(ZONE_FAULT) in form.subscriptions.data or str(ZONE_RESTORE) in form.subscriptions.data:
+            return redirect(url_for('notifications.zone_filter', id=notification.id))
 
         if form.buttons.test.data:
             error = current_app.decoder.test_notifier(id)
@@ -139,6 +143,9 @@ def create_by_type(type):
 
         current_app.decoder.refresh_notifier(obj.id)
 
+        if str(ZONE_FAULT) in form.subscriptions.data or str(ZONE_RESTORE) in form.subscriptions.data:
+            return redirect(url_for('notifications.zone_filter', id=obj.id))
+
         if form.buttons.test.data:
             error = current_app.decoder.test_notifier(obj.id)
 
@@ -159,6 +166,40 @@ def create_by_type(type):
                             type=type,
                             active='notifications',
                             ssl=use_ssl)
+
+def build_zone_list():
+    zone_list = [(str(i), "Zone {0:02d}".format(i)) for i in range(1, 100)]
+
+    zones = Zone.query.all()
+    zone_list_len = len(zone_list)
+    for z in zones:
+        if z.zone_id <= zone_list_len - 1:
+            zone_list[z.zone_id - 1] = (str(z.zone_id), 'Zone {0:02d} - {1}'.format(z.zone_id, z.name))
+
+    return zone_list
+
+@notifications.route('/create/<int:id>/zone_filter', methods=['GET', 'POST'])
+@login_required
+def zone_filter(id):
+    form = ZoneFilterForm()
+    form.zones.choices = build_zone_list()
+
+    if not form.is_submitted():
+        form.populate_from_settings(id=id)
+        current_app.logger.debug(form.zones.data)
+
+    if form.validate_on_submit():
+        obj = Notification.query.filter_by(id=id).first_or_404()
+        form.populate_settings(obj.settings)
+
+        db.session.add(obj)
+        db.session.commit()
+
+        flash('Notification created.', 'success')
+
+        return redirect(url_for('notifications.index'))
+
+    return render_template('notifications/zone_filter.html', id=id, form=form)
 
 @notifications.route('/remove/<int:id>', methods=['GET', 'POST'])
 @login_required
