@@ -77,7 +77,7 @@ class EditNotificationForm(Form):
         return ret
 
 
-class EmailNotificationForm(EditNotificationForm):
+class EmailNotificationInternalForm(Form):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
 
@@ -90,6 +90,14 @@ class EmailNotificationForm(EditNotificationForm):
     username = TextField(u'Username', [Optional(), Length(max=255)])
     password = PasswordField(u'Password', [Optional(), Length(max=255)])
 
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(EmailNotificationInternalForm, self).__init__(*args, **kwargs)
+
+
+class EmailNotificationForm(EditNotificationForm):
+    form_field = FormField(EmailNotificationInternalForm, label='HiMom')
+
     #buttons = FormField(NotificationButtonForm)
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
@@ -97,186 +105,232 @@ class EmailNotificationForm(EditNotificationForm):
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
 
-        settings['source'] = self.populate_setting('source', self.source.data)
-        settings['destination'] = self.populate_setting('destination', self.destination.data)
-        settings['subject'] = self.populate_setting('subject', self.subject.data)
-        settings['server'] = self.populate_setting('server', self.server.data)
-        settings['port'] = self.populate_setting('port', self.port.data)
-        settings['tls'] = self.populate_setting('tls', self.tls.data)
-        settings['authentication_required'] = self.populate_setting('authentication_required', self.authentication_required.data)
-        settings['username'] = self.populate_setting('username', self.username.data)
-        settings['password'] = self.populate_setting('password', self.password.data)
+        settings['source'] = self.populate_setting('source', self.form_field.source.data)
+        settings['destination'] = self.populate_setting('destination', self.form_field.destination.data)
+        settings['subject'] = self.populate_setting('subject', self.form_field.subject.data)
+        settings['server'] = self.populate_setting('server', self.form_field.server.data)
+        settings['port'] = self.populate_setting('port', self.form_field.port.data)
+        settings['tls'] = self.populate_setting('tls', self.form_field.tls.data)
+        settings['authentication_required'] = self.populate_setting('authentication_required', self.form_field.authentication_required.data)
+        settings['username'] = self.populate_setting('username', self.form_field.username.data)
+        settings['password'] = self.populate_setting('password', self.form_field.password.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
 
-        self.source.data = self.populate_from_setting(id, 'source')
-        self.destination.data = self.populate_from_setting(id, 'destination')
-        self.subject.data = self.populate_from_setting(id, 'subject')
-        self.server.data = self.populate_from_setting(id, 'server')
-        self.tls.data = self.populate_from_setting(id, 'tls')
-        self.port.data = self.populate_from_setting(id, 'port')
-        self.authentication_required.data = self.populate_from_setting(id, 'authentication_required')
-        self.username.data = self.populate_from_setting(id, 'username')
-        self.password.widget.hide_value = False
-        self.password.data = self.populate_from_setting(id, 'password')
+        self.form_field.source.data = self.populate_from_setting(id, 'source')
+        self.form_field.destination.data = self.populate_from_setting(id, 'destination')
+        self.form_field.subject.data = self.populate_from_setting(id, 'subject')
+        self.form_field.server.data = self.populate_from_setting(id, 'server')
+        self.form_field.tls.data = self.populate_from_setting(id, 'tls')
+        self.form_field.port.data = self.populate_from_setting(id, 'port')
+        self.form_field.authentication_required.data = self.populate_from_setting(id, 'authentication_required')
+        self.form_field.username.data = self.populate_from_setting(id, 'username')
+        self.form_field.password.widget.hide_value = False
+        self.form_field.password.data = self.populate_from_setting(id, 'password')
 
 
-class GoogleTalkNotificationForm(EditNotificationForm):
+class GoogleTalkNotificationInternalForm(Form):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Messages will originate from this address')
     password = PasswordField(u'Password', [Required(), Length(max=255)], description=u'Password for the source account')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Messages will be sent to this address')
 
-    #buttons = FormField(NotificationButtonForm)
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(GoogleTalkNotificationInternalForm, self).__init__(*args, **kwargs)
+
+
+class GoogleTalkNotificationForm(EditNotificationForm):
+    form_field = FormField(GoogleTalkNotificationInternalForm)
+
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
-        settings['source'] = self.populate_setting('source', self.source.data)
-        settings['password'] = self.populate_setting('password', self.password.data)
-        settings['destination'] = self.populate_setting('destination', self.destination.data)
+        settings['source'] = self.populate_setting('source', self.form_field.source.data)
+        settings['password'] = self.populate_setting('password', self.form_field.password.data)
+        settings['destination'] = self.populate_setting('destination', self.form_field.destination.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
-        self.source.data = self.populate_from_setting(id, 'source')
-        self.password.widget.hide_value = False
-        self.password.data = self.populate_from_setting(id, 'password')
-        self.destination.data = self.populate_from_setting(id, 'destination')
+        self.form_field.source.data = self.populate_from_setting(id, 'source')
+        self.form_field.password.widget.hide_value = False
+        self.form_field.password.data = self.populate_from_setting(id, 'password')
+        self.form_field.destination.data = self.populate_from_setting(id, 'destination')
 
 
-class PushoverNotificationForm(EditNotificationForm):
+class PushoverNotificationInternalForm(Form):
     token = TextField(u'API Token', [Required(), Length(max=30)], description=u'Your Application\'s API Token')
     user_key = TextField(u'User/Group Key', [Required(), Length(max=30)], description=u'Your user or group key')
     priority = SelectField(u'Message Priority', choices=[PUSHOVER_PRIORITIES[LOWEST], PUSHOVER_PRIORITIES[LOW], PUSHOVER_PRIORITIES[NORMAL], PUSHOVER_PRIORITIES[HIGH], PUSHOVER_PRIORITIES[EMERGENCY]], default=PUSHOVER_PRIORITIES[LOW], description='Pushover message priority', coerce=int)
     title = TextField(u'Title of Message', [Length(max=255)], description=u'Title of Notification Messages')
 
-    #buttons = FormField(NotificationButtonForm)
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(PushoverNotificationInternalForm, self).__init__(*args, **kwargs)
+
+
+class PushoverNotificationForm(EditNotificationForm):
+    form_field = FormField(PushoverNotificationInternalForm)
+
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
-        settings['token'] = self.populate_setting('token', self.token.data)
-        settings['user_key'] = self.populate_setting('user_key', self.user_key.data)
-        settings['priority'] = self.populate_setting('priority', self.priority.data)
-        settings['title'] = self.populate_setting('title', self.title.data)
+        settings['token'] = self.populate_setting('token', self.form_field.token.data)
+        settings['user_key'] = self.populate_setting('user_key', self.form_field.user_key.data)
+        settings['priority'] = self.populate_setting('priority', self.form_field.priority.data)
+        settings['title'] = self.populate_setting('title', self.form_field.title.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
-        self.token.data = self.populate_from_setting(id, 'token')
-        self.user_key.data = self.populate_from_setting(id, 'user_key')
-        self.priority.data = self.populate_from_setting(id, 'priority')
-        self.title.data = self.populate_from_setting(id, 'title')
+        self.form_field.token.data = self.populate_from_setting(id, 'token')
+        self.form_field.user_key.data = self.populate_from_setting(id, 'user_key')
+        self.form_field.priority.data = self.populate_from_setting(id, 'priority')
+        self.form_field.title.data = self.populate_from_setting(id, 'title')
 
 
-class TwilioNotificationForm(EditNotificationForm):
+class TwilioNotificationInternalForm(Form):
     account_sid = TextField(u'Account SID', [Required(), Length(max=50)], description=u'Your Twilio Account SID')
     auth_token = TextField(u'Auth Token', [Required(), Length(max=50)], description=u'Your Twilio User Auth Token')
     number_to = TextField(u'To', [Required(), Length(max=15)], description=u'Number to send SMS to')
     number_from = TextField(u'From', [Required(), Length(max=15)], description=u'Must Be A Valid Twilio Phone Number')
 
-    #buttons = FormField(NotificationButtonForm)
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(TwilioNotificationInternalForm, self).__init__(*args, **kwargs)
+
+
+class TwilioNotificationForm(EditNotificationForm):
+    form_field = FormField(TwilioNotificationInternalForm)
+
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
-        settings['account_sid'] = self.populate_setting('account_sid', self.account_sid.data)
-        settings['auth_token'] = self.populate_setting('auth_token', self.auth_token.data)
-        settings['number_to'] = self.populate_setting('number_to', self.number_to.data)
-        settings['number_from'] = self.populate_setting('number_from', self.number_from.data)
+        settings['account_sid'] = self.populate_setting('account_sid', self.form_field.account_sid.data)
+        settings['auth_token'] = self.populate_setting('auth_token', self.form_field.auth_token.data)
+        settings['number_to'] = self.populate_setting('number_to', self.form_field.number_to.data)
+        settings['number_from'] = self.populate_setting('number_from', self.form_field.number_from.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
-        self.account_sid.data = self.populate_from_setting(id, 'account_sid')
-        self.auth_token.data = self.populate_from_setting(id, 'auth_token')
-        self.number_to.data = self.populate_from_setting(id, 'number_to')
-        self.number_from.data = self.populate_from_setting(id, 'number_from')
+        self.form_field.account_sid.data = self.populate_from_setting(id, 'account_sid')
+        self.form_field.auth_token.data = self.populate_from_setting(id, 'auth_token')
+        self.form_field.number_to.data = self.populate_from_setting(id, 'number_to')
+        self.form_field.number_from.data = self.populate_from_setting(id, 'number_from')
 
 
-class NMANotificationForm(EditNotificationForm):
+class NMANotificationInternalForm(Form):
     api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your NotifyMyAndroid API Key')
     app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications', default='AlarmDecoder')
     nma_priority = SelectField(u'Message Priority', choices=[NMA_PRIORITIES[LOWEST], NMA_PRIORITIES[LOW], NMA_PRIORITIES[NORMAL], NMA_PRIORITIES[HIGH], NMA_PRIORITIES[EMERGENCY]], default=NMA_PRIORITIES[LOW], description='NotifyMyAndroid message priority', coerce=int)
     
-    #buttons = FormField(NotificationButtonForm)
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(NMANotificationInternalForm, self).__init__(*args, **kwargs)
+
+
+class NMANotificationForm(EditNotificationForm):
+    form_field = FormField(NMANotificationInternalForm)
+
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
-        settings['api_key'] = self.populate_setting('api_key', self.api_key.data)
-        settings['app_name'] = self.populate_setting('app_name', self.app_name.data)
-        settings['nma_priority'] = self.populate_setting('nma_priority', self.nma_priority.data)
+        settings['api_key'] = self.populate_setting('api_key', self.form_field.api_key.data)
+        settings['app_name'] = self.populate_setting('app_name', self.form_field.app_name.data)
+        settings['nma_priority'] = self.populate_setting('nma_priority', self.form_field.nma_priority.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
-        self.api_key.data = self.populate_from_setting(id, 'api_key')
-        self.app_name.data = self.populate_from_setting(id, 'app_name')
-        self.nma_priority.data = self.populate_from_setting(id, 'nma_priority')
+        self.form_field.api_key.data = self.populate_from_setting(id, 'api_key')
+        self.form_field.app_name.data = self.populate_from_setting(id, 'app_name')
+        self.form_field.nma_priority.data = self.populate_from_setting(id, 'nma_priority')
 
 
-class ProwlNotificationForm(EditNotificationForm):
+class ProwlNotificationInternalForm(Form):
     prowl_api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your Prowl API Key')
     prowl_app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications', default='AlarmDecoder')
     prowl_priority = SelectField(u'Message Priority', choices=[PROWL_PRIORITIES[LOWEST], PROWL_PRIORITIES[LOW], PROWL_PRIORITIES[NORMAL], PROWL_PRIORITIES[HIGH], PROWL_PRIORITIES[EMERGENCY]], default=PROWL_PRIORITIES[LOW], description='Prowl message priority', coerce=int)
 
-    #buttons = FormField(NotificationButtonForm)
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(ProwlNotificationInternalForm, self).__init__(*args, **kwargs)
+
+
+class ProwlNotificationForm(EditNotificationForm):
+    form_field = FormField(ProwlNotificationInternalForm)
+
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
 
-        settings['prowl_api_key'] = self.populate_setting('prowl_api_key', self.prowl_api_key.data)
-        settings['prowl_app_name'] = self.populate_setting('prowl_app_name', self.prowl_app_name.data)
-        settings['prowl_priority'] = self.populate_setting('prowl_priority', self.prowl_priority.data)
+        settings['prowl_api_key'] = self.populate_setting('prowl_api_key', self.form_field.prowl_api_key.data)
+        settings['prowl_app_name'] = self.populate_setting('prowl_app_name', self.form_field.prowl_app_name.data)
+        settings['prowl_priority'] = self.populate_setting('prowl_priority', self.form_field.prowl_priority.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
         
-        self.prowl_api_key.data = self.populate_from_setting(id, 'prowl_api_key')
-        self.prowl_app_name.data = self.populate_from_setting(id, 'prowl_app_name')
-        self.prowl_priority.data = self.populate_from_setting(id, 'prowl_priority')
+        self.form_field.prowl_api_key.data = self.populate_from_setting(id, 'prowl_api_key')
+        self.form_field.prowl_app_name.data = self.populate_from_setting(id, 'prowl_app_name')
+        self.form_field.prowl_priority.data = self.populate_from_setting(id, 'prowl_priority')
 
 
-class GrowlNotificationForm(EditNotificationForm):
+class GrowlNotificationInternalForm(Form):
     growl_hostname = TextField(u'Hostname', [Required(), Length(max=255)], description=u'Growl server to send notification to')
     growl_port = TextField(u'Port', [Required(), Length(max=10)], description=u'Growl server port', default=23053)
     growl_password = PasswordField(u'Password', description=u'The password for the growl server') 
     growl_title = TextField(u'Title', [Required(), Length(max=255)], description=u'Notification Title', default=GROWL_TITLE)
     growl_priority = SelectField(u'Message Priority', choices=[GROWL_PRIORITIES[LOWEST], GROWL_PRIORITIES[LOW], GROWL_PRIORITIES[NORMAL], GROWL_PRIORITIES[HIGH], GROWL_PRIORITIES[EMERGENCY]], default=GROWL_PRIORITIES[LOW], description='Growl message priority', coerce=int)
 
-    #buttons = FormField(NotificationButtonForm)
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(GrowlNotificationInternalForm, self).__init__(*args, **kwargs)
+
+
+class GrowlNotificationForm(EditNotificationForm):
+    form_field = FormField(GrowlNotificationInternalForm)
+
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
 
-        settings['growl_hostname'] = self.populate_setting('growl_hostname', self.growl_hostname.data)
-        settings['growl_port'] = self.populate_setting('growl_port', self.growl_port.data)
-        settings['growl_password'] = self.populate_setting('growl_password', self.growl_password.data)
-        settings['growl_title'] = self.populate_setting('growl_title', self.growl_title.data)
-        settings['growl_priority'] = self.populate_setting('growl_priority', self.growl_title.data)
+        settings['growl_hostname'] = self.populate_setting('growl_hostname', self.form_field.growl_hostname.data)
+        settings['growl_port'] = self.populate_setting('growl_port', self.form_field.growl_port.data)
+        settings['growl_password'] = self.populate_setting('growl_password', self.form_field.growl_password.data)
+        settings['growl_title'] = self.populate_setting('growl_title', self.form_field.growl_title.data)
+        settings['growl_priority'] = self.populate_setting('growl_priority', self.form_field.growl_title.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
 
-        self.growl_hostname.data = self.populate_from_setting(id, 'growl_hostname')
-        self.growl_port.data = self.populate_from_setting(id, 'growl_port')
-        self.growl_password.data = self.populate_from_setting(id, 'growl_password')
-        self.growl_title.data = self.populate_from_setting(id, 'growl_title')
-        self.growl_priority.data = self.populate_from_setting(id, 'growl_priority')
+        self.form_field.growl_hostname.data = self.populate_from_setting(id, 'growl_hostname')
+        self.form_field.growl_port.data = self.populate_from_setting(id, 'growl_port')
+        self.form_field.growl_password.data = self.populate_from_setting(id, 'growl_password')
+        self.form_field.growl_title.data = self.populate_from_setting(id, 'growl_title')
+        self.form_field.growl_priority.data = self.populate_from_setting(id, 'growl_priority')
 
 
 class CustomValueForm(Form):
     custom_key = TextField(label=None)
     custom_value = TextField(label=None)
 
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(CustomValueForm, self).__init__(*args, **kwargs)
 
-class CustomPostForm(EditNotificationForm):
+
+class CustomPostInternalForm(Form):
     custom_url = TextField(u'URL', [Required(), Length(max=255)], description=u'URL to send data to (ex: www.alarmdecoder.com)')
     custom_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Path to send variables to (ex: /publicapi/add)')
     is_ssl = BooleanField(u'SSL?', default=False, description=u'Is the URL SSL or No?')
@@ -286,28 +340,35 @@ class CustomPostForm(EditNotificationForm):
     custom_values = FieldList(FormField(CustomValueForm), validators=[Optional()], label=None)
     add_field = ButtonField(u'Add Field', onclick='addField();')
 
-    #buttons = FormField(NotificationButtonForm)
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(CustomPostInternalForm, self).__init__(*args, **kwargs)
+
+
+class CustomPostForm(EditNotificationForm):
+    form_field = FormField(CustomPostInternalForm)
+
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
 
-        settings['custom_url'] = self.populate_setting('custom_url', self.custom_url.data)
-        settings['custom_path'] = self.populate_setting('custom_path', self.custom_path.data)
-        settings['is_ssl'] = self.populate_setting('is_ssl', self.is_ssl.data)
-        settings['method'] = self.populate_setting('method', self.method.data)
-        settings['post_type'] = self.populate_setting('post_type', self.post_type.data)
-        settings['custom_values'] = self.populate_setting('custom_values', self.custom_values.data)
+        settings['custom_url'] = self.populate_setting('custom_url', self.form_field.custom_url.data)
+        settings['custom_path'] = self.populate_setting('custom_path', self.form_field.custom_path.data)
+        settings['is_ssl'] = self.populate_setting('is_ssl', self.form_field.is_ssl.data)
+        settings['method'] = self.populate_setting('method', self.form_field.method.data)
+        settings['post_type'] = self.populate_setting('post_type', self.form_field.post_type.data)
+        settings['custom_values'] = self.populate_setting('custom_values', self.form_field.custom_values.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
 
-        self.custom_url.data = self.populate_from_setting(id, 'custom_url')
-        self.custom_path.data = self.populate_from_setting(id, 'custom_path')
-        self.is_ssl.data = self.populate_from_setting(id, 'is_ssl')
-        self.method.data = self.populate_from_setting(id, 'method')
-        self.post_type.data = self.populate_from_setting(id, 'post_type')
+        self.form_field.custom_url.data = self.populate_from_setting(id, 'custom_url')
+        self.form_field.custom_path.data = self.populate_from_setting(id, 'custom_path')
+        self.form_field.is_ssl.data = self.populate_from_setting(id, 'is_ssl')
+        self.form_field.method.data = self.populate_from_setting(id, 'method')
+        self.form_field.post_type.data = self.populate_from_setting(id, 'post_type')
 
         custom = self.populate_from_setting(id, 'custom_values')
 
@@ -320,7 +381,7 @@ class CustomPostForm(EditNotificationForm):
                 CVForm.custom_key = key
                 CVForm.custom_value = value
 
-                self.custom_values.append_entry(CVForm)
+                self.form_field.custom_values.append_entry(CVForm)
 
 
 class ZoneFilterForm(Form):

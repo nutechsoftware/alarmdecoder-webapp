@@ -3,12 +3,58 @@
 {% extends 'settings/layout.html' %}
 
 {% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.min.css') }}">
+<style type="text/css">
+#notification-type-wrapper { padding-bottom: 10px; }
+#submit-group { padding-top: 15px; }
+#cancel-group { padding-top: 15px; }
+
+label[for^="form_field-custom_values-"], 
+label[for*=" form_field-custom_values-"],
+input[id^="form_field-custom_values-"], 
+input[id*=" form_field-custom_values-"] {
+    float: left;
+}
+
+div[id^="form_field-custom_values-"] > div.controls > div.control-group, 
+div[id*=" form_field-custom_values-"] > div.controls > div.control-group {
+    display: inline-block;
+}
+</style>
 {% endblock %}
 
 {% block pagejs %}
 <script type="text/javascript">
-var iCnt = 0;
+    var iCnt = 0;
     $(document).ready(function() {
+        $(".form-box fieldset").prepend($('#notification-type-wrapper'));
+
+        // Accordion the Notify On.. settings.
+        $('#subscriptions div.controls').accordion({
+            collapsible: true,
+            active: false
+        });
+        $('#form_field').prepend("<label for='form_field'>{{ type|capitalize }} Settings</label>");
+        $('#form_field').accordion({
+            collapsible: true,
+            active: false
+        });
+        $('#subscriptions div.controls span.help-inline').remove();
+
+        var inputs = document.getElementsByTagName('input');
+        for( var inputCnt = 0; inputCnt < inputs.length; inputCnt++)
+        {
+            if( inputs[inputCnt].type == 'text' && inputs[inputCnt].name.indexOf("custom_key") != -1 )
+                iCnt++;
+        }
+
+        $('#custom_values').css("list-style-type", "none");
+        for( var cnt = 0; cnt < iCnt; cnt++ )
+        {
+            $("label[for='custom_values-" + cnt + "']").hide();
+            $("label[for='custom_values-" + cnt + "-csrf_token']").hide();
+        }
+
         createFormTooltip('#description', 'Name of notification for display in list of notifications.');
 
         if( '{{type}}' == 'email' )
@@ -85,8 +131,8 @@ var iCnt = 0;
     });
 function addField()
 {
-    var newInput = '<div class="control-group"><label for="custom_values-' + iCnt + '-custom_key" style="display: inline-block;" class="control-label">Custom Key&nbsp;</label><input type="text" id="custom_values-' + iCnt + '-custom_key" name="custom_values-' + iCnt + '-custom_key"/>&nbsp;<label for="custom_values-' + iCnt + '-custom_value" style="display: inline-block;" class="control-label">Custom Value&nbsp;</label><input type="text" id="custom_values-' + iCnt + '-custom_value" name="custom_values-' + iCnt + '-custom_value"/>&nbsp;<a href="#" id="remove_field' + iCnt + '" class="remove_field">Remove</a></div>';
-    $('#add_field-group').before(newInput);
+    var newInput = '<div class="control-group" id="form_field-custom_values-' + iCnt + '"><div class="controls"><div class="control-group" style="display: inline-block;"><label for="form_field-custom_values-' + iCnt + '-custom_key" class="control-label">Custom Key</label><div class="controls"><input type="text" id="form_field-custom_values-' + iCnt + '-custom_key" name="form_field-custom_values-' + iCnt + '-custom_key"/>&nbsp;</div></div><div class="control-group" style="display: inline-block;"><label for="form_field-custom_values-' + iCnt + '-custom_value" class="control-label">Custom Value</label><div class="controls"><input type="text" id="form_field-custom_values-' + iCnt + '-custom_value" name="form_field-custom_values-' + iCnt + '-custom_value" class="custom_value"/></div><span class="help-inline"></span></div><a href="#" id="remove_field' + iCnt + '" class="remove_field"><img alt="Remove" title="Remove" src="{{ url_for("static", filename="img/red_x.png") }}"></a></div>';
+    $('#form_field-add_field-group').before(newInput);
     iCnt++;
 }
 </script>
@@ -96,7 +142,13 @@ function addField()
 <div class="settings_wrapper">
     {{ render_form(url_for('notifications.create_by_type', type=type), form) }}
 </div>
+
+<div id="notification-type-wrapper" style="display: none;">
+    <label for="notification-type">Type</label>
+    <span id="notification-type">{{ TYPES[type]|capitalize }}</span>
+</div>
 {% endblock %}
 
 {% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
 {% endblock %}

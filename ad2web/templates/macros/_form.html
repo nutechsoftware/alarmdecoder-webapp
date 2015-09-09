@@ -124,6 +124,10 @@
                     {% endif %}
                 {% elif field.type == "FormField" %}
                     {{ render_formfield(field) }}
+                {% elif field.type == "FieldList" %}
+                    {% for f in field %}
+                        {{ render_formfield(f) }}
+                    {% endfor %}
                 {% else %}
                     {{ render_input(field) }}
                 {% endif %}
@@ -198,6 +202,10 @@
                     {{ render_formfield(field) }}
                 {% elif field.type == "MultiCheckboxField" %}
                     {{ render_multicheckbox(field) }}
+                {% elif field.type == "FieldList" %}
+                    {% for f in field %}
+                        {{ render_formfield(f) }}
+                    {% endfor %}
                 {% else %}
                     {{ render_input(field) }}
                 {% endif %}
