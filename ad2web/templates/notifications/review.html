@@ -1,0 +1,44 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+<style type="text/css">
+    .review-column-label { 
+        width: 20%; 
+        float: left;
+        padding-right: 10px;
+    }
+
+    .clear {
+        clear: both;
+    }
+</style>
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+       $(".form-box fieldset").prepend($('#review-data'));
+       $('#review-data').show();
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    {{ render_form(url_for('notifications.review', id=notification.id), form) }}
+</div>
+<div id="review-data" style="display: none;">
+    <div>
+        <div class="review-column-label">Description</div>
+        <div id="review-description">{{ notification.description }}</div>
+        <div class="clear review-column-label">Type</div>
+        <div id="review-type">{{ TYPES[notification.type] }}</div>
+    </div>
+    <div class="clear"/>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}

@@ -75,7 +75,7 @@ class NotificationSystem(object):
         errors = []
 
         for id, n in self._notifiers.iteritems():
-            if n and n.subscribes_to(type):
+            if n and n.subscribes_to(type, **kwargs):
                 try:
                     message = self._build_message(type, **kwargs)
 
@@ -135,8 +135,19 @@ class BaseNotification(object):
         else:
             self._subscriptions = {}
 
-    def subscribes_to(self, type, value=None):
+        if 'zone_filter' in obj.settings.keys():
+            self._zone_filters = [int(k) for k in json.loads(obj.settings['zone_filter'].value)]
+        else:
+            self._zone_filters = []
+
+    def subscribes_to(self, type, **kwargs):
         if type in self._subscriptions.keys():
+            if type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
+                if int(kwargs.get('zone', -1)) in self._zone_filters:
+                    return True
+                else:
+                    return False
+
             return True
 
         return False
@@ -145,7 +156,7 @@ class LogNotification(object):
     def __init__(self):
         self.description = 'Logger'
 
-    def subscribes_to(self, type):
+    def subscribes_to(self, type, **kwargs):
         return True
 
     def send(self, type, text):

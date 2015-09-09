@@ -40,6 +40,10 @@ class EditNotificationMessageForm(Form):
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications/messages'")
 
 
+class NotificationReviewForm(Form):
+    buttons = FormField(NotificationButtonForm)
+
+
 class EditNotificationForm(Form):
     type = HiddenField()
     description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')
@@ -52,39 +56,6 @@ class EditNotificationForm(Form):
         subscriptions = self.populate_from_setting(id, 'subscriptions')
         if subscriptions:
             self.subscriptions.data = [k if v == True else False for k, v in json.loads(subscriptions).iteritems()]
-
-    def populate_setting(self, name, value, id=None):
-        if id is not None:
-            setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
-        else:
-            setting = NotificationSetting(name=name)
-
-        setting.value = value
-
-        return setting
-
-    def populate_from_setting(self, id, name, default=None):
-        ret = default
-
-        setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
-        if setting is not None:
-            ret = setting.value
-
-        return ret
-
-
-class ZoneFilterForm(Form):
-    zones = SelectMultipleField(choices=[], coerce=str)
-
-    buttons = FormField(NotificationButtonForm)
-
-    def populate_settings(self, settings, id=None):
-        settings['zone_filter'] = self.populate_setting('zone_filter', json.dumps(self.zones.data))
-
-    def populate_from_settings(self, id):
-        zone_filters = self.populate_from_setting(id, 'zone_filter')
-        if zone_filters:
-            self.zones.data = [str(k) for k in json.loads(zone_filters)]
 
     def populate_setting(self, name, value, id=None):
         if id is not None:
@@ -119,7 +90,9 @@ class EmailNotificationForm(EditNotificationForm):
     username = TextField(u'Username', [Optional(), Length(max=255)])
     password = PasswordField(u'Password', [Optional(), Length(max=255)])
 
-    buttons = FormField(NotificationButtonForm)
+    #buttons = FormField(NotificationButtonForm)
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -154,7 +127,9 @@ class GoogleTalkNotificationForm(EditNotificationForm):
     password = PasswordField(u'Password', [Required(), Length(max=255)], description=u'Password for the source account')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Messages will be sent to this address')
 
-    buttons = FormField(NotificationButtonForm)
+    #buttons = FormField(NotificationButtonForm)
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -176,7 +151,9 @@ class PushoverNotificationForm(EditNotificationForm):
     priority = SelectField(u'Message Priority', choices=[PUSHOVER_PRIORITIES[LOWEST], PUSHOVER_PRIORITIES[LOW], PUSHOVER_PRIORITIES[NORMAL], PUSHOVER_PRIORITIES[HIGH], PUSHOVER_PRIORITIES[EMERGENCY]], default=PUSHOVER_PRIORITIES[LOW], description='Pushover message priority', coerce=int)
     title = TextField(u'Title of Message', [Length(max=255)], description=u'Title of Notification Messages')
 
-    buttons = FormField(NotificationButtonForm)
+    #buttons = FormField(NotificationButtonForm)
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -199,7 +176,9 @@ class TwilioNotificationForm(EditNotificationForm):
     number_to = TextField(u'To', [Required(), Length(max=15)], description=u'Number to send SMS to')
     number_from = TextField(u'From', [Required(), Length(max=15)], description=u'Must Be A Valid Twilio Phone Number')
 
-    buttons = FormField(NotificationButtonForm)
+    #buttons = FormField(NotificationButtonForm)
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -221,7 +200,9 @@ class NMANotificationForm(EditNotificationForm):
     app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications', default='AlarmDecoder')
     nma_priority = SelectField(u'Message Priority', choices=[NMA_PRIORITIES[LOWEST], NMA_PRIORITIES[LOW], NMA_PRIORITIES[NORMAL], NMA_PRIORITIES[HIGH], NMA_PRIORITIES[EMERGENCY]], default=NMA_PRIORITIES[LOW], description='NotifyMyAndroid message priority', coerce=int)
     
-    buttons = FormField(NotificationButtonForm)
+    #buttons = FormField(NotificationButtonForm)
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -241,7 +222,9 @@ class ProwlNotificationForm(EditNotificationForm):
     prowl_app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications', default='AlarmDecoder')
     prowl_priority = SelectField(u'Message Priority', choices=[PROWL_PRIORITIES[LOWEST], PROWL_PRIORITIES[LOW], PROWL_PRIORITIES[NORMAL], PROWL_PRIORITIES[HIGH], PROWL_PRIORITIES[EMERGENCY]], default=PROWL_PRIORITIES[LOW], description='Prowl message priority', coerce=int)
 
-    buttons = FormField(NotificationButtonForm)
+    #buttons = FormField(NotificationButtonForm)
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -265,7 +248,9 @@ class GrowlNotificationForm(EditNotificationForm):
     growl_title = TextField(u'Title', [Required(), Length(max=255)], description=u'Notification Title', default=GROWL_TITLE)
     growl_priority = SelectField(u'Message Priority', choices=[GROWL_PRIORITIES[LOWEST], GROWL_PRIORITIES[LOW], GROWL_PRIORITIES[NORMAL], GROWL_PRIORITIES[HIGH], GROWL_PRIORITIES[EMERGENCY]], default=GROWL_PRIORITIES[LOW], description='Growl message priority', coerce=int)
 
-    buttons = FormField(NotificationButtonForm)
+    #buttons = FormField(NotificationButtonForm)
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -301,7 +286,9 @@ class CustomPostForm(EditNotificationForm):
     custom_values = FieldList(FormField(CustomValueForm), validators=[Optional()], label=None)
     add_field = ButtonField(u'Add Field', onclick='addField();')
 
-    buttons = FormField(NotificationButtonForm)
+    #buttons = FormField(NotificationButtonForm)
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
         EditNotificationForm.populate_settings(self, settings, id)
@@ -334,3 +321,40 @@ class CustomPostForm(EditNotificationForm):
                 CVForm.custom_value = value
 
                 self.custom_values.append_entry(CVForm)
+
+
+class ZoneFilterForm(Form):
+    zones = SelectMultipleField(choices=[], coerce=str)
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
+
+    def populate_settings(self, settings, id=None):
+        settings['zone_filter'] = self.populate_setting('zone_filter', json.dumps(self.zones.data))
+
+    def populate_from_settings(self, id):
+        zone_filters = self.populate_from_setting(id, 'zone_filter')
+        if zone_filters:
+            self.zones.data = [str(k) for k in json.loads(zone_filters)]
+
+    def populate_setting(self, name, value, id=None):
+        if id is not None:
+            setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
+        else:
+            setting = NotificationSetting(name=name)
+
+        setting.value = value
+
+        return setting
+
+    def populate_from_setting(self, id, name, default=None):
+        ret = default
+
+        setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
+        if setting is not None:
+            ret = setting.value
+
+        return ret
+
+
+class ReviewNotificationForm(Form):
+    buttons = FormField(NotificationButtonForm)

@@ -10,7 +10,7 @@ from ..zones import Zone
 from .forms import (CreateNotificationForm, EditNotificationForm,
                     EditNotificationMessageForm,
                     EmailNotificationForm, GoogleTalkNotificationForm, PushoverNotificationForm,
-                    TwilioNotificationForm, NMANotificationForm, ProwlNotificationForm, GrowlNotificationForm, CustomPostForm, ZoneFilterForm)
+                    TwilioNotificationForm, NMANotificationForm, ProwlNotificationForm, GrowlNotificationForm, CustomPostForm, ZoneFilterForm, ReviewNotificationForm)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 
@@ -51,7 +51,7 @@ def index():
                             active='notifications',
                             ssl=use_ssl)
 
-@notifications.route('/edit/<int:id>', methods=['GET', 'POST'])
+@notifications.route('/<int:id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
@@ -81,16 +81,7 @@ def edit(id):
         if str(ZONE_FAULT) in form.subscriptions.data or str(ZONE_RESTORE) in form.subscriptions.data:
             return redirect(url_for('notifications.zone_filter', id=notification.id))
 
-        if form.buttons.test.data:
-            error = current_app.decoder.test_notifier(id)
-
-            if error:
-                flash('Error sending test notification: {0}'.format(error), 'error')
-            else:
-                flash('Test notification sent.', 'success')
-        else:
-            flash('Notification saved.', 'success')
-            return redirect(url_for('notifications.index'))
+        return redirect(url_for('notifications.review', id=notification.id))
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
@@ -146,18 +137,7 @@ def create_by_type(type):
         if str(ZONE_FAULT) in form.subscriptions.data or str(ZONE_RESTORE) in form.subscriptions.data:
             return redirect(url_for('notifications.zone_filter', id=obj.id))
 
-        if form.buttons.test.data:
-            error = current_app.decoder.test_notifier(obj.id)
-
-            if error:
-                flash('Error sending test notification: {0}'.format(error), 'error')
-            else:
-                flash('Test notification sent.', 'success')
-        else:
-            flash('Notification created.', 'success')
-            return redirect(url_for('notifications.index'))
-
-        return redirect(url_for('notifications.index'))
+        return redirect(url_for('notifications.review', id=obj.id))
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
@@ -186,7 +166,6 @@ def zone_filter(id):
 
     if not form.is_submitted():
         form.populate_from_settings(id=id)
-        current_app.logger.debug(form.zones.data)
 
     if form.validate_on_submit():
         obj = Notification.query.filter_by(id=id).first_or_404()
@@ -195,13 +174,11 @@ def zone_filter(id):
         db.session.add(obj)
         db.session.commit()
 
-        flash('Notification created.', 'success')
+        return redirect(url_for('notifications.review', id=id))
 
-        return redirect(url_for('notifications.index'))
+    return render_template('notifications/zone_filter.html', id=id, form=form, active='notifications')
 
-    return render_template('notifications/zone_filter.html', id=id, form=form)
-
-@notifications.route('/remove/<int:id>', methods=['GET', 'POST'])
+@notifications.route('/<int:id>/remove', methods=['GET', 'POST'])
 @login_required
 def remove(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
@@ -215,6 +192,32 @@ def remove(id):
 
     flash('Notification deleted.', 'success')
     return redirect(url_for('notifications.index'))
+
+@notifications.route('/<int:id>/review', methods=['GET', 'POST'])
+@login_required
+def review(id):
+    form = ReviewNotificationForm()
+
+    notification = Notification.query.filter_by(id=id).first_or_404()
+    if notification.user != current_user and not current_user.is_admin():
+        abort(403)
+
+    if form.validate_on_submit():
+        error = None
+        if form.buttons.test.data:
+            error = current_app.decoder.test_notifier(notification.id)
+
+            if error:
+                flash('Error sending test notification: {0}'.format(error), 'error')
+            else:
+                flash('Test notification sent.', 'success')
+        else:
+            flash('Notification saved.', 'success')
+            
+        if error is None:
+            return redirect(url_for('notifications.index'))
+
+    return render_template('notifications/review.html', notification=notification, form=form, active='notifications')
 
 @notifications.route('/messages', methods=['GET'])
 @login_required

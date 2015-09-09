@@ -3,12 +3,18 @@
 {% extends 'settings/layout.html' %}
 
 {% block css %}
+<style type="text/css">
+#notification-type-wrapper { padding-bottom: 10px; }
+</style>
 {% endblock %}
 
 {% block pagejs %}
 <script type="text/javascript">
     var iCnt = 0;
     $(document).ready(function() {
+       $(".form-box fieldset").prepend($('#notification-type-wrapper'));
+       $('#notification-type-wrapper').show();
+
         var inputs = document.getElementsByTagName('input');
         for( var inputCnt = 0; inputCnt < inputs.length; inputCnt++)
         {
@@ -110,10 +116,12 @@ function addField()
 
 {% block body %}
 <div class="settings_wrapper">
+    {{ render_form(url_for('notifications.edit', id=id), form) }}
+</div>
+
+<div id="notification-type-wrapper" style="display: none;">
     <label for="notification-type">Type</label>
     <span id="notification-type">{{ TYPES[notification.type]|capitalize }}</span>
-
-    {{ render_form(url_for('notifications.edit', id=id), form) }}
 </div>
 {% endblock %}
 
