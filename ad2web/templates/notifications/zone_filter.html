@@ -28,6 +28,8 @@ $(document).ready(function() {
 
 {% block body %}
 <div class="settings_wrapper">
+    <p>Please choose the zones for which you would like to receive notifications.</p>
+
     {{ render_form(url_for('notifications.zone_filter', id=id), form) }}
 </div>
 {% endblock %}

@@ -68,7 +68,6 @@ def edit(id):
     if not form.is_submitted():
         form.populate_from_settings(id)
 
-
     if form.validate_on_submit():
         notification.description = form.description.data
         form.populate_settings(notification.settings, id=id)
@@ -158,7 +157,7 @@ def build_zone_list():
 
     return zone_list
 
-@notifications.route('/create/<int:id>/zone_filter', methods=['GET', 'POST'])
+@notifications.route('/<int:id>/zones', methods=['GET', 'POST'])
 @login_required
 def zone_filter(id):
     form = ZoneFilterForm()
