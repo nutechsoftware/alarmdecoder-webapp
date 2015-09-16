@@ -418,6 +418,7 @@ def device():
             form.panel_mode.data = current_app.decoder.device.mode
             form.keypad_address.data = current_app.decoder.device.address
             form.address_mask.data = '{0:x}'.format(current_app.decoder.device.address_mask)
+            form.internal_address_mask.data = '{0:x}'.format(current_app.decoder.internal_address_mask)
             form.lrr_enabled.data = current_app.decoder.device.emulate_lrr
             form.deduplicate.data = current_app.decoder.device.deduplicate
             form.zone_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_zone)]
@@ -434,6 +435,10 @@ def device():
             address_mask = Setting.get_by_name('address_mask').value
             if address_mask is not None:
                 form.address_mask.data = address_mask
+
+            internal_address_mask = Setting.get_by_name('internal_address_mask').value
+            if internal_address_mask is not None:
+                form.internal_address_mask.data = internal_address_mask
 
             lrr_enabled = Setting.get_by_name('lrr_enabled').value
             if lrr_enabled is not None:
@@ -456,6 +461,7 @@ def device():
             panel_mode = Setting.get_by_name('panel_mode')
             keypad_address = Setting.get_by_name('keypad_address')
             address_mask = Setting.get_by_name('address_mask')
+            internal_address_mask = Setting.get_by_name('internal_address_mask')
             lrr_enabled = Setting.get_by_name('lrr_enabled')
             zone_expanders = Setting.get_by_name('emulate_zone_expanders')
             relay_expanders = Setting.get_by_name('emulate_relay_expanders')
@@ -467,6 +473,7 @@ def device():
             panel_mode.value = form.panel_mode.data
             keypad_address.value = form.keypad_address.data
             address_mask.value = form.address_mask.data
+            internal_address_mask.value = form.internal_address_mask.data
             lrr_enabled.value = form.lrr_enabled.data
             zone_expanders.value = ','.join([str(x) for x in zx])
             relay_expanders.value = ','.join([str(x) for x in rx])
@@ -477,6 +484,7 @@ def device():
             db.session.add(panel_mode)
             db.session.add(keypad_address)
             db.session.add(address_mask)
+            db.session.add(internal_address_mask)
             db.session.add(lrr_enabled)
             db.session.add(zone_expanders)
             db.session.add(relay_expanders)

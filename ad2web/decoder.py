@@ -94,6 +94,16 @@ class Decoder(object):
             self._notifier_system = None
             self._internal_address_mask = 0xFFFFFFFF
 
+    @property
+    def internal_address_mask(self):
+        return self._internal_address_mask
+
+    @internal_address_mask.setter
+    def internal_address_mask(self, mask):
+        self._internal_address_mask = int(mask, 16)
+        if self.device is not None:
+            self.device.internal_address_mask = int(mask, 16)
+
     def start(self):
         """
         Starts the internal threads.
@@ -174,7 +184,7 @@ class Decoder(object):
         with self.app.app_context():
             self._device_type = Setting.get_by_name('device_type').value
             self._device_location = Setting.get_by_name('device_location').value
-            self._internal_address_mask = Setting.get_by_name('internal_address_mask', 0xFFFFFFFF).value
+            self._internal_address_mask = int(Setting.get_by_name('internal_address_mask', 0xFFFFFFFF).value, 16)
 
             if self._device_type:
                 interface = ('localhost', 10000)
