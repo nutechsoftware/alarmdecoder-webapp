@@ -173,7 +173,7 @@
         if( !tablet && !mobile )
         {
             $("#address_mask_builder").click(function() {
-                refreshMaskDialog('#internal_address_mask');
+                refreshMaskDialog('#address_mask');
 
                 $('#dialog').dialog({
                     modal: true,
@@ -191,7 +191,7 @@
             if( mobile )
             {
                 $("#address_mask_builder").on('touchstart', function() {
-                    refreshMaskDialog('#internal_address_mask');
+                    refreshMaskDialog('#address_mask');
 
                     $('#dialog').dialog({
                         modal: true,
@@ -207,7 +207,7 @@
             if( tablet )
             {
                 $("#address_mask_builder").on('touchstart', function() {
-                    refreshMaskDialog('#internal_address_mask');
+                    refreshMaskDialog('#address_mask');
 
                     $('#dialog').dialog({
                         modal: true,
