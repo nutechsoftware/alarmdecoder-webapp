@@ -59,62 +59,62 @@ div[id*=" form_field-custom_values-"] > div.controls > div.control-group {
 
         if( '{{type}}' == 'email' )
         {
-            createFormTooltip('#source', 'Emails will come from this address.');
-            createFormTooltip('#destination', 'Emails will go to this address.');
-            createFormTooltip('#server', 'Email server to use.\n\nGmail Example: smtp.gmail.com');
-            createFormTooltip('#port', 'Port email server listens on.\nMany ISPs filter default ports, please verify what port your server utilizes.\n\nGmail Example: 587');
-            createFormTooltip('#tls', 'Enable TLS security?  Yes for Gmail!');
-            createFormTooltip('#authentication_required', 'Does your server require authentication for your user?\n\nGmail Example: Yes');
-            createFormTooltip('#username', 'Username to authenticate with to the mail server.\n\nFor Gmail this is the part before @gmail.com');
-            createFormTooltip('#password', 'The password for your email user.');
+            createFormTooltip('#form_field-source', 'Emails will come from this address.');
+            createFormTooltip('#form_field-destination', 'Emails will go to this address.');
+            createFormTooltip('#form_field-server', 'Email server to use.\n\nGmail Example: smtp.gmail.com');
+            createFormTooltip('#form_field-port', 'Port email server listens on.\nMany ISPs filter default ports, please verify what port your server utilizes.\n\nGmail Example: 587');
+            createFormTooltip('#form_field-tls', 'Enable TLS security?  Yes for Gmail!');
+            createFormTooltip('#form_field-authentication_required', 'Does your server require authentication for your user?\n\nGmail Example: Yes');
+            createFormTooltip('#form_field-username', 'Username to authenticate with to the mail server.\n\nFor Gmail this is the part before @gmail.com');
+            createFormTooltip('#form_field-password', 'The password for your email user.');
         }
         if( '{{type}}' == 'googletalk' )
         {
-            createFormTooltip('#source', 'Address you would like messages to originate from.');
-            createFormTooltip('#password', 'The password for the source address.');
-            createFormTooltip('#destination', 'The address you would like to send messages to.');
+            createFormTooltip('#form_field-source', 'Address you would like messages to originate from.');
+            createFormTooltip('#form_field-password', 'The password for the source address.');
+            createFormTooltip('#form_field-destination', 'The address you would like to send messages to.');
         }
         if( '{{type}}' == 'pushover' )
         {
-            createFormTooltip('#token', 'Your pushover application API Token');
-            createFormTooltip('#user_key', 'Your user or group key');
-            createFormTooltip('#priority', 'Message Priority');
-            createFormTooltip('#title', 'Title of your Message');
+            createFormTooltip('#form_field-token', 'Your pushover application API Token');
+            createFormTooltip('#form_field-user_key', 'Your user or group key');
+            createFormTooltip('#form_field-priority', 'Message Priority');
+            createFormTooltip('#form_field-title', 'Title of your Message');
         }
         if( '{{type}}' == 'twilio' )
         {
-            createFormTooltip('#account_sid', 'The Twilio Account SID for this User.');
-            createFormTooltip('#auth_token', 'Your Twilio User Auth Token.');
-            createFormTooltip('#number_to', 'Number to send SMS to');
-            createFormTooltip('#number_from', 'Number SMS comes from - Must be a valid Twilio phone number.');
+            createFormTooltip('#form_field-account_sid', 'The Twilio Account SID for this User.');
+            createFormTooltip('#form_field-auth_token', 'Your Twilio User Auth Token.');
+            createFormTooltip('#form_field-number_to', 'Number to send SMS to');
+            createFormTooltip('#form_field-number_from', 'Number SMS comes from - Must be a valid Twilio phone number.');
         }
         if( '{{type}}' == 'NMA' )
         {
-            createFormTooltip('#api_key', 'The NotifyMyAndroid API Key');
-            createFormTooltip('#app_name', 'The Application Name to show in notifications.');
-            createFormTooltip('#nma_priority', 'Message Priority');
+            createFormTooltip('#form_field-api_key', 'The NotifyMyAndroid API Key');
+            createFormTooltip('#form_field-app_name', 'The Application Name to show in notifications.');
+            createFormTooltip('#form_field-nma_priority', 'Message Priority');
         }
         if( '{{type}}' == 'prowl')
         {
-            createFormTooltip('#prowl_api_key', 'Your Prowl API Key');
-            createFormTooltip('#prowl_app_name', 'Application Name to show in notifications.');
-            createFormTooltip('#prowl_priority', 'Prowl Message Priority');
+            createFormTooltip('#form_field-prowl_api_key', 'Your Prowl API Key');
+            createFormTooltip('#form_field-prowl_app_name', 'Application Name to show in notifications.');
+            createFormTooltip('#form_field-prowl_priority', 'Prowl Message Priority');
         }
         if( '{{type}}' == 'growl' )
         {
-            createFormTooltip('#growl_hostname', 'Growl server to send notification to');
-            createFormTooltip('#growl_port', 'Growl server listen port');
-            createFormTooltip('#growl_password', 'The password for the growl server');
-            createFormTooltip('#growl_title', 'Notification Title');
-            createFormTooltip('#growl_priority', 'Growl Message Priority');
+            createFormTooltip('#form_field-growl_hostname', 'Growl server to send notification to');
+            createFormTooltip('#form_field-growl_port', 'Growl server listen port');
+            createFormTooltip('#form_field-growl_password', 'The password for the growl server');
+            createFormTooltip('#form_field-growl_title', 'Notification Title');
+            createFormTooltip('#form_field-growl_priority', 'Growl Message Priority');
         }
         if( '{{type}}' == 'custom' )
         {
-            createFormTooltip('#custom_url', 'The URL to POST data to.');
-            createFormTooltip('#custom_path', 'The Path on the server to POST to.');
-            createFormTooltip('#is_ssl', 'HTTP or HTTPS?');
-            createFormTooltip('#post_type', 'Does the URL expect urlencode, json, or xml data?');
-            createFormTooltip('#add_field', 'Click me to add custom fields to notification.');
+            createFormTooltip('#form_field-custom_url', 'The URL to POST data to.');
+            createFormTooltip('#form_field-custom_path', 'The Path on the server to POST to.');
+            createFormTooltip('#form_field-is_ssl', 'HTTP or HTTPS?');
+            createFormTooltip('#form_field-post_type', 'Does the URL expect urlencode, json, or xml data?');
+            createFormTooltip('#form_field-add_field', 'Click me to add custom fields to notification.');
         }
 
         $(document.body).on('click', '.remove_field', function(e) {
