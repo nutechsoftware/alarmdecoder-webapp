@@ -30,23 +30,36 @@ If you're running on a Raspberry Pi the easiest way to get started is to downloa
 
 If you'd rather do it by hand you can follow these steps:
 
-1. sudo apt-get install nginx gunicorn sendmail libffi-dev python-dev build-essential libssl-dev
-2. cd /opt/
-3. sudo git clone http://github.com/nutechsoftware/alarmdecoder-webapp.git
-5. cd alarmdecoder-webapp
-6. sudo pip install -r requirements.txt
-7. sudo python manage.py initdb
-8. sudo cp contrib/nginx/alarmdecoder /etc/nginx/sites-available/
-9. sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
-10. sudo rm /etc/nginx/sites-enabled/default
-11. sudo cp contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
-12. Edit /etc/gunicorn.d/alarmdecoder and change the user/group you'd like it to run as.
-13. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
-14. Optionally install and set permissions for [ser2sock](http://github.com/alarmdecoder/ser2sock.git)
-15. Create ssl directory in /etc/nginx - mkdir /etc/nginx/ssl
-16. Create self-signed SSL certificate for HTTPS - sudo openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt
-17. sudo service nginx restart
-18. sudo service gunicorn restart
+1. sudo apt-get install gunicorn sendmail libffi-dev python-dev build-essential libssl-dev curl libpcre3-dev libpcre++-dev zlib1g-dev libcurl4-openssl-dev minicom telnet python2.7 autoconf automake avahi-daemon screen locales dosfstools vim python2.7-dev sendmail sqlite3
+2. wget https://bootstrap.pypa.io/get-pip.py
+3. sudo python get-pip.py
+4. VERSION=1.7.4
+5. curl http://nginx.org/download/nginx-$VERSION.tar.gz | tar zxvf -
+6. cd nginx-$VERSION
+7. ./configure --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/var/run/nginx.pid --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --with-http_ssl_module --with-ipv6
+8. make
+9. sudo make install
+10. sudo mkdir -p /var/www
+11. sudo mkdir -p /etc/nginx/ssl
+11. sudo cp html/* /var/www
+12. sudo service nginx start
+13. sudo pip install gunicorn --upgrade
+14. sudo ln -s /usr/local/bin/gunicorn /usr/bin/gunicorn
+15. cd /opt/
+16. sudo git clone http://github.com/nutechsoftware/alarmdecoder-webapp.git
+17. cd alarmdecoder-webapp
+18. sudo pip install -r requirements.txt
+19. sudo python manage.py initdb
+20. sudo cp contrib/nginx/alarmdecoder /etc/nginx/sites-available/
+21. sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
+22. sudo rm /etc/nginx/sites-enabled/default
+23. sudo cp contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
+24. Edit /etc/gunicorn.d/alarmdecoder and change the user/group you'd like it to run as.
+25. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
+26. Optionally install and set permissions for [ser2sock](http://github.com/alarmdecoder/ser2sock.git)
+27. Create self-signed SSL certificate for HTTPS - sudo openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt
+28. sudo service nginx restart
+29. sudo service gunicorn restart
 
 ## Support
 
