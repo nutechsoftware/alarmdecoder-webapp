@@ -71,7 +71,8 @@ class TestDeviceForm(Form):
 class DeviceForm(Form):
     panel_mode = RadioField(u'Panel Type', choices=[(ADEMCO, 'Honeywell/Ademco'), (DSC, 'DSC')], default=ADEMCO, coerce=int)
     keypad_address = IntegerField(u'Keypad Address', [Required(), NumberRange(1, 99)], default=18)
-    address_mask = TextField(u'Address Mask', [Required(), Length(max=8), Hex()], default=u'ffffffff')
+    address_mask = TextField(u'AlarmDecoder Address Mask', [Required(), Length(max=8), Hex()], default=u'FFFFFFFF')
+    internal_address_mask = TextField(u'Webapp Address Mask', [Required(), Length(max=8), Hex()], default=u'FFFFFFFF')
     zone_expanders = MultiCheckboxField(u'Zone Expanders', choices=[('1', 'Emulate zone expander #1?'), ('2', 'Emulate zone expander #2?'), ('3', 'Emulate zone expander #3?'), ('4', 'Emulate zone expander #4?'), ('5', 'Emulate zone expander #5?')])
     relay_expanders = MultiCheckboxField(u'Relay Expanders', choices=[('1', 'Emulate relay expander #1?'), ('2', 'Emulate relay expander #2?'), ('3', 'Emulate relay expander #3?'), ('4', 'Emulate relay expander #4?')])
     lrr_enabled = BooleanField(u'Emulate Long Range Radio?')
