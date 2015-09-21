@@ -1,0 +1,29 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+</script>
+{% endblock %}
+{% block body %}
+<div class="settings_wrapper">
+    <h3>Switch Code Branch</h3>
+
+    <div style="color: red;">WARNING: This will replace all current code - you must restart after changing.</div>
+    <br>
+    <div>
+        <h4>Current Branch: {{current_branch}}</h4>
+    </div>
+    <div>
+        {{ render_form(url_for('settings.switch_branch'), form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}
+

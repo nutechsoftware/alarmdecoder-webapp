@@ -36,7 +36,7 @@ from ..user import User, UserDetail
 from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES
 from ..certificate import Certificate, CA, SERVER
@@ -479,6 +479,51 @@ def _export_model(model):
         data.append(res_dict)
 
     return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), skipkeys=True)
+
+@settings.route('/git', methods=['GET', 'POST'] )
+@login_required
+@admin_required
+def switch_branch():
+    form = SwitchBranchForm()
+    cwd = os.getcwd()
+    git = sh.git.bake(_cwd=cwd)
+    status = str(git.status())
+    current_branch = git('rev-parse', '--abbrev-ref', 'HEAD')
+
+    #list all local branches
+    branches = git.branch("-l")
+
+    branch_list = {}
+    err = None
+    #store the sh.RunningCommand output in a dictionary, replace all special characters from git bash output
+    for line in branches:
+        line = line.replace("*", "")
+        line = line.replace("\x1b[32m", "")
+        line = line.replace("\x1b[m", "")
+        line = line.replace("\n", "")
+        line = line.replace(" ", "")
+        line = line.replace("\x1b[31m", "")
+        branch_list[line] = line
+
+    #assign all branches to the dropdown
+    form.branches.choices = [(branch_list[i], branch_list[i]) for i in branch_list]
+
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    if form.validate_on_submit():
+        form.branches.choices = [(branch_list[i], branch_list[i]) for i in branch_list]
+        branch = form.branches.data
+
+        try:
+            git.checkout(branch)
+            git.pull(branch)
+        except sh.ErrorReturnCode_1:
+            err = "You may have local changes - commit or stash them before you can switch branches."
+            flash('Error switching branches! ' + err, 'error')
+ 
+        return redirect(url_for('settings.switch_branch'))
+
+    return render_template('settings/git.html', form=form, ssl=use_ssl, cwd=cwd, status=status, current_branch=current_branch)
 
 @settings.route('/import', methods=['GET', 'POST'], endpoint='import')
 @login_required

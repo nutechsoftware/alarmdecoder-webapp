@@ -93,3 +93,7 @@ class EthernetConfigureForm(Form):
     netmask = TextField('Subnet Mask', [IPAddress('Invalid Subnet IP Format')])
     submit = SubmitField(u'Save')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/host'")
+
+class SwitchBranchForm(Form):
+    branches = SelectField(u'Branch', choices=[('master', u'master'), ('dev', u'dev')], default='master', coerce=str)
+    submit = SubmitField(u'Checkout')

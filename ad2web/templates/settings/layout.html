@@ -16,6 +16,7 @@
     ("keypad", url_for('keypad.custom_index'), False),
     ("cameras", url_for('cameras.cam_list'), False),
     ("diagnostics", url_for('settings.system_diagnostics'), False),
+    ("git", url_for('settings.switch_branch'), False),
 ]%}
 {% else %}
 {% set tabs = [
@@ -29,5 +30,6 @@
     ("keypad", url_for('keypad.custom_index'), False),
     ("cameras", url_for('cameras.cam_list'), False),
     ("diagnostics", url_for('settings.system_diagnostics'), False),
+    ("git", url_for('settings.switch_branch'), False),
 ]%}
 {% endif %}

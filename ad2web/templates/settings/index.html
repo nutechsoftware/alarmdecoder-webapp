@@ -12,7 +12,7 @@
 
 {% block body %}
 <div id="data">
-    In this area you can setup your device, configure zones or notifications, install certificates, manage users, or change your password.
+    In this area you can setup your device, configure zones or notifications, install certificates, manage users, change code branches, or change your password.
     <p>
         <ul>
             <li><a href="{{ url_for('setup.index') }}">Setup</a>: Use to configure your AlarmDecoder device.</li>
@@ -28,6 +28,7 @@
             <li><a href="{{ url_for('settings.system_diagnostics') }}">Diagnostics</a>: Use to test your device and see missing modules.</li>
             <li><a href="{{ url_for('settings.password') }}">Password</a>: Use to change your user password.</li>
             <li><a href="{{ url_for('settings.import') }}">Import</a> and <a href="{{ url_for('settings.export') }}">Export</a> your settings.</li>
+            <li><a href="{{ url_for('settings.switch_branch') }}">Git Branch</a>: Use to switch your git branch.</li>
         <ul>
     </p>
 </div>
