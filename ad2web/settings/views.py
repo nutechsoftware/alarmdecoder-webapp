@@ -486,15 +486,26 @@ def _export_model(model):
 def switch_branch():
     form = SwitchBranchForm()
     cwd = os.getcwd()
-    git = sh.git.bake(_cwd=cwd)
-    status = str(git.status())
-    current_branch = git('rev-parse', '--abbrev-ref', 'HEAD')
+
+    try:
+        git = sh.git.bake(_cwd=cwd)
+        status = str(git.status())
+        current_branch = git('rev-parse', '--abbrev-ref', 'HEAD')
+    except sh.ErrorReturnCode_1:
+        flash('Unable to access git command!', 'error')
+        return redirect(url_for('settings.index'))
 
     #list all local branches
-    branches = git.branch("-l")
+    try:
+        branches = git.branch("-l")
+    except sh.ErrorReturnCode_1:
+        flash('Error getting list of local branches!', 'error')
+        return redirect(url_for('settings.index'))
 
     branch_list = {}
+    remote_list = {}
     err = None
+    checked_out = True
     #store the sh.RunningCommand output in a dictionary, replace all special characters from git bash output
     for line in branches:
         line = line.replace("*", "")
@@ -505,21 +516,40 @@ def switch_branch():
         line = line.replace("\x1b[31m", "")
         branch_list[line] = line
 
+
+    try:
+        remotes = git.remote()
+        for line in remotes:
+            remote_list[line] = line
+    except sh.ErrorReturnCode_1:
+        flash('Error getting list of git remotes!', 'error')
+        return redirect(url_for('settings.index'))
+
     #assign all branches to the dropdown
     form.branches.choices = [(branch_list[i], branch_list[i]) for i in branch_list]
+    form.remotes.choices = [(remote_list[i], remote_list[i]) for i in remote_list]
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
     if form.validate_on_submit():
         form.branches.choices = [(branch_list[i], branch_list[i]) for i in branch_list]
+        form.remotes.choices = [(remote_list[i], remote_list[i]) for i in remote_list]
+
         branch = form.branches.data
+        remote = form.remotes.data
 
         try:
             git.checkout(branch)
-            git.pull(branch)
         except sh.ErrorReturnCode_1:
             err = "You may have local changes - commit or stash them before you can switch branches."
             flash('Error switching branches! ' + err, 'error')
+            checked_out = False
+
+        if checked_out is True:
+            try:
+                git.pull(remote, branch)
+            except sh.ErrorReturnCode_1:
+                flash('Error pulling code from remote: ' + remote + ' branch: ' + branch, 'error')
  
         return redirect(url_for('settings.switch_branch'))
 
