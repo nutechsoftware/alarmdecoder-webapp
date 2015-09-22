@@ -487,6 +487,7 @@ def switch_branch():
     form = SwitchBranchForm()
     cwd = os.getcwd()
 
+    current_branch = None
     try:
         git = sh.git.bake(_cwd=cwd)
         status = str(git.status())
@@ -520,7 +521,7 @@ def switch_branch():
     try:
         remotes = git.remote()
         for line in remotes:
-            remote_list[line] = line
+            remote_list[line] = line.replace("\n", "")
     except sh.ErrorReturnCode_1:
         flash('Error getting list of git remotes!', 'error')
         return redirect(url_for('settings.index'))
@@ -532,9 +533,6 @@ def switch_branch():
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
     if form.validate_on_submit():
-        form.branches.choices = [(branch_list[i], branch_list[i]) for i in branch_list]
-        form.remotes.choices = [(remote_list[i], remote_list[i]) for i in remote_list]
-
         branch = form.branches.data
         remote = form.remotes.data
 
@@ -553,7 +551,7 @@ def switch_branch():
  
         return redirect(url_for('settings.switch_branch'))
 
-    return render_template('settings/git.html', form=form, ssl=use_ssl, cwd=cwd, status=status, current_branch=current_branch)
+    return render_template('settings/git.html', form=form, ssl=use_ssl, current_branch=current_branch)
 
 @settings.route('/import', methods=['GET', 'POST'], endpoint='import')
 @login_required
