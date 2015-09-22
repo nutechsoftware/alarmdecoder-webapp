@@ -12,10 +12,10 @@
     ("cameras", url_for('cameras.cam_list'), False),
     ("users", url_for('admin.users'), True),
     ("password", url_for('settings.password'), False),
-    ("host", url_for('settings.host'), False),
+    ("host", url_for('settings.host'), True),
     ("certificates", url_for('certificate.index'), False),
-    ("diagnostics", url_for('settings.system_diagnostics'), False),
-    ("git", url_for('settings.switch_branch'), False),
+    ("diagnostics", url_for('settings.system_diagnostics'), True),
+    ("git", url_for('settings.switch_branch'), True),
     ("setup", url_for('setup.index'), True),
 ]%}
 {% else %}
@@ -27,9 +27,9 @@
     ("cameras", url_for('cameras.cam_list'), False),
     ("users", url_for('admin.users'), True),
     ("password", url_for('settings.password'), False),
-    ("host", url_for('settings.host'), False),
-    ("diagnostics", url_for('settings.system_diagnostics'), False),
-    ("git", url_for('settings.switch_branch'), False),
+    ("host", url_for('settings.host'), True),
+    ("diagnostics", url_for('settings.system_diagnostics'), True),
+    ("git", url_for('settings.switch_branch'), True),
     ("setup", url_for('setup.index'), True),
 ]%}
 {% endif %}
