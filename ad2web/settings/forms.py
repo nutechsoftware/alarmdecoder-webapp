@@ -95,6 +95,6 @@ class EthernetConfigureForm(Form):
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/host'")
 
 class SwitchBranchForm(Form):
-    remotes = SelectField(u'Branch', choices=[('origin', u'origin')], default='origin', coerce=str)
+    remotes = SelectField(u'Remote', choices=[('origin', u'origin')], default='origin', coerce=str)
     branches = SelectField(u'Branch', choices=[('master', u'master'), ('dev', u'dev')], default='master', coerce=str)
     submit = SubmitField(u'Checkout')
