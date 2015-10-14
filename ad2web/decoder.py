@@ -25,6 +25,7 @@ from .notifications import NotificationSystem
 from .settings.models import Setting
 from .certificate.models import Certificate
 from .updater import Updater
+from .updater.models import FirmwareUpdater
 
 from .notifications.models import NotificationMessage
 from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_RESTORED,
@@ -81,6 +82,8 @@ class Decoder(object):
             self.updater = Updater()
             self.updates = {}
             self.version = ''
+            self.firmware_file = None
+            self.firmware_length = -1
 
             self.trigger_reopen_device = False
             self.trigger_restart = False
@@ -539,6 +542,31 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 
             except (CommError, AttributeError), err:
                 self._alarmdecoder.app.logger.error('Error sending keypress to device', exc_info=True)
+
+    def on_firmwareupload(self, *args):
+        with self._alarmdecoder.app.app_context():
+            try:
+                current_app.logger.info('Beginning firmware upload - filename=%s', self._alarmdecoder.firmware_file)
+                firmware_updater = FirmwareUpdater(filename=self._alarmdecoder.firmware_file, length=self._alarmdecoder.firmware_length)
+                firmware_updater.update()
+
+                self._alarmdecoder.broadcast('firmwareupload', { 'stage': 'STAGE_CONFIGURE' });
+                time.sleep(10)
+
+                # Make sure our previous config gets reset since the firmware update will clear it.
+                self._alarmdecoder.device.save_config();
+
+                self._alarmdecoder.broadcast('firmwareupload', { 'stage': 'STAGE_FINISHED' });
+
+            except Exception, err:
+                current_app.logger.error('Error uploading firmware: %s', err)
+
+            finally:
+                self._alarmdecoder.close()
+                self._alarmdecoder.trigger_reopen_device = True
+
+                self._alarmdecoder.firmware_file = None
+                self._alarmdecoder.firmware_length = -1
 
     def on_test(self, *args):
         """

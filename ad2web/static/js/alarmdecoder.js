@@ -48,6 +48,12 @@ var AlarmDecoder = function() {
 
             PubSub.publish('device_close', obj);
         });
+
+        _socket.on('firmwareupload', function(msg) {
+            obj = JSON.parse(msg);
+
+            PubSub.publish('firmwareupload', obj);
+        });
     };
 
     AlarmDecoder.disconnect = function() {
