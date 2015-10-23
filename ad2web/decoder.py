@@ -180,7 +180,7 @@ class Decoder(object):
             self._notifier_system = NotificationSystem()
             self._camera_thread = CameraChecker(self)
 
-    def open(self):
+    def open(self, no_reader_thread=False):
         """
         Opens the AlarmDecoder device.
         """
@@ -220,7 +220,7 @@ class Decoder(object):
                     self.device.internal_address_mask = self._internal_address_mask
 
                     self.bind_events()
-                    self.device.open(baudrate=self._device_baudrate)
+                    self.device.open(baudrate=self._device_baudrate, no_reader_thread=no_reader_thread)
 
                 except NoDeviceError, err:
                     self.app.logger.warning('Open failed: %s', err[0], exc_info=True)
@@ -545,28 +545,44 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 
     def on_firmwareupload(self, *args):
         with self._alarmdecoder.app.app_context():
+            reopen_with_reader = False
+
             try:
+                # Save the original configuration for newer versions of the library.
+                enable_reconfiguring = False
+                orig_config_string = ''
+                if callable(getattr(self._alarmdecoder.device, 'get_config_string', None)):
+                    enable_reconfiguring = True
+                    orig_config_string = self._alarmdecoder.device.get_config_string()
+
+                self._alarmdecoder.close()
+                self._alarmdecoder.open(no_reader_thread=True)
+
                 current_app.logger.info('Beginning firmware upload - filename=%s', self._alarmdecoder.firmware_file)
                 firmware_updater = FirmwareUpdater(filename=self._alarmdecoder.firmware_file, length=self._alarmdecoder.firmware_length)
                 firmware_updater.update()
 
-                self._alarmdecoder.broadcast('firmwareupload', { 'stage': 'STAGE_CONFIGURE' });
-                time.sleep(10)
+                if firmware_updater.completed:
+                    if enable_reconfiguring:
+                        # Make sure our previous config gets reset since the firmware update will clear it.
+                        self._alarmdecoder.broadcast('firmwareupload', { 'stage': 'STAGE_CONFIGURE' });
+                        time.sleep(10)
+                        self._alarmdecoder.device.send("C{0}\r".format(orig_config_string))
 
-                # Make sure our previous config gets reset since the firmware update will clear it.
-                self._alarmdecoder.device.save_config();
+                    self._alarmdecoder.broadcast('firmwareupload', { 'stage': 'STAGE_FINISHED' });
 
-                self._alarmdecoder.broadcast('firmwareupload', { 'stage': 'STAGE_FINISHED' });
+                    self._alarmdecoder.firmware_file = None
+                    self._alarmdecoder.firmware_length = -1
+                    reopen_with_reader = True
 
             except Exception, err:
                 current_app.logger.error('Error uploading firmware: %s', err)
 
+                self._alarmdecoder.broadcast('firmwareupload', { 'stage': 'STAGE_ERROR', 'error': 'Error uploading firmware.' })
+
             finally:
                 self._alarmdecoder.close()
-                self._alarmdecoder.trigger_reopen_device = True
-
-                self._alarmdecoder.firmware_file = None
-                self._alarmdecoder.firmware_length = -1
+                self._alarmdecoder.open(no_reader_thread=not reopen_with_reader)
 
     def on_test(self, *args):
         """

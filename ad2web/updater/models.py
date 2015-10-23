@@ -581,40 +581,56 @@ class FirmwareUpdater(object):
         self._wait_tick = 0
         self._upload_tick = 0
         self._firmware_length = length
+        self.completed = False
 
     def update(self):
-        Firmware.upload(current_app.decoder.device._device, self._filename, self._stage_callback)
+        try:
+            self.completed = False
+            self._upload_tick = 0
+            self._wait_tick = 0
+
+            Firmware.upload(current_app.decoder.device._device, self._filename, self._stage_callback)
+
+        except Exception, err:
+            current_app.logger.error('Error updating firmware: %s' % err)
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_ERROR', 'error': str(err) });
 
     def _stage_callback(self, stage, **kwargs):
         if stage == Firmware.STAGE_START:
-            current_app.logger.debug('STAGE_START')
+            current_app.logger.info('Beginning firmware update process..')
             current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_START' })
+
         elif stage == Firmware.STAGE_WAITING:
-            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_WAITING' })
             if self._wait_tick == 0:
                 current_app.logger.debug('Waiting for device.')
+
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_WAITING' })
+
         elif stage == Firmware.STAGE_BOOT:
             current_app.logger.debug('Rebooting device..')
             current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_BOOT' })
+
         elif stage == Firmware.STAGE_LOAD:
             current_app.logger.debug('Waiting for boot loader..')
             current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_LOAD' })
+
         elif stage == Firmware.STAGE_UPLOADING:
             if self._upload_tick == 0:
-                current_app.logger.debug('Uploading firmware.')
+                current_app.logger.info('Uploading firmware.')
 
             self._upload_tick += 1
 
             percent = int((self._upload_tick / float(self._firmware_length)) * 100)
             current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_UPLOADING', 'percent': percent })
-            if self._upload_tick % 30 == 0:
-                current_app.logger.debug('ticktock')
 
         elif stage == Firmware.STAGE_DONE:
-            current_app.logger.debug('Done!')
+            self.completed = True
+            current_app.logger.info('Firmware upload complete!')
             current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_DONE' })
+
         elif stage == Firmware.STAGE_ERROR:
-            current_app.logger.debug('Error: ', kwargs.get("error", ""))
+            current_app.logger.error('Error: %s' % kwargs.get("error", ""))
             current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_ERROR', 'error': kwargs.get("error", "") })
+
         elif stage == Firmware.STAGE_DEBUG:
-            current_app.logger.debug('DEBUG: ', kwargs.get("data", ""))
+            current_app.logger.debug('DEBUG: %s' % kwargs.get("data", ""))

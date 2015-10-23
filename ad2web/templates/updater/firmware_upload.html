@@ -13,6 +13,14 @@
     height: 20px;
 }
 
+#upload-retry {
+    margin-top: 5px;
+}
+
+.upload-error {
+    color: red !important;
+}
+
 .ui-progressbar {
     position: relative;
 }
@@ -35,16 +43,12 @@
 {% block pagejs %}
 <script type="text/javascript">
     $(document).ready(function() {
-        PubSub.subscribe('firmwareupload', function(type, msg) {
-            result_text = { 
-                'PASS': '<span style="color:green">&#10004;</span>', 
-                'FAIL': '<span style="color:red">&#10008;</span>',
-                'TIMEOUT': '<span style="color:orange">&#9888;</span>'
-            };
+        var upload_label = $('div#upload-label');
+        var upload_progressbar = $('div#upload-status');
 
+        PubSub.subscribe('firmwareupload', function(type, msg) {
             var stage = msg.stage;
-            var upload_label = $('div#upload-label');
-            var upload_progressbar = $('div#upload-status');
+
             if (stage == "STAGE_START") {
                 upload_label.text("Starting upload..");
             }
@@ -63,6 +67,7 @@
             }
             else if (stage == "STAGE_DONE") {
                 upload_label.text("Firmware upload complete!");
+                $('div#upload-retry').hide();
                 upload_progressbar.progressbar({ value: 100 });
             }
             else if (stage == "STAGE_CONFIGURE") {
@@ -72,14 +77,24 @@
                 upload_label.text("Complete!");
             }
             else if (stage == "STAGE_ERROR") {
-                upload_label.text("ERROR: " + msg.error);
-                upload_label.style("color: #ff0000;");
+                console.log(msg.error);
+                upload_label.text(msg.error);
+                upload_label.addClass('upload-error');
                 upload_progressbar.progressbar({ value: -1 });
+                $('div#upload-retry').show();
             }
         });
 
+        $('button#upload-retry-button').click(function() {
+            upload_label.removeClass('upload-error');
+            upload_progressbar.progressbar({ value: false });
+            $('div#upload-retry').hide();
+
+            decoder.emit('firmwareupload');
+        });
+
         $('div#upload-status').progressbar({ value: false });
-        decoder.emit('firmwareupload', '{{ filename }}');
+        decoder.emit('firmwareupload');
     });
 </script>
 {% endblock %}
@@ -88,6 +103,7 @@
 <div class="settings_wrapper">
     <h3>Firmware Update Progress</h3>
     <div id="upload-status"><div id="upload-label" class="progress-label">Please wait..</div></div>
+    <div id="upload-retry" style="display: none;"><button id="upload-retry-button" type="button">Retry</button></div>
 </div>
 {% endblock %}
 
