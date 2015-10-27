@@ -647,6 +647,11 @@ def _import_refresh():
 def system_diagnostics():
      return render_template('settings/diagnostics.html')
 
+@settings.route('/advanced', methods=['GET'])
+@login_required
+@admin_required
+def advanced():
+    return render_template('settings/advanced.html', active="advanced")
 
 @settings.route('/get_imports_list', methods=['GET', 'POST'])
 @login_required
