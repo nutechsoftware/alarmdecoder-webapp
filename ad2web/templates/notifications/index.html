@@ -70,7 +70,7 @@
                     <td>
                         <a href="{{ url_for('notifications.edit', id=notification.id) }}">{{ notification.description }}</a>
                     </td>
-                    <td><a href="{{ url_for('notifications.remove', id=notification.id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a></td>
+                    <td><a href="{{ url_for('notifications.copy_notification', id=notification.id) }}"><img style="height: 18px; width: 20px; text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/copy.png') }}" alt="Copy" title="Copy"/></a>&nbsp;<a href="{{ url_for('notifications.remove', id=notification.id) }}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}" alt="Remove" title="Remove"/></a></td>
                 </tr>
                 {% endif %}
             {% endfor %}
