@@ -9,6 +9,8 @@ from datetime import timedelta
 from flask import Blueprint, current_app, request, jsonify, abort, Response
 from flask.ext.login import login_user, current_user, logout_user
 
+from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
+
 from ..extensions import db
 
 from ..user import User
@@ -47,16 +49,32 @@ def build_error(code, message):
 @api.route('/alarmdecoder', methods=['GET'])
 @api_authorized
 def alarmdecoder():
+    mode = current_app.decoder.device.mode
+    if mode == ADEMCO:
+        mode = 'ADEMCO'
+    elif mode == DSC:
+        mode = 'DSC'
+    else:
+        mode = 'UNKNOWN'
+
+    relay_status = []
+    for (address, channel), value in current_app.decoder.device._relay_status.items():  # TODO: test this.
+        relay_status.append({
+            'address': address,
+            'channel': channel,
+            'value': value
+        })
+
     ret = {
-        'panel_type': current_app.decoder.device.mode,                          # TODO: convert to human-readable.
+        'panel_type': mode,
         'panel_powered': current_app.decoder.device._power_status,
         'panel_alarming': current_app.decoder.device._alarm_status,
         'panel_bypassed': current_app.decoder.device._bypass_status,
         'panel_armed': current_app.decoder.device._armed_status,
         'panel_fire_detected': current_app.decoder.device._fire_status[0],
         'panel_on_battery': current_app.decoder.device._battery_status[0],
-        'panel_panicked': current_app.decoder.device._panic_status,             # TODO: Can we default this to False instead of None?
-        'panel_relay_status': current_app.decoder.device._relay_status          # TODO: Is JSON going to like our tuple index?  Test with real data.
+        'panel_panicked': current_app.decoder.device._panic_status,
+        'panel_relay_status': relay_status
     }
 
     return jsonify(ret)
@@ -93,6 +111,13 @@ def alarmdecoder_configuration():
     device = current_app.decoder.device
 
     if request.method == 'GET':
+        if device.mode == ADEMCO:
+            mode = 'ADEMCO'
+        elif device.mode == DSC:
+            mode = 'DSC'
+        else:
+            mode = 'UNKNOWN'
+
         ret = {
             'address': device.address,
             'config_bits': device.configbits,
@@ -101,7 +126,7 @@ def alarmdecoder_configuration():
             'emulate_relay': device.emulate_relay,
             'emulate_lrr': device.emulate_lrr,
             'deduplicate': device.deduplicate,
-            'mode': device.mode                             # TODO: make sure this gets converted correctly.
+            'mode': mode
         }
 
         return jsonify(ret)
@@ -126,7 +151,15 @@ def alarmdecoder_configuration():
         if req.get('deduplicate', None) is not None:
             device.deduplicate = req['deduplicate']
         if req.get('mode', None) is not None:
-            device.mode = req['mode']                       # TODO: make sure this gets converted correctly.
+            mode = req['mode']
+            if mode == 'ADEMCO':
+                mode = ADEMCO
+            elif mode == 'DSC':
+                mode = DSC
+            else:
+                return jsonify(build_error(0, "Invalid value for 'mode'.")), 422
+
+            device.mode = mode
 
         device.save_config()
 
@@ -313,7 +346,14 @@ def notifications():
 
         settings = req.get('settings', None)
         for name, value in settings.items():
-            # TODO: Special case for subscriptions.
+            if name == 'subscriptions':
+                event_types = {v: k for k, v in EVENT_TYPES.iteritems()}
+
+                subscriptions_out = {}
+                for k, v in value.iteritems():
+                    subscriptions_out[str(event_types[k])] = v
+
+                value = json.dumps(subscriptions_out)
 
             notification.settings[name] = NotificationSetting(name=name, value=value)
 
@@ -390,12 +430,19 @@ def notifications_by_id(id):
             notification.user_id = user_id
 
         if settings is not None:
-            for name, value in settings:
-                # TODO: special case for subscriptions
-
+            for name, value in settings.items():
                 setting = notification.settings.get(name, None)
                 if setting is None:
                     setting = NotificationSetting(name=name)
+
+                if name == 'subscriptions':
+                    event_types = {v: k for k, v in EVENT_TYPES.iteritems()}
+
+                    subscriptions_out = {}
+                    for k, v in value.iteritems():
+                        subscriptions_out[str(event_types[k])] = v
+
+                    value = json.dumps(subscriptions_out)
 
                 setting.value = value
 
@@ -432,6 +479,8 @@ def cameras():
                 'user_id': camera.user_id
             })
 
+        return jsonify(ret)
+
     elif request.method == 'POST':
         req = request.get_json()
         if req is None:
@@ -463,7 +512,7 @@ def cameras():
             'url': camera.get_jpg_url
         }
 
-    return jsonify(ret)
+        return jsonify(ret), 201
 
 @api.route('/cameras/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 @api_authorized
@@ -541,6 +590,8 @@ def users():
                 'status': user.status
             })
 
+        return jsonify(ret)
+
     elif request.method == 'POST':
         req = request.get_json()
         if req is None:
@@ -568,7 +619,6 @@ def users():
             return jsonify(build_error(888, "Missing 'status' entry.")), 422
 
         # TODO: check for unique email/username
-        # TODO: generate password here.
         # TODO: make status code consistent
 
         user = User(name=name, email=email, password=password, role_code=role, status_code=status)
@@ -584,7 +634,7 @@ def users():
             'status': user.status
         }
 
-    return jsonify(ret)
+        return jsonify(ret), 201
 
 @api.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 @api_authorized
