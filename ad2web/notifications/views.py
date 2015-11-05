@@ -4,7 +4,6 @@ from flask.ext.login import login_required, current_user
 
 from wtforms import FormField, TextField
 from sqlalchemy.orm.session import make_transient
-from sqlalchemy import func
 
 from ..extensions import db
 from ..settings import Setting
@@ -57,7 +56,7 @@ def index():
 @login_required
 def edit(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
-    if notification.user != current_user and not current_user.is_admin():
+    if notification.user != current_user:
         abort(403)
 
     type_id, form_type = NOTIFICATION_TYPE_DETAILS[NOTIFICATION_TYPES[notification.type]]
@@ -73,7 +72,7 @@ def edit(id):
     if form.validate_on_submit():
         notification.description = form.description.data
         form.populate_settings(notification.settings, id=id)
-
+        notification.enabled = 1
         db.session.add(notification)
         db.session.commit()
 
@@ -223,6 +222,27 @@ def copy_notification(id):
     current_app.decoder.refresh_notifier(notification.id)
 
     flash('Notification cloned.', 'success')
+    return redirect(url_for('notifications.index'))
+
+@notifications.route('/<int:id>/toggle', methods=['GET', 'POST'])
+@login_required
+def toggle_notification(id):
+    notification = Notification.query.filter_by(id=id).first_or_404()
+    status = "Enabled"
+
+    if notification.enabled is 0:
+        notification.enabled = 1
+        status = "Enabled"
+    else:
+        notification.enabled = 0
+        status = "Disabled"
+
+    db.session.add(notification)
+    db.session.commit()
+
+    current_app.decoder.refresh_notifier(id)
+
+    flash('Notification ' + status, 'success')
     return redirect(url_for('notifications.index'))
 
 @notifications.route('/<int:id>/review', methods=['GET', 'POST'])

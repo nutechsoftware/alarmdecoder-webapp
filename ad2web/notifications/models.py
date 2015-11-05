@@ -13,6 +13,7 @@ class Notification(db.Model):
     description = Column(db.String(255), nullable=False)
     type = Column(db.Integer, nullable=False)
     user_id = Column(db.Integer, db.ForeignKey('users.id'))
+    enabled = Column(db.Integer, default=1)
 
     settings = db.relationship("NotificationSetting",
                                 backref="notification",
