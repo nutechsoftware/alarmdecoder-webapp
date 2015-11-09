@@ -105,29 +105,37 @@ def alarmdecoder_reboot():
 
     return jsonify(ret)
 
+def _build_alarmdecoder_configuration_data(device, short=False):
+    if not device:
+        return None
+
+    if device.mode == ADEMCO:
+        mode = 'ADEMCO'
+    elif device.mode == DSC:
+        mode = 'DSC'
+    else:
+        mode = 'UNKNOWN'
+
+    ret = {
+        'address': device.address,
+        'config_bits': device.configbits,
+        'address_mask': device.address_mask,
+        'emulate_zone': device.emulate_zone,
+        'emulate_relay': device.emulate_relay,
+        'emulate_lrr': device.emulate_lrr,
+        'deduplicate': device.deduplicate,
+        'mode': mode
+    }
+
+    return ret
+
 @api.route('/alarmdecoder/configuration', methods=['GET', 'PUT'])
 @api_authorized
 def alarmdecoder_configuration():
     device = current_app.decoder.device
 
     if request.method == 'GET':
-        if device.mode == ADEMCO:
-            mode = 'ADEMCO'
-        elif device.mode == DSC:
-            mode = 'DSC'
-        else:
-            mode = 'UNKNOWN'
-
-        ret = {
-            'address': device.address,
-            'config_bits': device.configbits,
-            'address_mask': device.address_mask,
-            'emulate_zone': device.emulate_zone,
-            'emulate_relay': device.emulate_relay,
-            'emulate_lrr': device.emulate_lrr,
-            'deduplicate': device.deduplicate,
-            'mode': mode
-        }
+        ret = _build_alarmdecoder_configuration_data(device)
 
         return jsonify(ret)
 
@@ -163,10 +171,23 @@ def alarmdecoder_configuration():
 
         device.save_config()
 
-        return jsonify(status='OK')
+        ret = _build_alarmdecoder_configuration_data(device)
 
+        return jsonify(ret)
 
 ##### Zone routes
+def _build_zone_data(zone, short=False):
+    if not Zone:
+        return None
+
+    ret = {
+        'zone_id': zone.zone_id,
+        'name': zone.name,
+        'description': zone.description
+    }
+
+    return ret
+
 @api.route('/zones', methods=['GET', 'POST'])
 @api_authorized
 def zones():
@@ -176,11 +197,7 @@ def zones():
 
         ret['zones'] = []
         for z in zones:
-            ret['zones'].append({
-                'zone_id': z.zone_id,
-                'name': z.name,
-                'description': z.description
-            })
+            ret['zones'].append(_build_zone_data(z, short=True))
 
         return jsonify(ret)
 
@@ -209,11 +226,7 @@ def zones():
         db.session.add(zone)
         db.session.commit()
 
-        ret = {
-            'zone_id': zone_id,
-            'name': name,
-            'description': description
-        }
+        ret = _build_zone_data(zone)
 
         return jsonify(ret), 201
 
@@ -225,11 +238,7 @@ def zones_by_id(id):
         return jsonify(build_error(663, 'Zone does not exist.')), 404
 
     if request.method == 'GET':
-        ret = {
-            'zone_id': z.zone_id,
-            'name': z.name,
-            'description': z.description
-        }
+        ret = _build_zone_data(zone)
 
         return jsonify(ret)
 
@@ -260,11 +269,7 @@ def zones_by_id(id):
         db.session.add(z)
         db.session.commit()
 
-        ret = {
-            'zone_id': z.zone_id,
-            'name': z.name,
-            'description': z.description
-        }
+        ret = _build_zone_data(zone)
 
         return jsonify(ret)
 
@@ -275,7 +280,6 @@ def zones_by_id(id):
         ret = { 'status': 'OK' }
 
         return jsonify(ret)
-
 
 @api.route('/zones/<int:id>/fault', methods=['POST'])
 @api_authorized
@@ -306,21 +310,56 @@ def zones_restore(id):
     return jsonify(ret)
 
 ##### Notification routes
+def _build_notification_data(notification, short=False):
+    if notification is None:
+        return None
+
+    ret = {
+        'id': notification.id,
+        'type': notification.type,
+        'description': notification.description,
+        'user_id': notification.user_id
+    }
+
+    if not short:
+        settings = { }
+
+        for setting_name, setting in notification.settings.items():
+            # NOTE: Leaving authentication information out on purpose.  May need to expand this or do it a different way.
+            if setting_name == 'username' or setting_name == 'password':
+                continue
+
+            value = setting.value
+
+            # Special case for subscriptions.
+            if setting_name == "subscriptions":
+                value = json.loads(setting.value)
+
+                output = { }
+                for event_type in EVENT_TYPES:
+                    output[EVENT_TYPES[event_type]] = False
+
+                for k in value.keys():
+                    output[EVENT_TYPES[int(k)]] = value[k]
+                    del value[k]
+
+                value = output
+
+            settings[setting_name] = value
+
+        ret['settings'] = settings
+
+    return ret
+
 @api.route('/notifications', methods=['GET', 'POST'])
 @api_authorized
 def notifications():
     if request.method == 'GET':
-        ret = {}
         notifications = Notification.query.all()
 
-        ret['notifications'] = []
+        ret = { 'notifications': [] }
         for n in notifications:
-            ret['notifications'].append({
-                'id': n.id,
-                'type': n.type,
-                'description': n.description,
-                'user_id': n.user_id
-            })
+            ret['notifications'].append(_build_notification_data(n, short=True))
 
         return jsonify(ret)
 
@@ -360,12 +399,7 @@ def notifications():
         db.session.add(notification)
         db.session.commit()
 
-        ret = {
-            'id': notification.id,
-            'type': notification.type,
-            'description': notification.description,
-            'user_id': notification.user_id
-        }
+        ret = _build_notification_data(notification)
 
         return jsonify(ret), 201
 
@@ -378,38 +412,7 @@ def notifications_by_id(id):
         return jsonify(build_error(663, 'Notification does not exist.')), 404
 
     if request.method == 'GET':
-        settings = { }
-
-        for setting_name, setting in notification.settings.items():
-            # NOTE: Leaving authentication information out on purpose.  May need to expand this or do it a different way.
-            if setting_name == 'username' or setting_name == 'password':
-                continue
-
-            value = setting.value
-
-            # Special case for subscriptions.
-            if setting_name == "subscriptions":
-                value = json.loads(setting.value)
-
-                output = { }
-                for event_type in EVENT_TYPES:
-                    output[EVENT_TYPES[event_type]] = False
-
-                for k in value.keys():
-                    output[EVENT_TYPES[int(k)]] = value[k]
-                    del value[k]
-
-                value = output
-
-            settings[setting_name] = value
-
-        ret = {
-            'id': notification.id,
-            'type': notification.type,
-            'description': notification.description,
-            'user_id': notification.user_id,
-            'settings': settings
-        }
+        ret = _build_notification_data(notification)
 
     elif request.method == 'PUT':
         req = request.get_json()
@@ -449,8 +452,7 @@ def notifications_by_id(id):
         db.session.add(notification)
         db.session.commit()
 
-        # TODO: produce notification data.  Probably consolidate into a function.
-        ret = { 'status': 'OK' }
+        ret = _build_notification_data(notification)
 
     elif request.method == 'DELETE':
         db.session.delete(notification)
@@ -463,6 +465,22 @@ def notifications_by_id(id):
 
 
 ##### Camera routes
+def _build_camera_data(camera, short=False):
+    if camera is None:
+        return None
+
+    ret = {
+        'id': camera.id,
+        'name': camera.name,
+        'user_id': camera.user_id
+    }
+
+    if not short:
+        # NOTE: Leaving authentication information out on purpose.
+        ret['url'] = camera.get_jpg_url
+
+    return ret
+
 @api.route('/cameras', methods=['GET', 'POST'])
 @api_authorized
 def cameras():
@@ -473,11 +491,7 @@ def cameras():
 
         ret['cameras'] = []
         for camera in cameras:
-            ret['cameras'].append({
-                'id': camera.id,
-                'name': camera.name,
-                'user_id': camera.user_id
-            })
+            ret['cameras'].append(_build_camera_data(camera, short=True))
 
         return jsonify(ret)
 
@@ -505,12 +519,7 @@ def cameras():
         db.session.add(camera)
         db.session.commit()
 
-        ret = {
-            'id': camera.id,
-            'name': camera.name,
-            'user_id': camera.user_id,
-            'url': camera.get_jpg_url
-        }
+        ret = _build_camera_data(camera)
 
         return jsonify(ret), 201
 
@@ -524,14 +533,7 @@ def cameras_by_id(id):
         return jsonify(build_error(663, 'Camera does not exist.')), 404
 
     if request.method == 'GET':
-        # NOTE: Leaving authentication information out on purpose.
-
-        ret = {
-            'id': camera.id,
-            'name': camera.name,
-            'url': camera.get_jpg_url,
-            'user_id': camera.user_id
-        }
+        ret = _build_camera_data(camera)
 
     elif request.method == 'PUT':
         req = request.get_json()
@@ -558,8 +560,7 @@ def cameras_by_id(id):
         db.session.add(camera)
         db.session.commit()
 
-        # TODO: produce camera data.  Probably consolidate into a function.
-        ret = { 'status': 'OK' }
+        ret = _build_camera_data(camera)
 
     elif request.method == 'DELETE':
         db.session.delete(camera)
@@ -571,6 +572,21 @@ def cameras_by_id(id):
     return jsonify(ret)
 
 ##### User routes
+def _build_user_data(user, short=False):
+    if not user:
+        return None
+
+    ret = {
+        'id': user.id,
+        'name': user.name,
+        'email': user.email,
+        'created_time': user.created_time,
+        'role': user.role_code,
+        'status': user.status
+    }
+
+    return ret
+
 @api.route('/users', methods=['GET', 'POST'])
 @api_authorized
 def users():
@@ -581,14 +597,7 @@ def users():
 
         users = User.query.all()
         for user in users:
-            ret['users'].append({
-                'id': user.id,
-                'name': user.name,
-                'email': user.email,
-                'created_time': user.created_time,
-                'role': user.role_code,
-                'status': user.status
-            })
+            ret['users'].append(_build_user_data(user, short=True))
 
         return jsonify(ret)
 
@@ -625,14 +634,7 @@ def users():
         db.session.add(user)
         db.session.commit()
 
-        ret = {
-            'id': user.id,
-            'name': user.name,
-            'email': user.email,
-            'created_time': user.created_time,
-            'role': user.role_code,
-            'status': user.status
-        }
+        ret = _build_user_data(user)
 
         return jsonify(ret), 201
 
@@ -646,14 +648,7 @@ def users_by_id(id):
         return jsonify(build_error(663, 'User does not exist.')), 404
 
     if request.method == 'GET':
-        ret = {
-            'id': user.id,
-            'name': user.name,
-            'email': user.email,
-            'created_time': user.created_time,
-            'role': user.role_code,
-            'status': user.status
-        }
+        ret = _build_user_data(user)
 
     elif request.method == 'PUT':
         req = request.get_json()
@@ -677,14 +672,7 @@ def users_by_id(id):
         db.session.add(user)
         db.session.commit()
 
-        ret = {
-            'id': user.id,
-            'name': user.name,
-            'email': user.email,
-            'created_time': user.created_time,
-            'role': user.role_code,
-            'status': user.status
-        }
+        ret = _build_user_data(user)
 
     elif request.method == 'DELETE':
         # TODO: Don't allow deletion of primary admin user.
