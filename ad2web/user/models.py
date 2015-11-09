@@ -54,6 +54,15 @@ class UserHistory(db.Model):
     login_time = Column(db.DateTime, default=get_current_time)
     user_agent_string = Column(db.String(STRING_LEN))
 
+class FailedLogin(db.Model):
+    __tablename__ = 'failed_login_attempts'
+
+    id = Column(db.Integer, primary_key=True)
+    ip_address = Column(db.String(STRING_LEN))
+    name = Column(db.String(STRING_LEN), nullable=False)
+    login_time = Column(db.DateTime, default=get_current_time)
+    user_agent_string = Column(db.String(STRING_LEN))
+
 class UserDetail(db.Model):
 
     __tablename__ = 'user_details'

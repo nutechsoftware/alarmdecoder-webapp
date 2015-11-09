@@ -8,7 +8,7 @@ from flask.ext.mail import Message
 from flask.ext.babel import gettext as _
 from flask.ext.login import login_required, login_user, current_user, logout_user, confirm_login, login_fresh
 
-from ..user import User, UserDetail, UserHistory
+from ..user import User, UserDetail, UserHistory, FailedLogin
 from ..extensions import db, mail, login_manager, oid
 from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm, LicenseAgreementForm
 from ..settings import Setting
@@ -91,7 +91,19 @@ def login_history_add(user, ip):
     user_history.user_agent_string = userAgentString
     db.session.add(user_history)
     db.session.commit()
-    
+   
+
+def failed_login_add(name, ip):
+    failed_login = FailedLogin()
+    failed_login.name = name
+    failed_login.ip_address = ip
+    userAgentString = request.headers.get('User-Agent')
+    failed_login.user_agent_string = userAgentString
+
+    db.session.add(failed_login)
+    db.session.commit()
+
+
 @frontend.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated():
@@ -115,6 +127,7 @@ def login():
 
             return redirect(form.next.data or url_for('keypad.index'))
         else:
+            failed_login_add(form.login.data, request.remote_addr)
             flash(_('Sorry, invalid login'), 'error')
 
     return render_template('frontend/login.html', form=form)

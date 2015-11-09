@@ -26,11 +26,10 @@
                 "sEmptyTable": " ",
             },
             "aoColumns": [
-                null,
                 { "sWidth": "15%" },
                 { "sWidth": "15%" },
+                { "sWidth": "55%" },
                 { "sWidth": "15%" },
-                { "sWidth": "10%" },
             ],
             "fnInitComplete": function() {
                 $('#loading').stop();
@@ -51,32 +50,22 @@
         <table class='display table-hover' cellpadding="3" border="1" bordercolor="EEEEEE" id="users-table">
             <thead>
                 <tr>
-                    <th>Username</th>
-                    <th>Status</th>
-                    <th>Role</th>
-                    <th>Created Date</th>
-                {% if users %}
-                    <th>Actions</th>
-                {% endif %}
+                    <th>Name</th>
+                    <th>IP Address</th>
+                    <th>User Agent</th>
+                    <th>Time</th>
                 </tr>
             </thead>
-            {% for user in users %}
+            {% for user in failed_logins %}
             <tr>
-                <td><a href="{{ url_for('admin.user', user_id=user.id)}}">{{ user.name }}</a></td>
-                <td>{{ user.status }}</td>
-                <td>{{ user.role }}</td>
-                <td>{{ user.created_time.strftime('%m-%d-%Y %H:%m') }}</td>
-                <td>
-                    {% if user.id != 1 %}
-                    <a href="{{ url_for('admin.remove', user_id=user.id)}}"><img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}"/></a>
-                    {% endif %}
-                </td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.ip_address }}</td>
+                <td>{{ user.user_agent_string }}</td>
+                <td>{{ user.login_time.strftime('%m-%d-%Y %H:%m') }}</td>
             </tr>
             {% endfor %}
         </table>
     </div>
-    <br>
-    <a id="clear" class="btn btn-primary" href="{{ url_for('admin.user') }}">New User</a><a id="failed_logins" style="float: right; margin-top: 5px; margin-right: 5px;" class="btn btn-primary" href="{{ url_for('admin.failed_logins') }}">View Failed Logins</a>
 </div>
 {% endblock %}
 
