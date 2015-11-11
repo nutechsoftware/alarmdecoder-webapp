@@ -14,7 +14,7 @@ from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
 
 from ..extensions import db
 
-from ..user import User
+from ..user import User, USER_ROLE, USER_STATUS
 from ..zones import Zone
 from ..notifications import Notification, NotificationSetting
 from ..notifications.constants import EVENT_TYPES
@@ -576,7 +576,7 @@ def _build_user_data(user, short=False):
         'name': user.name,
         'email': user.email,
         'created_time': user.created_time,
-        'role': user.role_code,
+        'role': user.role,
         'status': user.status
     }
 
@@ -622,8 +622,20 @@ def users():
         if status is None:
             return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'status' entry.")), UNPROCESSABLE_ENTITY
 
-        # TODO: check for unique email/username
-        # TODO: make status code consistent
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user is not None:
+            return jsonify(build_error(ERROR_RECORD_ALREADY_EXISTS, 'User already exists with specified the email address.')), CONFLICT
+
+        existing_user = User.query.filter_by(name=name).first()
+        if existing_user is not None:
+            return jsonify(build_error(ERROR_RECORD_ALREADY_EXISTS, 'User already exists with the specified username.')), CONFLICT
+
+        # Convert role/status fields into what they should be.
+        role_types = {v: k for k, v in USER_ROLE.iteritems()}
+        status_types = {v: k for k, v in USER_STATUS.iteritems()}
+
+        role = role_types[role]
+        status = status_types[status]
 
         user = User(name=name, email=email, password=password, role_code=role, status_code=status)
         db.session.add(user)
@@ -657,14 +669,18 @@ def users_by_id(id):
         role = req.get('role', None)
         status = req.get('status', None)
 
+        # Convert role/status fields into what they should be.
+        role_types = {v: k for k, v in USER_ROLE.iteritems()}
+        status_types = {v: k for k, v in USER_STATUS.iteritems()}
+
         if name is not None:
             user.name = name
         if email is not None:
             user.email = email
         if role is not None:
-            user.role_code = role   # TODO: proper conversion, security checks.
+            user.role_code = role_types[role]
         if status is not None:
-            user.status = status    # TODO: proper conversion, security checks.
+            user.status_code = status_types[status]
 
         db.session.add(user)
         db.session.commit()
@@ -674,7 +690,9 @@ def users_by_id(id):
         return jsonify(ret), OK
 
     elif request.method == 'DELETE':
-        # TODO: Don't allow deletion of primary admin user.
+        # Don't allow deletion of primary admin user.
+        if id == 1:
+            return jsonify(build_error(ERROR_INVALID_VALUE, 'Cannot delete primary admin user.')), UNPROCESSABLE_ENTITY
 
         db.session.delete(user)
         db.session.commit()
