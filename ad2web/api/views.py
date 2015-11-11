@@ -5,6 +5,7 @@ import sh
 
 from functools import wraps
 from datetime import timedelta
+from httplib import OK, CREATED, ACCEPTED, NO_CONTENT, UNAUTHORIZED, NOT_FOUND, CONFLICT, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE
 
 from flask import Blueprint, current_app, request, jsonify, abort, Response
 from flask.ext.login import login_user, current_user, logout_user
@@ -20,6 +21,9 @@ from ..notifications.constants import EVENT_TYPES
 from ..cameras import Camera
 from ..settings import Setting
 
+from .constants import ERROR_NOT_AUTHORIZED, ERROR_DEVICE_NOT_INITIALIZED, ERROR_MISSING_BODY, ERROR_MISSING_FIELD, ERROR_INVALID_VALUE, \
+                        ERROR_RECORD_ALREADY_EXISTS, ERROR_RECORD_DOES_NOT_EXIST
+
 api = Blueprint('api', __name__, url_prefix='/api/v1')
 
 ##### Utility
@@ -28,10 +32,10 @@ def api_authorized(f):
     def wrapped(*args, **kwargs):
         apikey = Setting.get_by_name('apikey').value
         if apikey is None or apikey != request.args.get('apikey'):
-            return jsonify(build_error(666, 'Not authorized.')), 401
+            return jsonify(build_error(ERROR_NOT_AUTHORIZED, 'Not authorized.')), UNAUTHORIZED
 
         if current_app.decoder.device is None:
-            return jsonify(build_error(777, 'Device has not finished initializing.')), 503
+            return jsonify(build_error(ERROR_DEVICE_NOT_INITIALIZED, 'Device has not finished initializing.')), SERVICE_UNAVAILABLE
 
         return f(*args, **kwargs)
 
@@ -77,33 +81,29 @@ def alarmdecoder():
         'panel_relay_status': relay_status
     }
 
-    return jsonify(ret)
+    return jsonify(ret), OK
 
 @api.route('/alarmdecoder/send', methods=['POST'])
 @api_authorized
 def alarmdecoder_send():
-    ret = { 'status': 'OK' }
-
     req = request.get_json()
     if req is None:
-        return jsonify(build_error(999, "Missing request body or using incorrect content type.")), 422
+        return jsonify(build_error(ERROR_MISSING_BODY, "Missing request body or using incorrect content type.")), UNPROCESSABLE_ENTITY
 
     keys = req.get('keys', None)
     if keys is None:
-        return jsonify(build_error(888, "Missing 'keys' in request.")), 422
+        return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'keys' in request.")), UNPROCESSABLE_ENTITY
 
     current_app.decoder.device.send(req['keys'])
 
-    return jsonify(ret)
+    return jsonify(), NO_CONTENT
 
 @api.route('/alarmdecoder/reboot', methods=['POST'])
 @api_authorized
 def alarmdecoder_reboot():
-    ret = { 'status': 'OK' }
-
     current_app.decoder.device.reboot()
 
-    return jsonify(ret)
+    return jsonify(), NO_CONTENT
 
 def _build_alarmdecoder_configuration_data(device, short=False):
     if not device:
@@ -137,12 +137,12 @@ def alarmdecoder_configuration():
     if request.method == 'GET':
         ret = _build_alarmdecoder_configuration_data(device)
 
-        return jsonify(ret)
+        return jsonify(ret), OK
 
     elif request.method == 'PUT':
         req = request.get_json()
         if req is None:
-            return jsonify(build_error(999, "Missing request body or using incorrect content type.")), 422
+            return jsonify(build_error(ERROR_MISSING_BODY, "Missing request body or using incorrect content type.")), UNPROCESSABLE_ENTITY
 
         if req.get('address', None) is not None:
             device.address = req['address']
@@ -165,7 +165,7 @@ def alarmdecoder_configuration():
             elif mode == 'DSC':
                 mode = DSC
             else:
-                return jsonify(build_error(0, "Invalid value for 'mode'.")), 422
+                return jsonify(build_error(ERROR_INVALID_VALUE, "Invalid value for 'mode'.")), UNPROCESSABLE_ENTITY
 
             device.mode = mode
 
@@ -173,7 +173,7 @@ def alarmdecoder_configuration():
 
         ret = _build_alarmdecoder_configuration_data(device)
 
-        return jsonify(ret)
+        return jsonify(ret), OK
 
 ##### Zone routes
 def _build_zone_data(zone, short=False):
@@ -199,27 +199,27 @@ def zones():
         for z in zones:
             ret['zones'].append(_build_zone_data(z, short=True))
 
-        return jsonify(ret)
+        return jsonify(ret), OK
 
     elif request.method == 'POST':
         ret = {}
         req = request.get_json()
         if req is None:
-            return jsonify(build_error(999, 'Missing request body or using incorrect content type.')), 422
+            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         zone_id = req.get('zone_id', None)
         name = req.get('name', None)
         description = req.get('description', None)
 
         if zone_id is None:
-            return jsonify(build_error(888, "Missing 'zone_id' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'zone_id' entry.")), UNPROCESSABLE_ENTITY
 
         if name is None:
-            return jsonify(build_error(888, "Missing 'name' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'name' entry.")), UNPROCESSABLE_ENTITY
 
         existing_zone = Zone.query.filter_by(zone_id=zone_id).first()
         if existing_zone is not None:
-            return jsonify(build_error(777, 'Zone already exists.')), 409
+            return jsonify(build_error(ERROR_RECORD_ALREADY_EXISTS, 'Zone already exists.')), CONFLICT
 
         zone = Zone(zone_id=zone_id, name=name, description=description)
         
@@ -228,33 +228,33 @@ def zones():
 
         ret = _build_zone_data(zone)
 
-        return jsonify(ret), 201
+        return jsonify(ret), CREATED
 
 @api.route('/zones/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 @api_authorized
 def zones_by_id(id):
     z = Zone.query.filter_by(zone_id=id).first()
     if z is None:
-        return jsonify(build_error(663, 'Zone does not exist.')), 404
+        return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Zone does not exist.')), NOT_FOUND
 
     if request.method == 'GET':
         ret = _build_zone_data(zone)
 
-        return jsonify(ret)
+        return jsonify(ret), OK
 
     elif request.method == 'PUT':
         ret = {}
 
         req = request.get_json()
         if req is None:
-            return jsonify(build_error(999, 'Missing request body or using incorrect content type.')), 422
+            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         zone_id = req.get('zone_id', None)
 
         if zone_id is not None and zone_id != z.zone_id:
             check_zone = Zone.query.filter_by(zone_id=zone_id).first()
             if check_zone is not None:
-                return jsonify(build_error(777, 'Zone already exists with the associated zone_id.')), 409
+                return jsonify(build_error(ERROR_RECORD_ALREADY_EXISTS, 'Zone already exists with the associated zone_id.')), CONFLICT
             else:
                 z.zone_id = zone_id
 
@@ -271,43 +271,37 @@ def zones_by_id(id):
 
         ret = _build_zone_data(zone)
 
-        return jsonify(ret)
+        return jsonify(ret), OK
 
     elif request.method == 'DELETE':
         db.session.delete(z)
         db.session.commit()
 
-        ret = { 'status': 'OK' }
-
-        return jsonify(ret)
+        return jsonify(), NO_CONTENT
 
 @api.route('/zones/<int:id>/fault', methods=['POST'])
 @api_authorized
 def zones_fault(id):
     z = Zone.query.filter_by(zone_id=id).first()
     if z is None:
-        return jsonify(build_error(663, 'Zone does not exist.')), 404
+        return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Zone does not exist.')), NOT_FOUND
 
     # TODO: Make a note in docs.. only supported for emulated zones.
     current_app.decoder.device.send("L{0}1\r".format(id))
 
-    ret = { 'status': 'OK' }
-
-    return jsonify(ret)
+    return jsonify(), NO_CONTENT
 
 @api.route('/zones/<int:id>/restore', methods=['POST'])
 @api_authorized
 def zones_restore(id):
     z = Zone.query.filter_by(zone_id=id).first()
     if z is None:
-        return jsonify(build_error(663, 'Zone does not exist.')), 404
+        return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Zone does not exist.')), NOT_FOUND
 
     # TODO: Make a note in docs.. only supported for emulated zones.
     current_app.decoder.device.send("L{0}0\r".format(id))
 
-    ret = { 'status': 'OK' }
-
-    return jsonify(ret)
+    return jsonify(), NO_CONTENT
 
 ##### Notification routes
 def _build_notification_data(notification, short=False):
@@ -361,25 +355,25 @@ def notifications():
         for n in notifications:
             ret['notifications'].append(_build_notification_data(n, short=True))
 
-        return jsonify(ret)
+        return jsonify(ret), OK
 
     elif request.method == 'POST':
         ret = {}
         req = request.get_json()
         if req is None:
-            return jsonify(build_error(999, 'Missing request body or using incorrect content type.')), 422
+            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         notification_type = req.get('type', None)
         if notification_type is None:
-            return jsonify(build_error(888, "Missing 'type' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'type' entry.")), UNPROCESSABLE_ENTITY
 
         description = req.get('description', None)
         if description is None:
-            return jsonify(build_error(888, "Missing 'description' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'description' entry.")), UNPROCESSABLE_ENTITY
 
         user_id = req.get('user_id', None)
         if user_id is None:
-            return jsonify(build_error(888, "Missing 'user_id' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'user_id' entry.")), UNPROCESSABLE_ENTITY
 
         notification = Notification(type=notification_type, description=description, user_id=user_id)
 
@@ -401,7 +395,7 @@ def notifications():
 
         ret = _build_notification_data(notification)
 
-        return jsonify(ret), 201
+        return jsonify(ret), CREATED
 
 @api.route('/notifications/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def notifications_by_id(id):
@@ -409,19 +403,21 @@ def notifications_by_id(id):
 
     notification = Notification.query.filter_by(id=id).first()
     if notification is None:
-        return jsonify(build_error(663, 'Notification does not exist.')), 404
+        return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Notification does not exist.')), NOT_FOUND
 
     if request.method == 'GET':
         ret = _build_notification_data(notification)
 
+        return jsonify(ret), OK
+
     elif request.method == 'PUT':
         req = request.get_json()
         if req is None:
-            return jsonify(build_error(999, 'Missing request body or using incorrect content type.')), 422
+            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         notification_type = req.get('type', None)
         if notification_type is not None and notification_type != notification.type:
-            return jsonify(build_error(123, 'Cannot change the type of an existing notification.')), 422
+            return jsonify(build_error(ERROR_INVALID_VALUE, 'Cannot change the type of an existing notification.')), UNPROCESSABLE_ENTITY
 
         description = req.get('description', None)
         user_id = req.get('user_id', None)
@@ -454,15 +450,13 @@ def notifications_by_id(id):
 
         ret = _build_notification_data(notification)
 
+        return jsonify(ret), OK
+
     elif request.method == 'DELETE':
         db.session.delete(notification)
         db.session.commit()
 
-        # TODO: Maybe produce a better result?
-        ret = { 'status': 'OK' }
-
-    return jsonify(ret)
-
+        return jsonify(), NO_CONTENT
 
 ##### Camera routes
 def _build_camera_data(camera, short=False):
@@ -493,12 +487,12 @@ def cameras():
         for camera in cameras:
             ret['cameras'].append(_build_camera_data(camera, short=True))
 
-        return jsonify(ret)
+        return jsonify(ret), OK
 
     elif request.method == 'POST':
         req = request.get_json()
         if req is None:
-            return jsonify(build_error(999, 'Missing request body or using incorrect content type.')), 422
+            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         name = req.get('name', None)
         url = req.get('url', None)
@@ -507,13 +501,13 @@ def cameras():
         password = req.get('password', '')  # TODO: Fix camera code so that it deals with nulls correctly
 
         if name is None:
-            return jsonify(build_error(888, "Missing 'name' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'name' entry.")), UNPROCESSABLE_ENTITY
 
         if url is None:
-            return jsonify(build_error(888, "Missing 'url' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'url' entry.")), UNPROCESSABLE_ENTITY
 
         if user_id is None:
-            return jsonify(build_error(888, "Missing 'user_id' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'user_id' entry.")), UNPROCESSABLE_ENTITY
 
         camera = Camera(name=name, get_jpg_url=url, user_id=user_id, username=username, password=password)
         db.session.add(camera)
@@ -521,7 +515,7 @@ def cameras():
 
         ret = _build_camera_data(camera)
 
-        return jsonify(ret), 201
+        return jsonify(ret), CREATED
 
 @api.route('/cameras/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 @api_authorized
@@ -530,15 +524,17 @@ def cameras_by_id(id):
 
     camera = Camera.query.filter_by(id=id).first()
     if camera is None:
-        return jsonify(build_error(663, 'Camera does not exist.')), 404
+        return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Camera does not exist.')), NOT_FOUND
 
     if request.method == 'GET':
         ret = _build_camera_data(camera)
 
+        return jsonify(ret), OK
+
     elif request.method == 'PUT':
         req = request.get_json()
         if req is None:
-            return jsonify(build_error(999, 'Missing request body or using incorrect content type.')), 422
+            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         name = req.get('name', None)
         url = req.get('url', None)
@@ -562,14 +558,13 @@ def cameras_by_id(id):
 
         ret = _build_camera_data(camera)
 
+        return jsonify(ret), OK
+
     elif request.method == 'DELETE':
         db.session.delete(camera)
         db.session.commit()
 
-        # TODO: Maybe produce a better result?
-        ret = { 'status': 'OK' }
-
-    return jsonify(ret)
+        return jsonify(), NO_CONTENT
 
 ##### User routes
 def _build_user_data(user, short=False):
@@ -599,12 +594,12 @@ def users():
         for user in users:
             ret['users'].append(_build_user_data(user, short=True))
 
-        return jsonify(ret)
+        return jsonify(ret), OK
 
     elif request.method == 'POST':
         req = request.get_json()
         if req is None:
-            return jsonify(build_error(999, 'Missing request body or using incorrect content type.')), 422
+            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         name = req.get('name', None)
         email = req.get('email', None)
@@ -613,19 +608,19 @@ def users():
         status = req.get('status', None)
 
         if name is None:
-            return jsonify(build_error(888, "Missing 'name' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'name' entry.")), UNPROCESSABLE_ENTITY
 
         if email is None:
-            return jsonify(build_error(888, "Missing 'email' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'email' entry.")), UNPROCESSABLE_ENTITY
 
         if password is None:
-            return jsonify(build_error(888, "Missing 'password' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'password' entry.")), UNPROCESSABLE_ENTITY
 
         if role is None:
-            return jsonify(build_error(888, "Missing 'role' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'role' entry.")), UNPROCESSABLE_ENTITY
 
         if status is None:
-            return jsonify(build_error(888, "Missing 'status' entry.")), 422
+            return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'status' entry.")), UNPROCESSABLE_ENTITY
 
         # TODO: check for unique email/username
         # TODO: make status code consistent
@@ -636,7 +631,7 @@ def users():
 
         ret = _build_user_data(user)
 
-        return jsonify(ret), 201
+        return jsonify(ret), CREATED
 
 @api.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 @api_authorized
@@ -645,15 +640,17 @@ def users_by_id(id):
 
     user = User.query.filter_by(id=id).first()
     if user is None:
-        return jsonify(build_error(663, 'User does not exist.')), 404
+        return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'User does not exist.')), NOT_FOUND
 
     if request.method == 'GET':
         ret = _build_user_data(user)
 
+        return jsonify(ret), OK
+
     elif request.method == 'PUT':
         req = request.get_json()
         if req is None:
-            return jsonify(build_error(999, 'Missing request body or using incorrect content type.')), 422
+            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         name = req.get('name', None)
         email = req.get('email', None)
@@ -674,16 +671,15 @@ def users_by_id(id):
 
         ret = _build_user_data(user)
 
+        return jsonify(ret), OK
+
     elif request.method == 'DELETE':
         # TODO: Don't allow deletion of primary admin user.
 
         db.session.delete(user)
         db.session.commit()
 
-        # TODO: Maybe produce a better result?
-        ret = { 'status': 'OK' }
-
-    return jsonify(ret)
+        return jsonify(), NO_CONTENT
 
 ##### System routes
 @api.route('/system', methods=['GET'])
@@ -706,7 +702,7 @@ def system():
         }
     }
 
-    return jsonify(ret)
+    return jsonify(ret), OK
 
 @api.route('/system/reboot', methods=['POST'])
 @api_authorized
@@ -714,7 +710,7 @@ def system_reboot():
     # TODO: Uncomment and test on something NOT my workstation.
     #sh.reboot()
     
-    return jsonify({ 'status': 'OK' })
+    return jsonify(), ACCEPTED
 
 @api.route('/system/shutdown', methods=['POST'])
 @api_authorized
@@ -722,4 +718,4 @@ def system_shutdown():
     # TODO: Uncomment and test on something NOT my workstation.
     #sh.shutdown()
     
-    return jsonify({ 'status': 'OK' })
+    return jsonify(), ACCEPTED
