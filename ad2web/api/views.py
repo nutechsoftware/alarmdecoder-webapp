@@ -24,14 +24,23 @@ from ..settings import Setting
 from .constants import ERROR_NOT_AUTHORIZED, ERROR_DEVICE_NOT_INITIALIZED, ERROR_MISSING_BODY, ERROR_MISSING_FIELD, ERROR_INVALID_VALUE, \
                         ERROR_RECORD_ALREADY_EXISTS, ERROR_RECORD_DOES_NOT_EXIST
 
+from .models import APIKey
+
 api = Blueprint('api', __name__, url_prefix='/api/v1')
 
 ##### Utility
 def api_authorized(f):
     @wraps(f)
     def wrapped(*args, **kwargs):
-        apikey = Setting.get_by_name('apikey').value
-        if apikey is None or apikey != request.args.get('apikey'):
+        if request.method in ['POST', 'PUT']:
+            req = request.get_json(silent=True)
+            if req is None:
+                return jsonify(build_error(ERROR_MISSING_BODY, "Missing request body or using incorrect content type.")), UNPROCESSABLE_ENTITY
+
+        request_apikey = request.args.get('apikey', None)
+        apikey = APIKey.query.filter_by(key=request_apikey).first()
+
+        if apikey is None:
             return jsonify(build_error(ERROR_NOT_AUTHORIZED, 'Not authorized.')), UNAUTHORIZED
 
         if current_app.decoder.device is None:
@@ -87,9 +96,6 @@ def alarmdecoder():
 @api_authorized
 def alarmdecoder_send():
     req = request.get_json()
-    if req is None:
-        return jsonify(build_error(ERROR_MISSING_BODY, "Missing request body or using incorrect content type.")), UNPROCESSABLE_ENTITY
-
     keys = req.get('keys', None)
     if keys is None:
         return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'keys' in request.")), UNPROCESSABLE_ENTITY
@@ -141,8 +147,6 @@ def alarmdecoder_configuration():
 
     elif request.method == 'PUT':
         req = request.get_json()
-        if req is None:
-            return jsonify(build_error(ERROR_MISSING_BODY, "Missing request body or using incorrect content type.")), UNPROCESSABLE_ENTITY
 
         if req.get('address', None) is not None:
             device.address = req['address']
@@ -202,10 +206,7 @@ def zones():
         return jsonify(ret), OK
 
     elif request.method == 'POST':
-        ret = {}
         req = request.get_json()
-        if req is None:
-            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         zone_id = req.get('zone_id', None)
         name = req.get('name', None)
@@ -243,11 +244,7 @@ def zones_by_id(id):
         return jsonify(ret), OK
 
     elif request.method == 'PUT':
-        ret = {}
-
         req = request.get_json()
-        if req is None:
-            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         zone_id = req.get('zone_id', None)
 
@@ -358,10 +355,7 @@ def notifications():
         return jsonify(ret), OK
 
     elif request.method == 'POST':
-        ret = {}
         req = request.get_json()
-        if req is None:
-            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         notification_type = req.get('type', None)
         if notification_type is None:
@@ -412,8 +406,6 @@ def notifications_by_id(id):
 
     elif request.method == 'PUT':
         req = request.get_json()
-        if req is None:
-            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         notification_type = req.get('type', None)
         if notification_type is not None and notification_type != notification.type:
@@ -491,8 +483,6 @@ def cameras():
 
     elif request.method == 'POST':
         req = request.get_json()
-        if req is None:
-            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         name = req.get('name', None)
         url = req.get('url', None)
@@ -533,8 +523,6 @@ def cameras_by_id(id):
 
     elif request.method == 'PUT':
         req = request.get_json()
-        if req is None:
-            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         name = req.get('name', None)
         url = req.get('url', None)
@@ -598,8 +586,6 @@ def users():
 
     elif request.method == 'POST':
         req = request.get_json()
-        if req is None:
-            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         name = req.get('name', None)
         email = req.get('email', None)
@@ -661,8 +647,6 @@ def users_by_id(id):
 
     elif request.method == 'PUT':
         req = request.get_json()
-        if req is None:
-            return jsonify(build_error(ERROR_MISSING_BODY, 'Missing request body or using incorrect content type.')), UNPROCESSABLE_ENTITY
 
         name = req.get('name', None)
         email = req.get('email', None)
