@@ -14,7 +14,7 @@ from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
 
 from ..extensions import db
 
-from ..user import User, USER_ROLE, USER_STATUS
+from ..user import User, USER_ROLE, USER_STATUS, ADMIN
 from ..zones import Zone
 from ..notifications import Notification, NotificationSetting
 from ..notifications.constants import EVENT_TYPES
@@ -27,11 +27,15 @@ from .constants import ERROR_NOT_AUTHORIZED, ERROR_DEVICE_NOT_INITIALIZED, ERROR
 from .models import APIKey
 
 api = Blueprint('api', __name__, url_prefix='/api/v1')
+request_user = None
 
 ##### Utility
 def api_authorized(f):
     @wraps(f)
     def wrapped(*args, **kwargs):
+        global request_user
+        request_user = None
+
         if request.method in ['POST', 'PUT']:
             req = request.get_json(silent=True)
             if req is None:
@@ -46,6 +50,10 @@ def api_authorized(f):
         if current_app.decoder.device is None:
             return jsonify(build_error(ERROR_DEVICE_NOT_INITIALIZED, 'Device has not finished initializing.')), SERVICE_UNAVAILABLE
 
+        request_user = User.query.filter_by(id=apikey.user_id).first()
+        if request_user is None:
+            return jsonify(build_error(ERROR_NOT_AUTHORIZED, "No user matches the supplied API key.")), UNAUTHORIZED
+
         return f(*args, **kwargs)
 
     return wrapped
@@ -57,6 +65,12 @@ def build_error(code, message):
             'message': message,
         }
     }
+
+def check_admin(user):
+    if not user:
+        return False
+
+    return user.role_code == ADMIN
 
 ##### AlarmDecoder device routes
 @api.route('/alarmdecoder', methods=['GET'])
@@ -107,6 +121,9 @@ def alarmdecoder_send():
 @api.route('/alarmdecoder/reboot', methods=['POST'])
 @api_authorized
 def alarmdecoder_reboot():
+    if not check_admin(request_user):
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
     current_app.decoder.device.reboot()
 
     return jsonify(), NO_CONTENT
@@ -146,6 +163,9 @@ def alarmdecoder_configuration():
         return jsonify(ret), OK
 
     elif request.method == 'PUT':
+        if not check_admin(request_user):
+            return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
         req = request.get_json()
 
         if req.get('address', None) is not None:
@@ -206,6 +226,9 @@ def zones():
         return jsonify(ret), OK
 
     elif request.method == 'POST':
+        if not check_admin(request_user):
+            return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
         req = request.get_json()
 
         zone_id = req.get('zone_id', None)
@@ -234,8 +257,8 @@ def zones():
 @api.route('/zones/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 @api_authorized
 def zones_by_id(id):
-    z = Zone.query.filter_by(zone_id=id).first()
-    if z is None:
+    zone = Zone.query.filter_by(zone_id=id).first()
+    if zone is None:
         return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Zone does not exist.')), NOT_FOUND
 
     if request.method == 'GET':
@@ -244,26 +267,29 @@ def zones_by_id(id):
         return jsonify(ret), OK
 
     elif request.method == 'PUT':
+        if not check_admin(request_user):
+            return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
         req = request.get_json()
 
         zone_id = req.get('zone_id', None)
 
-        if zone_id is not None and zone_id != z.zone_id:
+        if zone_id is not None and zone_id != zone.zone_id:
             check_zone = Zone.query.filter_by(zone_id=zone_id).first()
             if check_zone is not None:
                 return jsonify(build_error(ERROR_RECORD_ALREADY_EXISTS, 'Zone already exists with the associated zone_id.')), CONFLICT
             else:
-                z.zone_id = zone_id
+                zone.zone_id = zone_id
 
         name = req.get('name', None)
         if name is not None:
-            z.name = name
+            zone.name = name
 
         description = req.get('description', None)
         if description is not None:
-            z.description = description
+            zone.description = description
 
-        db.session.add(z)
+        db.session.add(zone)
         db.session.commit()
 
         ret = _build_zone_data(zone)
@@ -271,7 +297,10 @@ def zones_by_id(id):
         return jsonify(ret), OK
 
     elif request.method == 'DELETE':
-        db.session.delete(z)
+        if not check_admin(request_user):
+            return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
+        db.session.delete(zone)
         db.session.commit()
 
         return jsonify(), NO_CONTENT
@@ -279,6 +308,9 @@ def zones_by_id(id):
 @api.route('/zones/<int:id>/fault', methods=['POST'])
 @api_authorized
 def zones_fault(id):
+    if not check_admin(request_user):
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
     z = Zone.query.filter_by(zone_id=id).first()
     if z is None:
         return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Zone does not exist.')), NOT_FOUND
@@ -291,6 +323,9 @@ def zones_fault(id):
 @api.route('/zones/<int:id>/restore', methods=['POST'])
 @api_authorized
 def zones_restore(id):
+    if not check_admin(request_user):
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
     z = Zone.query.filter_by(zone_id=id).first()
     if z is None:
         return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Zone does not exist.')), NOT_FOUND
@@ -346,7 +381,10 @@ def _build_notification_data(notification, short=False):
 @api_authorized
 def notifications():
     if request.method == 'GET':
-        notifications = Notification.query.all()
+        if request_user.role_code == ADMIN:
+            notifications = Notification.query.all()
+        else:
+            notifications = Notification.query.filter_by(user_id=request_user.id).all()
 
         ret = { 'notifications': [] }
         for n in notifications:
@@ -368,6 +406,9 @@ def notifications():
         user_id = req.get('user_id', None)
         if user_id is None:
             return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'user_id' entry.")), UNPROCESSABLE_ENTITY
+
+        if request_user and request_user.role_code != ADMIN and user_id != request_user.id:
+            return jsonify(build_error(ERROR_INVALID_VALUE, "Cannot create notifications for other users.")), UNPROCESSABLE_ENTITY
 
         notification = Notification(type=notification_type, description=description, user_id=user_id)
 
@@ -392,12 +433,16 @@ def notifications():
         return jsonify(ret), CREATED
 
 @api.route('/notifications/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@api_authorized
 def notifications_by_id(id):
     ret = { }
 
     notification = Notification.query.filter_by(id=id).first()
     if notification is None:
         return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Notification does not exist.')), NOT_FOUND
+
+    if request_user and request_user.role_code != ADMIN and request_user.id != notification.user_id:
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
 
     if request.method == 'GET':
         ret = _build_notification_data(notification)
@@ -473,7 +518,10 @@ def cameras():
     ret = { }
 
     if request.method == 'GET':
-        cameras = Camera.query.all()
+        if request_user.role_code == ADMIN:
+            cameras = Camera.query.all()
+        else:
+            cameras = Camera.query.filter_by(user_id=request_user.id).all()
 
         ret['cameras'] = []
         for camera in cameras:
@@ -499,6 +547,9 @@ def cameras():
         if user_id is None:
             return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'user_id' entry.")), UNPROCESSABLE_ENTITY
 
+        if request_user and request_user.role_code != ADMIN and user_id != request_user.id:
+            return jsonify(build_error(ERROR_INVALID_VALUE, "Cannot create cameras for other users.")), UNPROCESSABLE_ENTITY
+
         camera = Camera(name=name, get_jpg_url=url, user_id=user_id, username=username, password=password)
         db.session.add(camera)
         db.session.commit()
@@ -513,6 +564,10 @@ def cameras_by_id(id):
     ret = { }
 
     camera = Camera.query.filter_by(id=id).first()
+
+    if request_user and request_user.role_code != ADMIN and camera and request_user.id != camera.user_id:
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
     if camera is None:
         return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'Camera does not exist.')), NOT_FOUND
 
@@ -573,6 +628,9 @@ def _build_user_data(user, short=False):
 @api.route('/users', methods=['GET', 'POST'])
 @api_authorized
 def users():
+    if not check_admin(request_user):
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
     ret = { }
 
     if request.method == 'GET':
@@ -637,6 +695,10 @@ def users_by_id(id):
     ret = { }
 
     user = User.query.filter_by(id=id).first()
+
+    if request_user and request_user.role_code != ADMIN and user and request_user.id != user.id:
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
     if user is None:
         return jsonify(build_error(ERROR_RECORD_DOES_NOT_EXIST, 'User does not exist.')), NOT_FOUND
 
@@ -674,9 +736,15 @@ def users_by_id(id):
         return jsonify(ret), OK
 
     elif request.method == 'DELETE':
+        if not check_admin(request_user):
+            return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
         # Don't allow deletion of primary admin user.
         if id == 1:
             return jsonify(build_error(ERROR_INVALID_VALUE, 'Cannot delete primary admin user.')), UNPROCESSABLE_ENTITY
+
+        if user.id == request_user.id:
+            return jsonify(build_error(ERROR_INVALID_VALUE, 'Cannot delete own user account.')), UNPROCESSABLE_ENTITY
 
         db.session.delete(user)
         db.session.commit()
@@ -709,6 +777,9 @@ def system():
 @api.route('/system/reboot', methods=['POST'])
 @api_authorized
 def system_reboot():
+    if not check_admin(request_user):
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
     # TODO: Uncomment and test on something NOT my workstation.
     #sh.reboot()
     
@@ -717,6 +788,9 @@ def system_reboot():
 @api.route('/system/shutdown', methods=['POST'])
 @api_authorized
 def system_shutdown():
+    if not check_admin(request_user):
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
+
     # TODO: Uncomment and test on something NOT my workstation.
     #sh.shutdown()
     
