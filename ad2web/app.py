@@ -20,7 +20,7 @@ from .updater.views import updater
 from .user import User, user
 from .settings import settings
 from .frontend import frontend
-from .api import api
+from .api import api, api_settings
 from .admin import admin
 from .certificate import certificate
 from .log import log
@@ -43,6 +43,7 @@ DEFAULT_BLUEPRINTS = (
     user,
     settings,
     api,
+    api_settings,
     admin,
     certificate,
     log,

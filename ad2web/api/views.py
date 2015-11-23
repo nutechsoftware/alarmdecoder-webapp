@@ -7,7 +7,7 @@ from functools import wraps
 from datetime import timedelta
 from httplib import OK, CREATED, ACCEPTED, NO_CONTENT, UNAUTHORIZED, NOT_FOUND, CONFLICT, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE
 
-from flask import Blueprint, current_app, request, jsonify, abort, Response
+from flask import Blueprint, current_app, request, jsonify, abort, Response, render_template
 from flask.ext.login import login_user, current_user, logout_user
 
 from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
@@ -26,8 +26,14 @@ from .constants import ERROR_NOT_AUTHORIZED, ERROR_DEVICE_NOT_INITIALIZED, ERROR
 
 from .models import APIKey
 
+api_settings = Blueprint('api_settings', __name__, url_prefix='/api')
 api = Blueprint('api', __name__, url_prefix='/api/v1')
 request_user = None
+
+##### Settings routes
+@api_settings.route('/')
+def index():
+    return render_template('api/index.html')
 
 ##### Utility
 def api_authorized(f):
