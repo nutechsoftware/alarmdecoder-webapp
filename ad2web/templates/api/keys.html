@@ -1,0 +1,38 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = 'API' %}
+
+{% extends "layouts/base.html" %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+{% endblock %}
+
+{% block body %}
+<div id="data">
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Key</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+    {% for key in keys %}
+        <tr>
+            <td>{{ key.user.name }}</td>
+            <td>{{ key.key }}</td>
+            <td>
+                <a href="{{ url_for('api_settings.generate_key', user_id=key.user.id) }}">Generate</a>, 
+                <a href="{{ url_for('api_settings.disable_key', user_id=key.user.id) }}">Disable</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}

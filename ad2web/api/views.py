@@ -7,12 +7,13 @@ from functools import wraps
 from datetime import timedelta
 from httplib import OK, CREATED, ACCEPTED, NO_CONTENT, UNAUTHORIZED, NOT_FOUND, CONFLICT, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE
 
-from flask import Blueprint, current_app, request, jsonify, abort, Response, render_template
-from flask.ext.login import login_user, current_user, logout_user
+from flask import Blueprint, current_app, request, jsonify, abort, Response, render_template, redirect, url_for
+from flask.ext.login import login_user, current_user, logout_user, login_required
 
 from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
 
 from ..extensions import db
+from ..decorators import admin_required
 
 from ..user import User, USER_ROLE, USER_STATUS, ADMIN
 from ..zones import Zone
@@ -25,15 +26,54 @@ from .constants import ERROR_NOT_AUTHORIZED, ERROR_DEVICE_NOT_INITIALIZED, ERROR
                         ERROR_RECORD_ALREADY_EXISTS, ERROR_RECORD_DOES_NOT_EXIST
 
 from .models import APIKey
+from .forms import APIKeyForm
+from .utils import generate_api_key
 
 api_settings = Blueprint('api_settings', __name__, url_prefix='/api')
 api = Blueprint('api', __name__, url_prefix='/api/v1')
+
 request_user = None
 
 ##### Settings routes
 @api_settings.route('/')
+@login_required
 def index():
     return render_template('api/index.html')
+
+@api_settings.route('/keys')
+@login_required
+@admin_required
+def keys():
+    keys = APIKey.query.all()
+
+    return render_template('api/keys.html', keys=keys)
+
+@api_settings.route('/keys/generate/<int:user_id>')
+@login_required
+@admin_required
+def generate_key(user_id):
+    apikey = APIKey.query.filter_by(user_id=user_id).first()
+    if not apikey:
+        apikey = APIKey(user_id=user_id)
+
+    apikey.key = generate_api_key()
+
+    db.session.add(apikey)
+    db.session.commit()
+
+    return redirect(url_for('api_settings.keys'))
+
+@api_settings.route('/keys/disable/<int:user_id>')
+@login_required
+@admin_required
+def disable_key(user_id):
+    apikey = APIKey.query.filter_by(user_id=user_id).first_or_404()
+    apikey.key = None
+
+    db.session.add(apikey)
+    db.session.commit()
+
+    return redirect(url_for('api_settings.keys'))
 
 ##### Utility
 def api_authorized(f):

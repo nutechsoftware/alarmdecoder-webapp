@@ -10,3 +10,5 @@ class APIKey(db.Model):
     id = Column(db.Integer, primary_key=True)
     user_id = Column(db.Integer, db.ForeignKey('users.id'))
     key = Column(db.String(64))
+
+    user = db.relationship("User", backref="apikey")
