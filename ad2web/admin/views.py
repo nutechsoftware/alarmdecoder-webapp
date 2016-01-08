@@ -3,6 +3,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask.ext.login import login_required
 
+from sqlalchemy.exc import IntegrityError
+
 from ..extensions import db
 from ..decorators import admin_required
 
@@ -47,9 +49,13 @@ def user(user_id):
 
     if form.validate_on_submit():
         form.populate_obj(user)
-
-        db.session.add(user)
-        db.session.commit()
+        
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except IntegrityError:
+            flash('Duplicate user data, please use unique names and emails for each user.', 'error')
+            return redirect(url_for('admin.users'))
 
         flash('User created.' if user_id is None else 'User updated.', 'success')
         return redirect(url_for('admin.users'))
