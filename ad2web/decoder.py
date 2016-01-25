@@ -35,6 +35,7 @@ from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_R
 
 from .cameras import CameraSystem
 from .cameras.models import Camera
+from .discovery import DiscoveryServer
 
 
 EVENT_MAP = {
@@ -94,6 +95,7 @@ class Decoder(object):
             self._device_location = None
             self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
+            self._discovery_thread = DiscoveryServer(self)
             self._notifier_system = None
             self._internal_address_mask = 0xFFFFFFFF
 
@@ -114,6 +116,7 @@ class Decoder(object):
         self._event_thread.start()
         self._version_thread.start()
         self._camera_thread.start()
+        self._discovery_thread.start()
 
     def stop(self, restart=False):
         """
@@ -130,6 +133,7 @@ class Decoder(object):
         self._event_thread.stop()
         self._version_thread.stop()
         self._camera_thread.stop()
+        self._discovery_thread.stop()
 
         if restart:
             try:
