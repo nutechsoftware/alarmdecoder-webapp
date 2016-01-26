@@ -4,6 +4,7 @@ import sys
 import threading
 import uuid
 import fcntl
+import time
 
 try:
     import netifaces
@@ -24,14 +25,24 @@ class DiscoveryServer(threading.Thread):
     MCAST_PORT = 1900
     MCAST_ADDRESS = '239.255.255.250'
 
-    LOCATION_MESSAGE = ('HTTP/1.1 200 OK\r\n' +
-                        'CACHE-CONTROL: max-age = 60\r\n' +
+    RESPONSE_MESSAGE = ('HTTP/1.1 200 OK\r\n' +
+                        'CACHE-CONTROL: max-age = %(CACHE_CONTROL)i\r\n' +
                         'EXT:\r\n' +
-                        'LOCATION: %(loc)s\r\n' +
-                        'SERVER: Blah/1.0 UPnP/1.1 AlarmDecoder/1.0\r\n' +
-                        'ST: %(service)s\r\n' +
-                        'USN: %(usn)s\r\n' +
+                        'LOCATION: %(LOCATION)s\r\n' +
+                        'SERVER: Linux/1.0 UPnP/1.1 AlarmDecoder/1.0\r\n' +
+                        'ST: %(ST)s\r\n' +
+                        'USN: %(USN)s\r\n' +
                         '\r\n')
+
+    NOTIFY_MESSAGE = ('NOTIFY * HTTP/1.1\r\n' +
+                            'HOST: 239.255.255.250:1900\r\n' +
+                            'CACHE-CONTROL: max-age = %(CACHE_CONTROL)i\r\n' +
+                            'LOCATION: %(LOCATION)s\r\n' +
+                            'NT: %(NT)s\r\n' +
+                            'NTS: %(NTS)s\r\n' +
+                            'SERVER: Linux/1.0 UPnP/1.1 AlarmDecoder/1.0\r\n' +
+                            'USN: %(USN)s\r\n' +
+                            '\r\n')
 
     def __init__(self, decoder):
         threading.Thread.__init__(self)
@@ -48,9 +59,11 @@ class DiscoveryServer(threading.Thread):
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
         self._socket = sock
+        self._expiration_time = 600
         self._current_port = 5000
         self._current_ip_address = self._get_ip_address()
         self._device_uuid = self._get_device_uuid()
+        self._announcement_timestamp = 0
 
         with self._decoder.app.app_context():
             self._decoder.app.logger.info("Discovery running: loc={0}:{1}, uuid={2}".format(self._current_ip_address, self._current_port, self._device_uuid))
@@ -75,23 +88,66 @@ class DiscoveryServer(threading.Thread):
 
                     request = DiscoveryRequest(data)
 
-                    self._handle_request(request)
+                    self._handle_request(request, addr)
+                    self._check_address()
 
-    def _handle_request(self, request):
+    def _handle_request(self, request, addr):
         if request.error_code:
             self._decoder.app.logger.warning('Discovery: Error {0} - {1}'.format(request.error_code, request.error_message))
             return
 
         if self._match_search_request(request):
             response_message = self._create_discovery_response(request)
-            self._socket.sendto(response_message, addr)
-            self._decoder.app.logger.debug('Sent response to ssdp:discover')
+            self._send_message(response_message, addr)
+
+            self._decoder.app.logger.debug('Sent response to ssdp:discover : {0}'.format(response_message))
+
+    def _check_address(self):
+        address = self._get_ip_address()
+        if address != self._current_ip_address:
+            # TODO: cancel
+            # TODO: notify
+            self._current_ip_address = address
+
+        if self._announcement_timestamp + self._expiration_time < time.time():
+            with self._decoder.app.app_context():
+                self._decoder.app.logger.debug('sending announcement')
+
+            # TODO: notify
+            notify_messages = self._create_notify_message()
+            for m in notify_messages:
+                self._send_message(m, ('239.255.255.250', 1900))
+
+            self._announcement_timestamp = time.time()
+
 
     def _create_discovery_response(self, request):
         loc = 'http://{0}:{1}'.format(self._current_ip_address, self._current_port)
-        usn = 'uuid:{0}'.format(self.uuid)
+        usn = 'uuid:{0}'.format(self._device_uuid)
 
-        return self.LOCATION_MESSAGE % dict(service=request.headers['ST'], loc=loc, usn=usn)
+        #self._current_port = self._current_port + 1
+
+        return self.RESPONSE_MESSAGE % dict(ST=request.headers['ST'], LOCATION=loc, USN=usn, CACHE_CONTROL=self._expiration_time)
+
+    def _create_notify_message(self):
+        loc = 'http://{0}:{1}'.format(self._current_ip_address, self._current_port+1)
+        usn = 'uuid:{0}'.format(self._device_uuid)
+
+        #usn
+
+        msg1 = self.NOTIFY_MESSAGE % dict(NT="upnp:rootdevice", LOCATION=loc, USN=usn + "::upnp:rootdevice", NTS="ssdp:alive", CACHE_CONTROL=self._expiration_time)
+        msg2 = self.NOTIFY_MESSAGE % dict(NT=usn, LOCATION=loc, USN=usn, NTS="ssdp:alive", CACHE_CONTROL=self._expiration_time)
+        msg3 = self.NOTIFY_MESSAGE % dict(NT="urn:schemas-upnp-org:device:AlarmDecoder:1", LOCATION=loc, USN=usn + "::urn:schemas-upnp-org:device:AlarmDecoder:1", NTS="ssdp:alive", CACHE_CONTROL=self._expiration_time)
+
+        return (msg1, msg2, msg3)
+
+    def _send_message(self, message, addr):
+        with self._decoder.app.app_context():
+            self._decoder.app.logger.debug('sending message to {0}: {1}'.format(addr, message))
+
+        for i in xrange(2): # NOTE: Sending multiple times due to UDP's unreliability.
+            self._socket.sendto(message, addr)
+            time.sleep(0.1)
 
     def _match_search_request(self, request):
         ret = False
