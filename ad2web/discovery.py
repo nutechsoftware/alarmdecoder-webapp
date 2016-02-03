@@ -89,7 +89,9 @@ class DiscoveryServer(threading.Thread):
                     request = DiscoveryRequest(data)
 
                     self._handle_request(request, addr)
-                    self._check_address()
+
+                    # TODO: Likely needs to be separate from this loop.
+                    self._update()
 
     def _handle_request(self, request, addr):
         if request.error_code:
@@ -100,40 +102,36 @@ class DiscoveryServer(threading.Thread):
             response_message = self._create_discovery_response(request)
             self._send_message(response_message, addr)
 
+            # REMOVEME
             self._decoder.app.logger.debug('Sent response to ssdp:discover : {0}'.format(response_message))
 
-    def _check_address(self):
+    def _update(self):
         address = self._get_ip_address()
         if address != self._current_ip_address:
             # TODO: cancel
             # TODO: notify
             self._current_ip_address = address
 
-        if self._announcement_timestamp + self._expiration_time < time.time():
-            with self._decoder.app.app_context():
-                self._decoder.app.logger.debug('sending announcement')
+        # NOTE: Disabled until I have time to fully implement.  SmartThings doesn't seem to need it, so whatever.
+        # if self._announcement_timestamp + self._expiration_time < time.time():
+        #     with self._decoder.app.app_context():
+        #         self._decoder.app.logger.debug('sending announcement')
 
-            # TODO: notify
-            notify_messages = self._create_notify_message()
-            for m in notify_messages:
-                self._send_message(m, ('239.255.255.250', 1900))
+        #     notify_messages = self._create_notify_message()
+        #     for m in notify_messages:
+        #         self._send_message(m, ('239.255.255.250', 1900))
 
-            self._announcement_timestamp = time.time()
-
+        #     self._announcement_timestamp = time.time()
 
     def _create_discovery_response(self, request):
         loc = 'http://{0}:{1}'.format(self._current_ip_address, self._current_port)
         usn = 'uuid:{0}'.format(self._device_uuid)
 
-        #self._current_port = self._current_port + 1
-
         return self.RESPONSE_MESSAGE % dict(ST=request.headers['ST'], LOCATION=loc, USN=usn, CACHE_CONTROL=self._expiration_time)
 
     def _create_notify_message(self):
-        loc = 'http://{0}:{1}'.format(self._current_ip_address, self._current_port+1)
+        loc = 'http://{0}:{1}'.format(self._current_ip_address, self._current_port)
         usn = 'uuid:{0}'.format(self._device_uuid)
-
-        #usn
 
         msg1 = self.NOTIFY_MESSAGE % dict(NT="upnp:rootdevice", LOCATION=loc, USN=usn + "::upnp:rootdevice", NTS="ssdp:alive", CACHE_CONTROL=self._expiration_time)
         msg2 = self.NOTIFY_MESSAGE % dict(NT=usn, LOCATION=loc, USN=usn, NTS="ssdp:alive", CACHE_CONTROL=self._expiration_time)
@@ -174,7 +172,6 @@ class DiscoveryServer(threading.Thread):
             db.session.commit()
 
         return device_uuid
-
 
     def _get_ip_address(self):
         address = None
