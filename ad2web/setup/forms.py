@@ -30,7 +30,7 @@ class DeviceTypeForm(Form):
 class NetworkDeviceForm(Form):
     device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
     device_port = IntegerField(u'Port', [Required(), NumberRange(1024, 65535)], description=u'', default=10000)
-    ssl = BooleanField(u'Use SSL?')
+    ssl = BooleanField(u'Connect to encrypted ser2sock? (Experimental)')
 
     buttons = FormField(SetupButtonForm)
 
@@ -45,7 +45,7 @@ class SSLHostForm(Form):
     config_path = TextField(u'SER2SOCK Configuration Path', [Required(), PathExists()], default='/etc/ser2sock')
     device_address = TextField(u'Address', [Required(), Length(max=255)], description=u'Hostname or IP address', default='localhost')
     device_port = IntegerField(u'Port', [Required(), NumberRange(1024, 65535)], description=u'', default=10000)
-    ssl = BooleanField(u'Use SSL?')
+    ssl = BooleanField(u'Encrypt ser2sock?')
 
     buttons = FormField(SetupButtonForm)
 
