@@ -39,7 +39,7 @@ def history(user_id):
         abort(404)
     if not current_user.is_authenticated():
         abort(403)
-    if not current_user.is_admin() or current_user.id != user_id:
+    if not current_user.is_admin() and current_user.id != user_id:
         abort(403)
 
     user = User.get_by_id(user_id)
