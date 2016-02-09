@@ -15,7 +15,8 @@
     <h3>Advanced Settings</h3>
     <ul>
         <li><a href="{{ url_for('settings.host') }}">Host</a>: Configure host settings.</li>
-        <li><a href="{{ url_for('settings.switch_branch') }}">Branch</a>: Use to switch your between stable and development branches.</li>
+        <li><a href="{{ url_for('api_settings.index') }}">API</a>: Manage API and keys.</li>
+        <li><a href="{{ url_for('settings.switch_branch') }}">Branch</a>: Use to switch webapp your between stable and development branches.</li>
         <li><a href="{{ url_for('update.firmware') }}">Firmware Update</a>: Update the firmware on your AlarmDecoder.</li>
         <li><a href="{{ url_for('settings.system_diagnostics') }}">Diagnostics</a>: Perform tests on your device and see missing modules.</li>
         <li><a href="{{ url_for('setup.index') }}">Setup</a>: Go through the process of setting up your AlarmDecoder.

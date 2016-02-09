@@ -5,34 +5,82 @@
 {% extends "layouts/base.html" %}
 
 {% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
 {% endblock %}
 
 {% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+        $('#loading').spin('flower');
+        $('#buttons-table').dataTable({
+            "bStateSave": true,
+            "iCookieDuration": 60*60*24,
+            "bJQueryUI": true,
+            "sPaginationType": "full_numbers",
+            "sDom": '<"H"lr>t<"F"fip>',
+            "oLanguage": {
+                "sInfoFiltered": "",
+                "sInfo": "_START_ to _END_ of _TOTAL_",
+                "sInfoEmpty": "No Results",
+                "sEmptyTable": " ",
+            },
+            "aoColumns": [
+                { "sWidth": "10%" },
+                { "sWidth": "35%" },
+                { "sWidth": "10%" },
+            ],
+            "fnInitComplete": function() {
+                $('#loading').stop();
+                $('#loading').hide();
+                $('#datatable').show();
+                this.fnAdjustColumnSizing();
+            },
+        });
+    });
+</script>
 {% endblock %}
 
 {% block body %}
 <div id="data">
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Username</th>
-                <th>Key</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-    {% for key in keys %}
-        <tr>
-            <td>{{ key.user.name }}</td>
-            <td>{{ key.key }}</td>
-            <td>
-                <a href="{{ url_for('api_settings.generate_key', user_id=key.user.id) }}">Generate</a>, 
-                <a href="{{ url_for('api_settings.disable_key', user_id=key.user.id) }}">Disable</a>
-            </td>
-        </tr>
-    {% endfor %}
-    </table>
+    <div id="loading"></div>
+    <div id="datatable" style="display: none;">
+        <table class="display table-hover" cellpadding="3" bordercolor="EEEEEE" border="1" id="buttons-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Key</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key in keys %}
+                    <tr>
+                        <td>{{ key.user.name }}</td>
+                        <td>{{ key.key }}</td>
+                        <td>
+                            <center>
+                                <a class="btn btn-primary" href="{{ url_for('api_settings.generate_key', user_id=key.user.id) }}">Generate</a>
+                                <a class="btn btn-primary" href="{{ url_for('api_settings.disable_key', user_id=key.user.id) }}">Disable</a>
+                            </center>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 
 {% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
 {% endblock %}
