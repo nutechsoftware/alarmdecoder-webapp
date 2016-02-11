@@ -87,6 +87,24 @@
 </div>
 {% endmacro %}
 
+{% macro render_password(field) %}
+<div class="control-group{% if field.errors %} error{% endif %}">
+    <label class="control-label"
+        for="{{ field.id }}">
+        {{ field.label }}
+    </label>
+    <div class="controls">
+        {{ field(class_=field.short_name, autocomplete='off') }}
+        <span class="help-inline">{{ field.description }}</span>
+        {% if field.errors -%}
+            {% for error in field.errors -%}
+            <span class="help-block error">{{ error }}</span>
+            {%- endfor %}
+        {%- endif %}
+    </div>
+</div>
+{% endmacro %}
+
 {% macro render_action(field) %}
 <span id="{{ field.name }}-group" class="control-group">
     <span class="form-actions">
@@ -128,6 +146,8 @@
                     {% for f in field %}
                         {{ render_formfield(f) }}
                     {% endfor %}
+                {% elif field.type == "PasswordField" %}
+                    {{ render_password(field) }}
                 {% else %}
                     {{ render_input(field) }}
                 {% endif %}
@@ -206,6 +226,8 @@
                     {% for f in field %}
                         {{ render_formfield(f) }}
                     {% endfor %}
+                {% elif field.type == "PasswordField" %}
+                    {{ render_password(field) }}
                 {% else %}
                     {{ render_input(field) }}
                 {% endif %}
