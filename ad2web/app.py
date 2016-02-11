@@ -259,6 +259,14 @@ def configure_hook(app):
 
         g.alarmdecoder = app.decoder
 
+    @app.after_request
+    def apply_response_headers(response):
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, private"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
 
 def configure_error_handlers(app):
     @app.errorhandler(403)
