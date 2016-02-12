@@ -37,6 +37,8 @@ from .cameras import CameraSystem
 from .cameras.models import Camera
 from .discovery import DiscoveryServer
 
+from .setup.constants import SETUP_COMPLETE
+
 
 EVENT_MAP = {
     ARM: 'on_arm',
@@ -95,7 +97,7 @@ class Decoder(object):
             self._device_location = None
             self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
-            self._discovery_thread = DiscoveryServer(self)
+            self._discovery_thread = None
             self._notifier_system = None
             self._internal_address_mask = 0xFFFFFFFF
 
@@ -183,6 +185,7 @@ class Decoder(object):
 
             self._notifier_system = NotificationSystem()
             self._camera_thread = CameraChecker(self)
+            self._discovery_thread = DiscoveryServer(self)
 
     def open(self, no_reader_thread=False):
         """
@@ -364,7 +367,10 @@ class Decoder(object):
         :type packet: dict
         """
         for session, sock in self.websocket.sockets.iteritems():
-            sock.send_packet(packet)
+            authenticated = sock.session.get('authenticated', False)
+
+            if authenticated:
+                sock.send_packet(packet)
 
     def _make_packet(self, channel, data):
         """
@@ -520,7 +526,33 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
         """
         Initializes the namespace.
         """
-        self._alarmdecoder = self.request
+        self._alarmdecoder = self.request.get('alarmdecoder', None)
+        self._request = self.request.get('request', None)
+
+    def get_initial_acl(self):
+        return ['recv_connect']
+
+    def recv_connect(self):
+        with self._alarmdecoder.app.app_context():
+            try:
+                with self._alarmdecoder.app.request_context(self.environ):
+
+                    session_interface = self._alarmdecoder.app.session_interface
+                    session = session_interface.open_session(self._alarmdecoder.app, self._request)
+                    user_id = session.get('user_id', None)
+
+                    # check setup complete
+                    setup_stage = Setting.get_by_name('setup_stage').value
+
+                    if (setup_stage and setup_stage != SETUP_COMPLETE) or user_id:
+                        self.add_acl_method('on_keypress')
+                        self.add_acl_method('on_firmwareupload')
+                        self.add_acl_method('on_test')
+
+                        self.socket.session['authenticated'] = True
+
+            except Exception, err:
+                self._alarmdecoder.app.logger.error('Websocket connection failed: {0}'.format(err))
 
     def on_keypress(self, key):
         """
@@ -752,7 +784,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 def handle_socketio(remaining):
     """Socket.IO route"""
     try:
-        socketio_manage(request.environ, {'/alarmdecoder': DecoderNamespace}, g.alarmdecoder)
+        socketio_manage(request.environ, {'/alarmdecoder': DecoderNamespace}, { "alarmdecoder": g.alarmdecoder, "request": request})
 
     except Exception, err:
         current_app.logger.error("Exception while handling socketio connection", exc_info=True)

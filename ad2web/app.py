@@ -226,6 +226,9 @@ def configure_logging(app):
         '%(asctime)s %(levelname)s: %(message)s '
         '[in %(pathname)s:%(lineno)d]')
     )
+
+    socketio_logger = logging.getLogger('socketio.virtsocket')
+    socketio_logger.addHandler(info_file_handler)
     app.logger.addHandler(info_file_handler)
 
 
