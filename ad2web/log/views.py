@@ -160,7 +160,7 @@ class DataTablesServer:
     def filtering(self):
         filter = None
         if( self.request_values.has_key('sSearch')) and (self.request_values['sSearch'] != "" ):
-            filter = cgi.escape(self.request_values['sSearch'])
+            filter = cgi.escape(str(self.request_values['sSearch']))
 
         return filter
 
