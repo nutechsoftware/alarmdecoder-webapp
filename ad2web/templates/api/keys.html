@@ -65,7 +65,7 @@
                 {% for user in users %}
                     <tr>
                         <td>{{ user.name }}</td>
-                        <td>{% if user.apikey %}{{ user.apikey[0].key }}{% endif %}</td>
+                        <td>{% if user.apikey %}{{ user.apikey[0].key }}{% else %}None{% endif %}</td>
                         <td>
                             <center>
                                 <a class="btn btn-primary" href="{{ url_for('api_settings.generate_key', user_id=user.id) }}">Generate</a>
