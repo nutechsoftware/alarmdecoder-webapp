@@ -44,9 +44,9 @@ def index():
 @login_required
 @admin_required
 def keys():
-    keys = APIKey.query.all()
+    users = User.query.all()
 
-    return render_template('api/keys.html', keys=keys)
+    return render_template('api/keys.html', users=users)
 
 @api_settings.route('/keys/generate/<int:user_id>')
 @login_required
@@ -67,7 +67,10 @@ def generate_key(user_id):
 @login_required
 @admin_required
 def disable_key(user_id):
-    apikey = APIKey.query.filter_by(user_id=user_id).first_or_404()
+    apikey = APIKey.query.filter_by(user_id=user_id).first()
+    if not apikey:
+        apikey = APIKey(user_id=user_id)
+
     apikey.key = None
 
     db.session.add(apikey)
