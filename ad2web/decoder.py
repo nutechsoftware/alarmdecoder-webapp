@@ -5,6 +5,7 @@ import sys
 import time
 import traceback
 import threading
+import binascii
 
 from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
@@ -164,6 +165,15 @@ class Decoder(object):
                 if not NotificationMessage.query.filter_by(id=event).first():
                     db.session.add(NotificationMessage(id=event, text=message))
             db.session.commit()
+
+            # Generate a new session key if it doesn't exist.
+            secret_key = Setting.get_by_name('secret_key')
+            if secret_key.value is None:
+                secret_key.value = binascii.hexlify(os.urandom(24))
+                db.session.add(secret_key)
+                db.session.commit()
+
+            current_app.secret_key = secret_key.value
 
             self.version = self.updater._components['webapp'].version
             current_app.jinja_env.globals['version'] = self.version
