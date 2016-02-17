@@ -131,6 +131,7 @@ div[id*=" form_field-custom_values-"] > div.controls > div.control-group {
     });
 function addField()
 {
+    $('#custom_values_help').show();
     var newInput = '<div class="control-group" id="form_field-custom_values-' + iCnt + '"><div class="controls"><div class="control-group" style="display: inline-block;"><label for="form_field-custom_values-' + iCnt + '-custom_key" class="control-label">Custom Key</label><div class="controls"><input type="text" id="form_field-custom_values-' + iCnt + '-custom_key" name="form_field-custom_values-' + iCnt + '-custom_key"/>&nbsp;</div></div><div class="control-group" style="display: inline-block;"><label for="form_field-custom_values-' + iCnt + '-custom_value" class="control-label">Custom Value</label><div class="controls"><input type="text" id="form_field-custom_values-' + iCnt + '-custom_value" name="form_field-custom_values-' + iCnt + '-custom_value" class="custom_value"/></div><span class="help-inline"></span></div><a href="#" id="remove_field' + iCnt + '" class="remove_field"><img alt="Remove" title="Remove" src="{{ url_for("static", filename="img/red_x.png") }}"></a></div>';
     $('#form_field-add_field-group').before(newInput);
     iCnt++;
@@ -141,6 +142,14 @@ function addField()
 {% block body %}
 <div class="settings_wrapper">
     {{ render_form(url_for('notifications.create_by_type', type=type), form) }}
+    <div id="custom_values_help" style="display: none;">
+        <h4>Custom Value Text Replacements</h4>
+        <h5>Use these as a custom value and it will be replaced on trigger of notification</h5>
+        <ul style="list-style-type: none;">
+            <li>{{'{{'}}timestamp{{'}}'}} - Current Unix Time</li>
+            <li>{{'{{'}}message{{'}}'}} &nbsp;&nbsp;- Current <a href="{{ url_for('notifications.messages') }}">custom messages</a>
+        </ul>
+    </div>
 </div>
 
 <div id="notification-type-wrapper" style="display: none;">
