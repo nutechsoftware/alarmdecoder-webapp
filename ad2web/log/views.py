@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
+import numbers
+import cgi
 
 from flask import Blueprint, render_template, abort, g, request, flash, Response, url_for, redirect
 from flask import current_app as APP
@@ -105,7 +107,7 @@ class DataTablesServer:
 
     def output_result(self):
         output = {}
-        output['sEcho'] = str(int(self.request_values['sEcho']))
+        output['sEcho'] = cgi.escape(str(int(self.request_values['sEcho'])))
         output['iTotalRecords'] = int(self.cardinality);
         output['iTotalDisplayRecords'] = int(self.cardinality);
 
@@ -140,19 +142,25 @@ class DataTablesServer:
 
         #if filtered, cardinality based off filter, otherwise all rows
         if filter is not None:
-            self.result_data = EventLogEntry.query.filter(EventLogEntry.message.like('%' + filter + '%')).order_by(EventLogEntry.timestamp.desc()).limit(limit).offset(start)
-            self.cardinality_filtered = self.result_data.count()
-            self.cardinality = EventLogEntry.query.filter(EventLogEntry.message.like('%' + filter + '%')).count()
+            try:
+                self.result_data = EventLogEntry.query.filter(EventLogEntry.message.like('%' + filter + '%')).order_by(EventLogEntry.timestamp.desc()).limit(limit).offset(start)
+                self.cardinality_filtered = self.result_data.count()
+                self.cardinality = EventLogEntry.query.filter(EventLogEntry.message.like('%' + filter + '%')).count()
+            except Exception, err:
+                pass
         else:
-            self.result_data = EventLogEntry.query.order_by(EventLogEntry.timestamp.desc()).limit(limit).offset(start)
-            self.cardinality_filtered = self.result_data.count()
-            self.cardinality = EventLogEntry.query.order_by(EventLogEntry.timestamp.desc()).count()
+            try:
+                self.result_data = EventLogEntry.query.order_by(EventLogEntry.timestamp.desc()).limit(limit).offset(start)
+                self.cardinality_filtered = self.result_data.count()
+                self.cardinality = EventLogEntry.query.order_by(EventLogEntry.timestamp.desc()).count()
+            except Exception, err:
+                pass
 
     #here we determine the filter value for the search box and apply to the queries
     def filtering(self):
         filter = None
         if( self.request_values.has_key('sSearch')) and (self.request_values['sSearch'] != "" ):
-            filter = self.request_values['sSearch']
+            filter = cgi.escape(str(self.request_values['sSearch']))
 
         return filter
 
@@ -160,7 +168,10 @@ class DataTablesServer:
     def paging(self):
         pages = collections.namedtuple('pages', ['start', 'length'])
         if( self.request_values['iDisplayStart'] != "" ) and (self.request_values['iDisplayLength'] != -1 ):
-            pages.start = int(self.request_values['iDisplayStart'])
-            pages.length = int(self.request_values['iDisplayLength'])
+            if self.request_values['iDisplayStart'].isdigit() is False or self.request_values['iDisplayLength'].isdigit() is False:
+                return pages
+
+            pages.start = int(cgi.escape(self.request_values['iDisplayStart']))
+            pages.length = int(cgi.escape(self.request_values['iDisplayLength']))
 
         return pages;
