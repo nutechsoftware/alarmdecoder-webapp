@@ -709,17 +709,17 @@ def configure_system_email():
         email_password = form.password.data
         email_from = form.default_sender.data
 
-        system_email_server = Setting.get_by_name('system_email_server',default='smtp.gmail.com')
+        system_email_server = Setting.get_by_name('system_email_server')
         system_email_server.value = email_server
-        system_email_port = Setting.get_by_name('system_email_port',default=587)
+        system_email_port = Setting.get_by_name('system_email_port')
         system_email_port.value = email_port
-        system_email_tls = Setting.get_by_name('system_email_tls',default=True)
+        system_email_tls = Setting.get_by_name('system_email_tls')
         system_email_tls.value = email_tls
-        system_email_username = Setting.get_by_name('system_email_username',default='youremail@gmail.com')
+        system_email_username = Setting.get_by_name('system_email_username')
         system_email_username.value = email_username
-        system_email_password = Setting.get_by_name('system_email_password',default='yourpassword')
-        system_email_password.vaue = email_password
-        system_email_from = Setting.get_by_name('system_email_from',default='admin@example.com')
+        system_email_password = Setting.get_by_name('system_email_password')
+        system_email_password.value = email_password
+        system_email_from = Setting.get_by_name('system_email_from')
         system_email_from.value = email_from
 
         db.session.add(system_email_server)
