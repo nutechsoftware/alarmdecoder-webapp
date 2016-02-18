@@ -16,6 +16,7 @@ from ..utils import allowed_file, ALLOWED_AVATAR_EXTENSIONS
 from ..utils import SEX_TYPE
 
 from ..widgets import ButtonField
+from ..settings import Setting
 
 class ProfileForm(Form):
     multipart = True
@@ -98,3 +99,13 @@ class SwitchBranchForm(Form):
     remotes = SelectField(u'Remote', choices=[('origin', u'origin')], default='origin', coerce=str)
     branches = SelectField(u'Branch', choices=[('master', u'master'), ('dev', u'dev')], default='master', coerce=str)
     submit = SubmitField(u'Checkout')
+
+class EmailConfigureForm(Form):
+    mail_server = TextField(u'Email Server', [Required(), Length(max=255)], description=u'ex: smtp.gmail.com')
+    port = IntegerField(u'Server Port', [Required(), NumberRange(1, 65535)], description=u'ex: 25 for normal or 587 for TLS')
+    tls = BooleanField(u'Use TLS?', default=True)
+    username = TextField(u'Username', [Optional(), Length(max=255)], description=u'Email Username')
+    password = PasswordField(u'Password', [Optional(), Length(max=255)], description=u'Email Password')
+    default_sender = TextField(u'From Email', [Required(), Length(max=255)], default='admin@example.com', description=u'Emails will come from this address')
+    submit = SubmitField(u'Save')
+

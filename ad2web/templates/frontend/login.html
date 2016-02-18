@@ -10,6 +10,7 @@
 <div id="setup2">
 <h2>Sign in</h2>
 {{ render_form(url_for('frontend.login'), form)}}
+<a href="{{url_for('frontend.reset_password')}}">Forgot Password?</a>
 </div>
 {% endblock %}
 
