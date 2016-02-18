@@ -12,6 +12,8 @@ from socketio.mixins import BroadcastMixin
 from socketio.server import SocketIOServer
 from socketioflaskdebug.debugger import SocketIODebugger
 
+from sqlalchemy.orm.exc import NoResultFound
+
 from flask import Blueprint, Response, request, g, current_app
 import jsonpickle
 
@@ -208,13 +210,17 @@ class Decoder(object):
                 try:
                     device = devicetype(interface=interface)
                     if use_ssl:
-                        ca_cert = Certificate.query.filter_by(name='AlarmDecoder CA').one()
-                        internal_cert = Certificate.query.filter_by(name='AlarmDecoder Internal').one()
+                        try:
+                            ca_cert = Certificate.query.filter_by(name='AlarmDecoder CA').one()
+                            internal_cert = Certificate.query.filter_by(name='AlarmDecoder Internal').one()
 
-                        device.ssl = True
-                        device.ssl_ca = ca_cert.certificate_obj
-                        device.ssl_certificate = internal_cert.certificate_obj
-                        device.ssl_key = internal_cert.key_obj
+                            device.ssl = True
+                            device.ssl_ca = ca_cert.certificate_obj
+                            device.ssl_certificate = internal_cert.certificate_obj
+                            device.ssl_key = internal_cert.key_obj
+                        except NoResultFound, err:
+                            self.app.logger.warning('No certificates found: %s', err[0], exc_info=True)
+                            raise
 
                     self.device = AlarmDecoder(device)
                     self.device.internal_address_mask = self._internal_address_mask

@@ -10,7 +10,7 @@
     $(document).ready(function() {
         createFormTooltip('#device_address', 'The Name or IP Address of the machine serving your AlarmDecoder product via ser2sock.');
         createFormTooltip('#device_port', 'The port number of the ser2sock instance.');
-        createFormTooltip('#ssl', 'Enable ssl support for network communications.');
+        createFormTooltip('#ssl', 'Support communicating with encrypted ser2sock stream.');
     });
 </script>
 {% endblock %}
@@ -20,7 +20,7 @@
 	<h3>Network Device Settings</h3>
 	<div>
 		<p>
-            In this section, please provide the address of the computer which is connected to the AlarmDecoder device as well as the port that is opened by ser2sock or your IP-to-serial gateway device.  Optionally, you can use SSL.
+            In this section, please provide the address of the computer which is connected to the AlarmDecoder device as well as the port that is opened by ser2sock or your IP-to-serial gateway device.  Optionally, you can choose to connect the stream using encryption.
 		</p>
 	</div>
 	<br>
