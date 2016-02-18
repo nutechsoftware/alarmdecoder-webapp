@@ -3,6 +3,7 @@ from flask import (Blueprint, render_template, current_app, request, flash,
 from flask.ext.login import login_required, current_user
 
 from wtforms import FormField, TextField
+from sqlalchemy.orm.session import make_transient
 
 from ..extensions import db
 from ..settings import Setting
@@ -55,7 +56,7 @@ def index():
 @login_required
 def edit(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
-    if notification.user != current_user and not current_user.is_admin():
+    if notification.user != current_user:
         abort(403)
 
     type_id, form_type = NOTIFICATION_TYPE_DETAILS[NOTIFICATION_TYPES[notification.type]]
@@ -71,7 +72,7 @@ def edit(id):
     if form.validate_on_submit():
         notification.description = form.description.data
         form.populate_settings(notification.settings, id=id)
-
+        notification.enabled = 1
         db.session.add(notification)
         db.session.commit()
 
@@ -181,7 +182,7 @@ def zone_filter(id):
 @login_required
 def remove(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
-    if notification.user != current_user and not current_user.is_admin():
+    if notification.user != current_user:
         abort(403)
 
     db.session.delete(notification)
@@ -192,13 +193,65 @@ def remove(id):
     flash('Notification deleted.', 'success')
     return redirect(url_for('notifications.index'))
 
+@notifications.route('/<int:id>/copy', methods=['GET', 'POST'])
+@login_required
+def copy_notification(id):
+    notification = Notification.query.filter_by(id=id).first_or_404()
+    desc = notification.description
+
+    if notification.user != current_user:
+        abort(403)
+
+    notification.id = None
+    notification.description = desc + ' Clone'
+    make_transient(notification)
+
+    db.session.add(notification)
+    db.session.commit()
+
+    old_settings = NotificationSetting.query.filter_by(notification_id=id).all()
+
+    for s in old_settings:
+        s.id = None
+        s.notification_id = notification.id
+        make_transient(s)
+        db.session.add(s)
+
+    db.session.commit()
+
+    current_app.decoder.refresh_notifier(notification.id)
+
+    flash('Notification cloned.', 'success')
+    return redirect(url_for('notifications.index'))
+
+@notifications.route('/<int:id>/toggle', methods=['GET', 'POST'])
+@login_required
+def toggle_notification(id):
+    notification = Notification.query.filter_by(id=id).first_or_404()
+    status = "Enabled"
+
+    if notification.enabled is 0:
+        notification.enabled = 1
+        status = "Enabled"
+    else:
+        notification.enabled = 0
+        status = "Disabled"
+
+    db.session.add(notification)
+    db.session.commit()
+
+    current_app.decoder.refresh_notifier(id)
+
+    flash('Notification ' + status, 'success')
+    return redirect(url_for('notifications.index'))
+
 @notifications.route('/<int:id>/review', methods=['GET', 'POST'])
 @login_required
 def review(id):
     form = ReviewNotificationForm()
 
     notification = Notification.query.filter_by(id=id).first_or_404()
-    if notification.user != current_user and not current_user.is_admin():
+    if notification.user != current_user:
         abort(403)
 
     if form.validate_on_submit():

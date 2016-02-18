@@ -88,7 +88,7 @@ class NotificationSystem(object):
         return errors
 
     def refresh_notifier(self, id):
-        n = Notification.query.filter_by(id=id).first()
+        n = Notification.query.filter_by(id=id,enabled=1).first()
         if n:
             self._notifiers[id] = TYPE_MAP[n.type](n)
         else:
@@ -111,7 +111,7 @@ class NotificationSystem(object):
     def _init_notifiers(self):
         self._notifiers = {-1: LogNotification()}   # Force LogNotification to always be present
 
-        for n in Notification.query.all():
+        for n in Notification.query.filter_by(enabled=1).all():
             self._notifiers[n.id] = TYPE_MAP[n.type](n)
 
     def _build_message(self, type, **kwargs):
