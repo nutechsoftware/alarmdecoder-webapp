@@ -20,7 +20,7 @@ from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SocketDevice, SerialDevice
 from alarmdecoder.util import NoDeviceError, CommError
 
-from .extensions import db
+from .extensions import db, mail
 from .notifications import NotificationSystem
 from .settings.models import Setting
 from .certificate.models import Certificate
@@ -171,6 +171,7 @@ class Decoder(object):
             current_app.jinja_env.globals['version'] = self.version
             current_app.logger.info('AlarmDecoder Webapp booting up - v{0}'.format(self.version))
 
+            mail.init_app(current_app)
             # HACK: giant hack.. fix when we know this works.
             self.updater._components['webapp']._db_updater.refresh()
 

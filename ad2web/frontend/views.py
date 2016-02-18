@@ -212,7 +212,6 @@ def reset_password():
             user.activation_key = str(uuid4())
             db.session.add(user)
             db.session.commit()
-            mail.init_app(current_app)
             url = url_for('frontend.change_password', email=user.email, activation_key=user.activation_key, _external=True)
             html = render_template('macros/_reset_password.html', project=current_app.config['PROJECT'], username=user.name, url=url)
             message = Message(subject='Reset your password in ' + current_app.config['PROJECT'], html=html, recipients=[user.email])
