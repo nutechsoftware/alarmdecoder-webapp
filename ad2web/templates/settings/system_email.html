@@ -1,0 +1,22 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#hostname', 'What you would like the name of the device to be.');
+    });
+</script>
+{% endblock %}
+{% block body %}
+<div class="settings_wrapper">
+    {{ render_form(url_for('settings.configure_system_email'), form) }}
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}

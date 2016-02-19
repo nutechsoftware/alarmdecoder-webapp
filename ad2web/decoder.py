@@ -22,7 +22,7 @@ from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SocketDevice, SerialDevice
 from alarmdecoder.util import NoDeviceError, CommError
 
-from .extensions import db
+from .extensions import db, mail
 from .notifications import NotificationSystem
 from .settings.models import Setting
 from .certificate.models import Certificate
@@ -161,11 +161,19 @@ class Decoder(object):
                     db.session.add(NotificationMessage(id=event, text=message))
             db.session.commit()
 
+
+            current_app.config['MAIL_SERVER'] = Setting.get_by_name('system_email_server',default='localhost').value
+            current_app.config['MAIL_PORT'] = Setting.get_by_name('system_email_port',default=25).value
+            current_app.config['MAIL_USE_TLS'] = Setting.get_by_name('system_email_tls',default=False).value
+            current_app.config['MAIL_USERNAME'] = Setting.get_by_name('system_email_username',default='').value
+            current_app.config['MAIL_PASSWORD'] = Setting.get_by_name('system_email_password',default='').value
+            current_app.config['MAIL_DEFAULT_SENDER'] = Setting.get_by_name('system_email_from',default='admin@example.com').value
+
             self.version = self.updater._components['webapp'].version
             current_app.jinja_env.globals['version'] = self.version
-
             current_app.logger.info('AlarmDecoder Webapp booting up - v{0}'.format(self.version))
 
+            mail.init_app(current_app)
             # HACK: giant hack.. fix when we know this works.
             self.updater._components['webapp']._db_updater.refresh()
 

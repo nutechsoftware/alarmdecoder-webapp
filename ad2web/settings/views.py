@@ -36,7 +36,7 @@ from ..user import User, UserDetail
 from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES
 from ..certificate import Certificate, CA, SERVER
@@ -685,6 +685,56 @@ def get_system_imports():
 #            imported[d + '/' + f] = parse_python_source(os.path.join(d,f))
         
     return json.dumps(imported)
+
+@settings.route('/configure_system_email', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def configure_system_email():
+    form = EmailConfigureForm()
+
+    #populate unsubmitted form with db values if they exist
+    if not form.is_submitted():
+        form.mail_server.data = Setting.get_by_name('system_email_server', default='smtp.gmail.com').value
+        form.port.data = Setting.get_by_name('system_email_port',default=587).value
+        form.tls.data = Setting.get_by_name('system_email_tls',default=True).value
+        form.username.data = Setting.get_by_name('system_email_username').value
+        form.password.data = Setting.get_by_name('system_email_password').value
+        form.default_sender.data = Setting.get_by_name('system_email_from',default='admin@example.com').value
+
+    if form.validate_on_submit():
+        email_server = form.mail_server.data
+        email_port = form.port.data
+        email_tls = form.tls.data
+        email_username = form.username.data
+        email_password = form.password.data
+        email_from = form.default_sender.data
+
+        system_email_server = Setting.get_by_name('system_email_server')
+        system_email_server.value = email_server
+        system_email_port = Setting.get_by_name('system_email_port')
+        system_email_port.value = email_port
+        system_email_tls = Setting.get_by_name('system_email_tls')
+        system_email_tls.value = email_tls
+        system_email_username = Setting.get_by_name('system_email_username')
+        system_email_username.value = email_username
+        system_email_password = Setting.get_by_name('system_email_password')
+        system_email_password.value = email_password
+        system_email_from = Setting.get_by_name('system_email_from')
+        system_email_from.value = email_from
+
+        db.session.add(system_email_server)
+        db.session.add(system_email_port)
+        db.session.add(system_email_tls)
+        db.session.add(system_email_username)
+        db.session.add(system_email_password)
+        db.session.add(system_email_from)
+
+        db.session.commit()
+
+        flash('System Email settings updated.', 'success')
+        return redirect(url_for('settings.index'))
+
+    return render_template('settings/system_email.html', active="advanced", form=form)
 
 #below code used to parse .py files and find imported modules - currently does not catch things that are straight imports only froms
 #leaving in case we want to improve and use
