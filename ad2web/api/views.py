@@ -93,7 +93,7 @@ def api_authorized(f):
         request_apikey = request.args.get('apikey', None)
         apikey = APIKey.query.filter_by(key=request_apikey).first()
 
-        if apikey is None:
+        if request_apikey is None or apikey is None:
             return jsonify(build_error(ERROR_NOT_AUTHORIZED, 'Not authorized.')), UNAUTHORIZED
 
         if current_app.decoder.device is None:
