@@ -1,0 +1,28 @@
+{% from "macros/_form.html" import render_form %}
+
+{% set page_title = 'API' %}
+
+{% extends "layouts/base.html" %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+{% endblock %}
+
+{% block body %}
+<div id="data">
+    <div>
+        The AlarmDecoder webapp provides a RESTful API that other applications may use to interoperate with it.
+    </div>
+    <div style="padding-top: 10px;">
+        You can find more information on the API <a href"http://www.alarmdecoder.com/wiki/index.php/REST_API">here</a>.
+    </div>
+    <div style="padding-top: 25px;">
+        <a class="btn btn-primary" href="{{ url_for('api_settings.keys') }}">Manage API keys</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}

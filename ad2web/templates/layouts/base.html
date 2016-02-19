@@ -149,10 +149,6 @@
     <script src="{{ url_for('static', filename='js/vendor/jquery-2.0.3.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/plugins.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/bootstrap.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/vendor/socket.io.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/vendor/pubsub.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/alarmdecoder.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/mobile-detect.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/mobile-detect-modernizr.js') }}"></script>
     {% endblock %}
@@ -162,6 +158,13 @@
     <script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
+    {% endblock %}
+
+    {% block appjs %}
+    <script src="{{ url_for('static', filename='js/vendor/socket.io.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/vendor/pubsub.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/alarmdecoder.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% endblock %}
 
     {% block pagejs %}
