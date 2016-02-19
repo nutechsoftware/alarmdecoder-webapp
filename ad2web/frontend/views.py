@@ -236,8 +236,8 @@ def reset_password():
             db.session.add(user)
             db.session.commit()
             url = url_for('frontend.change_password', email=user.email, activation_key=user.activation_key, _external=True)
-            html = render_template('macros/_reset_password.html', project=current_app.config['PROJECT'], username=user.name, url=url)
-            message = Message(subject='Reset your password in ' + current_app.config['PROJECT'], html=html, recipients=[user.email])
+            html = render_template('macros/_reset_password.html', project='AlarmDecoder Webapp', username=user.name, url=url)
+            message = Message(subject='Reset your password for the AlarmDecoder Webapp', html=html, recipients=[user.email])
             mail.send(message)
 
             return render_template('frontend/reset_password.html', form=form)
