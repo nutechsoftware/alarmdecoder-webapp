@@ -237,6 +237,15 @@ def configure_hook(app):
 
     @app.before_request
     def before_request():
+        # Hacky fix to keep cookies secure over HTTPS without pissing off HTTP.
+        x_forwarded_proto = request.headers.get('X-Forwarded-Proto', None)
+        if x_forwarded_proto is not None and x_forwarded_proto == 'https':
+            app.config['SESSION_COOKIE_SECURE'] = True
+            app.config['REMEMBER_COOKIE_SECURE'] = True
+        else:
+            app.config['SESSION_COOKIE_SECURE'] = False
+            app.config['REMEMBER_COOKIE_SECURE'] = False
+
         if request.blueprint == 'setup':
             setup_stage = Setting.get_by_name('setup_stage').value
             # If setup hasn't been started, redirect to the index
