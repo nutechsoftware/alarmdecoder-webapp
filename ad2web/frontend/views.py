@@ -170,6 +170,7 @@ def signup():
 @frontend.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     user = None
+
     if current_user.is_authenticated():
         if not login_fresh():
             return login_manager.needs_refresh()
@@ -179,6 +180,12 @@ def change_password():
         email = request.values['email']
         user = User.query.filter_by(activation_key=activation_key) \
                          .filter_by(email=email).first()
+        session['password_activation_key'] = activation_key
+        session['password_reset_email'] = email
+
+    if session['password_activation_key'] is not None and session['password_reset_email'] is not None:
+        user = User.query.filter_by(activation_key=session['password_activation_key']) \
+                         .filter_by(email=session['password_reset_email']).first()
 
     if user is None:
         abort(403)
@@ -190,6 +197,9 @@ def change_password():
         user.activation_key = None
         db.session.add(user)
         db.session.commit()
+
+        session['password_activation_key'] = None
+        session['password_reset_email'] = None
 
         flash(_("Your password has been changed, please log in again"),
               "success")
