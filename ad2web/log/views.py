@@ -86,9 +86,13 @@ def get_log_data(lines):
 @log.route('/retrieve_events_paging_data')
 @login_required
 def get_events_paging_data():
+    results = {}
 
-    #get results from datatable via XHR
-    results = DataTablesServer(request).output_result()
+    try:
+        #get results from datatable via XHR
+        results = DataTablesServer(request).output_result()
+    except TypeError, ex:
+        APP.logger.warning("Error processing datatables request: {0}".format(ex))
 
     return json.dumps(results)
 
