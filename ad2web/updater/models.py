@@ -43,7 +43,8 @@ class Updater(object):
         """
         self._components = {}
 
-        self._components['webapp'] = WebappUpdater('webapp')
+        self._components['AlarmDecoderWebapp'] = WebappUpdater('AlarmDecoderWebapp')
+        self._components['AlarmDecoderLibrary'] = SourceUpdater('AlarmDecoderLibrary', path=current_app.config['ALARMDECODER_LIBRARY_PATH'])
         # TODO: alarmdecoder library goes here, if installed from source.
         # TODO: ser2sock goes here, if installed from source.
 
@@ -105,7 +106,7 @@ class WebappUpdater(object):
         #self._enabled, self._status = self._check_enabled()
         self._enabled = True
 
-        self._source_updater = SourceUpdater('webapp')
+        self._source_updater = SourceUpdater('AlarmDecoderWebapp')
         self._db_updater = DBUpdater()
 
     @property
@@ -219,15 +220,22 @@ class SourceUpdater(object):
     Git-based update system
     """
 
-    def __init__(self, name):
+    def __init__(self, name, path=None):
         """
         Constructor
 
         :param name: Name of the component
         :type name: string
         """
+
+        self._path = None
         try:
-            self._git = sh.git
+            if path is not None:
+                self._git = sh.git.bake(C=path)
+                self._path = path
+            else:
+                self._git = sh.git
+
         except sh.CommandNotFound:
             self._git = None
 
@@ -299,6 +307,8 @@ class SourceUpdater(object):
         """
         _log('SourceUpdater: starting..')
 
+        ret = {}
+
         if not self._enabled:
             _log('SourceUpdater: disabled')
             return False
@@ -320,7 +330,10 @@ class SourceUpdater(object):
 
         _log('SourceUpdater: success')
 
-        return True
+        ret['status'] = 'PASS'
+        ret['restart_required'] = True
+
+        return ret
 
     def reset(self, revision):
         try:
@@ -425,16 +438,22 @@ class SourceUpdater(object):
         :returns: Whether or not this component is enabled.
         """
         git_available = self._git is not None
+
+        path_exists = False
+        if self._path is not None:
+            path_exists = os.path.exists(self._path)
+
         remote_okay = self._check_remotes()
 
         status = ''
         if not git_available:
             status = 'Disabled (Git is unavailable)'
-
-        if not remote_okay:
+        elif self._path is not None and not path_exists:
+            status = 'Disabled (unable to find path)'
+        elif not remote_okay:
             status = 'Disabled (SSH origin)'
 
-        return (git_available and remote_okay, status)
+        return (git_available and remote_okay and (self._path is None or path_exists), status)
 
     def _check_remotes(self):
         """

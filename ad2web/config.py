@@ -74,6 +74,8 @@ class DefaultConfig(BaseConfig):
     SESSION_COOKIE_SECURE = False           # Not actually False.  Depends on the request protocol.
     SESSION_COOKIE_HTTPONLY = True
 
+    ALARMDECODER_LIBRARY_PATH = os.path.join('/opt', 'alarmdecoder')
+
 class TestConfig(BaseConfig):
     TESTING = True
     WTF_CSRF_ENABLED = False

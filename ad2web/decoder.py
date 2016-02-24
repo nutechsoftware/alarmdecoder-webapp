@@ -186,17 +186,17 @@ class Decoder(object):
 
             current_app.secret_key = secret_key.value
 
-            self.version = self.updater._components['webapp'].version
+            self.version = self.updater._components['AlarmDecoderWebapp'].version
             current_app.jinja_env.globals['version'] = self.version
             current_app.logger.info('AlarmDecoder Webapp booting up - v{0}'.format(self.version))
 
             # HACK: giant hack.. fix when we know this works.
-            self.updater._components['webapp']._db_updater.refresh()
+            self.updater._components['AlarmDecoderWebapp']._db_updater.refresh()
 
-            if self.updater._components['webapp']._db_updater.needs_update:
+            if self.updater._components['AlarmDecoderWebapp']._db_updater.needs_update:
                 current_app.logger.debug('Database needs updating!')
 
-                self.updater._components['webapp']._db_updater.update()
+                self.updater._components['AlarmDecoderWebapp']._db_updater.update()
             else:
                 current_app.logger.debug('Database is good!')
 
