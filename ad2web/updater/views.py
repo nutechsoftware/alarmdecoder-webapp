@@ -56,7 +56,7 @@ def checkavailable():
 @admin_required
 def check_for_updates():
     APP.decoder.updates = APP.decoder.updater.check_updates()
-    update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status) in APP.decoder.updates.iteritems())
+    update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status, project_url) in APP.decoder.updates.iteritems())
     APP.jinja_env.globals['update_available'] = update_available
 
     return redirect(url_for('update.index'))

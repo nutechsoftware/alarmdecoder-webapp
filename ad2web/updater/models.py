@@ -43,9 +43,8 @@ class Updater(object):
         """
         self._components = {}
 
-        self._components['AlarmDecoderWebapp'] = WebappUpdater('AlarmDecoderWebapp')
-        self._components['AlarmDecoderLibrary'] = SourceUpdater('AlarmDecoderLibrary', path=current_app.config['ALARMDECODER_LIBRARY_PATH'])
-        # TODO: alarmdecoder library goes here, if installed from source.
+        self._components['AlarmDecoderWebapp'] = WebappUpdater('AlarmDecoderWebapp', project_url='https://github.com/nutechsoftware/alarmdecoder-webapp')
+        self._components['AlarmDecoderLibrary'] = SourceUpdater('AlarmDecoderLibrary', project_url='https://github.com/nutechsoftware/alarmdecoder', path=current_app.config['ALARMDECODER_LIBRARY_PATH'])
         # TODO: ser2sock goes here, if installed from source.
 
     def check_updates(self):
@@ -58,7 +57,7 @@ class Updater(object):
 
         for name, component in self._components.iteritems():
             component.refresh()
-            status[name] = (component.needs_update, component.branch, component.local_revision, component.remote_revision, component.status)
+            status[name] = (component.needs_update, component.branch, component.local_revision, component.remote_revision, component.status, component.project_url)
 
         return status
 
@@ -94,7 +93,7 @@ class WebappUpdater(object):
     Update system for the webapp.  Encapsulates source and database for this product.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, project_url=None):
         """
         Constructor
 
@@ -103,10 +102,11 @@ class WebappUpdater(object):
         """
 
         self.name = name
+        self.project_url = project_url
         #self._enabled, self._status = self._check_enabled()
         self._enabled = True
 
-        self._source_updater = SourceUpdater('AlarmDecoderWebapp')
+        self._source_updater = SourceUpdater('AlarmDecoderWebapp', project_url=project_url, path=None)
         self._db_updater = DBUpdater()
 
     @property
@@ -220,7 +220,7 @@ class SourceUpdater(object):
     Git-based update system
     """
 
-    def __init__(self, name, path=None):
+    def __init__(self, name, project_url='', path=None):
         """
         Constructor
 
@@ -240,6 +240,7 @@ class SourceUpdater(object):
             self._git = None
 
         self.name = name
+        self.project_url = project_url
         self._branch = ''
         self._local_revision = None
         self._remote_revision = None

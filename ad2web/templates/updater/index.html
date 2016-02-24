@@ -109,7 +109,7 @@
     }
 
     $('body').ready(function() {
-    {% for component, (needs_update, branch, revision, new_revision, status) in updates.iteritems() %}
+    {% for component, (needs_update, branch, revision, new_revision, status, project_url) in updates.iteritems() %}
         build_update_button('{{ component }}', '{{ needs_update }}' === 'True');
     {% endfor %}
     });
@@ -131,11 +131,12 @@
 
         <div style="padding-top: 20px; clear: both;">
             <table style="text-align: left">
-                <tr><th>Component</th><th>Branch</th><th>Status</th><th></th></tr>
-                {% for component, (needs_update, branch, revision, new_revision, status) in updates.iteritems() %}
+                <tr><th>Component</th><th>Branch</th><th>Changes</th><th>Status</th><th></th></tr>
+                {% for component, (needs_update, branch, revision, new_revision, status, project_url) in updates.iteritems() %}
                 <tr>
                     <td>{{ component }}</td>
-                    <td><a href="https://github.com/nutechsoftware/alarmdecoder-webapp/tree/{{ branch|urlencode }}">{{ branch }}</a></td>
+                    <td><a href="{{ project_url|escape }}/tree/{{ branch|urlencode }}">{{ branch }}</a></td>
+                    <td>{% if needs_update %}<a href="{{ project_url|escape }}/compare/{{ revision|truncate(7, True, '') }}...{{ new_revision|truncate(7, True, '') }}">{{ revision|truncate(7, True, '') }}...{{ new_revision|truncate(7, True, '') }}{% endif %}</a></td>
                     <td>{{ status }}</td>
                     <td>
                         <span id="{{ component }}-status"></span>
