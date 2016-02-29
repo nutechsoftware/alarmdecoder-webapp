@@ -42,6 +42,8 @@ from .discovery import DiscoveryServer
 
 from .setup.constants import SETUP_COMPLETE
 
+from .utils import user_is_authenticated
+
 
 EVENT_MAP = {
     ARM: 'on_arm',
@@ -189,6 +191,9 @@ class Decoder(object):
             self.version = self.updater._components['AlarmDecoderWebapp'].version
             current_app.jinja_env.globals['version'] = self.version
             current_app.logger.info('AlarmDecoder Webapp booting up - v{0}'.format(self.version))
+
+            # Expose wrapped is_authenticated to jinja.
+            current_app.jinja_env.globals['user_is_authenticated'] = user_is_authenticated
 
             # HACK: giant hack.. fix when we know this works.
             self.updater._components['AlarmDecoderWebapp']._db_updater.refresh()

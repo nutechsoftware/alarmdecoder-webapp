@@ -63,6 +63,7 @@ from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
 from ..log.models import EventLogEntry
 from ..zones import Zone
+from ..utils import user_is_authenticated
 
 
 class NotificationSystem(object):
@@ -256,7 +257,7 @@ class PushoverNotification(BaseNotification):
         if app.is_authenticated:
             user = app.get_user(self.user_key)
 
-            if user.is_authenticated:
+            if user_is_authenticated(user):
                 message = user.create_message(
                     title=self.title,
                     message=self.msg_to_send,

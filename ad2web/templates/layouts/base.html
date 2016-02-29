@@ -58,7 +58,7 @@
                 <div class="container">
                     <a class='brand' href='{{ url_for('frontend.index') }}'><img src="{{ url_for('static', filename='img/logo.png') }}" /></a>
 
-                    {% if current_user.is_authenticated() %}
+                    {% if user_is_authenticated(current_user) %}
                     <div class="nav-collapse collapse pull-right">
                         <ul class="nav">
                             {% if update_available and current_user.is_admin() %}

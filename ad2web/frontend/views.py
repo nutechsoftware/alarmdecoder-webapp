@@ -13,6 +13,7 @@ from ..extensions import db, mail, login_manager, oid
 from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm, LicenseAgreementForm
 from ..settings import Setting
 from socket import gethostname, gethostbyname
+from ..utils import user_is_authenticated
 
 frontend = Blueprint('frontend', __name__)
 
@@ -20,7 +21,7 @@ frontend = Blueprint('frontend', __name__)
 #@frontend.route('/login/openid', methods=['GET', 'POST'])
 #@oid.loginhandler
 def login_openid():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('user.index'))
 
     form = OpenIDForm()
@@ -44,7 +45,7 @@ def create_or_login(resp):
 
 #frontend.route('/create_profile', methods=['GET', 'POST'])
 def create_profile():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('user.index'))
 
     form = CreateProfileForm(name=request.args.get('name'),
@@ -65,7 +66,7 @@ def create_profile():
 
 @frontend.route('/')
 def index():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('keypad.index'))
 
     return render_template('index.html')
@@ -106,7 +107,7 @@ def failed_login_add(name, ip):
 
 @frontend.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('keypad.index'))
 
     form = LoginForm(login=request.args.get('login', None),
@@ -161,7 +162,7 @@ def logout():
 
 #@frontend.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('user.index'))
 
     form = SignupForm(next=request.args.get('next'))
@@ -184,7 +185,7 @@ def signup():
 def change_password():
     user = None
 
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         if not login_fresh():
             return login_manager.needs_refresh()
         user = current_user
