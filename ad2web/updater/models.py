@@ -231,7 +231,7 @@ class SourceUpdater(object):
         self._path = None
         try:
             if path is not None:
-                self._git = sh.git.bake(C=path)
+                self._git = sh.git.bake(work_tree=path, git_dir=os.path.join(path, '.git'))
                 self._path = path
             else:
                 self._git = sh.git
