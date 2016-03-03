@@ -829,8 +829,7 @@ def system_reboot():
     if not check_admin(request_user):
         return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
 
-    # TODO: Uncomment and test on something NOT my workstation.
-    #sh.reboot()
+    sh.reboot()
     
     return jsonify(), ACCEPTED
 
@@ -840,7 +839,6 @@ def system_shutdown():
     if not check_admin(request_user):
         return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
 
-    # TODO: Uncomment and test on something NOT my workstation.
-    #sh.shutdown()
+    sh.shutdown()
     
     return jsonify(), ACCEPTED
