@@ -103,9 +103,9 @@ class SwitchBranchForm(Form):
 class EmailConfigureForm(Form):
     mail_server = TextField(u'Email Server', [Required(), Length(max=255)], description=u'ex: smtp.gmail.com')
     port = IntegerField(u'Server Port', [Required(), NumberRange(1, 65535)], description=u'ex: 25 for normal or 587 for TLS')
-    tls = BooleanField(u'Use TLS?', default=True)
+    tls = BooleanField(u'Use TLS?', default=False)
     username = TextField(u'Username', [Optional(), Length(max=255)], description=u'Email Username')
     password = PasswordField(u'Password', [Optional(), Length(max=255)], description=u'Email Password')
-    default_sender = TextField(u'From Email', [Required(), Length(max=255)], default='admin@example.com', description=u'Emails will come from this address')
+    default_sender = TextField(u'From Email', [Required(), Length(max=255)], default='root@alarmdecoder', description=u'Emails will come from this address')
     submit = SubmitField(u'Save')
 

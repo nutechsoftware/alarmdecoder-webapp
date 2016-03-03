@@ -694,12 +694,12 @@ def configure_system_email():
 
     #populate unsubmitted form with db values if they exist
     if not form.is_submitted():
-        form.mail_server.data = Setting.get_by_name('system_email_server', default='smtp.gmail.com').value
-        form.port.data = Setting.get_by_name('system_email_port',default=587).value
-        form.tls.data = Setting.get_by_name('system_email_tls',default=True).value
+        form.mail_server.data = Setting.get_by_name('system_email_server', default='localhost').value
+        form.port.data = Setting.get_by_name('system_email_port', default=25).value
+        form.tls.data = Setting.get_by_name('system_email_tls', default=False).value
         form.username.data = Setting.get_by_name('system_email_username').value
         form.password.data = Setting.get_by_name('system_email_password').value
-        form.default_sender.data = Setting.get_by_name('system_email_from',default='admin@example.com').value
+        form.default_sender.data = Setting.get_by_name('system_email_from', default='root@alarmdecoder').value
 
     if form.validate_on_submit():
         email_server = form.mail_server.data
