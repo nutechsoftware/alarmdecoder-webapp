@@ -181,3 +181,11 @@ CUSTOM_CONTENT_TYPES = {
     JSON: "application/json",
     XML: "application/xml"
 }
+
+CUSTOM_TIMESTAMP = 0
+CUSTOM_MESSAGE = 1
+
+CUSTOM_REPLACER_SEARCH = {
+    CUSTOM_TIMESTAMP: "{{timestamp}}",
+    CUSTOM_MESSAGE: "{{message}}"
+}

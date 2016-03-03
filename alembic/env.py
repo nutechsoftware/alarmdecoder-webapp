@@ -3,9 +3,8 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
 import sys
-sys.path.append('ad2web')
-from config import DefaultConfig
-from extensions import db
+from ad2web.config import DefaultConfig
+from ad2web.extensions import db
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

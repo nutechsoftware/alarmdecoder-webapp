@@ -56,12 +56,14 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
-                        ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE )
+                        ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
+                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH )
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
 from ..log.models import EventLogEntry
 from ..zones import Zone
+from ..utils import user_is_authenticated
 
 
 class NotificationSystem(object):
@@ -88,7 +90,7 @@ class NotificationSystem(object):
         return errors
 
     def refresh_notifier(self, id):
-        n = Notification.query.filter_by(id=id).first()
+        n = Notification.query.filter_by(id=id,enabled=1).first()
         if n:
             self._notifiers[id] = TYPE_MAP[n.type](n)
         else:
@@ -111,7 +113,7 @@ class NotificationSystem(object):
     def _init_notifiers(self):
         self._notifiers = {-1: LogNotification()}   # Force LogNotification to always be present
 
-        for n in Notification.query.all():
+        for n in Notification.query.filter_by(enabled=1).all():
             self._notifiers[n.id] = TYPE_MAP[n.type](n)
 
     def _build_message(self, type, **kwargs):
@@ -255,7 +257,7 @@ class PushoverNotification(BaseNotification):
         if app.is_authenticated:
             user = app.get_user(self.user_key)
 
-            if user.is_authenticated:
+            if user_is_authenticated(user):
                 message = user.create_message(
                     title=self.title,
                     message=self.msg_to_send,
@@ -527,6 +529,14 @@ class CustomNotification(BaseNotification):
                 notify_data = dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values)
 
         result = False
+
+        #replace placeholder values with actual values
+        if notify_data:
+            for key,val in notify_data.items():
+                if val == CUSTOM_REPLACER_SEARCH[CUSTOM_TIMESTAMP]:
+                    notify_data[key] = time.time()
+                if val == CUSTOM_REPLACER_SEARCH[CUSTOM_MESSAGE]:
+                    notify_data[key] = self.msg_to_send
 
         if self.method == CUSTOM_METHOD_POST:
             if self.post_type == URLENCODE:

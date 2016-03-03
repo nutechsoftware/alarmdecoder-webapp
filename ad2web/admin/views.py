@@ -3,10 +3,12 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask.ext.login import login_required
 
+from sqlalchemy.exc import IntegrityError
+
 from ..extensions import db
 from ..decorators import admin_required
 
-from ..user import User
+from ..user import User, FailedLogin
 from .forms import UserForm
 from ..settings import Setting
 
@@ -32,6 +34,15 @@ def users():
 
     return render_template('admin/users.html', users=users, active='users', ssl=use_ssl)
 
+@admin.route('/users/failed_logins')
+@login_required
+@admin_required
+def failed_logins():
+    failed_logins = FailedLogin.query.all()
+
+    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+
+    return render_template('admin/failed_logins.html', failed_logins=failed_logins, active='users', ssl=use_ssl) 
 
 @admin.route('/user/create', methods=['GET', 'POST'], defaults={'user_id': None})
 @admin.route('/user/<int:user_id>', methods=['GET', 'POST'])
@@ -47,9 +58,13 @@ def user(user_id):
 
     if form.validate_on_submit():
         form.populate_obj(user)
-
-        db.session.add(user)
-        db.session.commit()
+        
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except IntegrityError:
+            flash('Duplicate user data, please use unique names and emails for each user.', 'error')
+            return redirect(url_for('admin.users'))
 
         flash('User created.' if user_id is None else 'User updated.', 'success')
         return redirect(url_for('admin.users'))

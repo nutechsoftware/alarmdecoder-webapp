@@ -1,0 +1,31 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+{% endblock %}
+
+{% block body %}
+<div id="data">
+    This section contains advanced settings that shouldn't be changed unless you know what you're doing.
+    <p>
+    <h3>Advanced Settings</h3>
+    <ul>
+        <li><a href="{{ url_for('settings.host') }}">Host</a>: Configure host settings.</li>
+        <li><a href="{{ url_for('settings.configure_system_email') }}">System Email</a>: Configure system-wide email (used for password recovery)</li>
+        <li><a href="{{ url_for('api_settings.index') }}">API</a>: Manage API and keys.</li>
+        <li><a href="{{ url_for('settings.switch_branch') }}">Branch</a>: Use to switch webapp your between stable and development branches.</li>
+        <li><a href="{{ url_for('update.firmware') }}">Firmware Update</a>: Update the firmware on your AlarmDecoder.</li>
+        <li><a href="{{ url_for('settings.system_diagnostics') }}">Diagnostics</a>: Perform tests on your device and see missing modules.</li>
+        <li><a href="{{ url_for('setup.index') }}">Setup</a>: Go through the process of setting up your AlarmDecoder.
+        <li><a href="{{ url_for('settings.import') }}">Import</a> / <a href="{{ url_for('settings.export') }}">Export</a> settings.</li>
+    </ul>
+    </p>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}

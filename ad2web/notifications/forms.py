@@ -96,7 +96,7 @@ class EmailNotificationInternalForm(Form):
 
 
 class EmailNotificationForm(EditNotificationForm):
-    form_field = FormField(EmailNotificationInternalForm, label='HiMom')
+    form_field = FormField(EmailNotificationInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")

@@ -1,0 +1,22 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% set page_title = 'AlarmDecoder Firmware Update' %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <h3>Firmware</h3>
+
+    {{ render_form(url_for('update.firmware'), form) }}
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}

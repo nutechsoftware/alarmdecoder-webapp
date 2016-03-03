@@ -54,12 +54,14 @@ If you'd rather do it by hand you can follow these steps:
 21. sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
 22. sudo rm /etc/nginx/sites-enabled/default
 23. sudo cp contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
-24. Edit /etc/gunicorn.d/alarmdecoder and change the user/group you'd like it to run as.
-25. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
-26. Optionally install and set permissions for [ser2sock](http://github.com/alarmdecoder/ser2sock.git)
-27. Create self-signed SSL certificate for HTTPS - sudo openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt
-28. sudo service nginx restart
-29. sudo service gunicorn restart
+24. cd contrib/opencv/
+25. ./opencv.sh
+26. Edit /etc/gunicorn.d/alarmdecoder and change the user/group you'd like it to run as.
+27. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
+28. Optionally install and set permissions for [ser2sock](http://github.com/alarmdecoder/ser2sock.git)
+29. Create self-signed SSL certificate for HTTPS - sudo openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt
+30. sudo service nginx restart
+31. sudo service gunicorn restart
 
 ## Support
 

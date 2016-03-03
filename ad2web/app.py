@@ -20,7 +20,7 @@ from .updater.views import updater
 from .user import User, user
 from .settings import settings
 from .frontend import frontend
-from .api import api
+from .api import api, api_settings
 from .admin import admin
 from .certificate import certificate
 from .log import log
@@ -43,6 +43,7 @@ DEFAULT_BLUEPRINTS = (
     user,
     settings,
     api,
+    api_settings,
     admin,
     certificate,
     log,
@@ -225,6 +226,9 @@ def configure_logging(app):
         '%(asctime)s %(levelname)s: %(message)s '
         '[in %(pathname)s:%(lineno)d]')
     )
+
+    socketio_logger = logging.getLogger('socketio.virtsocket')
+    socketio_logger.addHandler(info_file_handler)
     app.logger.addHandler(info_file_handler)
 
 
@@ -233,6 +237,15 @@ def configure_hook(app):
 
     @app.before_request
     def before_request():
+        # Hacky fix to keep cookies secure over HTTPS without pissing off HTTP.
+        x_forwarded_proto = request.headers.get('X-Forwarded-Proto', None)
+        if x_forwarded_proto is not None and x_forwarded_proto == 'https':
+            app.config['SESSION_COOKIE_SECURE'] = True
+            app.config['REMEMBER_COOKIE_SECURE'] = True
+        else:
+            app.config['SESSION_COOKIE_SECURE'] = False
+            app.config['REMEMBER_COOKIE_SECURE'] = False
+
         if request.blueprint == 'setup':
             setup_stage = Setting.get_by_name('setup_stage').value
             # If setup hasn't been started, redirect to the index
@@ -258,6 +271,14 @@ def configure_hook(app):
 
         g.alarmdecoder = app.decoder
 
+    @app.after_request
+    def apply_response_headers(response):
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, private"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
 
 def configure_error_handlers(app):
     @app.errorhandler(403)

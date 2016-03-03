@@ -12,11 +12,8 @@
     ("cameras", url_for('cameras.cam_list'), False),
     ("users", url_for('admin.users'), True),
     ("password", url_for('settings.password'), False),
-    ("host", url_for('settings.host'), True),
     ("certificates", url_for('certificate.index'), False),
-    ("diagnostics", url_for('settings.system_diagnostics'), True),
-    ("git", url_for('settings.switch_branch'), True),
-    ("setup", url_for('setup.index'), True),
+    ("advanced", url_for('settings.advanced'), True),
 ]%}
 {% else %}
 {% set tabs = [
@@ -27,9 +24,6 @@
     ("cameras", url_for('cameras.cam_list'), False),
     ("users", url_for('admin.users'), True),
     ("password", url_for('settings.password'), False),
-    ("host", url_for('settings.host'), True),
-    ("diagnostics", url_for('settings.system_diagnostics'), True),
-    ("git", url_for('settings.switch_branch'), True),
-    ("setup", url_for('setup.index'), True),
+    ("advanced", url_for('settings.advanced'), True),
 ]%}
 {% endif %}

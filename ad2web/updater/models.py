@@ -12,6 +12,8 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 from flask import current_app
 
+from alarmdecoder.util import Firmware
+
 try:
     current_app._get_current_object()
     running_in_context = True
@@ -41,8 +43,8 @@ class Updater(object):
         """
         self._components = {}
 
-        self._components['webapp'] = WebappUpdater('webapp')
-        # TODO: alarmdecoder library goes here, if installed from source.
+        self._components['AlarmDecoderWebapp'] = WebappUpdater('AlarmDecoderWebapp', project_url='https://github.com/nutechsoftware/alarmdecoder-webapp')
+        self._components['AlarmDecoderLibrary'] = SourceUpdater('AlarmDecoderLibrary', project_url='https://github.com/nutechsoftware/alarmdecoder', path=current_app.config['ALARMDECODER_LIBRARY_PATH'])
         # TODO: ser2sock goes here, if installed from source.
 
     def check_updates(self):
@@ -55,7 +57,7 @@ class Updater(object):
 
         for name, component in self._components.iteritems():
             component.refresh()
-            status[name] = (component.needs_update, component.branch, component.local_revision, component.remote_revision, component.status)
+            status[name] = (component.needs_update, component.branch, component.local_revision, component.remote_revision, component.status, component.project_url)
 
         return status
 
@@ -91,7 +93,7 @@ class WebappUpdater(object):
     Update system for the webapp.  Encapsulates source and database for this product.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, project_url=None):
         """
         Constructor
 
@@ -100,10 +102,11 @@ class WebappUpdater(object):
         """
 
         self.name = name
+        self.project_url = project_url
         #self._enabled, self._status = self._check_enabled()
         self._enabled = True
 
-        self._source_updater = SourceUpdater('webapp')
+        self._source_updater = SourceUpdater('AlarmDecoderWebapp', project_url=project_url, path=None)
         self._db_updater = DBUpdater()
 
     @property
@@ -217,19 +220,27 @@ class SourceUpdater(object):
     Git-based update system
     """
 
-    def __init__(self, name):
+    def __init__(self, name, project_url='', path=None):
         """
         Constructor
 
         :param name: Name of the component
         :type name: string
         """
+
+        self._path = None
         try:
-            self._git = sh.git
+            if path is not None:
+                self._git = sh.git.bake(work_tree=path, git_dir=os.path.join(path, '.git'))
+                self._path = path
+            else:
+                self._git = sh.git
+
         except sh.CommandNotFound:
             self._git = None
 
         self.name = name
+        self.project_url = project_url
         self._branch = ''
         self._local_revision = None
         self._remote_revision = None
@@ -297,6 +308,8 @@ class SourceUpdater(object):
         """
         _log('SourceUpdater: starting..')
 
+        ret = {}
+
         if not self._enabled:
             _log('SourceUpdater: disabled')
             return False
@@ -318,7 +331,10 @@ class SourceUpdater(object):
 
         _log('SourceUpdater: success')
 
-        return True
+        ret['status'] = 'PASS'
+        ret['restart_required'] = True
+
+        return ret
 
     def reset(self, revision):
         try:
@@ -423,16 +439,22 @@ class SourceUpdater(object):
         :returns: Whether or not this component is enabled.
         """
         git_available = self._git is not None
+
+        path_exists = False
+        if self._path is not None:
+            path_exists = os.path.exists(self._path)
+
         remote_okay = self._check_remotes()
 
         status = ''
         if not git_available:
             status = 'Disabled (Git is unavailable)'
-
-        if not remote_okay:
+        elif self._path is not None and not path_exists:
+            status = 'Disabled (unable to find path)'
+        elif not remote_okay:
             status = 'Disabled (SSH origin)'
 
-        return (git_available and remote_okay, status)
+        return (git_available and remote_okay and (self._path is None or path_exists), status)
 
     def _check_remotes(self):
         """
@@ -571,3 +593,64 @@ class DBUpdater(object):
         """
         self._connection.close()
         self._connection = self._context = None
+
+
+class FirmwareUpdater(object):
+    def __init__(self, filename, length):
+        self._filename = filename
+        self._wait_tick = 0
+        self._upload_tick = 0
+        self._firmware_length = length
+        self.completed = False
+
+    def update(self):
+        try:
+            self.completed = False
+            self._upload_tick = 0
+            self._wait_tick = 0
+
+            Firmware.upload(current_app.decoder.device._device, self._filename, self._stage_callback)
+
+        except Exception, err:
+            current_app.logger.error('Error updating firmware: %s' % err)
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_ERROR', 'error': str(err) });
+
+    def _stage_callback(self, stage, **kwargs):
+        if stage == Firmware.STAGE_START:
+            current_app.logger.info('Beginning firmware update process..')
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_START' })
+
+        elif stage == Firmware.STAGE_WAITING:
+            if self._wait_tick == 0:
+                current_app.logger.debug('Waiting for device.')
+
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_WAITING' })
+
+        elif stage == Firmware.STAGE_BOOT:
+            current_app.logger.debug('Rebooting device..')
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_BOOT' })
+
+        elif stage == Firmware.STAGE_LOAD:
+            current_app.logger.debug('Waiting for boot loader..')
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_LOAD' })
+
+        elif stage == Firmware.STAGE_UPLOADING:
+            if self._upload_tick == 0:
+                current_app.logger.info('Uploading firmware.')
+
+            self._upload_tick += 1
+
+            percent = int((self._upload_tick / float(self._firmware_length)) * 100)
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_UPLOADING', 'percent': percent })
+
+        elif stage == Firmware.STAGE_DONE:
+            self.completed = True
+            current_app.logger.info('Firmware upload complete!')
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_DONE' })
+
+        elif stage == Firmware.STAGE_ERROR:
+            current_app.logger.error('Error: %s' % kwargs.get("error", ""))
+            current_app.decoder.broadcast('firmwareupload', { 'stage': 'STAGE_ERROR', 'error': kwargs.get("error", "") })
+
+        elif stage == Firmware.STAGE_DEBUG:
+            current_app.logger.debug('DEBUG: %s' % kwargs.get("data", ""))

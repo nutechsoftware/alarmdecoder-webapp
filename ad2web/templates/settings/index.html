@@ -15,20 +15,16 @@
     In this area you can setup your device, configure zones or notifications, install certificates, manage users, change code branches, or change your password.
     <p>
         <ul>
-            <li><a href="{{ url_for('setup.index') }}">Setup</a>: Use to configure your AlarmDecoder device.</li>
-            <li><a href="{{ url_for('notifications.index') }}">Notifications</a>: Use to configure notifications from panel events.</li>
-            <li><a href="{{ url_for('zones.index') }}">Zones</a>: Use to configure your zones by name.</li>
+            <li><a href="{{ url_for('notifications.index') }}">Notifications</a>: Configure notifications from panel events.</li>
+            <li><a href="{{ url_for('zones.index') }}">Zones</a>: Add names to zones to notifications.</li>
             {% if ssl == True %}
-                <li><a href="{{ url_for('certificate.index') }}">Certificates</a>: Use to configure SSL Certificates.</li>
+                <li><a href="{{ url_for('certificate.index') }}">Certificates</a>: Configure SSL Certificates.</li>
             {% endif %}
-            <li><a href="{{ url_for('admin.users') }}">Users</a>: Use to configure users on the system.</li>
-            <li><a href="{{ url_for('settings.host') }}">Host</a>: Use to configure host settings.</li>
-            <li><a href="{{ url_for('keypad.custom_index') }}">Keypad</a>: Use to create custom buttons.</li>
-            <li><a href="{{ url_for('cameras.cam_list') }}">Cameras</a>: Use to administer camera settings. (mjpeg only)</li>
-            <li><a href="{{ url_for('settings.system_diagnostics') }}">Diagnostics</a>: Use to test your device and see missing modules.</li>
-            <li><a href="{{ url_for('settings.password') }}">Password</a>: Use to change your user password.</li>
-            <li><a href="{{ url_for('settings.import') }}">Import</a> and <a href="{{ url_for('settings.export') }}">Export</a> your settings.</li>
-            <li><a href="{{ url_for('settings.switch_branch') }}">Git Branch</a>: Use to switch your git branch.</li>
+            <li><a href="{{ url_for('keypad.custom_index') }}">Keypad Settings</a>: Custom keypad buttons.</li>
+            <li><a href="{{ url_for('cameras.cam_list') }}">Cameras</a>: Administer camera settings. (mjpeg only)</li>
+            <li><a href="{{ url_for('admin.users') }}">Users</a>: Configure users for the system.</li>
+            <li><a href="{{ url_for('settings.password') }}">Password</a>: Change your user password.</li>
+            <li><a href="{{ url_for('settings.advanced') }}">Advanced</a>: Advanced settings and diagnostics.</li>
         <ul>
     </p>
 </div>

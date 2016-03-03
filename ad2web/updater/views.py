@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
 
+import os
 import json
 
 from flask import Blueprint, render_template, abort, g, request, flash, Response, redirect, url_for
 from flask import current_app as APP
 from flask.ext.login import login_required, current_user
 
+from werkzeug import secure_filename
+
 from ..extensions import db
 from ..decorators import admin_required
+
+from .forms import UpdateFirmwareForm
+from .models import FirmwareUpdater
 
 updater = Blueprint('update', __name__, url_prefix='/update')
 
@@ -50,7 +56,26 @@ def checkavailable():
 @admin_required
 def check_for_updates():
     APP.decoder.updates = APP.decoder.updater.check_updates()
-    update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status) in APP.decoder.updates.iteritems())
+    update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status, project_url) in APP.decoder.updates.iteritems())
     APP.jinja_env.globals['update_available'] = update_available
 
     return redirect(url_for('update.index'))
+
+@updater.route('/firmware', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def firmware():
+    form = UpdateFirmwareForm()
+    form.multipart = True
+    if form.validate_on_submit():
+        uploaded_file = request.files[form.firmware_file.name]
+        data = uploaded_file.read()
+        file_path = os.path.join('/tmp', secure_filename(uploaded_file.filename))
+        open(file_path, 'w').write(data)
+
+        APP.decoder.firmware_file = file_path
+        APP.decoder.firmware_length = len(filter(lambda x: x[0] == ':', data))
+
+        return render_template('updater/firmware_upload.html')
+
+    return render_template('updater/firmware.html', form=form)

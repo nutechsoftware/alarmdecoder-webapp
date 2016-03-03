@@ -1,0 +1,112 @@
+
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% set page_title = 'AlarmDecoder Firmware Update' %}
+
+{% block css %}
+<style>
+#upload-status {
+    width: 400px;
+    height: 20px;
+}
+
+#upload-retry {
+    margin-top: 5px;
+}
+
+.upload-error {
+    color: red !important;
+}
+
+.ui-progressbar {
+    position: relative;
+}
+
+.ui-progressbar-value {
+    background: #78aee6 none 50% 50% repeat-x !important;
+}
+
+.progress-label {
+    position: absolute;
+    left: 5%;
+    top: 1px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #3b3b3b;
+}
+</style>
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        var upload_label = $('div#upload-label');
+        var upload_progressbar = $('div#upload-status');
+
+        PubSub.subscribe('firmwareupload', function(type, msg) {
+            var stage = msg.stage;
+
+            if (stage == "STAGE_START") {
+                upload_label.text("Starting upload..");
+            }
+            else if (stage == "STAGE_WAITING") {
+                upload_label.text("Waiting for device..");
+            }
+            else if (stage == "STAGE_BOOT") {
+                upload_label.text("Rebooting device..");
+            }
+            else if (stage == "STAGE_LOAD") {
+                upload_label.text("Waiting for boot loader..");
+            }
+            else if (stage == "STAGE_UPLOADING") {
+                upload_label.text("Uploading firmware: " + msg.percent + "%");
+                upload_progressbar.progressbar({ value: msg.percent });
+            }
+            else if (stage == "STAGE_DONE") {
+                upload_label.text("Firmware upload complete!");
+                $('div#upload-retry').hide();
+                upload_progressbar.progressbar({ value: 100 });
+            }
+            else if (stage == "STAGE_CONFIGURE") {
+                upload_label.text("Reconfiguring device..");
+            }
+            else if (stage == "STAGE_FINISHED") {
+                upload_label.text("Complete!");
+            }
+            else if (stage == "STAGE_ERROR") {
+                console.log(msg.error);
+                upload_label.text(msg.error);
+                upload_label.addClass('upload-error');
+                upload_progressbar.progressbar({ value: -1 });
+                $('div#upload-retry').show();
+            }
+        });
+
+        $('button#upload-retry-button').click(function() {
+            upload_label.removeClass('upload-error');
+            upload_progressbar.progressbar({ value: false });
+            $('div#upload-retry').hide();
+
+            decoder.emit('firmwareupload');
+        });
+
+        $('div#upload-status').progressbar({ value: false });
+        decoder.emit('firmwareupload');
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <h3>Firmware Update Progress</h3>
+    <div id="upload-status"><div id="upload-label" class="progress-label">Please wait..</div></div>
+    <div id="upload-retry" style="display: none;"><button id="upload-retry-button" type="button">Retry</button></div>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+{% endblock %}

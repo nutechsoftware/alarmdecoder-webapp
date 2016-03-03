@@ -8,11 +8,12 @@ from flask.ext.mail import Message
 from flask.ext.babel import gettext as _
 from flask.ext.login import login_required, login_user, current_user, logout_user, confirm_login, login_fresh
 
-from ..user import User, UserDetail, UserHistory
+from ..user import User, UserDetail, UserHistory, FailedLogin
 from ..extensions import db, mail, login_manager, oid
 from .forms import SignupForm, LoginForm, RecoverPasswordForm, ReauthForm, ChangePasswordForm, OpenIDForm, CreateProfileForm, LicenseAgreementForm
 from ..settings import Setting
 from socket import gethostname, gethostbyname
+from ..utils import user_is_authenticated
 
 frontend = Blueprint('frontend', __name__)
 
@@ -20,7 +21,7 @@ frontend = Blueprint('frontend', __name__)
 #@frontend.route('/login/openid', methods=['GET', 'POST'])
 #@oid.loginhandler
 def login_openid():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('user.index'))
 
     form = OpenIDForm()
@@ -44,7 +45,7 @@ def create_or_login(resp):
 
 #frontend.route('/create_profile', methods=['GET', 'POST'])
 def create_profile():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('user.index'))
 
     form = CreateProfileForm(name=request.args.get('name'),
@@ -65,7 +66,7 @@ def create_profile():
 
 @frontend.route('/')
 def index():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('keypad.index'))
 
     return render_template('index.html')
@@ -91,10 +92,22 @@ def login_history_add(user, ip):
     user_history.user_agent_string = userAgentString
     db.session.add(user_history)
     db.session.commit()
-    
+   
+
+def failed_login_add(name, ip):
+    failed_login = FailedLogin()
+    failed_login.name = name
+    failed_login.ip_address = ip
+    userAgentString = request.headers.get('User-Agent')
+    failed_login.user_agent_string = userAgentString
+
+    db.session.add(failed_login)
+    db.session.commit()
+
+
 @frontend.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('keypad.index'))
 
     form = LoginForm(login=request.args.get('login', None),
@@ -115,6 +128,7 @@ def login():
 
             return redirect(form.next.data or url_for('keypad.index'))
         else:
+            failed_login_add(form.login.data, request.remote_addr)
             flash(_('Sorry, invalid login'), 'error')
 
     return render_template('frontend/login.html', form=form)
@@ -148,7 +162,7 @@ def logout():
 
 #@frontend.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if current_user.is_authenticated():
+    if user_is_authenticated(current_user):
         return redirect(url_for('user.index'))
 
     form = SignupForm(next=request.args.get('next'))
@@ -170,7 +184,8 @@ def signup():
 @frontend.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     user = None
-    if current_user.is_authenticated():
+
+    if user_is_authenticated(current_user):
         if not login_fresh():
             return login_manager.needs_refresh()
         user = current_user
@@ -179,6 +194,12 @@ def change_password():
         email = request.values['email']
         user = User.query.filter_by(activation_key=activation_key) \
                          .filter_by(email=email).first()
+        session['password_activation_key'] = activation_key
+        session['password_reset_email'] = email
+
+    if session['password_activation_key'] is not None and session['password_reset_email'] is not None:
+        user = User.query.filter_by(activation_key=session['password_activation_key']) \
+                         .filter_by(email=session['password_reset_email']).first()
 
     if user is None:
         abort(403)
@@ -190,6 +211,9 @@ def change_password():
         user.activation_key = None
         db.session.add(user)
         db.session.commit()
+
+        session['password_activation_key'] = None
+        session['password_reset_email'] = None
 
         flash(_("Your password has been changed, please log in again"),
               "success")
@@ -212,10 +236,9 @@ def reset_password():
             user.activation_key = str(uuid4())
             db.session.add(user)
             db.session.commit()
-
             url = url_for('frontend.change_password', email=user.email, activation_key=user.activation_key, _external=True)
-            html = render_template('macros/_reset_password.html', project=current_app.config['PROJECT'], username=user.name, url=url)
-            message = Message(subject='Reset your password in ' + current_app.config['PROJECT'], html=html, recipients=[user.email])
+            html = render_template('macros/_reset_password.html', project='AlarmDecoder Webapp', username=user.name, url=url)
+            message = Message(subject='Reset your password for the AlarmDecoder Webapp', html=html, recipients=[user.email])
             mail.send(message)
 
             return render_template('frontend/reset_password.html', form=form)

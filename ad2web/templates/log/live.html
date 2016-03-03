@@ -4,6 +4,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.tableTools.css') }}">
 {% endblock %}
 
 {% block pagejs %}
@@ -71,12 +72,22 @@
             }
             $('#loading').spin('flower');
             var oTable = $('#panel-log').dataTable({
+                "oTableTools": {
+                    "aButtons": [ "print",
+                                {
+                                    "sExtends": "collection",
+                                    "sButtonText": "Save",
+                                    "aButtons": [ "csv", "xls", "pdf" ]
+                                }
+                                ],
+                    "sSwfPath": "{{ url_for('static', filename='copy_csv_xls_pdf.swf') }}",
+                },
                 "bJQueryUI": true,
                 "bStateSave": true,
                 "iCookieDuration": 60*60*24,
                 "sPaginationType": "full_numbers",
                 "aaSorting": [[0, "desc" ]],
-                "sDom" : '<"H"lr>t<"F"fip>',
+                "sDom" : 'T<"H"lr>t<"F"fip>',
                 "oLanguage": {
                     "sInfoFiltered": "",
                     "sInfo": "_START_ to _END_ of _TOTAL_",
@@ -234,6 +245,7 @@
 {% block js_btm %}
 <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/dataTables.tableTools.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>

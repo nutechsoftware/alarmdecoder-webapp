@@ -7,6 +7,7 @@ from flask import current_app as APP
 from flask.ext.login import login_required, current_user
 
 from .models import User, UserHistory
+from ..utils import user_is_authenticated
 
 
 user = Blueprint('user', __name__, url_prefix='/user')
@@ -15,7 +16,7 @@ user = Blueprint('user', __name__, url_prefix='/user')
 @user.route('/')
 @login_required
 def index():
-    if not current_user.is_authenticated():
+    if not user_is_authenticated(current_user):
         abort(403)
     return render_template('user/index.html', user=current_user)
 
@@ -37,9 +38,9 @@ def avatar(user_id, filename):
 def history(user_id):
     if user_id is None:
         abort(404)
-    if not current_user.is_authenticated():
+    if not user_is_authenticated(current_user):
         abort(403)
-    if not current_user.is_admin() or current_user.id != user_id:
+    if not current_user.is_admin() and current_user.id != user_id:
         abort(403)
 
     user = User.get_by_id(user_id)
