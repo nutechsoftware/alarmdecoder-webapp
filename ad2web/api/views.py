@@ -809,7 +809,7 @@ def system():
         seconds = float(f.readline().split()[0])
         uptime = timedelta(seconds=int(seconds))
 
-    (update_available, branch, local_revision, remote_revision, status) = current_app.decoder.updater.check_updates()['AlarmDecoderWebapp']
+    (update_available, branch, local_revision, remote_revision, status, project_url) = current_app.decoder.updater.check_updates()['AlarmDecoderWebapp']
 
     ret = {
         'uptime': str(uptime),
