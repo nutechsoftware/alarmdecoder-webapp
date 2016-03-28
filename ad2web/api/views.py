@@ -163,7 +163,15 @@ def alarmdecoder_send():
     if keys is None:
         return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'keys' in request.")), UNPROCESSABLE_ENTITY
 
-    current_app.decoder.device.send(req['keys'])
+    keys = keys.replace("<F1>", unichr(1) + unichr(1) + unichr(1))
+    keys = keys.replace("<F2>", unichr(2) + unichr(2) + unichr(2))
+    keys = keys.replace("<F3>", unichr(3) + unichr(3) + unichr(3))
+    keys = keys.replace("<F4>", unichr(4) + unichr(4) + unichr(4))
+    keys = keys.replace("<PANIC>", unichr(5) + unichr(5) + unichr(5))
+
+    current_app.logger.debug("Sending keys: {0}".format(keys))
+
+    current_app.decoder.device.send(keys)
 
     return jsonify(), NO_CONTENT
 
