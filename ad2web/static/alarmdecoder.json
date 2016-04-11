@@ -1,0 +1,1866 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is an AlarmDecoder WebApp server.  You can find out more about the AlarmDecoder WebApp at <a href=\"https://www.alarmdecoder.com\">https://www.alarmdecoder.com</a>.  Please use your user's API KEY to test.",
+        "version": "1.0",
+        "title": "AlarmDecoder WebApp API",
+        "contact": {
+            "url": "https://www.alarmdecoder.com",
+            "name": "AlarmDecoder - Nu Tech Software Solutions, Inc.",
+            "email": "alarmdecoder@support.nutech.com"
+        }
+    },
+    "host": "alarmdecoder.local:5000",
+    "basePath": "/api/v1",
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "tags": [
+        {
+            "name": "alarmdecoder",
+            "description": "AlarmDecoder Configuration and Status"
+        },
+        {
+            "name": "cameras",
+            "description": "Add, Update, or get camera status"
+        },
+        {
+            "name": "notifications",
+            "description": "Create, Delete, Update, Copy, or List notifications"
+        },
+        {
+            "name": "system",
+            "description": "Get system status, reboot, or shutdown"
+        },
+        {
+            "name": "users",
+            "description": "Administrate users"
+        },
+        {
+            "name": "zones",
+            "description": "Manage zones"
+        }
+    ],
+    "paths": {
+        "/alarmdecoder": {
+            "get": {
+                "summary": "Get the status of the AlarmDecoder device.",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "alarmdecoder"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful status message",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatus"
+                        }
+                    },
+                    "401": {
+                        "description": "Not authorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/alarmdecoder/send": {
+            "post": {
+                "summary": "Send keys to AlarmDecoder device",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "alarmdecoder"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "keys",
+                        "description": "Keys to send to AlarmDecoder Device",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AlarmDecoderSend"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success - No content returned",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/alarmdecoder/reboot": {
+            "post": {
+                "summary": "Reboot the AlarmDecoder device",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "alarmdecoder"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success - No content returned",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/alarmdecoder/configuration": {
+            "get": {
+                "summary": "Get current device configuration",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "alarmdecoder"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Configuration"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Set current device configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "configuration",
+                        "description": "Configuration object that will update the configuration.",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Configuration"
+                        }
+                    }
+                ],
+                "tags": [
+                    "alarmdecoder"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Configuration"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/cameras": {
+            "get": {
+                "summary": "Get list of cameras configured",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/CameraOK"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Add a camera",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "details",
+                        "description": "Json object that defines a camera",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Camera"
+                        }
+                    }
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/CameraOK"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/cameras/{camId}": {
+            "get": {
+                "summary": "Retrieve specific camera details",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "camId",
+                        "description": "ID of camera that needs to be fetched",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/CameraOK"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "404": {
+                        "description": "Camera not found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update an existing camera",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "camId",
+                        "description": "ID of camera that needs to be fetched",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "details",
+                        "description": "Json object that defines a camera",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Camera"
+                        }
+                    }
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/CameraOK"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "404": {
+                        "description": "Camera not found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete an existing camera",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "camId",
+                        "description": "ID of camera that needs to be deleted",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "cameras"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success - No content",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "404": {
+                        "description": "Camera not found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "summary": "Get a list of users",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "users"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/UserSchema"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Add a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "details",
+                        "description": "The user JSON object to create",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UserEntry"
+                        }
+                    }
+                ],
+                "tags": [
+                    "users"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/UserSchema"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{userId}": {
+            "get": {
+                "summary": "Get user info by ID",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "userId",
+                        "description": "The user's id",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/UserSchema"
+                        }
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "put": {
+                "summary": "Update a user by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "details",
+                        "description": "The JSON object defining the user",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UserCreate"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "userId",
+                        "description": "The ID of the user",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/UserSchema"
+                        }
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            },
+            "delete": {
+                "summary": "Delete a user by ID",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "userId",
+                        "description": "The user ID",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "204": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    }
+                },
+                "tags": [
+                    "users"
+                ]
+            }
+        },
+        "/system": {
+            "get": {
+                "summary": "Get host system status information",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "system"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/System"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/system/reboot": {
+            "post": {
+                "summary": "Reboot the host system",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "system"
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+
+            }
+        },
+        "/system/shutdown": {
+            "post": {
+                "summary": "Shutdown the host system",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "system"
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+
+            }
+        },
+        "/notifications": {
+            "get": {
+                "summary": "Get a list of notifications",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's api key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Notification"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new notification",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "details",
+                        "description": "Notification JSON Block to insert",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Notification"
+                        }
+                    }
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Notification"
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/{notificationId}": {
+            "get": {
+                "summary": "Get a notification by ID",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "notificationId",
+                        "description": "The notification Id",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Notification"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update a notification by ID",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "notificationId",
+                        "description": "The notification Id",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "body",
+                        "name": "details",
+                        "description": "Notification JSON Block to update",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Notification"
+                        }
+                    }
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Notification"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a notification by ID",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "notificationId",
+                        "description": "The notification Id",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "204": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    }
+                }
+            }
+        },
+        "/zones": {
+            "get": {
+                "summary": "Get list of zones",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API key",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "zones"
+                ],
+                "responses": {
+                   "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/Zone"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a Zone",
+                "tags": [
+                    "zones"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "details",
+                        "description": "The Zone JSON Object to create",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ZoneArray"
+                        }
+                    }
+                ],
+                "responses": {
+                   "201": {
+                        "description": "Create a Zone",
+                        "schema": {
+                            "$ref": "#/definitions/ZoneArray"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/zones/{zoneId}": {
+            "get": {
+                "summary": "Get Zone Information",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "zones"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "zoneId",
+                        "description": "The Zone ID",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/ZoneArray"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update a zone by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "zoneId",
+                        "description": "The Zone ID",
+                        "required": true,
+                        "type": "integer"
+                    },
+                    {
+                        "in": "body",
+                        "name": "details",
+                        "description": "JSON Object defining zone",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ZoneArray"
+                        }
+                    }
+                ],
+                "tags": [
+                    "zones"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/ZoneArray"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a zone by ID",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "zoneId",
+                        "description": "The Zone ID",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "tags": [
+                    "zones"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/zones/{zoneId}/fault": {
+            "post": {
+                "summary": "Fault an emulated zone",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "zoneId",
+                        "description": "The Zone ID",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "tags": [
+                    "zones"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        },
+        "/zones/{zoneId}/restore": {
+            "post": {
+                "summary": "Restore an emulated zone",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "apikey",
+                        "description": "Your user's API Key",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "zoneId",
+                        "description": "The Zone ID",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "tags": [
+                    "zones"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/AlarmStatusError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Configuration": {
+            "properties": {
+                "mode": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "integer"
+                },
+                "address_mask": {
+                    "type": "integer"
+                },
+                "config_bits": {
+                    "type": "integer"
+                },
+                "deduplicate": {
+                    "type": "boolean"
+                },
+                "emulate_lrr": {
+                    "type": "boolean"
+                },
+                "emulate_relay": {
+                    "type": "array",
+                    "items": [
+                        {"type": "boolean"},
+                        {"type": "boolean"},
+                        {"type": "boolean"},
+                        {"type": "boolean"}
+                    ]
+                },
+                "emulate_zone": {
+                    "type": "array",
+                    "items": [
+                        {"type": "boolean"},
+                        {"type": "boolean"},
+                        {"type": "boolean"},
+                        {"type": "boolean"},
+                        {"type": "boolean"}
+                    ]
+                }
+            }
+        },
+        "Camera": {
+            "properties": {
+                "user_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "CameraOK": {
+            "properties": {
+                "camera": {
+                    "properties": {
+                        "id": {
+                            "type": "integer"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "user_id": {
+                            "type": "integer"
+                        },
+                        "url": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "AlarmStatus": {
+            "properties": {
+                "panel_alarming": {
+                    "type": "boolean"
+                },
+                "panel_armed": {
+                    "type": "boolean"
+                },
+                "panel_bypassed": {
+                    "type": "boolean"
+                },
+                "panel_fire_detected": {
+                    "type": "boolean"
+                },
+                "panel_on_battery": {
+                    "type": "boolean"
+                },
+                "panel_panicked": {
+                    "type": "boolean"
+                },
+                "panel_powered": {
+                    "type": "boolean"
+                },
+                "panel_relay_status": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "properties": {
+                                "address": {
+                                    "type": "integer"
+                                },
+                                "channel": {
+                                    "type": "integer"
+                                },
+                                "value": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "panel_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "AlarmStatusError": {
+            "properties": {
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "integer"
+                        },
+                        "message": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "AlarmDecoderSend": {
+            "properties": {
+                "keys": {
+                    "type": "string"
+                }
+            }
+        },
+        "NoContent": {
+            "properties": {
+            }
+        },
+        "UserEntry": {
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "UserSchema": {
+            "properties": {
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/UserArray"
+                    }
+                }
+            }
+        },
+        "UserArray": {
+            "properties": {
+                "created_time": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "UserCreate": {
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "System": {
+            "properties": {
+                "uptime": {
+                    "type": "string"
+                },
+                "webapp": {
+                    "type": "object",
+                    "properties": {
+                        "update_available": {
+                            "type": "string"
+                        },
+                        "update_status": {
+                            "type": "string"
+                        },
+                        "branch": {
+                            "type": "string"
+                        },
+                        "revision": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "Zone": {
+            "properties": {
+                "zones": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ZoneArray"
+                    }
+                }
+            }
+        },
+        "ZoneArray": {
+            "properties": {
+                "zone_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "ZoneAdd": {
+            "properties": {
+                "zone_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "Notification": {
+            "properties": {
+                "notifications:": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/NotificationArray"
+                    }
+                }
+            }
+        },
+        "NotificationArray": {
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "settings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SettingsArray"
+                    }
+                }
+            }
+        },
+        "SettingsArray": {
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
