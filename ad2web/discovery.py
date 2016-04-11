@@ -102,9 +102,6 @@ class DiscoveryServer(threading.Thread):
             response_message = self._create_discovery_response(request)
             self._send_message(response_message, addr)
 
-            # REMOVEME
-            self._decoder.app.logger.debug('Sent response to ssdp:discover : {0}'.format(response_message))
-
     def _update(self):
         address = self._get_ip_address()
         if address != self._current_ip_address:

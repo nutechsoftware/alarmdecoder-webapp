@@ -11,6 +11,7 @@ from flask import Blueprint, current_app, request, jsonify, abort, Response, ren
 from flask.ext.login import login_user, current_user, logout_user, login_required
 
 from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
+from alarmdecoder.zonetracking import Zone as ADZone
 
 from ..extensions import db
 from ..decorators import admin_required
@@ -141,6 +142,11 @@ def alarmdecoder():
             'value': value
         })
 
+    faulted_zones = []
+    for zid, z in current_app.decoder.device._zonetracker.zones.iteritems():
+        if z.status != ADZone.CLEAR:
+            faulted_zones.append(z.zone)
+
     ret = {
         'panel_type': mode,
         'panel_powered': current_app.decoder.device._power_status,
@@ -150,7 +156,8 @@ def alarmdecoder():
         'panel_fire_detected': current_app.decoder.device._fire_status[0],
         'panel_on_battery': current_app.decoder.device._battery_status[0],
         'panel_panicked': current_app.decoder.device._panic_status,
-        'panel_relay_status': relay_status
+        'panel_relay_status': relay_status,
+        'panel_zones_faulted': faulted_zones
     }
 
     return jsonify(ret), OK
@@ -168,8 +175,6 @@ def alarmdecoder_send():
     keys = keys.replace("<F3>", unichr(3) + unichr(3) + unichr(3))
     keys = keys.replace("<F4>", unichr(4) + unichr(4) + unichr(4))
     keys = keys.replace("<PANIC>", unichr(5) + unichr(5) + unichr(5))
-
-    current_app.logger.debug("Sending keys: {0}".format(keys))
 
     current_app.decoder.device.send(keys)
 
