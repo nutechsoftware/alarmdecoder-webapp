@@ -1666,7 +1666,7 @@
                     "type": "array",
                     "items": [
                         {"type": "integer"},
-                        {"type": "integer"},
+                        {"type": "integer"}
                     ]
                 },
                 "panel_type": {
