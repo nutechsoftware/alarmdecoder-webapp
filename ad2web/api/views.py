@@ -2,6 +2,8 @@
 
 import json
 import sh
+import os
+import socket
 
 from functools import wraps
 from datetime import timedelta
@@ -11,9 +13,10 @@ from flask import Blueprint, current_app, request, jsonify, abort, Response, ren
 from flask.ext.login import login_user, current_user, logout_user, login_required
 
 from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
+from alarmdecoder.zonetracking import Zone as ADZone
 
 from ..extensions import db
-from ..decorators import admin_required
+from ..decorators import admin_required, crossdomain
 
 from ..user import User, USER_ROLE, USER_STATUS, ADMIN
 from ..zones import Zone
@@ -39,6 +42,26 @@ request_user = None
 @login_required
 def index():
     return render_template('api/index.html')
+
+@api_settings.route('/api_doc', methods=['GET', 'OPTIONS'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
+def api_doc():
+    project_root = current_app.config['PROJECT_ROOT']
+    json_url = os.path.join( project_root, "ad2web/static", "alarmdecoder.json")
+    data = json.load(open(json_url))
+
+    #modify the host in the json to get their local fqdn if not alarmdecoder (using gunicorn port)
+    host = socket.getfqdn()
+    if host != 'alarmdecoder':
+        data['host'] = host + ':5000'
+
+    data = jsonify(data)
+    return data, OK
+
+@api_settings.route('/swagger', methods=['GET', 'OPTIONS'])
+@login_required
+def swagger():
+    return redirect(url_for('static', filename='swagger/index.html'))
 
 @api_settings.route('/keys')
 @login_required
@@ -122,7 +145,8 @@ def check_admin(user):
     return user.role_code == ADMIN
 
 ##### AlarmDecoder device routes
-@api.route('/alarmdecoder', methods=['GET'])
+@api.route('/alarmdecoder', methods=['GET', 'OPTIONS'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def alarmdecoder():
     mode = current_app.decoder.device.mode
@@ -141,6 +165,11 @@ def alarmdecoder():
             'value': value
         })
 
+    faulted_zones = []
+    for zid, z in current_app.decoder.device._zonetracker.zones.iteritems():
+        if z.status != ADZone.CLEAR:
+            faulted_zones.append(z.zone)
+
     ret = {
         'panel_type': mode,
         'panel_powered': current_app.decoder.device._power_status,
@@ -150,12 +179,14 @@ def alarmdecoder():
         'panel_fire_detected': current_app.decoder.device._fire_status[0],
         'panel_on_battery': current_app.decoder.device._battery_status[0],
         'panel_panicked': current_app.decoder.device._panic_status,
-        'panel_relay_status': relay_status
+        'panel_relay_status': relay_status,
+        'panel_zones_faulted': faulted_zones
     }
 
     return jsonify(ret), OK
 
 @api.route('/alarmdecoder/send', methods=['POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def alarmdecoder_send():
     req = request.get_json()
@@ -163,11 +194,18 @@ def alarmdecoder_send():
     if keys is None:
         return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'keys' in request.")), UNPROCESSABLE_ENTITY
 
-    current_app.decoder.device.send(req['keys'])
+    keys = keys.replace("<F1>", unichr(1) + unichr(1) + unichr(1))
+    keys = keys.replace("<F2>", unichr(2) + unichr(2) + unichr(2))
+    keys = keys.replace("<F3>", unichr(3) + unichr(3) + unichr(3))
+    keys = keys.replace("<F4>", unichr(4) + unichr(4) + unichr(4))
+    keys = keys.replace("<PANIC>", unichr(5) + unichr(5) + unichr(5))
+
+    current_app.decoder.device.send(keys)
 
     return jsonify(), NO_CONTENT
 
 @api.route('/alarmdecoder/reboot', methods=['POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def alarmdecoder_reboot():
     if not check_admin(request_user):
@@ -202,6 +240,7 @@ def _build_alarmdecoder_configuration_data(device, short=False):
     return ret
 
 @api.route('/alarmdecoder/configuration', methods=['GET', 'PUT'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def alarmdecoder_configuration():
     device = current_app.decoder.device
@@ -262,6 +301,7 @@ def _build_zone_data(zone, short=False):
     return ret
 
 @api.route('/zones', methods=['GET', 'POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def zones():
     if request.method == 'GET':
@@ -304,6 +344,7 @@ def zones():
         return jsonify(ret), CREATED
 
 @api.route('/zones/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def zones_by_id(id):
     zone = Zone.query.filter_by(zone_id=id).first()
@@ -355,6 +396,7 @@ def zones_by_id(id):
         return jsonify(), NO_CONTENT
 
 @api.route('/zones/<int:id>/fault', methods=['POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def zones_fault(id):
     if not check_admin(request_user):
@@ -370,6 +412,7 @@ def zones_fault(id):
     return jsonify(), NO_CONTENT
 
 @api.route('/zones/<int:id>/restore', methods=['POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def zones_restore(id):
     if not check_admin(request_user):
@@ -427,6 +470,7 @@ def _build_notification_data(notification, short=False):
     return ret
 
 @api.route('/notifications', methods=['GET', 'POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def notifications():
     if request.method == 'GET':
@@ -482,6 +526,7 @@ def notifications():
         return jsonify(ret), CREATED
 
 @api.route('/notifications/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def notifications_by_id(id):
     ret = { }
@@ -562,6 +607,7 @@ def _build_camera_data(camera, short=False):
     return ret
 
 @api.route('/cameras', methods=['GET', 'POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def cameras():
     ret = { }
@@ -608,6 +654,7 @@ def cameras():
         return jsonify(ret), CREATED
 
 @api.route('/cameras/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def cameras_by_id(id):
     ret = { }
@@ -675,6 +722,7 @@ def _build_user_data(user, short=False):
     return ret
 
 @api.route('/users', methods=['GET', 'POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def users():
     if not check_admin(request_user):
@@ -739,6 +787,7 @@ def users():
         return jsonify(ret), CREATED
 
 @api.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def users_by_id(id):
     ret = { }
@@ -802,6 +851,7 @@ def users_by_id(id):
 
 ##### System routes
 @api.route('/system', methods=['GET'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def system():
     uptime = ''
@@ -809,7 +859,7 @@ def system():
         seconds = float(f.readline().split()[0])
         uptime = timedelta(seconds=int(seconds))
 
-    (update_available, branch, local_revision, remote_revision, status) = current_app.decoder.updater.check_updates()['AlarmDecoderWebapp']
+    (update_available, branch, local_revision, remote_revision, status, project_url) = current_app.decoder.updater.check_updates()['AlarmDecoderWebapp']
 
     ret = {
         'uptime': str(uptime),
@@ -824,6 +874,7 @@ def system():
     return jsonify(ret), OK
 
 @api.route('/system/reboot', methods=['POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def system_reboot():
     if not check_admin(request_user):
@@ -834,6 +885,7 @@ def system_reboot():
     return jsonify(), ACCEPTED
 
 @api.route('/system/shutdown', methods=['POST'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
 @api_authorized
 def system_shutdown():
     if not check_admin(request_user):
