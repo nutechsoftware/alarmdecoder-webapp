@@ -1580,7 +1580,28 @@
                         {"type": "boolean"}
                     ]
                 }
-            }
+            },
+	    "example": {
+		"mode": "Ademco",
+		"address": 18,
+		"address_mask": 4294967295,
+		"config_bits": 65284,
+		"deduplicate": false,
+		"emulate_lrr": false,
+		"emulate_relay": [
+			false,
+			false,
+			false,
+			false
+		],
+		"emulate_zone": [
+			false,
+			false,
+			false,
+			false,
+			false
+		]
+	    }
         },
         "Camera": {
             "properties": {
@@ -1599,7 +1620,14 @@
                 "password": {
                     "type": "string"
                 }
-            }
+            },
+	    "example": {
+		"user_id": 1,
+		"name": "Test Camera",
+		"url": "http://10.10.0.123/camera.cgi",
+		"username": "admin",
+		"password": "admin"
+	    }
         },
         "CameraOK": {
             "properties": {
@@ -1617,7 +1645,13 @@
                         "url": {
                             "type": "string"
                         }
-                    }
+                    },
+		   "example": {
+			"id": 1,
+			"name": "Test Camera",
+			"user_id": 1,
+			"url": "http://10.10.0.10/camera.cgi"
+		   }
                 }
             }
         },
@@ -1672,7 +1706,29 @@
                 "panel_type": {
                     "type": "string"
                 }
-            }
+            },
+	    "example": {
+		"panel_alarming": false,
+		"panel_armed": false,
+		"panel_bypassed": false,
+		"panel_fire_detected": false,
+		"panel_on_battery": false,
+		"panel_panicked": false,
+		"panel_powered": false,
+		"panel_relay_status": [
+			{
+				"address": 18,
+				"channel": 1,
+				"value": 80
+			}
+		],
+		"panel_zones_faulted": [
+			{
+				"zone": 0	
+			}
+		],
+		"panel_type": "Ademco"
+	    }
         },
         "AlarmStatusError": {
             "properties": {
@@ -1687,14 +1743,23 @@
                         }
                     }
                 }
-            }
+            },
+	    "example": {
+		"error": {
+			"code": 401,
+			"message": "An Error has occurred!"
+		}
+	    }
         },
         "AlarmDecoderSend": {
             "properties": {
                 "keys": {
                     "type": "string"
                 }
-            }
+            },
+	    "example": {
+		"keys": "41121"
+	    }
         },
         "NoContent": {
             "properties": {
@@ -1717,7 +1782,14 @@
                 "status": {
                     "type": "integer"
                 }
-            }
+            },
+	    "example": {
+		"email": "email@example.com",
+		"name": "Test User",
+		"password": "YourPassword!",
+		"role": 1,
+		"status": 1
+	    }
         },
         "UserSchema": {
             "properties": {
@@ -1749,7 +1821,15 @@
                 "status": {
                     "type": "string"
                 }
-            }
+            },
+	    "example": {
+		"created_time": "134543646476",
+		"email": "email@example.com",
+		"id": 1,
+		"name": "Test User",
+		"role": 1,
+		"status": 1
+	    }
         },
         "UserCreate": {
             "properties": {
@@ -1765,7 +1845,13 @@
                 "status": {
                     "type": "integer"
                 }
-            }
+            },
+	    "example": {
+		"email": "email@example.com",
+		"name": "Test User",
+		"role": 1,
+		"status": 1
+	    }
         },
         "System": {
             "properties": {
@@ -1789,7 +1875,16 @@
                         }
                     }
                 }
-            }
+            },
+	    "example": {
+		"uptime": "1234686846",
+		"webapp": {
+			"update_available": "yes",
+			"update_status": "yes",
+			"branch": "master",
+			"revision": "6558799"
+		}
+	    }
         },
         "Zone": {
             "properties": {
@@ -1812,7 +1907,12 @@
                 "description": {
                     "type": "string"
                 }
-            }
+            },
+	    "example": {
+		"zone_id": 7,
+		"name": "Kitchen",
+		"description": "My Kitchen Zone"
+	    }
         },
         "ZoneAdd": {
             "properties": {
@@ -1825,6 +1925,11 @@
                 "description": {
                     "type": "string"
                 }
+            },
+	    "example": {
+		"zone_id": 7,
+		"name": "Kitchen",
+		"description": "My Kitchen Zone"
             }
         },
         "Notification": {
@@ -1857,7 +1962,19 @@
                         "$ref": "#/definitions/SettingsArray"
                     }
                 }
-            }
+            },
+	    "example": {
+		"description": "Test Notification",
+		"id": 1,
+		"type": "Custom Notification",
+		"user_id": 1,
+		"settings": [
+			{
+				"key": "custom key",
+				"value": "custom value"
+			}
+		]
+	    }
         },
         "SettingsArray": {
             "properties": {
