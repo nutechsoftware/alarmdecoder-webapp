@@ -1662,6 +1662,13 @@
                         }
                     ]
                 },
+                "panel_zones_faulted" : {
+                    "type": "array",
+                    "items": [
+                        {"type": "integer"},
+                        {"type": "integer"},
+                    ]
+                },
                 "panel_type": {
                     "type": "string"
                 }
