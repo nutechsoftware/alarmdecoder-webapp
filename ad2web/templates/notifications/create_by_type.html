@@ -34,6 +34,13 @@ div[id*=" form_field-custom_values-"] > div.controls > div.control-group {
             collapsible: true,
             active: false
         });
+
+        $('#time_field').prepend("<label for='time_field'>Time Settings</label>");
+        $('#time_field').accordion({
+            collapsible: true,
+            active: false
+        });
+
         $('#form_field').prepend("<label for='form_field'>{{ type|capitalize }} Settings</label>");
         $('#form_field').accordion({
             collapsible: true,

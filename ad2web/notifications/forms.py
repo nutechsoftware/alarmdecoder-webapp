@@ -76,6 +76,13 @@ class EditNotificationForm(Form):
 
         return ret
 
+class TimeSettingsInternalForm(Form):
+    starttime =  TextField(u'Start Time', [Optional(), Length(max=10)], default='0:00:00', description=u'Start time for this event notification 0:00:00')
+    endtime =  TextField(u'End Time', [Optional(), Length(max=10)], default='23:59:59', description=u'End time for this event notification 23:59:59')
+
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(TimeSettingsInternalForm, self).__init__(*args, **kwargs)
 
 class EmailNotificationInternalForm(Form):
     source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
@@ -96,6 +103,7 @@ class EmailNotificationInternalForm(Form):
 
 
 class EmailNotificationForm(EditNotificationForm):
+    time_field = FormField(TimeSettingsInternalForm)
     form_field = FormField(EmailNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -113,6 +121,8 @@ class EmailNotificationForm(EditNotificationForm):
         settings['authentication_required'] = self.populate_setting('authentication_required', self.form_field.authentication_required.data)
         settings['username'] = self.populate_setting('username', self.form_field.username.data)
         settings['password'] = self.populate_setting('password', self.form_field.password.data)
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data)
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -127,6 +137,8 @@ class EmailNotificationForm(EditNotificationForm):
         self.form_field.username.data = self.populate_from_setting(id, 'username')
         self.form_field.password.widget.hide_value = False
         self.form_field.password.data = self.populate_from_setting(id, 'password')
+        self.time_field.starttime.data = self.populate_from_setting(id, 'starttime')
+        self.time_field.endtime.data = self.populate_from_setting(id, 'endtime')
 
 
 class GoogleTalkNotificationInternalForm(Form):
@@ -140,6 +152,7 @@ class GoogleTalkNotificationInternalForm(Form):
 
 
 class GoogleTalkNotificationForm(EditNotificationForm):
+    time_field = FormField(TimeSettingsInternalForm)
     form_field = FormField(GoogleTalkNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -171,6 +184,7 @@ class PushoverNotificationInternalForm(Form):
 
 
 class PushoverNotificationForm(EditNotificationForm):
+    time_field = FormField(TimeSettingsInternalForm)
     form_field = FormField(PushoverNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -203,6 +217,7 @@ class TwilioNotificationInternalForm(Form):
 
 
 class TwilioNotificationForm(EditNotificationForm):
+    time_field = FormField(TimeSettingsInternalForm)
     form_field = FormField(TwilioNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -234,6 +249,7 @@ class NMANotificationInternalForm(Form):
 
 
 class NMANotificationForm(EditNotificationForm):
+    time_field = FormField(TimeSettingsInternalForm)
     form_field = FormField(NMANotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -263,6 +279,7 @@ class ProwlNotificationInternalForm(Form):
 
 
 class ProwlNotificationForm(EditNotificationForm):
+    time_field = FormField(TimeSettingsInternalForm)
     form_field = FormField(ProwlNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -296,6 +313,7 @@ class GrowlNotificationInternalForm(Form):
 
 
 class GrowlNotificationForm(EditNotificationForm):
+    time_field = FormField(TimeSettingsInternalForm)
     form_field = FormField(GrowlNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -345,6 +363,7 @@ class CustomPostInternalForm(Form):
 
 
 class CustomPostForm(EditNotificationForm):
+    time_field = FormField(TimeSettingsInternalForm)
     form_field = FormField(CustomPostInternalForm)
 
     submit = SubmitField(u'Next')

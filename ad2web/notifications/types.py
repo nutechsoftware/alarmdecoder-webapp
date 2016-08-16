@@ -21,6 +21,7 @@ except ImportError:
     have_twilio = False
 
 import time
+from datetime import datetime 
 
 from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element
@@ -186,27 +187,42 @@ class EmailNotification(BaseNotification):
         self.authentication_required = obj.get_setting('authentication_required', default=False)
         self.username = obj.get_setting('username')
         self.password = obj.get_setting('password')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
+
+        if self.starttime == '':
+            self.starttime = '0:00:00'
+
+        if self.endtime == '':
+            self.endtime = '23:59:59'
 
     def send(self, type, text):
-        message_timestamp = time.ctime(time.time())
+        message_time = time.time()
+        message_timestamp = time.ctime(message_time)
         text = text + " Message Sent at: " + message_timestamp
+        st=self.starttime.split(':')
+        et=self.endtime.split(':')
+        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
+        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
 
-        msg = MIMEText(text)
+        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
 
-        msg['Subject'] = self.subject
-        msg['From'] = self.source
-        recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
-        msg['To'] = ', '.join(recipients)
+            msg = MIMEText(text)
 
-        s = smtplib.SMTP(self.server, self.port)
-        if self.tls:
-            s.starttls()
+            msg['Subject'] = self.subject
+            msg['From'] = self.source
+            recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
+            msg['To'] = ', '.join(recipients)
 
-        if self.authentication_required:
-            s.login(str(self.username), str(self.password))
+            s = smtplib.SMTP(self.server, self.port)
+            if self.tls:
+                s.starttls()
 
-        s.sendmail(self.source, recipients, msg.as_string())
-        s.quit()
+            if self.authentication_required:
+                s.login(str(self.username), str(self.password))
+
+            s.sendmail(self.source, recipients, msg.as_string())
+            s.quit()
 
 
 class GoogleTalkNotification(BaseNotification):
@@ -219,6 +235,8 @@ class GoogleTalkNotification(BaseNotification):
         self.password = obj.get_setting('password')
         self.destination = obj.get_setting('destination')
         self.client = None
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
@@ -246,6 +264,8 @@ class PushoverNotification(BaseNotification):
         self.user_key = obj.get_setting('user_key')
         self.priority = obj.get_setting('priority')
         self.title = obj.get_setting('title')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         self.msg_to_send = text
@@ -290,6 +310,8 @@ class TwilioNotification(BaseNotification):
         self.auth_token = obj.get_setting('auth_token')
         self.number_to = obj.get_setting('number_to')
         self.number_from = obj.get_setting('number_from')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
@@ -313,6 +335,8 @@ class NMANotification(BaseNotification):
         self.api_key = obj.get_setting('api_key')
         self.app_name = obj.get_setting('app_name')
         self.priority = obj.get_setting('nma_priority')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
@@ -380,6 +404,8 @@ class ProwlNotification(BaseNotification):
             'User-Agent': PROWL_USER_AGENT,
             'Content-type': PROWL_HEADER_CONTENT_TYPE
         }
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
@@ -413,6 +439,8 @@ class GrowlNotification(BaseNotification):
         self.hostname = obj.get_setting('growl_hostname')
         self.port = obj.get_setting('growl_port')
         self.password = obj.get_setting('growl_password')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
         if self.password == '':
             self.password = None
@@ -466,6 +494,8 @@ class CustomNotification(BaseNotification):
         self.custom_values = obj.get_setting('custom_values')
         self.content_type = CUSTOM_CONTENT_TYPES[self.post_type]
         self.method = obj.get_setting('method')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
         self.headers = {
             'User-Agent': CUSTOM_USER_AGENT,
