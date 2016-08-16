@@ -239,13 +239,19 @@ class GoogleTalkNotification(BaseNotification):
         self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
-        message_timestamp = time.ctime(time.time())
+        message_time = time.time()
+        message_timestamp = time.ctime(message_time)
         self.msg_to_send = text + " Message Sent at: " + message_timestamp
-        self.client = sleekxmpp.ClientXMPP(self.source, self.password)
-        self.client.add_event_handler("session_start", self._send)
+        st=self.starttime.split(':')
+        et=self.endtime.split(':')
+        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
+        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
+        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+            self.client = sleekxmpp.ClientXMPP(self.source, self.password)
+            self.client.add_event_handler("session_start", self._send)
 
-        self.client.connect(('talk.google.com', 5222))
-        self.client.process(block=True)
+            self.client.connect(('talk.google.com', 5222))
+            self.client.process(block=True)
 
     def _send(self, event):
         self.client.send_presence()

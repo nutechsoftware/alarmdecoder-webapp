@@ -163,6 +163,8 @@ class GoogleTalkNotificationForm(EditNotificationForm):
         settings['source'] = self.populate_setting('source', self.form_field.source.data)
         settings['password'] = self.populate_setting('password', self.form_field.password.data)
         settings['destination'] = self.populate_setting('destination', self.form_field.destination.data)
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data)
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -170,6 +172,8 @@ class GoogleTalkNotificationForm(EditNotificationForm):
         self.form_field.password.widget.hide_value = False
         self.form_field.password.data = self.populate_from_setting(id, 'password')
         self.form_field.destination.data = self.populate_from_setting(id, 'destination')
+        self.time_field.starttime.data = self.populate_from_setting(id, 'starttime')
+        self.time_field.endtime.data = self.populate_from_setting(id, 'endtime')
 
 
 class PushoverNotificationInternalForm(Form):
