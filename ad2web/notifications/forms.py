@@ -121,8 +121,8 @@ class EmailNotificationForm(EditNotificationForm):
         settings['authentication_required'] = self.populate_setting('authentication_required', self.form_field.authentication_required.data)
         settings['username'] = self.populate_setting('username', self.form_field.username.data)
         settings['password'] = self.populate_setting('password', self.form_field.password.data)
-        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data)
-        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data)
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data or '0:00:00')
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data or '23:59:59')
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
