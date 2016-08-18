@@ -200,6 +200,8 @@ class PushoverNotificationForm(EditNotificationForm):
         settings['user_key'] = self.populate_setting('user_key', self.form_field.user_key.data)
         settings['priority'] = self.populate_setting('priority', self.form_field.priority.data)
         settings['title'] = self.populate_setting('title', self.form_field.title.data)
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data)
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -207,6 +209,8 @@ class PushoverNotificationForm(EditNotificationForm):
         self.form_field.user_key.data = self.populate_from_setting(id, 'user_key')
         self.form_field.priority.data = self.populate_from_setting(id, 'priority')
         self.form_field.title.data = self.populate_from_setting(id, 'title')
+        self.time_field.starttime.data = self.populate_from_setting(id, 'starttime')
+        self.time_field.endtime.data = self.populate_from_setting(id, 'endtime')
 
 
 class TwilioNotificationInternalForm(Form):
@@ -233,6 +237,8 @@ class TwilioNotificationForm(EditNotificationForm):
         settings['auth_token'] = self.populate_setting('auth_token', self.form_field.auth_token.data)
         settings['number_to'] = self.populate_setting('number_to', self.form_field.number_to.data)
         settings['number_from'] = self.populate_setting('number_from', self.form_field.number_from.data)
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data)
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -240,6 +246,8 @@ class TwilioNotificationForm(EditNotificationForm):
         self.form_field.auth_token.data = self.populate_from_setting(id, 'auth_token')
         self.form_field.number_to.data = self.populate_from_setting(id, 'number_to')
         self.form_field.number_from.data = self.populate_from_setting(id, 'number_from')
+        self.time_field.starttime.data = self.populate_from_setting(id, 'starttime')
+        self.time_field.endtime.data = self.populate_from_setting(id, 'endtime')
 
 
 class NMANotificationInternalForm(Form):
@@ -264,12 +272,16 @@ class NMANotificationForm(EditNotificationForm):
         settings['api_key'] = self.populate_setting('api_key', self.form_field.api_key.data)
         settings['app_name'] = self.populate_setting('app_name', self.form_field.app_name.data)
         settings['nma_priority'] = self.populate_setting('nma_priority', self.form_field.nma_priority.data)
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data)
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
         self.form_field.api_key.data = self.populate_from_setting(id, 'api_key')
         self.form_field.app_name.data = self.populate_from_setting(id, 'app_name')
         self.form_field.nma_priority.data = self.populate_from_setting(id, 'nma_priority')
+        self.time_field.starttime.data = self.populate_from_setting(id, 'starttime')
+        self.time_field.endtime.data = self.populate_from_setting(id, 'endtime')
 
 
 class ProwlNotificationInternalForm(Form):
@@ -295,6 +307,8 @@ class ProwlNotificationForm(EditNotificationForm):
         settings['prowl_api_key'] = self.populate_setting('prowl_api_key', self.form_field.prowl_api_key.data)
         settings['prowl_app_name'] = self.populate_setting('prowl_app_name', self.form_field.prowl_app_name.data)
         settings['prowl_priority'] = self.populate_setting('prowl_priority', self.form_field.prowl_priority.data)
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data)
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -302,6 +316,8 @@ class ProwlNotificationForm(EditNotificationForm):
         self.form_field.prowl_api_key.data = self.populate_from_setting(id, 'prowl_api_key')
         self.form_field.prowl_app_name.data = self.populate_from_setting(id, 'prowl_app_name')
         self.form_field.prowl_priority.data = self.populate_from_setting(id, 'prowl_priority')
+        self.time_field.starttime.data = self.populate_from_setting(id, 'starttime')
+        self.time_field.endtime.data = self.populate_from_setting(id, 'endtime')
 
 
 class GrowlNotificationInternalForm(Form):
@@ -331,6 +347,8 @@ class GrowlNotificationForm(EditNotificationForm):
         settings['growl_password'] = self.populate_setting('growl_password', self.form_field.growl_password.data)
         settings['growl_title'] = self.populate_setting('growl_title', self.form_field.growl_title.data)
         settings['growl_priority'] = self.populate_setting('growl_priority', self.form_field.growl_title.data)
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data)
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -340,6 +358,8 @@ class GrowlNotificationForm(EditNotificationForm):
         self.form_field.growl_password.data = self.populate_from_setting(id, 'growl_password')
         self.form_field.growl_title.data = self.populate_from_setting(id, 'growl_title')
         self.form_field.growl_priority.data = self.populate_from_setting(id, 'growl_priority')
+        self.time_field.starttime.data = self.populate_from_setting(id, 'starttime')
+        self.time_field.endtime.data = self.populate_from_setting(id, 'endtime')
 
 
 class CustomValueForm(Form):
@@ -382,6 +402,8 @@ class CustomPostForm(EditNotificationForm):
         settings['method'] = self.populate_setting('method', self.form_field.method.data)
         settings['post_type'] = self.populate_setting('post_type', self.form_field.post_type.data)
         settings['custom_values'] = self.populate_setting('custom_values', self.form_field.custom_values.data)
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data)
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -391,6 +413,8 @@ class CustomPostForm(EditNotificationForm):
         self.form_field.is_ssl.data = self.populate_from_setting(id, 'is_ssl')
         self.form_field.method.data = self.populate_from_setting(id, 'method')
         self.form_field.post_type.data = self.populate_from_setting(id, 'post_type')
+        self.time_field.starttime.data = self.populate_from_setting(id, 'starttime')
+        self.time_field.endtime.data = self.populate_from_setting(id, 'endtime')
 
         custom = self.populate_from_setting(id, 'custom_values')
 
