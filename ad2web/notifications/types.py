@@ -21,6 +21,7 @@ except ImportError:
     have_twilio = False
 
 import time
+from datetime import datetime 
 
 from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element
@@ -186,27 +187,42 @@ class EmailNotification(BaseNotification):
         self.authentication_required = obj.get_setting('authentication_required', default=False)
         self.username = obj.get_setting('username')
         self.password = obj.get_setting('password')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
+
+        if self.starttime == '':
+            self.starttime = '0:00:00'
+
+        if self.endtime == '':
+            self.endtime = '23:59:59'
 
     def send(self, type, text):
-        message_timestamp = time.ctime(time.time())
+        message_time = time.time()
+        message_timestamp = time.ctime(message_time)
         text = text + " Message Sent at: " + message_timestamp
+        st=self.starttime.split(':')
+        et=self.endtime.split(':')
+        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
+        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
 
-        msg = MIMEText(text)
+        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
 
-        msg['Subject'] = self.subject
-        msg['From'] = self.source
-        recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
-        msg['To'] = ', '.join(recipients)
+            msg = MIMEText(text)
 
-        s = smtplib.SMTP(self.server, self.port)
-        if self.tls:
-            s.starttls()
+            msg['Subject'] = self.subject
+            msg['From'] = self.source
+            recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
+            msg['To'] = ', '.join(recipients)
 
-        if self.authentication_required:
-            s.login(str(self.username), str(self.password))
+            s = smtplib.SMTP(self.server, self.port)
+            if self.tls:
+                s.starttls()
 
-        s.sendmail(self.source, recipients, msg.as_string())
-        s.quit()
+            if self.authentication_required:
+                s.login(str(self.username), str(self.password))
+
+            s.sendmail(self.source, recipients, msg.as_string())
+            s.quit()
 
 
 class GoogleTalkNotification(BaseNotification):
@@ -219,15 +235,23 @@ class GoogleTalkNotification(BaseNotification):
         self.password = obj.get_setting('password')
         self.destination = obj.get_setting('destination')
         self.client = None
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
-        message_timestamp = time.ctime(time.time())
+        message_time = time.time()
+        message_timestamp = time.ctime(message_time)
         self.msg_to_send = text + " Message Sent at: " + message_timestamp
-        self.client = sleekxmpp.ClientXMPP(self.source, self.password)
-        self.client.add_event_handler("session_start", self._send)
+        st=self.starttime.split(':')
+        et=self.endtime.split(':')
+        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
+        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
+        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+            self.client = sleekxmpp.ClientXMPP(self.source, self.password)
+            self.client.add_event_handler("session_start", self._send)
 
-        self.client.connect(('talk.google.com', 5222))
-        self.client.process(block=True)
+            self.client.connect(('talk.google.com', 5222))
+            self.client.process(block=True)
 
     def _send(self, event):
         self.client.send_presence()
@@ -246,38 +270,46 @@ class PushoverNotification(BaseNotification):
         self.user_key = obj.get_setting('user_key')
         self.priority = obj.get_setting('priority')
         self.title = obj.get_setting('title')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         self.msg_to_send = text
+        st=self.starttime.split(':')
+        et=self.endtime.split(':')
+        message_time=time.time()
+        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
+        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
+        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
 
-        if not have_chump:
-            raise Exception('Missing Pushover library: chump')
+            if not have_chump:
+                raise Exception('Missing Pushover library: chump')
 
-        app = Application(self.token)
-        if app.is_authenticated:
-            user = app.get_user(self.user_key)
+            app = Application(self.token)
+            if app.is_authenticated:
+                user = app.get_user(self.user_key)
 
-            if user_is_authenticated(user):
-                message = user.create_message(
-                    title=self.title,
-                    message=self.msg_to_send,
-                    html=True,
-                    priority=self.priority,
-                    timestamp=int(time.time())
-                )
+                if user_is_authenticated(user):
+                    message = user.create_message(
+                        title=self.title,
+                        message=self.msg_to_send,
+                        html=True,
+                        priority=self.priority,
+                        timestamp=int(time.time())
+                    )
 
-                is_sent = message.send()
+                    is_sent = message.send()
 
-                if is_sent != True:
-                    current_app.logger.info("Pushover Notification Failed")
-                    raise Exception('Pushover Notification Failed')
+                    if is_sent != True:
+                        current_app.logger.info("Pushover Notification Failed")
+                        raise Exception('Pushover Notification Failed')
+                else:
+                    current_app.logger.info("Pushover Notification Failed - bad user key: " + self.user_key)
+                    raise Exception("Pushover Notification Failed - bad user key: " + self.user_key)
+
             else:
-                current_app.logger.info("Pushover Notification Failed - bad user key: " + self.user_key)
-                raise Exception("Pushover Notification Failed - bad user key: " + self.user_key)
-
-        else:
-            current_app.logger.info("Pushover Notification Failed - bad application token: " + self.token)
-            raise Exception("Pushover Notification Failed - bad application token: " + self.token)
+                current_app.logger.info("Pushover Notification Failed - bad application token: " + self.token)
+                raise Exception("Pushover Notification Failed - bad application token: " + self.token)
 
 
 class TwilioNotification(BaseNotification):
@@ -290,20 +322,28 @@ class TwilioNotification(BaseNotification):
         self.auth_token = obj.get_setting('auth_token')
         self.number_to = obj.get_setting('number_to')
         self.number_from = obj.get_setting('number_from')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
-        message_timestamp = time.ctime(time.time())
-        self.msg_to_send = text + " Message Sent at: " + message_timestamp
+        message_time = time.time()
+        message_timestamp = time.ctime(message_time)
+        st=self.starttime.split(':')
+        et=self.endtime.split(':')
+        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
+        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
+        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+            self.msg_to_send = text + " Message Sent at: " + message_timestamp
 
-        if have_twilio == False:
-            raise Exception('Missing Twilio library: twilio')
+            if have_twilio == False:
+                raise Exception('Missing Twilio library: twilio')
 
-        try:
-            client = TwilioRestClient(self.account_sid, self.auth_token)
-            message = client.messages.create(to=self.number_to, from_=self.number_from, body=self.msg_to_send)
-        except twilio.TwilioRestException as e:
-            current_app.logger.info('Event Twilio Notification Failed: {0}' . format(e))
-            raise Exception('Twilio Notification Failed: {0}' . format(e))
+            try:
+                client = TwilioRestClient(self.account_sid, self.auth_token)
+                message = client.messages.create(to=self.number_to, from_=self.number_from, body=self.msg_to_send)
+            except twilio.TwilioRestException as e:
+                current_app.logger.info('Event Twilio Notification Failed: {0}' . format(e))
+                raise Exception('Twilio Notification Failed: {0}' . format(e))
 
 class NMANotification(BaseNotification):
     def __init__(self, obj):
@@ -313,39 +353,47 @@ class NMANotification(BaseNotification):
         self.api_key = obj.get_setting('api_key')
         self.app_name = obj.get_setting('app_name')
         self.priority = obj.get_setting('nma_priority')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
-        message_timestamp = time.ctime(time.time())
-        self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
-        self.event = NMA_EVENT.encode('utf8')
-        self.content_type = NMA_CONTENT_TYPE
+        message_time = time.time()
+        message_timestamp = time.ctime(message_time)
+        st=self.starttime.split(':')
+        et=self.endtime.split(':')
+        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
+        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
+        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+            self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
+            self.event = NMA_EVENT.encode('utf8')
+            self.content_type = NMA_CONTENT_TYPE
 
-        notify_data = {
-            'application': self.app_name,
-            'description': self.msg_to_send,
-            'event': self.event,
-            'priority': self.priority,
-            'content-type': self.content_type,
-            'apikey': self.api_key
-        }
-
-        headers = { 'User-Agent': NMA_USER_AGENT }
-        headers['Content-type'] = NMA_HEADER_CONTENT_TYPE
-        http_handler = HTTPSConnection(NMA_URL)
-        http_handler.request(NMA_METHOD, NMA_PATH, urlencode(notify_data), headers)
-
-        http_response = http_handler.getresponse()
-
-        try:
-            res = self._parse_response(http_response.read())
-        except Exception as e:
-            res = {
-                'type': 'NMA Notify Error',
-                'code': 800,
-                'message': str(e)
+            notify_data = {
+                'application': self.app_name,
+                'description': self.msg_to_send,
+                'event': self.event,
+                'priority': self.priority,
+                'content-type': self.content_type,
+                'apikey': self.api_key
             }
-            current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(str(e)))
-            raise Exception('NotifyMyAndroid Failed: {0}' . format(str(e)))
+
+            headers = { 'User-Agent': NMA_USER_AGENT }
+            headers['Content-type'] = NMA_HEADER_CONTENT_TYPE
+            http_handler = HTTPSConnection(NMA_URL)
+            http_handler.request(NMA_METHOD, NMA_PATH, urlencode(notify_data), headers)
+
+            http_response = http_handler.getresponse()
+
+            try:
+                res = self._parse_response(http_response.read())
+            except Exception as e:
+                res = {
+                    'type': 'NMA Notify Error',
+                    'code': 800,
+                    'message': str(e)
+                }
+                current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(str(e)))
+                raise Exception('NotifyMyAndroid Failed: {0}' . format(str(e)))
 
     def _parse_response(self, response):
         root = parseString(response).firstChild
@@ -380,29 +428,37 @@ class ProwlNotification(BaseNotification):
             'User-Agent': PROWL_USER_AGENT,
             'Content-type': PROWL_HEADER_CONTENT_TYPE
         }
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
-        message_timestamp = time.ctime(time.time())
-        self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
+        message_time = time.time()
+        message_timestamp = time.ctime(message_time)
+        st=self.starttime.split(':')
+        et=self.endtime.split(':')
+        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
+        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
+        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+            self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
 
-        notify_data = {
-            'apikey': self.api_key,
-            'application': self.app_name,
-            'event': self.event,
-            'description': self.msg_to_send,
-            'priority': self.priority
-        }
+            notify_data = {
+                'apikey': self.api_key,
+                'application': self.app_name,
+                'event': self.event,
+                'description': self.msg_to_send,
+                'priority': self.priority
+            }
 
-        http_handler = HTTPSConnection(PROWL_URL)
-        http_handler.request(PROWL_METHOD, PROWL_PATH, headers=self.headers,body=urlencode(notify_data))
+            http_handler = HTTPSConnection(PROWL_URL)
+            http_handler.request(PROWL_METHOD, PROWL_PATH, headers=self.headers,body=urlencode(notify_data))
 
-        http_response = http_handler.getresponse()
+            http_response = http_handler.getresponse()
 
-        if http_response.status == 200:
-            return True
-        else:
-            current_app.logger.info('Event Prowl Notification Failed: {0}'. format(http_response.reason))
-            raise Exception('Prowl Notification Failed: {0}' . format(http_response.reason))
+            if http_response.status == 200:
+                return True
+            else:
+                current_app.logger.info('Event Prowl Notification Failed: {0}'. format(http_response.reason))
+                raise Exception('Prowl Notification Failed: {0}' . format(http_response.reason))
 
 class GrowlNotification(BaseNotification):
     def __init__(self, obj):
@@ -413,6 +469,8 @@ class GrowlNotification(BaseNotification):
         self.hostname = obj.get_setting('growl_hostname')
         self.port = obj.get_setting('growl_port')
         self.password = obj.get_setting('growl_password')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
         if self.password == '':
             self.password = None
@@ -431,28 +489,34 @@ class GrowlNotification(BaseNotification):
             self.growl = None
         
     def send(self, type, text):
-        message_timestamp = time.ctime(time.time())
-        self.msg_to_send = text + " Message Sent at: " + message_timestamp
+        message_time = time.time()
+        message_timestamp = time.ctime(message_time)
+        st=self.starttime.split(':')
+        et=self.endtime.split(':')
+        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
+        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
+        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+            self.msg_to_send = text + " Message Sent at: " + message_timestamp
 
-        if not have_gntp:
-            raise Exception('Missing Growl library: gntp')
+            if not have_gntp:
+                raise Exception('Missing Growl library: gntp')
 
-        growl_status = self.growl.register()
-        if growl_status == True:
-            growl_notify_status = self.growl.notify(
-                noteType = GROWL_DEFAULT_NOTIFICATIONS[0],
-                title = self.title,
-                description = self.msg_to_send,
-                priority = self.priority,
-                sticky = False
-            )
-            if growl_notify_status != True:
-                current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_notify_status))
-                raise Exception('Growl Notification Failed: {0}' . format(growl_notify_status))
+            growl_status = self.growl.register()
+            if growl_status == True:
+                growl_notify_status = self.growl.notify(
+                    noteType = GROWL_DEFAULT_NOTIFICATIONS[0],
+                    title = self.title,
+                    description = self.msg_to_send,
+                    priority = self.priority,
+                    sticky = False
+                )
+                if growl_notify_status != True:
+                    current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_notify_status))
+                    raise Exception('Growl Notification Failed: {0}' . format(growl_notify_status))
 
-        else:
-            current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_status))
-            raise Exception('Growl Notification Failed: {0}' . format(growl_status))
+            else:
+                current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_status))
+                raise Exception('Growl Notification Failed: {0}' . format(growl_status))
 
 class CustomNotification(BaseNotification):
     def __init__(self, obj):
@@ -466,6 +530,8 @@ class CustomNotification(BaseNotification):
         self.custom_values = obj.get_setting('custom_values')
         self.content_type = CUSTOM_CONTENT_TYPES[self.post_type]
         self.method = obj.get_setting('method')
+        self.starttime = obj.get_setting('starttime')
+        self.endtime = obj.get_setting('endtime')
 
         self.headers = {
             'User-Agent': CUSTOM_USER_AGENT,
