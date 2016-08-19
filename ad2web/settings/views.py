@@ -136,6 +136,7 @@ def host():
         return redirect(url_for('settings.index'))
 
     uptime = _get_system_uptime()
+    cpu_temp = _get_cpu_temperature()
 
     #if missing netifaces dependency, we do not allow to view host settings
     if hasnetifaces == 1:
@@ -148,7 +149,7 @@ def host():
         if form.validate_on_submit():
             return redirect(url_for('settings.configure_ethernet_device', device=form.ethernet_devices.data))
 
-        return render_template('settings/host.html', hostname=hostname, uptime=uptime, form=form, active="host settings")
+        return render_template('settings/host.html', hostname=hostname, uptime=uptime, cpu_temp=cpu_temp, form=form, active="host settings")
     else:
         flash('Please install the netifaces module (sudo pip install netifaces) to view host settings information.', 'error')
         return redirect(url_for('settings.index'))
@@ -444,6 +445,13 @@ def _get_system_uptime():
     
     uptime_string = uptime_string[:-4]
     return uptime_string
+
+#cpu temperature
+def _get_cpu_temperature():
+    with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+        cpu_temperature = float(f.readline())
+	cpu_temperature_string = str(cpu_temperature / 1000)
+    return cpu_temperature_string
     
 @settings.route('/export', methods=['GET', 'POST'])
 @login_required
