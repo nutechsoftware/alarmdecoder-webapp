@@ -180,7 +180,8 @@ def alarmdecoder():
         'panel_on_battery': current_app.decoder.device._battery_status[0],
         'panel_panicked': current_app.decoder.device._panic_status,
         'panel_relay_status': relay_status,
-        'panel_zones_faulted': faulted_zones
+        'panel_zones_faulted': faulted_zones,
+        'last_message_received': current_app.decoder.last_message_received
     }
 
     return jsonify(ret), OK

@@ -105,6 +105,7 @@ class Decoder(object):
             self._discovery_thread = None
             self._notifier_system = None
             self._internal_address_mask = 0xFFFFFFFF
+            self.last_message_received = None
 
     @property
     def internal_address_mask(self):
@@ -343,6 +344,11 @@ class Decoder(object):
         :type kwargs: dict
         """
         try:
+            message = str(kwargs.get('message', None))
+
+            if ftype == 'panel':
+                self.last_message_received = message
+
             self.broadcast('message', { 'message': kwargs.get('message', None), 'message_type': ftype } )
 
         except Exception, err:
