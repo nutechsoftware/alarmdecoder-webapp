@@ -183,6 +183,7 @@ class EmailNotification(BaseNotification):
         self.server = obj.get_setting('server')
         self.port = obj.get_setting('port', default=25)
         self.tls = obj.get_setting('tls', default=False)
+        self.ssl = obj.get_setting('ssl', default=False)
         self.authentication_required = obj.get_setting('authentication_required', default=False)
         self.username = obj.get_setting('username')
         self.password = obj.get_setting('password')
@@ -198,8 +199,14 @@ class EmailNotification(BaseNotification):
         recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
         msg['To'] = ', '.join(recipients)
 
-        s = smtplib.SMTP(self.server, self.port)
-        if self.tls:
+        s = None
+
+        if not ssl:
+            s = smtplib.SMTP(self.server, self.port)
+        if ssl:
+            s = smtplib.SMTP_SSL(self.server, self.port)
+
+        if self.tls and not ssl:
             s.starttls()
 
         if self.authentication_required:
