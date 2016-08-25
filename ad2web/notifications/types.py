@@ -201,12 +201,12 @@ class EmailNotification(BaseNotification):
 
         s = None
 
-        if not ssl:
+        if not self.ssl:
             s = smtplib.SMTP(self.server, self.port)
-        if ssl:
+        if self.ssl:
             s = smtplib.SMTP_SSL(self.server, self.port)
 
-        if self.tls and not ssl:
+        if self.tls and not self.ssl:
             s.starttls()
 
         if self.authentication_required:
