@@ -78,13 +78,13 @@ class EditNotificationForm(Form):
 
 
 class EmailNotificationInternalForm(Form):
-    source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
-    destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
+    source = TextField(u'Source Address (From)', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
+    destination = TextField(u'Destination Address (To)', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
 
     subject = TextField(u'Email Subject', [Required(), Length(max=255)], default='AlarmDecoder: Alarm Event', description=u'Emails will contain this text as the subject')
 
-    server = TextField(u'Email Server', [Required(), Length(max=255)], default='localhost')
-    port = IntegerField(u'Server Port', [Required(), NumberRange(1, 65535)], default=25)
+    server = TextField(u'Email Server (Configured using local server by default, not preferred due to ISP filtering)', [Required(), Length(max=255)], default='localhost')
+    port = IntegerField(u'Server Port (If using your own server, check that port is not filtered by ISP)', [Required(), NumberRange(1, 65535)], default=25)
     tls = BooleanField(u'Use TLS? (Do not pick SSL if using TLS)', default=False)
     ssl = BooleanField(u'Use SSL? (Do not pick TLS if using SSL)', default=False)
     authentication_required = BooleanField(u'Authenticate with email server?', default=False)
