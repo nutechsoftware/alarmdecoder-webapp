@@ -19,6 +19,14 @@ from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
 
 
+class DelaySettingsInternalForm(Form):
+    delaytime = TextField(u'Notification Delay', [Optional(), Length(max=10)], default=0, description=u'Time in minutes to delay sending notification')
+    suppress = BooleanField(u'Suppress Restore?', [Optional()], description=u'Suppress notification if restored before delay')
+
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(DelaySettingsInternalForm, self).__init__(*args, **kwargs)
+
 class NotificationButtonForm(wtforms.Form):
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
     submit = SubmitField(u'Save')
@@ -98,6 +106,7 @@ class EmailNotificationInternalForm(Form):
 
 class EmailNotificationForm(EditNotificationForm):
     form_field = FormField(EmailNotificationInternalForm)
+    delay_field = FormField(DelaySettingsInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
@@ -115,6 +124,8 @@ class EmailNotificationForm(EditNotificationForm):
         settings['authentication_required'] = self.populate_setting('authentication_required', self.form_field.authentication_required.data)
         settings['username'] = self.populate_setting('username', self.form_field.username.data)
         settings['password'] = self.populate_setting('password', self.form_field.password.data)
+        settings['delay'] = self.populate_setting('delay', self.delay_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.delay_field.suppress.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -130,6 +141,8 @@ class EmailNotificationForm(EditNotificationForm):
         self.form_field.username.data = self.populate_from_setting(id, 'username')
         self.form_field.password.widget.hide_value = False
         self.form_field.password.data = self.populate_from_setting(id, 'password')
+        self.delay_field.delaytime.data = self.populate_from_setting(id, 'delay')
+        self.delay_field.suppress.data = self.populate_from_setting(id, 'suppress')
 
 
 class GoogleTalkNotificationInternalForm(Form):
@@ -144,6 +157,7 @@ class GoogleTalkNotificationInternalForm(Form):
 
 class GoogleTalkNotificationForm(EditNotificationForm):
     form_field = FormField(GoogleTalkNotificationInternalForm)
+    delay_field = FormField(DelaySettingsInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
@@ -153,6 +167,8 @@ class GoogleTalkNotificationForm(EditNotificationForm):
         settings['source'] = self.populate_setting('source', self.form_field.source.data)
         settings['password'] = self.populate_setting('password', self.form_field.password.data)
         settings['destination'] = self.populate_setting('destination', self.form_field.destination.data)
+        settings['delay'] = self.populate_setting('delay', self.delay_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.delay_field.suppress.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -160,6 +176,8 @@ class GoogleTalkNotificationForm(EditNotificationForm):
         self.form_field.password.widget.hide_value = False
         self.form_field.password.data = self.populate_from_setting(id, 'password')
         self.form_field.destination.data = self.populate_from_setting(id, 'destination')
+        self.delay_field.delaytime.data = self.populate_from_setting(id, 'delay')
+        self.delay_field.suppress.data = self.populate_from_setting(id, 'suppress')
 
 
 class PushoverNotificationInternalForm(Form):
@@ -175,6 +193,7 @@ class PushoverNotificationInternalForm(Form):
 
 class PushoverNotificationForm(EditNotificationForm):
     form_field = FormField(PushoverNotificationInternalForm)
+    delay_field = FormField(DelaySettingsInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
@@ -185,6 +204,8 @@ class PushoverNotificationForm(EditNotificationForm):
         settings['user_key'] = self.populate_setting('user_key', self.form_field.user_key.data)
         settings['priority'] = self.populate_setting('priority', self.form_field.priority.data)
         settings['title'] = self.populate_setting('title', self.form_field.title.data)
+        settings['delay'] = self.populate_setting('delay', self.delay_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.delay_field.suppress.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -192,6 +213,8 @@ class PushoverNotificationForm(EditNotificationForm):
         self.form_field.user_key.data = self.populate_from_setting(id, 'user_key')
         self.form_field.priority.data = self.populate_from_setting(id, 'priority')
         self.form_field.title.data = self.populate_from_setting(id, 'title')
+        self.delay_field.delaytime.data = self.populate_from_setting(id, 'delay')
+        self.delay_field.suppress.data = self.populate_from_setting(id, 'suppress')
 
 
 class TwilioNotificationInternalForm(Form):
@@ -207,6 +230,7 @@ class TwilioNotificationInternalForm(Form):
 
 class TwilioNotificationForm(EditNotificationForm):
     form_field = FormField(TwilioNotificationInternalForm)
+    delay_field = FormField(DelaySettingsInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
@@ -217,6 +241,8 @@ class TwilioNotificationForm(EditNotificationForm):
         settings['auth_token'] = self.populate_setting('auth_token', self.form_field.auth_token.data)
         settings['number_to'] = self.populate_setting('number_to', self.form_field.number_to.data)
         settings['number_from'] = self.populate_setting('number_from', self.form_field.number_from.data)
+        settings['delay'] = self.populate_setting('delay', self.delay_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.delay_field.suppress.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -224,6 +250,8 @@ class TwilioNotificationForm(EditNotificationForm):
         self.form_field.auth_token.data = self.populate_from_setting(id, 'auth_token')
         self.form_field.number_to.data = self.populate_from_setting(id, 'number_to')
         self.form_field.number_from.data = self.populate_from_setting(id, 'number_from')
+        self.delay_field.delaytime.data = self.populate_from_setting(id, 'delay')
+        self.delay_field.suppress.data = self.populate_from_setting(id, 'suppress')
 
 
 class NMANotificationInternalForm(Form):
@@ -238,6 +266,7 @@ class NMANotificationInternalForm(Form):
 
 class NMANotificationForm(EditNotificationForm):
     form_field = FormField(NMANotificationInternalForm)
+    delay_field = FormField(DelaySettingsInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
@@ -247,12 +276,16 @@ class NMANotificationForm(EditNotificationForm):
         settings['api_key'] = self.populate_setting('api_key', self.form_field.api_key.data)
         settings['app_name'] = self.populate_setting('app_name', self.form_field.app_name.data)
         settings['nma_priority'] = self.populate_setting('nma_priority', self.form_field.nma_priority.data)
+        settings['delay'] = self.populate_setting('delay', self.delay_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.delay_field.suppress.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
         self.form_field.api_key.data = self.populate_from_setting(id, 'api_key')
         self.form_field.app_name.data = self.populate_from_setting(id, 'app_name')
         self.form_field.nma_priority.data = self.populate_from_setting(id, 'nma_priority')
+        self.delay_field.delaytime.data = self.populate_from_setting(id, 'delay')
+        self.delay_field.suppress.data = self.populate_from_setting(id, 'suppress')
 
 
 class ProwlNotificationInternalForm(Form):
@@ -267,6 +300,7 @@ class ProwlNotificationInternalForm(Form):
 
 class ProwlNotificationForm(EditNotificationForm):
     form_field = FormField(ProwlNotificationInternalForm)
+    delay_field = FormField(DelaySettingsInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
@@ -277,6 +311,8 @@ class ProwlNotificationForm(EditNotificationForm):
         settings['prowl_api_key'] = self.populate_setting('prowl_api_key', self.form_field.prowl_api_key.data)
         settings['prowl_app_name'] = self.populate_setting('prowl_app_name', self.form_field.prowl_app_name.data)
         settings['prowl_priority'] = self.populate_setting('prowl_priority', self.form_field.prowl_priority.data)
+        settings['delay'] = self.populate_setting('delay', self.delay_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.delay_field.suppress.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -284,6 +320,8 @@ class ProwlNotificationForm(EditNotificationForm):
         self.form_field.prowl_api_key.data = self.populate_from_setting(id, 'prowl_api_key')
         self.form_field.prowl_app_name.data = self.populate_from_setting(id, 'prowl_app_name')
         self.form_field.prowl_priority.data = self.populate_from_setting(id, 'prowl_priority')
+        self.delay_field.delaytime.data = self.populate_from_setting(id, 'delay')
+        self.delay_field.suppress.data = self.populate_from_setting(id, 'suppress')
 
 
 class GrowlNotificationInternalForm(Form):
@@ -300,6 +338,7 @@ class GrowlNotificationInternalForm(Form):
 
 class GrowlNotificationForm(EditNotificationForm):
     form_field = FormField(GrowlNotificationInternalForm)
+    delay_field = FormField(DelaySettingsInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
@@ -312,6 +351,8 @@ class GrowlNotificationForm(EditNotificationForm):
         settings['growl_password'] = self.populate_setting('growl_password', self.form_field.growl_password.data)
         settings['growl_title'] = self.populate_setting('growl_title', self.form_field.growl_title.data)
         settings['growl_priority'] = self.populate_setting('growl_priority', self.form_field.growl_title.data)
+        settings['delay'] = self.populate_setting('delay', self.delay_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.delay_field.suppress.data)
 
     def populate_from_settings(self, id):
         EditNotificationForm.populate_from_settings(self, id)
@@ -321,6 +362,8 @@ class GrowlNotificationForm(EditNotificationForm):
         self.form_field.growl_password.data = self.populate_from_setting(id, 'growl_password')
         self.form_field.growl_title.data = self.populate_from_setting(id, 'growl_title')
         self.form_field.growl_priority.data = self.populate_from_setting(id, 'growl_priority')
+        self.delay_field.delaytime.data = self.populate_from_setting(id, 'delay')
+        self.delay_field.suppress.data = self.populate_from_setting(id, 'suppress')
 
 
 class CustomValueForm(Form):
@@ -349,6 +392,7 @@ class CustomPostInternalForm(Form):
 
 class CustomPostForm(EditNotificationForm):
     form_field = FormField(CustomPostInternalForm)
+    delay_field = FormField(DelaySettingsInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
@@ -361,6 +405,8 @@ class CustomPostForm(EditNotificationForm):
         settings['is_ssl'] = self.populate_setting('is_ssl', self.form_field.is_ssl.data)
         settings['method'] = self.populate_setting('method', self.form_field.method.data)
         settings['post_type'] = self.populate_setting('post_type', self.form_field.post_type.data)
+        settings['delay'] = self.populate_setting('delay', self.delay_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.delay_field.suppress.data)
         settings['custom_values'] = self.populate_setting('custom_values', self.form_field.custom_values.data)
 
     def populate_from_settings(self, id):
@@ -371,6 +417,8 @@ class CustomPostForm(EditNotificationForm):
         self.form_field.is_ssl.data = self.populate_from_setting(id, 'is_ssl')
         self.form_field.method.data = self.populate_from_setting(id, 'method')
         self.form_field.post_type.data = self.populate_from_setting(id, 'post_type')
+        self.delay_field.delaytime.data = self.populate_from_setting(id, 'delay')
+        self.delay_field.suppress.data = self.populate_from_setting(id, 'suppress')
 
         custom = self.populate_from_setting(id, 'custom_values')
 

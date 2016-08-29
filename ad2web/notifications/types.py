@@ -2,6 +2,7 @@
 
 from flask import current_app
 import smtplib
+import datetime
 from email.mime.text import MIMEText
 import sleekxmpp
 import json
@@ -65,6 +66,7 @@ from ..log.models import EventLogEntry
 from ..zones import Zone
 from ..utils import user_is_authenticated
 
+waitList = []
 
 class NotificationSystem(object):
     def __init__(self):
@@ -82,10 +84,34 @@ class NotificationSystem(object):
                     message = self._build_message(type, **kwargs)
 
                     if message:
-                        n.send(type, message)
+                        message_send_time = time.mktime((datetime.datetime.combine(datetime.date.today(), datetime.datetime.time(datetime.datetime.now())) + datetime.timedelta(minutes=n.delay)).timetuple())
+
+                        if time.time() >= message_send_time and type not in(ZONE_FAULT, ZONE_RESTORE, BYPASS):
+                            n.send(type, message)
+                        else:
+                            notify = {}
+                            notify['notification'] = n
+                            notify['message_send_time'] = message_send_time
+                            notify['message'] = message
+                            notify['type'] = type
+                            notify['zone'] = int(kwargs.get('zone', -1))
+
+                            if notify not in waitList:
+                                waitList.append(notify)
 
                 except Exception, err:
                     errors.append('Error sending notification for {0}: {1}'.format(n.description, str(err)))
+
+        tempWaitList = waitList
+        for notifier in tempWaitList:
+            try:
+                if time.time() >= notifier['message_send_time'] and self._check_suppress(notifier) == False:
+                    notifier['notification'].send(notifier['type'], notifier['message'])
+                    waitList.remove(notifier)
+                else:
+                    self._remove_suppressed_zone(notifier['zone'])
+            except Exception, err:
+                errors.append('Error sending notification for {0}: {1}'.format(n['notification'].description, str(err)))
 
         return errors
 
@@ -130,6 +156,27 @@ class NotificationSystem(object):
 
         return message
 
+    def _check_suppress(self, notifier):
+        if notifier['type'] == ZONE_FAULT:
+            zone = notifier['zone']
+            
+            #check the first notifier that is a zone fault, get its id, see if there was a zone restore or bypass
+            #for the same zone.   If we're suppressed on the notifier, then we won't send it out.
+            for n in waitList:
+                if n['zone'] == zone:
+                    if n['type'] == ZONE_RESTORE or n['type'] == BYPASS and notifier['notification'].suppress == 1:
+                        return True
+
+        #right now only suppress zone spam
+        return False
+
+    def _remove_suppressed_zone(self, id):
+        tempWaitList = waitList
+
+        for n in tempWaitList:
+            if n['zone'] == id:
+                waitList.remove(n)
+
 class BaseNotification(object):
     def __init__(self, obj):
         if 'subscriptions' in obj.settings.keys():
@@ -157,6 +204,8 @@ class BaseNotification(object):
 class LogNotification(object):
     def __init__(self):
         self.description = 'Logger'
+        self.delay = 0
+        self.suppress = 0
 
     def subscribes_to(self, type, **kwargs):
         return True
@@ -187,6 +236,11 @@ class EmailNotification(BaseNotification):
         self.authentication_required = obj.get_setting('authentication_required', default=False)
         self.username = obj.get_setting('username')
         self.password = obj.get_setting('password')
+        self.delay = obj.get_setting('delay')
+        self.suppress = obj.get_setting('suppress')
+
+        if self.delay is None or self.delay == '':
+            self.delay = 0
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
@@ -225,7 +279,12 @@ class GoogleTalkNotification(BaseNotification):
         self.source = obj.get_setting('source')
         self.password = obj.get_setting('password')
         self.destination = obj.get_setting('destination')
+        self.delay = obj.get_setting('delay')
+        self.suppress = obj.get_setting('suppress')
         self.client = None
+
+        if self.delay is None or self.delay == '':
+            self.delay = 0
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
@@ -253,6 +312,11 @@ class PushoverNotification(BaseNotification):
         self.user_key = obj.get_setting('user_key')
         self.priority = obj.get_setting('priority')
         self.title = obj.get_setting('title')
+        self.delay = obj.get_setting('delay')
+        self.suppress = obj.get_setting('suppress')
+
+        if self.delay is None or self.delay == '':
+            self.delay = 0
 
     def send(self, type, text):
         self.msg_to_send = text
@@ -297,6 +361,11 @@ class TwilioNotification(BaseNotification):
         self.auth_token = obj.get_setting('auth_token')
         self.number_to = obj.get_setting('number_to')
         self.number_from = obj.get_setting('number_from')
+        self.delay = obj.get_setting('delay')
+        self.suppress = obj.get_setting('suppress')
+
+        if self.delay is None or self.delay == '':
+            self.delay = 0
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
@@ -320,6 +389,11 @@ class NMANotification(BaseNotification):
         self.api_key = obj.get_setting('api_key')
         self.app_name = obj.get_setting('app_name')
         self.priority = obj.get_setting('nma_priority')
+        self.delay = obj.get_setting('delay')
+        self.suppress = obj.get_setting('suppress')
+
+        if self.delay is None or self.delay == '':
+            self.delay = 0
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
@@ -381,8 +455,14 @@ class ProwlNotification(BaseNotification):
         self.api_key = obj.get_setting('prowl_api_key')
         self.app_name = obj.get_setting('prowl_app_name')[:256].encode('utf8')
         self.priority = obj.get_setting('prowl_priority')
+        self.delay = obj.get_setting('delay')
+        self.suppress = obj.get_setting('suppress')
         self.event = PROWL_EVENT[:1024].encode('utf8')
         self.content_type = PROWL_CONTENT_TYPE
+
+        if self.delay is None or self.delay == '':
+            self.delay = 0
+
         self.headers = {
             'User-Agent': PROWL_USER_AGENT,
             'Content-type': PROWL_HEADER_CONTENT_TYPE
@@ -420,6 +500,11 @@ class GrowlNotification(BaseNotification):
         self.hostname = obj.get_setting('growl_hostname')
         self.port = obj.get_setting('growl_port')
         self.password = obj.get_setting('growl_password')
+        self.delay = obj.get_setting('delay')
+        self.suppress = obj.get_setting('suppress')
+
+        if self.delay is None or self.delay == '':
+            self.delay = 0
 
         if self.password == '':
             self.password = None
@@ -473,6 +558,11 @@ class CustomNotification(BaseNotification):
         self.custom_values = obj.get_setting('custom_values')
         self.content_type = CUSTOM_CONTENT_TYPES[self.post_type]
         self.method = obj.get_setting('method')
+        self.delay = obj.get_setting('delay')
+        self.suppress = obj.get_setting('suppress')
+
+        if self.delay is None or self.delay == '':
+            self.delay = 0
 
         self.headers = {
             'User-Agent': CUSTOM_USER_AGENT,
