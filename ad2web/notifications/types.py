@@ -164,7 +164,7 @@ class NotificationSystem(object):
             #for the same zone.   If we're suppressed on the notifier, then we won't send it out.
             for n in waitList:
                 if n['zone'] == zone:
-                    if n['type'] == ZONE_RESTORE or n['type'] == BYPASS and notifier['notification'].suppress == 1:
+                    if n['type'] == ZONE_RESTORE or n['type'] == BYPASS and n['notification'].suppress == 1:
                         return True
 
         #right now only suppress zone spam
