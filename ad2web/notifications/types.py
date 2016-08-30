@@ -66,7 +66,6 @@ from ..log.models import EventLogEntry
 from ..zones import Zone
 from ..utils import user_is_authenticated
 
-waitList = []
 
 class NotificationSystem(object):
     def __init__(self):
@@ -96,18 +95,18 @@ class NotificationSystem(object):
                             notify['type'] = type
                             notify['zone'] = int(kwargs.get('zone', -1))
 
-                            if notify not in waitList:
-                                waitList.append(notify)
+                            if notify not in current_app.decoder.notify_wait_list:
+                                current_app.decoder.notify_wait_list.append(notify)
 
                 except Exception, err:
                     errors.append('Error sending notification for {0}: {1}'.format(n.description, str(err)))
 
-        tempWaitList = waitList
+        tempWaitList = current_app.decoder.notify_wait_list
         for notifier in tempWaitList:
             try:
                 if time.time() >= notifier['message_send_time'] and self._check_suppress(notifier) == False:
                     notifier['notification'].send(notifier['type'], notifier['message'])
-                    waitList.remove(notifier)
+                    current_app.decoder.notify_wait_list.remove(notifier)
                 else:
                     self._remove_suppressed_zone(notifier['zone'])
             except Exception, err:
@@ -162,20 +161,22 @@ class NotificationSystem(object):
             
             #check the first notifier that is a zone fault, get its id, see if there was a zone restore or bypass
             #for the same zone.   If we're suppressed on the notifier, then we won't send it out.
-            for n in waitList:
+            tempWaitList = current_app.decoder.notify_wait_list
+            for n in tempWaitList:
                 if n['zone'] == zone:
-                    if n['type'] == ZONE_RESTORE or n['type'] == BYPASS and n['notification'].suppress == 1:
+                    if (n['type'] == ZONE_RESTORE or n['type'] == BYPASS) and n['notification'].suppress == 1:
+                        current_app.decoder.notify_wait_list.remove(n)
                         return True
 
         #right now only suppress zone spam
         return False
 
     def _remove_suppressed_zone(self, id):
-        tempWaitList = waitList
+        tempWaitList = current_app.decoder.notify_wait_list
 
         for n in tempWaitList:
             if n['zone'] == id:
-                waitList.remove(n)
+                current_app.decoder.notify_wait_list.remove(n)
 
 class BaseNotification(object):
     def __init__(self, obj):

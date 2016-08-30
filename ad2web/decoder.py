@@ -106,6 +106,7 @@ class Decoder(object):
             self._notifier_system = None
             self._internal_address_mask = 0xFFFFFFFF
             self.last_message_received = None
+            self.notify_wait_list = []
 
     @property
     def internal_address_mask(self):
