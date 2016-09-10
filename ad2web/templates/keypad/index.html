@@ -403,6 +403,14 @@
                         }
                     }
                 }
+                if( msg.message_type == 'rfx') {
+                    if( msg.battery == true) {
+                        str = msg.serial_number + ' Low Battery';
+                        $('#keypad-line2').css("color", "black");
+                        $('#keypad-line2').css("visibility", "visible");
+                        $('#keypad-line2').html(str);
+                    }
+                }
             });
 
 //lets make the buttons animate when we use keyboard
