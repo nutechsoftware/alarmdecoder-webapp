@@ -51,7 +51,9 @@
 <body>
     {% include "macros/_ask_user_to_update_ie.html" %}
 
+{% block topwrap %}
     <div id='wrap'>
+{% endblock %}
         {% block topbar %}
         <div class="navbar">
             <div class="navbar-inner">
@@ -129,8 +131,11 @@
         </div>
         {% endblock %}
         <div id="push"></div>
+{% block bottomwrap %}
     </div>
+{% endblock %}
 
+{% block footer %}
     <footer id="footer">
         <ul class="footer-links">
             <li>© 2014</li>
@@ -144,6 +149,7 @@
             <li class="muted">v{{ version }}</li>
         </ul>
     </footer>
+{% endblock %}
 
     {% block perm_js %}
     <script src="{{ url_for('static', filename='js/vendor/jquery-2.0.3.min.js') }}"></script>
