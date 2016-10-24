@@ -47,3 +47,52 @@ body {
 
 .some-gutter {
 }
+
+.blink {
+    color: red !important;
+}
+.half_keypad-button { 
+  color: #050505; 
+  background-color: #D4D0D9; 
+  border-color: #130269; 
+} 
+ 
+.half_keypad-button:hover, 
+.half_keypad-button:focus, 
+.half_keypad-button:active, 
+.half_keypad-button.active, 
+.open .dropdown-toggle.half_keypad-button { 
+  color: #050505; 
+  background-color: #3A8FE6; 
+  border-color: #130269; 
+} 
+ 
+.half_keypad-button:active, 
+.half_keypad-button.active, 
+.open .dropdown-toggle.half_keypad-button { 
+  background-image: none; 
+} 
+ 
+.half_keypad-button.disabled, 
+.half_keypad-button[disabled], 
+fieldset[disabled] .half_keypad-button, 
+.half_keypad-button.disabled:hover, 
+.half_keypad-button[disabled]:hover, 
+fieldset[disabled] .half_keypad-button:hover, 
+.half_keypad-button.disabled:focus, 
+.half_keypad-button[disabled]:focus, 
+fieldset[disabled] .half_keypad-button:focus, 
+.half_keypad-button.disabled:active, 
+.half_keypad-button[disabled]:active, 
+fieldset[disabled] .half_keypad-button:active, 
+.half_keypad-button.disabled.active, 
+.half_keypad-button[disabled].active, 
+fieldset[disabled] .half_keypad-button.active { 
+  background-color: #D4D0D9; 
+  border-color: #130269; 
+} 
+ 
+.half_keypad-button .badge { 
+  color: #D4D0D9; 
+  background-color: #050505; 
+}

@@ -248,7 +248,7 @@
                     mute = parseInt(checkmute);
 
                 if( mute == 1 )
-                    $('#check-mute').bootstrapToggle('of');
+                    $('#check-mute').bootstrapToggle('off');
                 else
                     $('#check-mute').bootstrapToggle('on');
             }
@@ -831,7 +831,7 @@
         <br/>
         <div class="container">
             <div id="custom-button-row">
-                <input type="button" id="custom_buttons" name="custom_buttons" value="Custom Buttons"/>
+                <button class="btn half_keypad-button" id="custom_buttons" name="custom_buttons">Custom Buttons</button>
             </div>
         </div>
     {% endif %}

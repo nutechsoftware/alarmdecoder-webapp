@@ -4,21 +4,8 @@
 
 {% extends "layouts/base.html" %}
 
-{% block permanent_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap3/css/bootstrap.min.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.toggle.min.css') }}">
-{% endblock %}
-
-{% block perm_js %}
-<script src="{{ url_for('static', filename='js/vendor/jquery-2.0.3.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/plugins.js') }}"></script>
-<script src="{{ url_for('static', filename='bootstrap3/js/bootstrap.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/mobile-detect.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/mobile-detect-modernizr.js') }}"></script>
-{% endblock %}
 {% block css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_keypad.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dsc_keypad.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
 {% endblock %}
 {% block pagejs %}
@@ -93,7 +80,14 @@
         function bindMouseDown(id, key, mobile_image, desktop_image )
         {
             $(id).on('mousedown', function() {
-                $(this).attr("src", desktop_image );
+                if( mobile )
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
                 if( !tablet && !mobile )
                     decoder.emit('keypress', String(key));
             });
@@ -103,7 +97,14 @@
         function bindTouchStart(id, key, mobile_image, desktop_image )
         {
             $(id).on('touchstart', function() {
-                $(this).attr("src", desktop_image );
+                if( mobile)
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
                 decoder.emit('keypress', String(key));
             });
         }
@@ -111,7 +112,15 @@
         function bindMouseUpTouchEnd(id, mobile_image, desktop_image )
         {
             $(id).on('mouseup touchend', function() {
-                $(this).attr("src", desktop_image );
+                if( mobile )
+                {
+                    $(this).attr("src", mobile_image );
+                }
+                else
+                {
+                    $(this).attr("src", desktop_image );
+                }
+
             });
         }
 
@@ -214,32 +223,53 @@
             mobile = isMobile();
             tablet = isTablet();
 
-            $('#check-mute').bootstrapToggle();
             $(function() {
                 FastClick.attach(document.body);
             });
             //preload led images
             preloadImages(ledImages);
 
-            preloadImages(buttonImageListLarge);
+            //if mobile only preload small images, otherwise large
+            if( mobile )
+            {
+                preloadImages(buttonImageListSmall);
+            }
+            else
+            {
+                preloadImages(buttonImageListLarge);
+            }
 
             //set image sources for buttons after preloaded
-            $('#button-0').attr("src", buttonImageListLarge[1]);
-            $('#button-1').attr("src", buttonImageListLarge[3]);
-            $('#button-2').attr("src", buttonImageListLarge[5]);
-            $('#button-3').attr("src", buttonImageListLarge[7]);
-            $('#button-4').attr("src", buttonImageListLarge[9]);
-            $('#button-5').attr("src", buttonImageListLarge[11]);
-            $('#button-6').attr("src", buttonImageListLarge[13]);
-            $('#button-7').attr("src", buttonImageListLarge[15]);
-            $('#button-8').attr("src", buttonImageListLarge[17]);
-            $('#button-9').attr("src", buttonImageListLarge[19]);
-            $('#button-star').attr("src", buttonImageListLarge[21]);
-            $('#button-pound').attr("src", buttonImageListLarge[23]);
-            $('#button-F1').attr("src", buttonImageListSmall[25]);
-            $('#button-F2').attr("src", buttonImageListSmall[27]);
-            $('#button-F3').attr("src", buttonImageListSmall[29]);
-            $('#button-F4').attr("src", buttonImageListSmall[31]);
+            if( mobile )
+            {
+                $('#button-0').attr("src", buttonImageListSmall[1]);
+                $('#button-1').attr("src", buttonImageListSmall[3]);
+                $('#button-2').attr("src", buttonImageListSmall[5]);
+                $('#button-3').attr("src", buttonImageListSmall[7]);
+                $('#button-4').attr("src", buttonImageListSmall[9]);
+                $('#button-5').attr("src", buttonImageListSmall[11]);
+                $('#button-6').attr("src", buttonImageListSmall[13]);
+                $('#button-7').attr("src", buttonImageListSmall[15]);
+                $('#button-8').attr("src", buttonImageListSmall[17]);
+                $('#button-9').attr("src", buttonImageListSmall[19]);
+                $('#button-star').attr("src", buttonImageListSmall[21]);
+                $('#button-pound').attr("src", buttonImageListSmall[23]);
+            }
+            else
+            {
+                $('#button-0').attr("src", buttonImageListLarge[1]);
+                $('#button-1').attr("src", buttonImageListLarge[3]);
+                $('#button-2').attr("src", buttonImageListLarge[5]);
+                $('#button-3').attr("src", buttonImageListLarge[7]);
+                $('#button-4').attr("src", buttonImageListLarge[9]);
+                $('#button-5').attr("src", buttonImageListLarge[11]);
+                $('#button-6').attr("src", buttonImageListLarge[13]);
+                $('#button-7').attr("src", buttonImageListLarge[15]);
+                $('#button-8').attr("src", buttonImageListLarge[17]);
+                $('#button-9').attr("src", buttonImageListLarge[19]);
+                $('#button-star').attr("src", buttonImageListLarge[21]);
+                $('#button-pound').attr("src", buttonImageListLarge[23]);
+            }
 
             //check to see if we're going to play sounds or not if we've set the checkbox
             if( storageSupported() )
@@ -248,9 +278,9 @@
                     mute = parseInt(checkmute);
 
                 if( mute == 1 )
-                    $('#check-mute').bootstrapToggle('off');
+                    $('#check-mute').prop('checked', true);
                 else
-                    $('#check-mute').bootstrapToggle('on');
+                    $('#check-mute').prop('checked', false);
             }
             //handle messages from the AlarmDecoder
             PubSub.subscribe('message', function(type, msg) {
@@ -376,11 +406,11 @@
                     }
                     if( chime )
                     {
-                        $('#chime-image1').attr("src", "{{ url_for('static', filename='img/chime.png') }}");
+                        $('#chime-image1').show();
                     }
                     else
                     {
-                        $('#chime-image1').attr("src", "{{ url_for('static', filename='img/chime-off.png') }}" );
+                        $('#chime-image1').hide();
                     }
                 }
             });
@@ -474,7 +504,7 @@
                     $('#button-F1').trigger('mousedown');
                     
                     $.confirm({
-                        content: "Are you sure?",
+                        text: "Are you sure?",
                         title: "Call the Fire Department",
                         confirm: function(button) {
                             add_flash_message("Fire Department notified.", "error");
@@ -491,7 +521,7 @@
                 {
                     $('#button-F2').trigger('mousedown');
                     $.confirm({
-                        content: "Are you sure?",
+                        text: "Are you sure?",
                         title: "Call the Police Department",
                         confirm: function(button) {
                             add_flash_message("Police Department notified.", "error");
@@ -508,7 +538,7 @@
                 {
                     $('#button-F3').trigger('mousedown');
                     $.confirm({
-                        content: "Are you sure?",
+                        text: "Are you sure?",
                         title: "Call the Medics",
                         confirm: function(button) {
                             add_flash_message("Medical Help notified.", "error");
@@ -525,7 +555,7 @@
                 {
                     $('#button-F4').trigger('mousedown');
                     $.confirm({
-                        content: "Are you sure?",
+                        text: "Are you sure?",
                         title: "Confirmation required",
                         confirm: function(button) {
                             add_flash_message("Notification sent.", "error");
@@ -658,7 +688,7 @@
 
 //set up confirmations for F1-F4
             $("#button-F1").confirm({
-                content: "Are you sure?",
+                text: "Are you sure?",
                 title: "Call the Fire Department",
                 confirm: function(button) {
                     add_flash_message("Fire Department notified.", "error");
@@ -672,7 +702,7 @@
             });
 
             $("#button-F2").confirm({
-                content: "Are you sure?",
+                text: "Are you sure?",
                 title: "Call the Police Department",
                 confirm: function(button) {
                     add_flash_message("Police Department notified.", "error");
@@ -686,7 +716,7 @@
             });
 
             $("#button-F3").confirm({
-                content: "Are you sure?",
+                text: "Are you sure?",
                 title: "Call the Medics",
                 confirm: function(button) {
                     add_flash_message("Medical Help notified.", "error");
@@ -700,7 +730,7 @@
             });
 
             $("#button-F4").confirm({
-                content: "Are you sure?",
+                text: "Are you sure?",
                 title: "Confirmation required",
                 confirm: function(button) {
                     add_flash_message("Notification sent.", "error");
@@ -714,38 +744,92 @@
             });
 
 	        $('#button-F1').on('mousedown', function() {
-                $(this).attr("src", buttonImageListSmall[24]);
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[24] + ") no-repeat 65% center");
+                }
+                else
+                {
+            		$(this).css('background', "url(" + buttonImageListLarge[24] + ") no-repeat 65% center");
+                }
     	    });
             $('#button-F1').on('mouseup', function() {
-                $(this).attr("src", buttonImageListSmall[25]);
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[25] + ") no-repeat 65% center");
+                }
+                else
+                {
+    	        	$(this).css('background', "url(" + buttonImageListLarge[25] + ") no-repeat 65% center");
+                }
             });
             $('#button-F2').on('mousedown', function() {
-                $(this).attr("src", buttonImageListSmall[26] );
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[26] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[26] + ") no-repeat 65% center");
+                }
             });
             $('#button-F2').on('mouseup', function() {
-                $(this).attr("src", buttonImageListSmall[27] );
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[27] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[27] + ") no-repeat 65% center");
+                }
             });
             $('#button-F3').on('mousedown', function() {
-                $(this).attr("src", buttonImageListSmall[28]);
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[28] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[28] + ") no-repeat 65% center");
+                }
             });
             $('#button-F3').on('mouseup', function() {
-                $(this).attr("src", buttonImageListSmall[29]);
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[29] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[29] + ") no-repeat 65% center");
+                }
             });
             $('#button-F4').on('mousedown', function() {
-                $(this).attr("src", buttonImageListSmall[30]);
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[30] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[30] + ") no-repeat 65% center");
+                }
             });
             $('#button-F4').on('mouseup', function() {
-                $(this).attr("src", buttonImageListSmall[31]);
+                if( mobile )
+                {
+                    $(this).css('background', "url(" + buttonImageListSmall[31] + ") no-repeat 65% center");
+                }
+                else
+                {
+                    $(this).css('background', "url(" + buttonImageListLarge[31] + ") no-repeat 65% center");
+                }
             });
 
             if( isiPad || isiPhone )
             {
                 $('#mute-row').css('display', 'none');
             }
-            $('#check-mute').change(function() {
-                var toggled = $(this).prop('checked');
-
-                if( toggled == false )
+            $('#check-mute').on("click", function() {
+                if( $(this).is(':checked') )
                     mute = 1;
                 else
                     mute = 0;
@@ -758,189 +842,67 @@
     </script>
 {% endblock %}
 
-{% block topwrap %}
-{% endblock %}
-
-{% block bottomwrap %}
-{% endblock %}
-
-{% block topbar %}
-    <nav class="navbar navbar-default navbar-static-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="brand" href="{{ url_for('frontend.index') }}"><img src="{{ url_for('static', filename='img/logo.png') }}"/></a>
-            </div> <!-- /.navbar-header -->
-            <div id="navbar" class="navbar-collapse collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    {% if user_is_authenticated(current_user) %}
-                    {% if update_available and current_user.is_admin() %}
-                    <li><a href="{{ url_for('update.index') }}" style="color: #86D47F;">Update Available!</a></li>
-                    {% endif %}
-                    <li><a href="{{ url_for('keypad.index') }}">Keypad</a></li>
-                    {% if cameras is defined and cameras != 0 %}
-                    <li><a href="{{ url_for('cameras.index') }}">Cameras</a></li>
-                    {% endif %}
-                    <li><a href="{{ url_for('log.events') }}">Log</a></li>
-                    <li><a href="{{ url_for('settings.index') }}">Settings</a></li>
-                    <li><a href="{{ url_for('frontend.logout') }}">Log out</a></li>
-                    {% else %}
-                    <li><a href="{{ url_for('frontend.login') }}">Sign in</a></li>
-                    {% endif %}
-                </ul>
-            </div> <!-- /.navbar-collapse -->
-        </div> <!-- /.container -->
-    </nav>
-{% endblock %}
-{% block container %}
-<div class="container" style="-webkit-user-select: none; user-select: none; -moz-user-select: none;">
-    <div class="row no-gutter">
-        <div class="col-xs-12 col-sm-12 text-center"><div id="keypad-line1">Please Wait</div></div>
-        <div class="col-xs-12 col-sm-12 text-center"><div id="keypad-line2">Loading...</div></div>
-        <div class="col-sm-12 text-center">
-            <hr>
-            <div id="status-indicator">
-                <div class="row some-gutter">
-                    <div class="col-sm-4 col-xs-4"></div>
-                    <div class="col-sm-4 col-xs-4">
-                        <div class="row some-gutter">
-                            <div class="col-xs-3 col-sm-3 some-gutter">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
-                            <div class="col-xs-3 col-sm-3 some-gutter">Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
-                            <div class="col-xs-3 col-sm-3 some-gutter">Chime: <img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" width="40px" height="30px" alt="chime enabled"/></div>
-                            <div class="col-xs-3 col-sm-3 some-gutter" id="mute-row">Sounds: <input type="checkbox" name="check-mute" data-size="small" id="check-mute"/></div>
-                        </div>
-                    </div>
-                </div>
-            </div> <!-- /#status-indicator -->
-            <hr>
-            <div id="keypad-buttons">
-                <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4 no-gutter"><span style="float: right;"><button id="button-left" class="btn btn-sm half_keypad-button">&larr;</button>&nbsp;<button id="button-right" class="btn btn-sm half_keypad-button">&rarr;</button></span></div>
-                    <div class="col-sm-4 col-xs-4 no-gutter">
-                        <div class="row no-gutter">
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-1" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-2" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-3" class="keypad-button img-responsive"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4 col-xs-4">
-                        <span style="float: left;"><button id="button-stay" class="btn btn-sm half_keypad-button">Stay</button></span>
-                    </div>
-                </div>
-                <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4 no-gutter"><span style="float: right;"><img id="button-F1" class="keypad-button img-responsive"/></span></div>
-                    <div class="col-sm-4 col-xs-4 no-gutter">
-                        <div class="row no-gutter">
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-4" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-5" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-6" class="keypad-button img-responsive"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4 col-xs-4"><span style="float: left;">
-                        <button id="button-away" class="btn btn-sm half_keypad-button">Away</button></span>
-                    </div>
-                </div>
-                <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4 no-gutter"><span style="float: right;"><img id="button-F2" class="keypad-button img-responsive"/></span></div>
-                    <div class="col-sm-4 col-xs-4 no-gutter">
-                        <div class="row no-gutter">
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-7" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-8" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-9" class="keypad-button img-responsive"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4 col-xs-4">
-                        <span style="float: left;">
-                            <button id="button-chime" class="btn btn-sm half_keypad-button">Chime</button>
-                        </span>
-                    </div>
-                </div>
-                <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4 no-gutter"><span style="float: right;"><img id="button-F3" class="keypad-button img-responsive"/></span></div>
-                    <div class="col-sm-4 col-xs-4 no-gutter">
-                        <div class="row no-gutter">
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-star" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-0" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-pound" class="keypad-button img-responsive"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4 col-xs-4">
-                        <span style="float: left;">
-                            <button id="button-reset" class="btn btn-sm half_keypad-button">Reset</button>
-                        </span>
-                    </div>
-                </div>
-            </div>
+{% block body %}
+<div style="-webkit-user-select: none; user-select: none; -moz-user-select: none;">
+    <div id="keypad-line1">Please Wait</div>
+    <div id="keypad-line2">Loading...</div>
+    <hr>
+    <div id="status-indicator">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"> Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}">{% if cameras is defined and cameras != 0 %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('cameras.index') }}"><img id="security_cam" src="{{ url_for('static', filename='img/surveillance_camera.png') }}" width="40px" height="30px"></a>{% endif %}<img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" width="40px" height="30px" style="visibility: hidden;" alt="chime enabled"/></div>
+    <div id="keypad-buttons">
+        <div id="keypad-button-row">
+            <!-- Arrow Keys -->
+            <input id="button-left" class="half_keypad-button_arrow" type="button" value="<" style="visibility: hidden"></input>
+            <input id="button-right" class="half_keypad-button_arrow" type="button" value=">" style="visibility: hidden"></input>
+            <!-- Normal Keys -->
+            <img id="button-1" class="keypad-button"/>
+            <img id="button-2" class="keypad-button"/>
+            <img id="button-3" class="keypad-button"/>
+            <input id="button-stay" class="half_keypad-button" type="button" value="Stay"></input>
         </div>
-    </div>
-</div>
+        <div id="keypad-button-row">
+            <input id="button-F1" class="keypad-button" type="button" value="" class="confirmF1"></input>
+            <img id="button-4" class="keypad-button"/>
+            <img id="button-5" class="keypad-button"/>
+            <img id="button-6" class="keypad-button"/>
+            <input id="button-away" class="half_keypad-button" type="button" value="Away"></input>
+        </div>
+        <div id="keypad-button-row">
+            <input id="button-F3" class="keypad-button" type="button" value="" class="confirmF3"></input>
+            <img id="button-7" class="keypad-button"/>
+            <img id="button-8" class="keypad-button"/>
+            <img id="button-9" class="keypad-button"/>
+            <input id="button-chime" class="half_keypad-button" type="button" value="Chime"></input>
+        </div>
+        <div id="keypad-button-row">
+            <input id="button-F2" class="keypad-button" type="button" value="" class="confirmF2"></input>
+            <img id="button-star" class="keypad-button"/>
+            <img id="button-0" class="keypad-button"/>
+            <img id="button-pound" class="keypad-button"/>
+            <input id="button-reset" class="half_keypad-button" type="button" value="Reset"></input>
+        </div>
+        <div id="keypad-button-row1">
+            <input id="button-exit" class="half_keypad-button" type="button" value="Exit" style="display: none;"></input>
+        </div>
+        <div id="mute-row">
+            <input type="checkbox" id="check-mute" name="check-mute"/><label for="check-mute" id="check-mute-label">Mute Sounds</label>
+        </div>
     {% if buttons %}
+        <br/>
         <div id="dialog" style="display: none;" title="Custom Buttons">
             <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" height="24" width="24"/><br/><br/>
         {% for button in buttons%}
             <input id="custom_{{button.button_id}}" class="custom_button" type="button" value="{{button.label}}"></input>
         {% endfor%}
         </div>
-<div class="container">
         <div id="custom-button-row">
-            <button class="btn half_keypad-button" id="custom_buttons" name="custom_buttons">Custom Buttons</button>
+            <input type="button" id="custom_buttons" name="custom_buttons" value="Custom Buttons"/>
         </div>
-</div>
     {% endif %}
     </div>
 </div>
 {% endblock %}
 
-{% block footer %}
-<footer class="footer" id="footer">
-    <div class="container text-center">
-        <ul>
-            <li>&copy; 2014</li>
-            <li class="text-muted">&middot;</li>
-            <li><a href="https://www.alarmdecoder.com/">AlarmDecoder</a></li>
-            <li class="text-muted">&middot;</li>
-            <li><a href="{{ url_for('frontend.help') }}">Help</a></li>
-            <li class="text-muted">&middot;</li>
-            <li><a href="{{ url_for('frontend.license') }}">Terms</a></li>
-            <li class="text-muted">&middot;</li>
-            <li class="text-muted">v{{ version }}</li>
-        </ul>
-    </div>
-</footer>
-{% endblock %}
-
-
 {% block js_btm %}
 <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/jquery-confirm.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/bootstrap-toggle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
 {% endblock %}
