@@ -578,7 +578,8 @@
             bindButtonEvents('#button-chime', 'c', '', '', '', '');
             bindButtonEvents('#button-reset', 'r', '', '', '', '');
             bindButtonEvents('#button-exit',  'e', '', '', '', '');
-
+            bindButtonEvents('#button-left',  '+', '', '', '', '');
+            bindButtonEvents('#button-right', '-', '', '', '', '');
 //custom buttons
             {% if buttons %}
                 $("#exit").on('mousedown', function() {
