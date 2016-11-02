@@ -102,6 +102,8 @@
                     this.fnAdjustColumnSizing();
                 },
             });
+            var tt = new $.fn.dataTable.TableTools(oTable, { "sSwfPath": "{{ url_for('static', filename='copy_csv_xls_pdf.swf')}}"});
+            $(tt.fnContainer() ).insertBefore('div.dataTables_wrapper');
             $('#clearbutton').on('click', function() {
                 $.confirm({
                     content: "Are you sure?",
