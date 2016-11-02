@@ -5,6 +5,7 @@
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.tableTools.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}">
 {% endblock %}
 
 {% block pagejs %}
@@ -57,18 +58,17 @@
                                 ],
                     "sSwfPath": "{{ url_for('static', filename='copy_csv_xls_pdf.swf') }}",
                 },
+                responsive: true,
+                pagingType: "full_numbers",
                 "bSort": false,
                 "bStateSave": true,
                 "iCookieDuration": 60*60*24,
-                "bJQueryUI": true,
                 "bServerSide": true,
                 "bProcessing": true,
                 "columns":  [
                     {"type": "date" },
                 ],
                 "sAjaxSource": "/log/retrieve_events_paging_data",
-                "sPaginationType": "full_numbers",
-                "sDom" : 'T<"H"lr>t<"F"fip>',
                 "aaSorting": [[0, "desc" ]],
                 "oLanguage": {
                     "sInfoFiltered": "",
@@ -79,8 +79,8 @@
                     "sProcessing": "",
                 },
                 "aoColumns": [
-                    {"sWidth": "20%", "fnRender": RenderDateLocal },
-                    {"sWidth": "15%" },
+                    {"fnRender": RenderDateLocal },
+                    null,
                     null
                 ],
                 "fnInitComplete": function() {
@@ -93,7 +93,7 @@
             });
             $('#clearbutton').on('click', function() {
                 $.confirm({
-                    text: "Are you sure?",
+                    content: "Are you sure?",
                     title: "Clear Event Log",
                     confirm: function(button) {
                         $.ajax({
@@ -116,7 +116,7 @@
 <div id="data">
     <div id="loading"></div>
     <div id="datatable" style="display: none;">
-        <table id="events-table" cellpadding="3" cellspacing="0" border="1" class="display table-hover" bordercolor="EEEEEE">
+        <table id="events-table" class="table table-striped table-bordered dt-responsive nowrap" width="100%" cellspacing="0">
             <thead>
                 <tr>
                     <th>Timestamp</th>
@@ -140,9 +140,9 @@
 
 {% block js_btm %}
 <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/datatables.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/dataTables.tableTools.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery-confirm.min.js') }}"></script>
 {% endblock %}

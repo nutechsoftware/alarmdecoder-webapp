@@ -3,7 +3,8 @@
 {% extends 'settings/layout.html' %}
 
 {% block css %}
- <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css')}}"/>
 {% endblock %}
 
 {% block pagejs %}
@@ -18,31 +19,27 @@
         }
         $('#loading').spin('flower');
         $('#notifications-table').dataTable({
-            "bJQueryUI":true,
-            "bStateSave": true,
-            "iCookieDuration": 60*60*24,
-            "sPaginationType": "full_numbers",
-            "sDom" : '<"H"lr>t<"F"fip>',
-            "oLanguage": {
-                "sInfoFiltered": "",
-                "sInfo": "_START_ to _END_ of _TOTAL_",
-                "sInfoEmpty": "No Results",
-                "sEmptyTable": " ",
+            responsive: true,
+            stateSave: true,
+            stateDuration: 60 * 60 * 24,  //1 day
+            pagingType: "full_numbers",
+            language: {
+                infoEmpty: "No Results",
+                infoFiltered: "",
+                emptyTable: " ",
+                info: "_START_ to _END_ of _TOTAL_",
             },
-            "aoColumns": [
-                { "sWidth": "15%" },
-                { "sWidth": "15%" },
+            columns: [
+                { "width": "15%" },
+                { "width": "15%" },
                 null,
-                { "sWidth": "15%" },
+                { "width": "15%" },
             ],
-            "fnInitComplete": function() {
+            initComplete: function() {
                 $('#loading').stop();
                 $('#loading').hide();
                 $('#clear').css('display', 'inline-block');
-                $('#datatable').show();
-                this.fnAdjustColumnSizing();
             },
-
         });
     });
 </script>
@@ -51,8 +48,8 @@
 {% block body %}
 <div class="settings_wrapper">
     <div id="loading"></div>
-    <div id="datatable" style="display: none;">
-        <table id="notifications-table" class="display table-hover" border="1" cellpadding="3" bordercolor="EEEEEE">
+    <div id="datatable" style="">
+        <table id="notifications-table" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0">
             <thead>
                 <tr>
                     <th>Type</th>
@@ -70,21 +67,21 @@
                     <td>
                         <a href="{{ url_for('notifications.edit', id=notification.id) }}">{{ notification.description }}</a>
                     </td>
-                    <td>
+                    <td style="text-align: center;">
                         {% if notification.enabled == 1 %}
                             <a href="{{ url_for('notifications.toggle_notification', id=notification.id) }}">
-                                <span style="color:green; text-align: center; font-size: x-large; float: right; margin-right: 20px;" title="Disable">&#10004;&nbsp;</span>
-                            </a>
+                                <span style="color:green; font-size: large; text-decoration: none;" title="Disable">&#10004;&nbsp;</span>
+                            </a>&nbsp;&nbsp;
                         {% else %}
                             <a href="{{ url_for('notifications.toggle_notification', id=notification.id) }}">
-                                <span style="color: red; text-align: center; font-size: x-large; float: right; margin-right: 20px;" title="Enable">&#10004;&nbsp;</span>
-                            </a>
+                                <span style="color: red; height: 18px; width: 20px;" title="Enable">&#10004;&nbsp;</span>
+                            </a>&nbsp;&nbsp;
                         {% endif %}
                         <a href="{{ url_for('notifications.copy_notification', id=notification.id) }}">
-                            <img style="height: 18px; width: 20px; text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/copy.png') }}" alt="Copy" title="Copy"/>
-                        </a>
+                            <img style="height: 18px; width: 20px;" src="{{ url_for('static', filename='img/copy.png') }}" alt="Copy" title="Copy"/>
+                        </a>&nbsp;&nbsp;
                         <a href="{{ url_for('notifications.remove', id=notification.id) }}">
-                            <img style="text-align: center; float: right; margin-right: 15px;" src="{{ url_for('static', filename='img/red_x.png') }}" alt="Remove" title="Remove"/>
+                            <img src="{{ url_for('static', filename='img/red_x.png') }}" alt="Remove" title="Remove"/>
                         </a>
                     </td>
                 </tr>
@@ -101,7 +98,7 @@
 
 {% block js_btm %}
 <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/datatables.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
 {% endblock %}

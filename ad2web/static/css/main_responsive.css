@@ -1,0 +1,188 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+body {
+    padding-bottom: 60px;
+    margin-bottom: 60px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #f5f5f5;
+}
+
+#footer ul {
+    margin-top: 20px;
+    list-style-type: none;
+}
+#footer ul li { display: inline; }
+
+#data {
+    margin-top: 5px;
+}
+
+.settings_wrapper {
+    margin-top: 5px;
+}
+
+.form-actions {
+    padding: 0;
+    background-color: #fff;
+    border-top: none;
+    background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
+    background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
+    margin-top: 10px;
+}
+
+form.form-box {
+    background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
+    background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0,0,0,0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+
+#faq_accordion>div {
+    background: -webkit-linear-gradient(left, #CCCCCC, #EEEEEE) !important;
+    background: -moz-linear-gradient(left, #CCCCCC, #EEEEEE);
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+
+.ui-accordion-header {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    border: 1px solid #999;
+    border: inset 1px solid #333;
+    -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3 );
+}
+.ui-accordion-header.ui-state-active {
+    background: -webkit-linear-gradient(left, #CCCCCC, #337FD6);
+    background: -moz-linear-gradient(left, #CCCCCC, #337FD6);
+}
+
+div#buttons {
+    margin-top: 30px;
+}
+
+div#buttons, div#buttons > div > span {
+    margin-bottom: 0;
+}
+
+.radio {
+    margin: 15px !important;
+    display: inline !important;
+    padding: 5px !important;
+}
+
+.control-group {
+    margin-top: 5px;
+}
+
+span#buttons-cancel-group, span#cancel-group {
+    margin-top: 5px;
+    float: left;
+    margin-bottom: 0;
+}
+
+span#buttons-submit-group, span#submit-group {
+    margin-top: 5px;
+    float: right;
+    margin-bottom: 0;
+}
+
+span#buttons-test-group, span#test-group {
+    float: right;
+    margin-bottom: 0;
+    margin-right: 5px;
+}
+
+span#buttons-previous-group, span#previous-group {
+    float: left;
+    margin-bottom: 0;
+}
+
+span#buttons-next-group, span#next-grou, span#next-group {
+    float: right;
+    margin-bottom: 0;
+}
+
+div#buttons {
+    margin-top: 30px;
+}
+
+div#buttons, div#buttons > div > span {
+    margin-bottom: 0;
+}
+
+div#subscriptions ul {
+    list-style-type: none;
+}
+
+div#subscriptions input {
+    float: left;
+    margin-right: 10px;
+}
+
+div#subscriptions span {
+    display: block;
+    overflow: hidden;
+}
+
+div#subscriptions span label {
+    float: right;
+    width: 100%;
+}
+
+label.checkbox {
+    margin-left: 25px;
+}
+
+div#zone_expanders ul, div#relay_expanders ul {
+    list-style-type: none;
+}
+
+div#zone_expanders input, div#relay_expanders input {
+    float: left;
+}
+
+div#zone_expanders span, div#relay_expanders span {
+    display: block;
+    overflow: hidden;
+}
+
+div#zone_expanders span label, div#relay_expanders span label {
+    float: right;
+    width: 100%;
+}
+
+table#test_results td.test-description {
+    width: 30%;
+}
+
+table#test_results td.test-results {
+    width: 5%;
+}
+
+table#test_results td.details {
+    width: 65%;
+}

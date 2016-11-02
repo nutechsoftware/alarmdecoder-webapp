@@ -14,28 +14,21 @@
         }
         $('#loading').spin('flower');
         $('#notifications-table').dataTable({
-            "bJQueryUI":true,
-            "bStateSave": true,
-            "iCookieDuration": 60*60*24,
-            "sPaginationType": "full_numbers",
-            "sDom" : '<"H"lr>t<"F"fip>',
-            "oLanguage": {
-                "sInfoFiltered": "",
-                "sInfo": "_START_ to _END_ of _TOTAL_",
-                "sInfoEmpty": "No Results",
-                "sEmptyTable": " ",
+            responsive: true,
+            stateSave: true,
+            stateDuration: 60*60*24,
+            pagingType: "full_numbers",
+            language: {
+                infoFiltered: "",
+                info: "_START_ to _END_ of _TOTAL_",
+                infoEmpty: "No Results",
+                emptyTable: " ",
             },
-            "aoColumns": [
-                { "sWidth": "15%" },
-                null,
-                { "sWidth": "10%" },
-            ],
-            "fnInitComplete": function() {
+            initComplete: function() {
                 $('#loading').stop();
                 $('#loading').hide();
                 $('#clear').css('display', 'inline-block');
                 $('#datatable').show();
-                this.fnAdjustColumnSizing();
             },
 
         });
@@ -47,7 +40,7 @@
 <div class="settings_wrapper">
     <div id="loading"></div>
     <div id="datatable" style="display: none;">
-        <table id="notifications-table" class="display table-hover" border="1" cellpadding="3" bordercolor="EEEEEE">
+        <table id="notifications-table" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0">
             <thead>
                 <tr>
                     <th>Type</th>
