@@ -115,14 +115,36 @@
 <div class="settings_wrapper">
     <div id="import_list">
         <strong>Modules</strong>&nbsp;Here is a list of system used Python Modules.  If a module appears <font color="green">green</font> it is present.  If it appears <font color="red">red</font> then it is missing.  Missing modules might cause certain features to be unavailable.  We suggest installing all modules listed in the project requirements.txt.  Some modules such as <b>OpenCV</b> require more steps to install.<br/>
-        <button id="test_modules" class="btn-primary">Test Modules</button>&nbsp;&nbsp;&nbsp;<span style="display: inline-block;"><input type="checkbox" id="chk_showall" name="chk_showall"/><span style="margin-left: 5px !important; top: -15px !important;"><b>Show All</b></span></span><br/>
+        <button id="test_modules" class="btn btn-primary">Test Modules</button>&nbsp;&nbsp;&nbsp;<span style="display: inline-block;"><input type="checkbox" id="chk_showall" name="chk_showall"/><span style="margin-left: 5px !important; top: -15px !important;"><b>Show All</b></span></span><br/>
         <div id="loading"></div>
         <div id="import_list_detail" style="overflow-x: hidden; height: 270px !important;">
         </div>
     </div>
     <br/>
+    <div id="device_settings">
+        <h3>AlarmDecoder device settings:</h3>
+        <table id="decoder_settings" class="table table-striped table-bordered table-condensed table-responsive" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Address</th><th>Configbits</th><th>Address Mask</th><th>Emulate Zone Expander</th><th>Emulate Relay</th><th>Emulate LRR</th><th>Deduplicate Messages</th><th>Mode</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{settings['address']}}</td>
+                    <td>{{settings['configbits']}}</td>
+                    <td>{{settings['address_mask']}}</td>
+                    <td>{% for zexp in settings['emulate_zone'] %} {{zexp}} {% endfor %}</td>
+                    <td>{% for relay in settings['emulate_relay'] %} {{relay}} {% endfor %}</td>
+                    <td>{{settings['emulate_lrr']}}</td>
+                    <td>{{settings['deduplicate']}}</td>
+                    <td>{{settings['mode']}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
     <div id="decoder">
-        <strong><button id="test_decoder" class="btn-primary">Test Device</button></strong>
+        <strong><button id="test_decoder" class="btn btn-primary">Test Device</button></strong>
         <div id="decoder_detail" style="display:none;">
             <table id="test_results">
                 <tr id='test-open'>
