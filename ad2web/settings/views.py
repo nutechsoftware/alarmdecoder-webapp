@@ -654,6 +654,9 @@ def system_diagnostics():
     device_settings['emulate_relay'] = current_app.decoder.device.emulate_relay
     device_settings['emulate_lrr'] = current_app.decoder.device.emulate_lrr
     device_settings['deduplicate'] = current_app.decoder.device.deduplicate
+    device_settings['firmware'] = current_app.decoder.device.version_number
+    device_settings['serial'] = current_app.decoder.device.serial_number.upper()
+    device_settings['flags'] = current_app.decoder.device.version_flags
     mode = current_app.decoder.device.mode
 
     device_settings['mode'] = "ADEMCO"
