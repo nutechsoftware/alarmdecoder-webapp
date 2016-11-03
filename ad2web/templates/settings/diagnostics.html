@@ -124,21 +124,30 @@
     <div id="device_settings">
         <h3>AlarmDecoder device settings:</h3>
         <table id="decoder_settings" class="table table-striped table-bordered table-condensed table-responsive" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Address</th><th>Configbits</th><th>Address Mask</th><th>Emulate Zone Expander</th><th>Emulate Relay</th><th>Emulate LRR</th><th>Deduplicate Messages</th><th>Mode</th>
-                </tr>
-            </thead>
             <tbody>
                 <tr>
-                    <td>{{settings['address']}}</td>
-                    <td>{{settings['configbits']}}</td>
-                    <td>{{settings['address_mask']}}</td>
-                    <td>{% for zexp in settings['emulate_zone'] %} {{zexp}} {% endfor %}</td>
-                    <td>{% for relay in settings['emulate_relay'] %} {{relay}} {% endfor %}</td>
-                    <td>{{settings['emulate_lrr']}}</td>
-                    <td>{{settings['deduplicate']}}</td>
-                    <td>{{settings['mode']}}</td>
+                    <td width="20%">Address</td><td>{{settings['address']}}</td>
+                </tr>
+                <tr>
+                    <td>Configbits</td><td>{{settings['configbits']}}</td>
+                </tr>
+                <tr>
+                    <td>Address Mask</td><td>{{settings['address_mask']}}</td>
+                </tr>
+                <tr>
+                    <td>Zone Exander Emulation</td><td>{% for zexp in settings['emulate_zone'] %} {{zexp}} {% endfor %}</td>
+                </tr>
+                <tr>
+                    <td>Relay Emulation</td><td>{% for relay in settings['emulate_relay'] %} {{relay}} {% endfor %}</td>
+                </tr>
+                <tr>
+                    <td>LRR Emulation</td><td>{{settings['emulate_lrr']}}</td>
+                </tr>
+                <tr>
+                    <td>Deduplicate</td><td>{{settings['deduplicate']}}</td>
+                </tr>
+                <tr>
+                    <td>Panel Type</td><td>{{settings['mode']}}</td>
                 </tr>
             </tbody>
         </table>
