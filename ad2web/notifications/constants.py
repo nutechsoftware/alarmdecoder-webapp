@@ -88,19 +88,19 @@ NOTIFICATIONS = {
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
 
 SUBSCRIPTIONS = OrderedDict([
-    (ALARM, 'Alarm system is triggered?'),
-    (ALARM_RESTORED, 'Alarm system stops signaling?'),
-    (PANIC, 'A panic has been detected?'),
-    (FIRE, 'A fire is detected?'),
-    (ARM, 'Alarm system is armed?'),
-    (DISARM, 'Alarm system is disarmed?'),
-    (ZONE_FAULT, 'A zone has faulted?'),
-    (ZONE_RESTORE, 'A zone has been restored?'),
-    (BYPASS, 'A zone has been bypassed?'),
-    (POWER_CHANGED, 'Power status has changed?'),
-    (LOW_BATTERY, 'A low battery has been detected?'),
-    (BOOT, 'The AlarmDecoder has rebooted?'),
-    (RELAY_CHANGED, 'A relay has been changed?'),
+    (ALARM, 'Alarm system is triggered'),
+    (ALARM_RESTORED, 'Alarm system stops signaling'),
+    (PANIC, 'A panic has been detected'),
+    (FIRE, 'A fire is detected'),
+    (ARM, 'Alarm system is armed'),
+    (DISARM, 'Alarm system is disarmed'),
+    (ZONE_FAULT, 'A zone has faulted'),
+    (ZONE_RESTORE, 'A zone has been restored'),
+    (BYPASS, 'A zone has been bypassed'),
+    (POWER_CHANGED, 'Power status has changed'),
+    (LOW_BATTERY, 'A low battery has been detected'),
+    (BOOT, 'The AlarmDecoder has rebooted'),
+    (RELAY_CHANGED, 'A relay has been changed'),
 ])
 
 PUSHOVER_URL = "api.pushover.net:443"

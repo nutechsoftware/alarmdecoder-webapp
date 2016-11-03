@@ -21,7 +21,7 @@ except ImportError:
     have_twilio = False
 
 import time
-from datetime import datetime 
+from datetime import datetime
 
 from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element
@@ -65,7 +65,7 @@ from ..extensions import db
 from ..log.models import EventLogEntry
 from ..zones import Zone
 from ..utils import user_is_authenticated
-
+from .util import check_time_restriction
 
 class NotificationSystem(object):
     def __init__(self):
@@ -131,6 +131,7 @@ class NotificationSystem(object):
 
         return message
 
+
 class BaseNotification(object):
     def __init__(self, obj):
         if 'subscriptions' in obj.settings.keys():
@@ -143,6 +144,9 @@ class BaseNotification(object):
         else:
             self._zone_filters = []
 
+        self.starttime = obj.get_setting('starttime', default='00:00:00')
+        self.endtime = obj.get_setting('endtime', default='23:59:59')
+
     def subscribes_to(self, type, **kwargs):
         if type in self._subscriptions.keys():
             if type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
@@ -154,6 +158,7 @@ class BaseNotification(object):
             return True
 
         return False
+
 
 class LogNotification(object):
     def __init__(self):
@@ -172,6 +177,7 @@ class LogNotification(object):
         db.session.add(EventLogEntry(type=type, message=text))
         db.session.commit()
 
+
 class EmailNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
@@ -187,26 +193,13 @@ class EmailNotification(BaseNotification):
         self.authentication_required = obj.get_setting('authentication_required', default=False)
         self.username = obj.get_setting('username')
         self.password = obj.get_setting('password')
-        self.starttime = obj.get_setting('starttime')
-        self.endtime = obj.get_setting('endtime')
-
-        if self.starttime == '':
-            self.starttime = '0:00:00'
-
-        if self.endtime == '':
-            self.endtime = '23:59:59'
 
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
         text = text + " Message Sent at: " + message_timestamp
-        st=self.starttime.split(':')
-        et=self.endtime.split(':')
-        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
-        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
 
-        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
-
+        if check_time_restriction(self.starttime, self.endtime):
             msg = MIMEText(text)
 
             msg['Subject'] = self.subject
@@ -235,18 +228,13 @@ class GoogleTalkNotification(BaseNotification):
         self.password = obj.get_setting('password')
         self.destination = obj.get_setting('destination')
         self.client = None
-        self.starttime = obj.get_setting('starttime')
-        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
         self.msg_to_send = text + " Message Sent at: " + message_timestamp
-        st=self.starttime.split(':')
-        et=self.endtime.split(':')
-        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
-        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
-        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+
+        if check_time_restriction(self.starttime, self.endtime):
             self.client = sleekxmpp.ClientXMPP(self.source, self.password)
             self.client.add_event_handler("session_start", self._send)
 
@@ -260,6 +248,7 @@ class GoogleTalkNotification(BaseNotification):
         self.client.send_message(mto=self.destination, mbody=self.msg_to_send)
         self.client.disconnect(wait=True)
 
+
 class PushoverNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
@@ -270,18 +259,11 @@ class PushoverNotification(BaseNotification):
         self.user_key = obj.get_setting('user_key')
         self.priority = obj.get_setting('priority')
         self.title = obj.get_setting('title')
-        self.starttime = obj.get_setting('starttime')
-        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         self.msg_to_send = text
-        st=self.starttime.split(':')
-        et=self.endtime.split(':')
-        message_time=time.time()
-        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
-        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
-        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
 
+        if check_time_restriction(self.starttime, self.endtime):
             if not have_chump:
                 raise Exception('Missing Pushover library: chump')
 
@@ -322,17 +304,12 @@ class TwilioNotification(BaseNotification):
         self.auth_token = obj.get_setting('auth_token')
         self.number_to = obj.get_setting('number_to')
         self.number_from = obj.get_setting('number_from')
-        self.starttime = obj.get_setting('starttime')
-        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
-        st=self.starttime.split(':')
-        et=self.endtime.split(':')
-        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
-        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
-        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+
+        if check_time_restriction(self.starttime, self.endtime):
             self.msg_to_send = text + " Message Sent at: " + message_timestamp
 
             if have_twilio == False:
@@ -345,6 +322,7 @@ class TwilioNotification(BaseNotification):
                 current_app.logger.info('Event Twilio Notification Failed: {0}' . format(e))
                 raise Exception('Twilio Notification Failed: {0}' . format(e))
 
+
 class NMANotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
@@ -353,17 +331,12 @@ class NMANotification(BaseNotification):
         self.api_key = obj.get_setting('api_key')
         self.app_name = obj.get_setting('app_name')
         self.priority = obj.get_setting('nma_priority')
-        self.starttime = obj.get_setting('starttime')
-        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
-        st=self.starttime.split(':')
-        et=self.endtime.split(':')
-        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
-        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
-        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+
+        if check_time_restriction(self.starttime, self.endtime):
             self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
             self.event = NMA_EVENT.encode('utf8')
             self.content_type = NMA_CONTENT_TYPE
@@ -414,6 +387,7 @@ class NMANotification(BaseNotification):
                 current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(res['message']))
                 raise Exception(res['message'])
 
+
 class ProwlNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
@@ -428,17 +402,12 @@ class ProwlNotification(BaseNotification):
             'User-Agent': PROWL_USER_AGENT,
             'Content-type': PROWL_HEADER_CONTENT_TYPE
         }
-        self.starttime = obj.get_setting('starttime')
-        self.endtime = obj.get_setting('endtime')
 
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
-        st=self.starttime.split(':')
-        et=self.endtime.split(':')
-        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
-        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
-        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+
+        if check_time_restriction(self.starttime, self.endtime):
             self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
 
             notify_data = {
@@ -460,6 +429,7 @@ class ProwlNotification(BaseNotification):
                 current_app.logger.info('Event Prowl Notification Failed: {0}'. format(http_response.reason))
                 raise Exception('Prowl Notification Failed: {0}' . format(http_response.reason))
 
+
 class GrowlNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
@@ -469,8 +439,6 @@ class GrowlNotification(BaseNotification):
         self.hostname = obj.get_setting('growl_hostname')
         self.port = obj.get_setting('growl_port')
         self.password = obj.get_setting('growl_password')
-        self.starttime = obj.get_setting('starttime')
-        self.endtime = obj.get_setting('endtime')
 
         if self.password == '':
             self.password = None
@@ -487,15 +455,12 @@ class GrowlNotification(BaseNotification):
             )
         else:
             self.growl = None
-        
+
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
-        st=self.starttime.split(':')
-        et=self.endtime.split(':')
-        start_time = datetime.fromtimestamp(message_time).replace(hour=int(st[0]), minute=int(st[1]), second=int(st[2]), microsecond=0)
-        end_time = datetime.fromtimestamp(message_time).replace(hour=int(et[0]), minute=int(et[1]), second=int(et[2]), microsecond=0)
-        if start_time <= datetime.fromtimestamp(message_time) <= end_time:
+
+        if check_time_restriction(self.starttime, self.endtime):
             self.msg_to_send = text + " Message Sent at: " + message_timestamp
 
             if not have_gntp:
@@ -518,6 +483,7 @@ class GrowlNotification(BaseNotification):
                 current_app.logger.info('Event Growl Notification Failed: {0}' . format(growl_status))
                 raise Exception('Growl Notification Failed: {0}' . format(growl_status))
 
+
 class CustomNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
@@ -530,8 +496,6 @@ class CustomNotification(BaseNotification):
         self.custom_values = obj.get_setting('custom_values')
         self.content_type = CUSTOM_CONTENT_TYPES[self.post_type]
         self.method = obj.get_setting('method')
-        self.starttime = obj.get_setting('starttime')
-        self.endtime = obj.get_setting('endtime')
 
         self.headers = {
             'User-Agent': CUSTOM_USER_AGENT,
@@ -584,46 +548,47 @@ class CustomNotification(BaseNotification):
     def send(self, type, text):
         self.msg_to_send = text
 
-        notify_data = {}
-        if self.custom_values is not None:
-            if self.custom_values:
-                try:
-                    self.custom_values = ast.literal_eval(self.custom_values)
-                except ValueError:
-                    pass
-
-                notify_data = dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values)
-
         result = False
+        if check_time_restriction(self.starttime, self.endtime):
+            notify_data = {}
+            if self.custom_values is not None:
+                if self.custom_values:
+                    try:
+                        self.custom_values = ast.literal_eval(self.custom_values)
+                    except ValueError:
+                        pass
 
-        #replace placeholder values with actual values
-        if notify_data:
-            for key,val in notify_data.items():
-                if val == CUSTOM_REPLACER_SEARCH[CUSTOM_TIMESTAMP]:
-                    notify_data[key] = time.time()
-                if val == CUSTOM_REPLACER_SEARCH[CUSTOM_MESSAGE]:
-                    notify_data[key] = self.msg_to_send
+                    notify_data = dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values)
 
-        if self.method == CUSTOM_METHOD_POST:
-            if self.post_type == URLENCODE:
-               result =  self._do_post(urlencode(notify_data))
 
-            if self.post_type == XML:
-               result =  self._do_post(self._dict_to_xml('notification', notify_data))
+            #replace placeholder values with actual values
+            if notify_data:
+                for key,val in notify_data.items():
+                    if val == CUSTOM_REPLACER_SEARCH[CUSTOM_TIMESTAMP]:
+                        notify_data[key] = time.time()
+                    if val == CUSTOM_REPLACER_SEARCH[CUSTOM_MESSAGE]:
+                        notify_data[key] = self.msg_to_send
 
-            if self.post_type == JSON:
-                result = self._do_post(self._dict_to_json(notify_data) )
+            if self.method == CUSTOM_METHOD_POST:
+                if self.post_type == URLENCODE:
+                   result =  self._do_post(urlencode(notify_data))
 
-        if self.method == CUSTOM_METHOD_GET_TYPE:
-            if self.post_type == URLENCODE:
-                result = self._do_get(urlencode(notify_data))
+                if self.post_type == XML:
+                   result =  self._do_post(self._dict_to_xml('notification', notify_data))
 
-            #only allow urlencoding on GET requests
-            if self.post_type == XML:
-                return False
+                if self.post_type == JSON:
+                    result = self._do_post(self._dict_to_json(notify_data) )
 
-            if self.post_type == JSON:
-                return False
+            if self.method == CUSTOM_METHOD_GET_TYPE:
+                if self.post_type == URLENCODE:
+                    result = self._do_get(urlencode(notify_data))
+
+                #only allow urlencoding on GET requests
+                if self.post_type == XML:
+                    return False
+
+                if self.post_type == JSON:
+                    return False
 
         return result
 
