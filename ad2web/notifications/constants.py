@@ -62,6 +62,7 @@ NMA = 4
 PROWL = 5
 GROWL = 6
 CUSTOM = 7
+TWIML = 8
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
@@ -71,7 +72,8 @@ NOTIFICATION_TYPES = {
     NMA: 'NMA',
     PROWL: 'prowl',
     GROWL: 'growl',
-    CUSTOM: 'custom'
+    CUSTOM: 'custom',
+    TWIML: 'twiml'
 }
 
 NOTIFICATIONS = {
@@ -82,7 +84,8 @@ NOTIFICATIONS = {
     NMA: ('NMA', u'NotifyMyAndroid'),
     PROWL: ('prowl', u'Prowl'),
     GROWL: ('growl', u'Growl'),
-    CUSTOM: ('custom', u'Custom')
+    CUSTOM: ('custom', u'Custom'),
+    TWIML: ('twiml', u'TwiML')
 }
 
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]

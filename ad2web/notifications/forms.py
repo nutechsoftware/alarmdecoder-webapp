@@ -197,7 +197,7 @@ class PushoverNotificationForm(EditNotificationForm):
 class TwilioNotificationInternalForm(Form):
     account_sid = TextField(u'Account SID', [Required(), Length(max=50)], description=u'Your Twilio Account SID')
     auth_token = TextField(u'Auth Token', [Required(), Length(max=50)], description=u'Your Twilio User Auth Token')
-    number_to = TextField(u'To', [Required(), Length(max=15)], description=u'Number to send SMS to')
+    number_to = TextField(u'To', [Required(), Length(max=15)], description=u'Number to send SMS/call to')
     number_from = TextField(u'From', [Required(), Length(max=15)], description=u'Must Be A Valid Twilio Phone Number')
 
     def __init__(self, *args, **kwargs):
@@ -225,6 +225,39 @@ class TwilioNotificationForm(EditNotificationForm):
         self.form_field.number_to.data = self.populate_from_setting(id, 'number_to')
         self.form_field.number_from.data = self.populate_from_setting(id, 'number_from')
 
+
+class TwiMLNotificationInternalForm(Form):
+    account_sid = TextField(u'Account SID', [Required(), Length(max=50)], description=u'Your Twilio Account SID')
+    auth_token = TextField(u'Auth Token', [Required(), Length(max=50)], description=u'Your Twilio User Auth Token')
+    number_to = TextField(u'To', [Required(), Length(max=15)], description=u'Number to send SMS/call to')
+    number_from = TextField(u'From', [Required(), Length(max=15)], description=u'Must Be A Valid Twilio Phone Number')
+    twimlet_url = TextField(u'Twimlet URL', [Required()], description=u'Your twimlet URL (http://twimlets.com/message)')
+
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(TwiMLNotificationInternalForm, self).__init__(*args, **kwargs)
+
+class TwiMLNotificationForm(EditNotificationForm):
+    form_field = FormField(TwiMLNotificationInternalForm)
+    
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
+
+    def populate_settings(self, settings, id=None):
+        EditNotificationForm.populate_settings(self, settings, id)
+        settings['account_sid'] = self.populate_setting('account_sid', self.form_field.account_sid.data)
+        settings['auth_token'] = self.populate_setting('auth_token', self.form_field.auth_token.data)
+        settings['number_to'] = self.populate_setting('number_to', self.form_field.number_to.data)
+        settings['number_from'] = self.populate_setting('number_from', self.form_field.number_from.data)
+        settings['twimlet_url'] = self.populate_setting('twimlet_url', self.form_field.twimlet_url.data)
+
+    def populate_from_settings(self, id):
+        EditNotificationForm.populate_from_settings(self, id)
+        self.form_field.account_sid.data = self.populate_from_setting(id, 'account_sid')
+        self.form_field.auth_token.data = self.populate_from_setting(id, 'auth_token')
+        self.form_field.number_to.data = self.populate_from_setting(id, 'number_to')
+        self.form_field.number_from.data = self.populate_from_setting(id, 'number_from')
+        self.form_field.twimlet_url.data = self.populate_from_setting(id, 'twimlet_url')
 
 class NMANotificationInternalForm(Form):
     api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your NotifyMyAndroid API Key')

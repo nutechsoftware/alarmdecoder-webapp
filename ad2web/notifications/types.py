@@ -15,7 +15,6 @@ except ImportError:
 try:
     import twilio
     from twilio.rest import TwilioRestClient
-
     have_twilio = True
 except ImportError:
     have_twilio = False
@@ -57,7 +56,7 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
-                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH )
+                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML )
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -312,6 +311,29 @@ class TwilioNotification(BaseNotification):
             current_app.logger.info('Event Twilio Notification Failed: {0}' . format(e))
             raise Exception('Twilio Notification Failed: {0}' . format(e))
 
+class TwiMLNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+
+        self.id = obj.id
+        self.description = obj.description
+        self.account_sid = obj.get_setting('account_sid')
+        self.auth_token = obj.get_setting('auth_token')
+        self.number_to = obj.get_setting('number_to')
+        self.number_from = obj.get_setting('number_from')
+        self.url = obj.get_setting('twimlet_url')
+       
+    def send(self, type, text):
+        try:
+            client = TwilioRestClient(self.account_sid, self.auth_token)
+
+            call = client.calls.create(to="+" . self.number_to,
+                                       from_="+" . self.number_from,
+                                       url=self.url + "?Message[0]=" + text)
+        except twilio.TwilioRestException as e:
+            current_app.logger.info('Event TwiML Notification Failed: {0}' . format(e))
+            raise Exception('TwiML Notification Failed: {0}' . format(e))
+ 
 class NMANotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
@@ -576,5 +598,6 @@ TYPE_MAP = {
     NMA: NMANotification,
     PROWL: ProwlNotification,
     GROWL: GrowlNotification,
-    CUSTOM: CustomNotification
+    CUSTOM: CustomNotification,
+    TWIML: TwiMLNotification
 }
