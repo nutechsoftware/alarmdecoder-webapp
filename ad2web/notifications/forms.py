@@ -70,6 +70,8 @@ class TimeValidator(object):
 class TimeSettingsInternalForm(Form):
     starttime =  TextField(u'Start Time', [Optional(), Length(max=8), TimeValidator()], default='00:00:00', description=u'Start time for this event notification (24hr format)')
     endtime =  TextField(u'End Time', [Optional(), Length(max=8), TimeValidator()], default='23:59:59', description=u'End time for this event notification (24hr format)')
+    delaytime = TextField(u'Notification Delay', [Optional(), Length(max=10)], default=0, description=u'Time in minutes to delay sending notification')
+    suppress = BooleanField(u'Suppress Restore?', [Optional()], description=u'Suppress notification if restored before delay')
 
     def __init__(self, *args, **kwargs):
         kwargs['csrf_enabled'] = False
@@ -86,6 +88,8 @@ class EditNotificationForm(Form):
         settings['subscriptions'] = self.populate_setting('subscriptions', json.dumps({str(k): True for k in self.subscriptions.data}))
         settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data or '00:00:00')
         settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data or '23:59:59')
+        settings['delay'] = self.populate_setting('delay', self.time_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.time_field.suppress.data)
 
     def populate_from_settings(self, id):
         subscriptions = self.populate_from_setting(id, 'subscriptions')
@@ -94,6 +98,8 @@ class EditNotificationForm(Form):
 
         self.time_field.starttime.data = self.populate_from_setting(id, 'starttime', default='00:00:00')
         self.time_field.endtime.data = self.populate_from_setting(id, 'endtime', default='23:59:59')
+        self.time_field.delaytime.data = self.populate_from_setting(id, 'delay')
+        self.time_field.suppress.data = self.populate_from_setting(id, 'suppress')
 
     def populate_setting(self, name, value, id=None):
         if id is not None:
@@ -116,14 +122,15 @@ class EditNotificationForm(Form):
 
 
 class EmailNotificationInternalForm(Form):
-    source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
-    destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
+    source = TextField(u'Source Address (From)', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
+    destination = TextField(u'Destination Address (To)', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
 
     subject = TextField(u'Email Subject', [Required(), Length(max=255)], default='AlarmDecoder: Alarm Event', description=u'Emails will contain this text as the subject')
 
-    server = TextField(u'Email Server', [Required(), Length(max=255)], default='localhost')
-    port = IntegerField(u'Server Port', [Required(), NumberRange(1, 65535)], default=25)
-    tls = BooleanField(u'Use TLS?', default=False)
+    server = TextField(u'Email Server (Configured using local server by default, not preferred due to ISP filtering)', [Required(), Length(max=255)], default='localhost')
+    port = IntegerField(u'Server Port (If using your own server, check that port is not filtered by ISP)', [Required(), NumberRange(1, 65535)], default=25)
+    tls = BooleanField(u'Use TLS? (Do not pick SSL if using TLS)', default=False)
+    ssl = BooleanField(u'Use SSL? (Do not pick TLS if using SSL)', default=False)
     authentication_required = BooleanField(u'Authenticate with email server?', default=False)
     username = TextField(u'Username', [Optional(), Length(max=255)])
     password = PasswordField(u'Password', [Optional(), Length(max=255)])
@@ -148,6 +155,7 @@ class EmailNotificationForm(EditNotificationForm):
         settings['server'] = self.populate_setting('server', self.form_field.server.data)
         settings['port'] = self.populate_setting('port', self.form_field.port.data)
         settings['tls'] = self.populate_setting('tls', self.form_field.tls.data)
+        settings['ssl'] = self.populate_setting('ssl', self.form_field.ssl.data)
         settings['authentication_required'] = self.populate_setting('authentication_required', self.form_field.authentication_required.data)
         settings['username'] = self.populate_setting('username', self.form_field.username.data)
         settings['password'] = self.populate_setting('password', self.form_field.password.data)
@@ -160,6 +168,7 @@ class EmailNotificationForm(EditNotificationForm):
         self.form_field.subject.data = self.populate_from_setting(id, 'subject')
         self.form_field.server.data = self.populate_from_setting(id, 'server')
         self.form_field.tls.data = self.populate_from_setting(id, 'tls')
+        self.form_field.ssl.data = self.populate_from_setting(id, 'ssl')
         self.form_field.port.data = self.populate_from_setting(id, 'port')
         self.form_field.authentication_required.data = self.populate_from_setting(id, 'authentication_required')
         self.form_field.username.data = self.populate_from_setting(id, 'username')

@@ -60,8 +60,21 @@ If you'd rather do it by hand you can follow these steps:
 27. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
 28. Optionally install and set permissions for [ser2sock](http://github.com/alarmdecoder/ser2sock.git)
 29. Create self-signed SSL certificate for HTTPS - sudo openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt
-30. sudo service nginx restart
-31. sudo service gunicorn restart
+30. Set your device locale:  sudo dpkg-reconfigure locales
+31. Set your keyboard mapping: sudo dpkg-reconfigure keyboard-configuration
+32. Set your timezone: sudo dpkg-reconfigure tzdata
+33. sudo service nginx restart
+34. sudo service gunicorn restart
+
+## Raspberry Pi 3 GPIO Serial Port for AD2Pi, turn bluetooth into software uart
+
+1. Copy the pi3-miniuart-bt-overlay.dtb from contrib/pi3_overlay to your root directory (/)
+2. sudo vi /boot/config.txt
+3. add the following to the end of the file:
+    2. dtoverlay=pi3-miniuart-bt-overlay
+    1. force_turbo=1
+4. sudo vi /lib/systemd/system/hciuart.service
+    1. Replace ttyAMA0 with ttyS0
 
 ## Support
 

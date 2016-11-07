@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from flask import current_app
+import time
+import datetime
 import smtplib
 from email.mime.text import MIMEText
 import sleekxmpp
@@ -19,9 +21,6 @@ try:
     have_twilio = True
 except ImportError:
     have_twilio = False
-
-import time
-from datetime import datetime
 
 from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element
@@ -83,10 +82,34 @@ class NotificationSystem(object):
                     message = self._build_message(type, **kwargs)
 
                     if message:
-                        n.send(type, message)
+                        message_send_time = time.mktime((datetime.datetime.combine(datetime.date.today(), datetime.datetime.time(datetime.datetime.now())) + datetime.timedelta(minutes=n.delay)).timetuple())
+
+                        if time.time() >= message_send_time and type not in(ZONE_FAULT, ZONE_RESTORE, BYPASS):
+                            n.send(type, message)
+                        else:
+                            notify = {}
+                            notify['notification'] = n
+                            notify['message_send_time'] = message_send_time
+                            notify['message'] = message
+                            notify['type'] = type
+                            notify['zone'] = int(kwargs.get('zone', -1))
+
+                            if notify not in current_app.decoder.notify_wait_list:
+                                current_app.decoder.notify_wait_list.append(notify)
 
                 except Exception, err:
                     errors.append('Error sending notification for {0}: {1}'.format(n.description, str(err)))
+
+        tempWaitList = current_app.decoder.notify_wait_list
+        for notifier in tempWaitList:
+            try:
+                if time.time() >= notifier['message_send_time'] and self._check_suppress(notifier) == False:
+                    notifier['notification'].send(notifier['type'], notifier['message'])
+                    current_app.decoder.notify_wait_list.remove(notifier)
+                else:
+                    self._remove_suppressed_zone(notifier['zone'])
+            except Exception, err:
+                errors.append('Error sending notification for {0}: {1}'.format(n['notification'].description, str(err)))
 
         return errors
 
@@ -131,6 +154,28 @@ class NotificationSystem(object):
 
         return message
 
+    def _check_suppress(self, notifier):
+        if notifier['type'] == ZONE_FAULT:
+            zone = notifier['zone']
+
+            #check the first notifier that is a zone fault, get its id, see if there was a zone restore or bypass
+            #for the same zone.   If we're suppressed on the notifier, then we won't send it out.
+            tempWaitList = current_app.decoder.notify_wait_list
+            for n in tempWaitList:
+                if n['zone'] == zone:
+                    if (n['type'] == ZONE_RESTORE or n['type'] == BYPASS) and n['notification'].suppress == 1:
+                        current_app.decoder.notify_wait_list.remove(n)
+                        return True
+
+        #right now only suppress zone spam
+        return False
+
+    def _remove_suppressed_zone(self, id):
+        tempWaitList = current_app.decoder.notify_wait_list
+
+        for n in tempWaitList:
+            if n['zone'] == id:
+                current_app.decoder.notify_wait_list.remove(n)
 
 class BaseNotification(object):
     def __init__(self, obj):
@@ -146,6 +191,8 @@ class BaseNotification(object):
 
         self.starttime = obj.get_setting('starttime', default='00:00:00')
         self.endtime = obj.get_setting('endtime', default='23:59:59')
+        self.delay = obj.get_setting('delay', default=0)
+        self.suppress = obj.get_setting('suppress', default=True)
 
     def subscribes_to(self, type, **kwargs):
         if type in self._subscriptions.keys():
@@ -163,6 +210,8 @@ class BaseNotification(object):
 class LogNotification(object):
     def __init__(self):
         self.description = 'Logger'
+        self.delay = 0
+        self.suppress = 0
 
     def subscribes_to(self, type, **kwargs):
         return True
@@ -190,6 +239,7 @@ class EmailNotification(BaseNotification):
         self.server = obj.get_setting('server')
         self.port = obj.get_setting('port', default=25)
         self.tls = obj.get_setting('tls', default=False)
+        self.ssl = obj.get_setting('ssl', default=False)
         self.authentication_required = obj.get_setting('authentication_required', default=False)
         self.username = obj.get_setting('username')
         self.password = obj.get_setting('password')
@@ -207,8 +257,14 @@ class EmailNotification(BaseNotification):
             recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
             msg['To'] = ', '.join(recipients)
 
-            s = smtplib.SMTP(self.server, self.port)
-            if self.tls:
+            s = None
+
+            if self.ssl:
+                s = smtplib.SMTP_SSL(self.server, self.port)
+            else:
+                s = smtplib.SMTP(self.server, self.port)
+
+            if self.tls and not self.ssl:
                 s.starttls()
 
             if self.authentication_required:

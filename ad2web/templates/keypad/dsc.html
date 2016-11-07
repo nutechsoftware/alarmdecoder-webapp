@@ -294,6 +294,7 @@
                     var armed = msg.armed_away | msg.armed_home;
                     var ready = msg.ready;
                     var beeps = 0;
+                    var chime = msg.chime_on;
 
                     if( msg.beeps )
                     {
@@ -402,6 +403,14 @@
                             $('#keypad-line2').css("visibility", "hidden");
                             $('#keypad-line2').html('---');
                         }
+                    }
+                    if( chime )
+                    {
+                        $('#chime-image1').show();
+                    }
+                    else
+                    {
+                        $('#chime-image1').hide();
                     }
                 }
             });
@@ -838,7 +847,7 @@
     <div id="keypad-line1">Please Wait</div>
     <div id="keypad-line2">Loading...</div>
     <hr>
-    <div id="status-indicator">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"> Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}">{% if cameras is defined and cameras != 0 %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('cameras.index') }}"><img id="security_cam" src="{{ url_for('static', filename='img/surveillance_camera.png') }}" width="40px" height="30px"></a>{% endif %}</div>
+    <div id="status-indicator">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"> Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}">{% if cameras is defined and cameras != 0 %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{ url_for('cameras.index') }}"><img id="security_cam" src="{{ url_for('static', filename='img/surveillance_camera.png') }}" width="40px" height="30px"></a>{% endif %}<img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" width="40px" height="30px" style="visibility: hidden;" alt="chime enabled"/></div>
     <div id="keypad-buttons">
         <div id="keypad-button-row">
             <!-- Arrow Keys -->

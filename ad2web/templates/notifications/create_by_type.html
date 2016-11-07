@@ -29,6 +29,11 @@ div[id*=" form_field-custom_values-"] > div.controls > div.control-group {
     $(document).ready(function() {
         $(".form-box fieldset").prepend($('#notification-type-wrapper'));
 
+        $('#delay_field').prepend("<label for='delay_field'>Delay Settings</label>");
+        $('#delay_field').accordion({
+            collapsible: true,
+            active: false
+        });
         // Accordion the Notify On.. settings.
         $('#subscriptions div.controls').accordion({
             collapsible: true,
