@@ -24,7 +24,7 @@ from alarmdecoder.devices import SocketDevice, SerialDevice
 from alarmdecoder.util import NoDeviceError, CommError
 
 from .extensions import db, mail
-from .notifications import NotificationSystem
+from .notifications import NotificationSystem, NotificationThread
 from .settings.models import Setting
 from .certificate.models import Certificate
 from .updater import Updater
@@ -103,10 +103,10 @@ class Decoder(object):
             self._event_thread = DecoderThread(self)
             self._version_thread = VersionChecker(self)
             self._discovery_thread = None
+            self._notification_thread = None
             self._notifier_system = None
             self._internal_address_mask = 0xFFFFFFFF
             self.last_message_received = None
-            self.notify_wait_list = []
 
     @property
     def internal_address_mask(self):
@@ -126,6 +126,7 @@ class Decoder(object):
         self._version_thread.start()
         self._camera_thread.start()
         self._discovery_thread.start()
+        self._notification_thread.start()
 
     def stop(self, restart=False):
         """
@@ -143,12 +144,15 @@ class Decoder(object):
         self._version_thread.stop()
         self._camera_thread.stop()
         self._discovery_thread.stop()
+        self._notification_thread.stop()
 
         if restart:
             try:
                 self._event_thread.join(5)
                 self._version_thread.join(5)
                 self._camera_thread.join(5)
+                self._discovery_thread.join(5)
+                self._notification_thread.join(5)
             except RuntimeError:
                 pass
 
@@ -213,6 +217,7 @@ class Decoder(object):
             self._notifier_system = NotificationSystem()
             self._camera_thread = CameraChecker(self)
             self._discovery_thread = DiscoveryServer(self)
+            self._notification_thread = NotificationThread(self)
 
     def open(self, no_reader_thread=False):
         """
@@ -552,7 +557,7 @@ class CameraChecker(threading.Thread):
                     self._cameras.write_image(n)
 
             time.sleep(self.TIMEOUT)
-        
+
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
     """
     Socket.IO namespace

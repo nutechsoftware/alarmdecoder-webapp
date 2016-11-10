@@ -4,6 +4,7 @@ from flask import current_app
 import time
 import datetime
 import smtplib
+import threading
 from email.mime.text import MIMEText
 import sleekxmpp
 import json
@@ -70,6 +71,7 @@ class NotificationSystem(object):
     def __init__(self):
         self._notifiers = {}
         self._messages = DEFAULT_EVENT_MESSAGES
+        self._wait_list = []
 
         self._init_notifiers()
 
@@ -82,11 +84,11 @@ class NotificationSystem(object):
                     message = self._build_message(type, **kwargs)
 
                     if message:
-                        message_send_time = time.mktime((datetime.datetime.combine(datetime.date.today(), datetime.datetime.time(datetime.datetime.now())) + datetime.timedelta(minutes=n.delay)).timetuple())
+                        delay = int(n.delay)
 
-                        if time.time() >= message_send_time and type not in(ZONE_FAULT, ZONE_RESTORE, BYPASS):
-                            n.send(type, message)
-                        else:
+                        if delay > 0 and type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
+                            message_send_time = time.mktime((datetime.datetime.combine(datetime.date.today(), datetime.datetime.time(datetime.datetime.now())) + datetime.timedelta(minutes=delay)).timetuple())
+
                             notify = {}
                             notify['notification'] = n
                             notify['message_send_time'] = message_send_time
@@ -94,22 +96,13 @@ class NotificationSystem(object):
                             notify['type'] = type
                             notify['zone'] = int(kwargs.get('zone', -1))
 
-                            if notify not in current_app.decoder.notify_wait_list:
-                                current_app.decoder.notify_wait_list.append(notify)
+                            if notify not in self._wait_list:
+                                self._wait_list.append(notify)
+                        else:
+                            n.send(type, message)
 
                 except Exception, err:
                     errors.append('Error sending notification for {0}: {1}'.format(n.description, str(err)))
-
-        tempWaitList = current_app.decoder.notify_wait_list
-        for notifier in tempWaitList:
-            try:
-                if time.time() >= notifier['message_send_time'] and self._check_suppress(notifier) == False:
-                    notifier['notification'].send(notifier['type'], notifier['message'])
-                    current_app.decoder.notify_wait_list.remove(notifier)
-                else:
-                    self._remove_suppressed_zone(notifier['zone'])
-            except Exception, err:
-                errors.append('Error sending notification for {0}: {1}'.format(n['notification'].description, str(err)))
 
         return errors
 
@@ -154,28 +147,74 @@ class NotificationSystem(object):
 
         return message
 
+    def process_wait_list(self):
+        errors = []
+
+        for notifier in self._wait_list:
+            try:
+                if notifier['notification'].suppress > 0 and self._check_suppress(notifier):
+                    self._remove_suppressed_zone(notifier['zone'])
+
+            except Exception, err:
+                errors.append('Error sending notification for {0}: {1}'.format(notifier['notification'].description, str(err)))
+
+        for notifier in self._wait_list:
+            try:
+                if time.time() >= notifier['message_send_time']:
+                    notifier['notification'].send(notifier['type'], notifier['message'])
+                    self._wait_list.remove(notifier)
+
+            except Exception, err:
+                errors.append('Error sending notification for {0}: {1}'.format(notifier['notification'].description, str(err)))
+
+        return errors
+
     def _check_suppress(self, notifier):
-        if notifier['type'] == ZONE_FAULT:
+        if notifier['type'] in (ZONE_RESTORE, BYPASS):
             zone = notifier['zone']
 
             #check the first notifier that is a zone fault, get its id, see if there was a zone restore or bypass
             #for the same zone.   If we're suppressed on the notifier, then we won't send it out.
-            tempWaitList = current_app.decoder.notify_wait_list
-            for n in tempWaitList:
+            for n in self._wait_list:
                 if n['zone'] == zone:
-                    if (n['type'] == ZONE_RESTORE or n['type'] == BYPASS) and n['notification'].suppress == 1:
-                        current_app.decoder.notify_wait_list.remove(n)
+                    if n['type'] == ZONE_FAULT and n['notification'].suppress == 1:
                         return True
 
         #right now only suppress zone spam
         return False
 
     def _remove_suppressed_zone(self, id):
-        tempWaitList = current_app.decoder.notify_wait_list
+        to_remove = []
 
-        for n in tempWaitList:
-            if n['zone'] == id:
-                current_app.decoder.notify_wait_list.remove(n)
+        for n in self._wait_list:
+            if n['zone'] != -1 and n['zone'] == id:
+                to_remove.append(n)
+
+        for n in to_remove:
+            self._wait_list.remove(n)
+
+
+class NotificationThread(threading.Thread):
+    def __init__(self, decoder):
+        threading.Thread.__init__(self)
+
+        self._decoder = decoder
+        self._running = False
+
+    def stop(self):
+        self._running = False
+
+    def run(self):
+        self._running = True
+
+        while self._running:
+            with self._decoder.app.app_context():
+                errors = self._decoder._notifier_system.process_wait_list()
+                for e in errors:
+                    current_app.logger.error(e)
+
+            time.sleep(5)
+
 
 class BaseNotification(object):
     def __init__(self, obj):
