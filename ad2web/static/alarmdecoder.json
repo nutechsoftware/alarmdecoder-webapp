@@ -54,8 +54,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -94,8 +94,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -140,8 +140,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -174,8 +174,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -203,8 +203,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -255,8 +255,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -284,8 +284,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -337,8 +337,8 @@
                         "type": "integer"
                     },
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -385,8 +385,8 @@
                         "type": "integer"
                     },
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -442,8 +442,8 @@
                         "type": "integer"
                     },
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -485,8 +485,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -514,8 +514,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -566,8 +566,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -614,8 +614,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -671,8 +671,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API key",
                         "required": true,
                         "type": "string"
@@ -727,8 +727,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API key",
                         "required": true,
                         "type": "string"
@@ -770,8 +770,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API key",
                         "required": true,
                         "type": "string"
@@ -814,8 +814,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API key",
                         "required": true,
                         "type": "string"
@@ -858,8 +858,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's api key",
                         "required": true,
                         "type": "string"
@@ -905,8 +905,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"
@@ -963,8 +963,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"
@@ -1017,8 +1017,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"
@@ -1080,8 +1080,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"
@@ -1136,8 +1136,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API key",
                         "required": true,
                         "type": "string"
@@ -1174,8 +1174,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"
@@ -1238,8 +1238,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"
@@ -1295,8 +1295,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"
@@ -1364,8 +1364,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"
@@ -1426,8 +1426,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"
@@ -1488,8 +1488,8 @@
                 ],
                 "parameters": [
                     {
-                        "in": "query",
-                        "name": "apikey",
+                        "in": "header",
+                        "name": "Authorization",
                         "description": "Your user's API Key",
                         "required": true,
                         "type": "string"

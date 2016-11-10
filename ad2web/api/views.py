@@ -113,7 +113,12 @@ def api_authorized(f):
             if req is None:
                 return jsonify(build_error(ERROR_MISSING_BODY, "Missing request body or using incorrect content type.")), UNPROCESSABLE_ENTITY
 
-        request_apikey = request.args.get('apikey', None)
+        #support getting API Key over Authorization Header
+        request_apikey = request.headers.get('Authorization', None)
+        
+        if request_apikey is None:
+            request_apikey = request.args.get('apikey', None)
+
         apikey = APIKey.query.filter_by(key=request_apikey).first()
 
         if request_apikey is None or apikey is None:
