@@ -30,6 +30,7 @@ from flask.ext.login import login_required, current_user
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.exc import SQLAlchemyError
 
+from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
 from ..ser2sock import ser2sock
 from ..extensions import db
 from ..user import User, UserDetail
@@ -653,7 +654,24 @@ def _import_refresh():
 @login_required
 @admin_required
 def system_diagnostics():
-     return render_template('settings/diagnostics.html')
+    device_settings = {}
+    device_settings['address'] = current_app.decoder.device.address
+    device_settings['configbits'] = hex(current_app.decoder.device.configbits).upper()
+    device_settings['address_mask'] = hex(current_app.decoder.device.address_mask).upper()
+    device_settings['emulate_zone'] = current_app.decoder.device.emulate_zone
+    device_settings['emulate_relay'] = current_app.decoder.device.emulate_relay
+    device_settings['emulate_lrr'] = current_app.decoder.device.emulate_lrr
+    device_settings['deduplicate'] = current_app.decoder.device.deduplicate
+    device_settings['firmware'] = current_app.decoder.device.version_number
+    device_settings['serial'] = current_app.decoder.device.serial_number.upper()
+    device_settings['flags'] = current_app.decoder.device.version_flags
+    mode = current_app.decoder.device.mode
+
+    device_settings['mode'] = "ADEMCO"
+    if mode == DSC:
+        device_settings['mode'] = "DSC"
+
+    return render_template('settings/diagnostics.html', settings=device_settings)
 
 @settings.route('/advanced', methods=['GET'])
 @login_required
