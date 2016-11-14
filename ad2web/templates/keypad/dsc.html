@@ -39,11 +39,11 @@
             return false;
         }
         //visual beep or veep an element
-        function veep(elem, times, speed) 
+        function veep(elem, times, speed)
         {
-            if( times > 0 || times < 0 ) 
+            if( times > 0 || times < 0 )
             {
-                if( $(elem).hasClass("blink") ) 
+                if( $(elem).hasClass("blink") )
                     $(elem).removeClass("blink");
                 else
                     $(elem).addClass("blink");
@@ -53,7 +53,7 @@
                 veep( elem, times, speed );
             });
 
-            if( times > 0 || times < 0 ) 
+            if( times > 0 || times < 0 )
             {
                 setTimeout(function() {
                     veep( elem, times, speed );
@@ -74,7 +74,7 @@
             {
                 var img = new Image();
                 img.src = array[i];
-                preloadImages.list.push(img);   
+                preloadImages.list.push(img);
             }
         }
 
@@ -460,7 +460,7 @@
                 if( charCode == 112 )
                 {
                     $('#button-F1').trigger('mousedown');
-                    
+
                     $.confirm({
                         content: "Are you sure?",
                         title: "Call the Fire Department",
@@ -759,95 +759,115 @@
                     <div class="col-sm-4 col-xs-4"></div>
                     <div class="col-sm-4 col-xs-4">
                         <div class="row some-gutter">
-                            <div class="col-xs-3 col-sm-3 some-gutter">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
-                            <div class="col-xs-3 col-sm-3 some-gutter">Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
-                            <div class="col-xs-3 col-sm-3 some-gutter">Chime: <img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" width="40px" height="30px" alt="chime enabled"/></div>
-                            <div class="col-xs-3 col-sm-3 some-gutter" id="mute-row">Sounds: <input type="checkbox" name="check-mute" data-size="small" id="check-mute"/></div>
+                            <div class="col-xs-6 col-sm-3 some-gutter">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
+                            <div class="col-xs-6 col-sm-3 some-gutter">Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
+                            <div class="col-xs-6 col-sm-3 some-gutter">Chime: <img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" width="40px" height="30px" alt="chime enabled"/></div>
+                            <div class="col-xs-6 col-sm-3 some-gutter" id="mute-row">Sounds: <input type="checkbox" name="check-mute" data-size="small" id="check-mute"/></div>
                         </div>
                     </div>
+                    <div class="col-sm-4 col-xs-4 visible-sm visible-md visible-lg"></div>
                 </div>
             </div> <!-- /#status-indicator -->
             <hr>
             <div id="keypad-buttons">
                 <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4 no-gutter"><span style="float: right;"><button id="button-left" class="btn btn-sm half_keypad-button">&larr;</button>&nbsp;<button id="button-right" class="btn btn-sm half_keypad-button">&rarr;</button></span></div>
-                    <div class="col-sm-4 col-xs-4 no-gutter">
-                        <div class="row no-gutter">
+                    <div class="col-sm-2 col-xs-2 no-gutter"></div>
+                    <div class="col-sm-8 col-xs-8 no-gutter">
+                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <div class="col-sm-2 col-xs-2 no-gutter"></div>
                             <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-1" class="keypad-button img-responsive"/>
+                                <button id="button-left" class="btn btn-sm half_keypad-button">&larr;</button>
                             </div>
                             <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-2" class="keypad-button img-responsive"/>
+                                <button id="button-right" class="btn btn-sm half_keypad-button">&rarr;</button>
                             </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-3" class="keypad-button img-responsive"/>
-                            </div>
+                            <div class="col-sm-2 col-xs-2 no-gutter"></div>
                         </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-1" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-2" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-3" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <button id="button-stay" class="btn btn-sm half_keypad-button">Stay</button>
+                        </div>
+                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
                     </div>
-                    <div class="col-sm-4 col-xs-4">
-                        <span style="float: left;"><button id="button-stay" class="btn btn-sm half_keypad-button">Stay</button></span>
-                    </div>
+                    <div class="col-sm-2 col-xs-2"></div>
                 </div>
                 <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4 no-gutter"><span style="float: right;"><img id="button-F1" class="keypad-button img-responsive"/></span></div>
-                    <div class="col-sm-4 col-xs-4 no-gutter">
-                        <div class="row no-gutter">
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-4" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-5" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-6" class="keypad-button img-responsive"/>
-                            </div>
+                    <div class="col-sm-2 col-xs-2 no-gutter"></div>
+                    <div class="col-sm-8 col-xs-8 no-gutter">
+                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-F1" class="keypad-button img-responsive"/>
                         </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-4" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-5" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-6" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <button id="button-away" class="btn btn-sm half_keypad-button">Away</button>
+                        </div>
+                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
                     </div>
-                    <div class="col-sm-4 col-xs-4"><span style="float: left;">
-                        <button id="button-away" class="btn btn-sm half_keypad-button">Away</button></span>
-                    </div>
+                    <div class="col-sm-2 col-xs-2"></div>
                 </div>
                 <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4 no-gutter"><span style="float: right;"><img id="button-F2" class="keypad-button img-responsive"/></span></div>
-                    <div class="col-sm-4 col-xs-4 no-gutter">
-                        <div class="row no-gutter">
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-7" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-8" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-9" class="keypad-button img-responsive"/>
-                            </div>
+                    <div class="col-sm-2 col-xs-2 no-gutter"></div>
+                    <div class="col-sm-8 col-xs-8 no-gutter">
+                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-F2" class="keypad-button img-responsive"/>
                         </div>
-                    </div>
-                    <div class="col-sm-4 col-xs-4">
-                        <span style="float: left;">
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-7" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-8" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-9" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
                             <button id="button-chime" class="btn btn-sm half_keypad-button">Chime</button>
-                        </span>
+                        </div>
+                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
                     </div>
+                    <div class="col-sm-2 col-xs-2"></div>
                 </div>
                 <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4 no-gutter"><span style="float: right;"><img id="button-F3" class="keypad-button img-responsive"/></span></div>
-                    <div class="col-sm-4 col-xs-4 no-gutter">
-                        <div class="row no-gutter">
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-star" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-0" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <img id="button-pound" class="keypad-button img-responsive"/>
-                            </div>
+                    <div class="col-sm-2 col-xs-2 no-gutter"></div>
+                    <div class="col-sm-8 col-xs-8 no-gutter">
+                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-F3" class="keypad-button img-responsive"/>
                         </div>
-                    </div>
-                    <div class="col-sm-4 col-xs-4">
-                        <span style="float: left;">
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-star" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-0" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
+                            <img id="button-pound" class="keypad-button img-responsive"/>
+                        </div>
+                        <div class="col-sm-2 col-xs-2 no-gutter">
                             <button id="button-reset" class="btn btn-sm half_keypad-button">Reset</button>
-                        </span>
+                        </div>
+                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
                     </div>
+                    <div class="col-sm-2 col-xs-2"></div>
                 </div>
             </div>
         </div>

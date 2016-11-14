@@ -39,11 +39,11 @@
             return false;
         }
         //visual beep or veep an element
-        function veep(elem, times, speed) 
+        function veep(elem, times, speed)
         {
-            if( times > 0 || times < 0 ) 
+            if( times > 0 || times < 0 )
             {
-                if( $(elem).hasClass("blink") ) 
+                if( $(elem).hasClass("blink") )
                     $(elem).removeClass("blink");
                 else
                     $(elem).addClass("blink");
@@ -53,7 +53,7 @@
                 veep( elem, times, speed );
             });
 
-            if( times > 0 || times < 0 ) 
+            if( times > 0 || times < 0 )
             {
                 setTimeout(function() {
                     veep( elem, times, speed );
@@ -74,7 +74,7 @@
             {
                 var img = new Image();
                 img.src = array[i];
-                preloadImages.list.push(img);   
+                preloadImages.list.push(img);
             }
         }
 
@@ -418,7 +418,7 @@
                 if( charCode == 112 )
                 {
                     $('#button-F1').trigger('mousedown');
-                    
+
                     $.confirm({
                         content: "Are you sure?",
                         title: "Call the Fire Department",
@@ -709,19 +709,20 @@
                     <div class="col-sm-4 col-xs-4"></div>
                     <div class="col-sm-4 col-xs-4">
                         <div class="row some-gutter">
-                            <div class="col-xs-3 col-sm-3 some-gutter">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}" class="img-responsive"></div>
-                            <div class="col-xs-3 col-sm-3 some-gutter">Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}" class="img-responsive"></div>
-                            <div class="col-xs-3 col-sm-3 some-gutter">Chime: <img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" class="img-responsive" width="40px" height="30px" alt="chime enabled"/></div>
-                            <div class="col-xs-3 col-sm-3 some-gutter" id="mute-row">Sounds: <input type="checkbox" name="check-mute" data-size="small" id="check-mute"/></div>
+                            <div class="col-xs-6 col-sm-3 some-gutter">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}" class="img-responsive"></div>
+                            <div class="col-xs-6 col-sm-3 some-gutter">Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}" class="img-responsive"></div>
+                            <div class="col-xs-6 col-sm-3 some-gutter">Chime: <img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" class="img-responsive" width="40px" height="30px" alt="chime enabled"/></div>
+                            <div class="col-xs-6 col-sm-3 some-gutter" id="mute-row">Sounds: <input type="checkbox" name="check-mute" data-size="small" id="check-mute"/></div>
                         </div>
                     </div>
+                    <div class="col-sm-4 col-xs-4 visible-sm visible-md visible-lg"></div>
                 </div>
             </div> <!-- /#status-indicator -->
             <hr>
             <div id="keypad-buttons">
                 <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4"></div>
-                    <div class="col-sm-4 col-xs-4">
+                    <div class="col-sm-3 col-xs-3"></div>
+                    <div class="col-sm-6 col-xs-6">
                         <div class="row">
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-F1" class="keypad-button img-responsive"/></div>
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-1" class="keypad-button img-responsive"/></div>
@@ -729,11 +730,11 @@
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-3" class="keypad-button img-responsive"/></div>
                         </div>
                     </div>
-                    <div class="col-sm-4 col-xs-4 visible-sm visible-md visible-lg"></div>
+                    <div class="col-sm-3 col-xs-3 visible-sm visible-md visible-lg"></div>
                 </div>
                 <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4"></div>
-                    <div class="col-sm-4 col-xs-4">
+                    <div class="col-sm-3 col-xs-3"></div>
+                    <div class="col-sm-6 col-xs-6">
                         <div class="row">
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-F2" class="keypad-button img-responsive"/></div>
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-4" class="keypad-button img-responsive"/></div>
@@ -741,11 +742,11 @@
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-6" class="keypad-button img-responsive"/></div>
                         </div>
                     </div>
-                    <div class="col-sm-4 col-xs-4"></div>
+                    <div class="col-sm-3 col-xs-3"></div>
                 </div>
                 <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4"></div>
-                    <div class="col-sm-4 col-xs-4">
+                    <div class="col-sm-3 col-xs-3"></div>
+                    <div class="col-sm-6 col-xs-6">
                         <div class="row">
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-F3" class="keypad-button img-responsive"/></div>
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-7" class="keypad-button img-responsive"/></div>
@@ -753,11 +754,11 @@
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-9" class="keypad-button img-responsive"/></div>
                         </div>
                     </div>
-                    <div class="col-sm-4 col-xs-4"></div>
+                    <div class="col-sm-3 col-xs-3"></div>
                 </div>
                 <div class="row no-gutter">
-                    <div class="col-sm-4 col-xs-4"></div>
-                    <div class="col-sm-4 col-xs-4">
+                    <div class="col-sm-3 col-xs-3"></div>
+                    <div class="col-sm-6 col-xs-6">
                         <div class="row">
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-F4" class="keypad-button img-responsive"/></div>
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-star" class="keypad-button img-responsive"/></div>
@@ -765,7 +766,7 @@
                             <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-pound" class="keypad-button img-responsive"/></div>
                         </div>
                     </div>
-                    <div class="col-sm-4 col-xs-4"></div>
+                    <div class="col-sm-3 col-xs-3"></div>
                 </div>
             </div> <!-- /#keypad-buttons -->
         </div>
