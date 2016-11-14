@@ -7,6 +7,12 @@ import traceback
 import threading
 import binascii
 
+try:
+    import miniupnpc
+    has_upnp = True
+except ImportError:
+    has_upnp = False
+
 from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
 from socketio.mixins import BroadcastMixin
@@ -39,6 +45,7 @@ from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_R
 from .cameras import CameraSystem
 from .cameras.models import Camera
 from .discovery import DiscoveryServer
+from .upnp import UPNPThread
 
 from .setup.constants import SETUP_COMPLETE
 
@@ -104,6 +111,7 @@ class Decoder(object):
             self._version_thread = VersionChecker(self)
             self._discovery_thread = None
             self._notifier_system = None
+            self._upnp_thread = None
             self._internal_address_mask = 0xFFFFFFFF
             self.last_message_received = None
 
@@ -125,6 +133,8 @@ class Decoder(object):
         self._version_thread.start()
         self._camera_thread.start()
         self._discovery_thread.start()
+        if has_upnp:
+            self._upnp_thread.start()
 
     def stop(self, restart=False):
         """
@@ -142,6 +152,8 @@ class Decoder(object):
         self._version_thread.stop()
         self._camera_thread.stop()
         self._discovery_thread.stop()
+        if has_upnp:
+            self._upnp_thread.stop()
 
         if restart:
             try:
@@ -212,6 +224,8 @@ class Decoder(object):
             self._notifier_system = NotificationSystem()
             self._camera_thread = CameraChecker(self)
             self._discovery_thread = DiscoveryServer(self)
+            if has_upnp:
+                self._upnp_thread = UPNPThread(self)
 
     def open(self, no_reader_thread=False):
         """

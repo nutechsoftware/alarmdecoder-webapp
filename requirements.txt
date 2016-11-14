@@ -51,3 +51,4 @@ numpy>=1.9.2
 chump>=1.5.1
 twilio>=3.7.3
 gntp>=1.0.2
+miniupnpc==1.9

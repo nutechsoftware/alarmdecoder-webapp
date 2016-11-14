@@ -1,0 +1,27 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+</script>
+{% endblock %}
+{% block body %}
+<div class="settings_wrapper">
+    <h3>UPNP Port Forwarding</h3>
+
+    <div>
+        <h4>Current Internal Port: {{current_internal_port}}</h4><h4>Current External Port: {{current_external_port}}</h4>
+    </div>
+    <div>
+        {{ render_form(url_for('settings.port_forwarding'), form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}
+

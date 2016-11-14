@@ -8,6 +8,7 @@ import tarfile
 import json
 import re
 import socket
+import random
 try:
     import netifaces
     hasnetifaces = 1
@@ -18,6 +19,12 @@ import compiler
 import sys
 import types
 import importlib
+
+try:
+    import miniupnpc
+    has_upnp = True
+except ImportError:
+    has_upnp = False
 
 from compiler.ast import Discard, Const
 from compiler.visitor import ASTVisitor
@@ -36,12 +43,13 @@ from ..user import User, UserDetail
 from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES
 from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
+from ..upnp import UPNP
 from sh import hostname, sudo
 
 try:
@@ -686,6 +694,45 @@ def get_system_imports():
         
     return json.dumps(imported)
 
+@settings.route('/port_forward', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def port_forwarding():
+    form = UPNPForm()
+
+    current_internal_port = Setting.get_by_name('upnp_internal_port',default=None).value
+    current_external_port = Setting.get_by_name('upnp_external_port',default=None).value
+    if not has_upnp:
+        flash(u'Missing library: miniupnpc', 'error')
+
+    if not form.is_submitted():
+        form.internal_port.data = Setting.get_by_name('upnp_internal_port',default=443).value
+        form.external_port.data = Setting.get_by_name('upnp_external_port',default=random.randint(1200,60000)).value
+
+    if form.validate_on_submit():
+        internal_port = Setting.get_by_name('upnp_internal_port')
+        internal_port.value = form.internal_port.data
+        external_port = Setting.get_by_name('upnp_external_port')
+        external_port.value = form.external_port.data
+
+        db.session.add(internal_port)
+        db.session.add(external_port)
+        db.session.commit()
+
+        if has_upnp:
+            upnp = UPNP(current_app.decoder)
+
+            #remove old bindings
+            upnp.removePortForward(current_external_port)
+
+            #add new bindings
+            upnp.addPortForward(internal_port.value, external_port.value)
+        else:
+            flash(u'Missing library: miniupnpc', 'error')
+
+        return redirect(url_for('settings.index'))
+
+    return render_template('settings/port_forward.html', form=form, current_internal_port=current_internal_port, current_external_port=current_external_port)
 @settings.route('/configure_system_email', methods=['GET', 'POST'])
 @login_required
 @admin_required
