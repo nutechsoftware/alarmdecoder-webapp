@@ -579,14 +579,15 @@
             bindButtonEvents('#button-0', '0', buttonImageListSmall[0], buttonImageListLarge[0], buttonImageListSmall[1], buttonImageListLarge[1] );
             bindButtonEvents('#button-star', '*', buttonImageListSmall[20], buttonImageListLarge[20], buttonImageListSmall[21], buttonImageListLarge[21] );
             bindButtonEvents('#button-pound', '#', buttonImageListSmall[22], buttonImageListLarge[22], buttonImageListSmall[23], buttonImageListLarge[23] );
-            bindButtonEvents('#button-stay',  's', '', '', '', '');
-            bindButtonEvents('#button-away',  'a', '', '', '', '');
-            bindButtonEvents('#button-chime', 'c', '', '', '', '');
-            bindButtonEvents('#button-reset', 'r', '', '', '', '');
+            bindButtonEvents('#button-stay',  's', buttonImageListSmall[32], buttonImageListSmall[32], buttonImageListSmall[32], buttonImageListSmall[32]);
+            bindButtonEvents('#button-away',  'a', buttonImageListSmall[33], buttonImageListSmall[33], buttonImageListSmall[33], buttonImageListSmall[33]);
+            bindButtonEvents('#button-chime', 'c', buttonImageListSmall[34], buttonImageListSmall[34], buttonImageListSmall[34], buttonImageListSmall[34]);
+            bindButtonEvents('#button-reset', 'r', buttonImageListSmall[35], buttonImageListSmall[35], buttonImageListSmall[35], buttonImageListSmall[35]);
             bindButtonEvents('#button-exit',  'e', '', '', '', '');
-            bindButtonEvents('#button-left',  '<', '', '', '', '');
-            bindButtonEvents('#button-right', '>', '', '', '', '');
+            bindButtonEvents('#button-left',  '<', buttonImageListSmall[36], buttonImageListSmall[36], buttonImageListSmall[36], buttonImageListSmall[36]);
+            bindButtonEvents('#button-right', '>', buttonImageListSmall[37], buttonImageListSmall[37], buttonImageListSmall[37], buttonImageListSmall[37]);
 //custom buttons
+
             {% if buttons %}
                 $("#exit").on('mousedown', function() {
                     $('#dialog').dialog("close");
