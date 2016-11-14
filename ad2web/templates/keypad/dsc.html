@@ -149,7 +149,13 @@
             "{{ url_for('static', filename='img/f3-medical-on.png') }}",
             "{{ url_for('static', filename='img/f3-medical.png') }}",
             "{{ url_for('static', filename='img/f4-led-text-on.png') }}",
-            "{{ url_for('static', filename='img/f4-led-text.png') }}"
+            "{{ url_for('static', filename='img/f4-led-text.png') }}",
+            "{{ url_for('static', filename='img/dsc-stay.png') }}",
+            "{{ url_for('static', filename='img/dsc-away.png') }}",
+            "{{ url_for('static', filename='img/dsc-chime.png') }}",
+            "{{ url_for('static', filename='img/dsc-reset.png') }}",
+            "{{ url_for('static', filename='img/dsc-cursor-left.png') }}",
+            "{{ url_for('static', filename='img/dsc-cursor-right.png') }}"
         ];
 
         var buttonImageListSmall = [
@@ -184,7 +190,13 @@
             "{{ url_for('static', filename='img/f3-medical-small-on.png') }}",
             "{{ url_for('static', filename='img/f3-medical-small.png') }}",
             "{{ url_for('static', filename='img/f4-led-text-small-on.png') }}",
-            "{{ url_for('static', filename='img/f4-led-text-small.png') }}"
+            "{{ url_for('static', filename='img/f4-led-text-small.png') }}",
+            "{{ url_for('static', filename='img/dsc-stay.png') }}",
+            "{{ url_for('static', filename='img/dsc-away.png') }}",
+            "{{ url_for('static', filename='img/dsc-chime.png') }}",
+            "{{ url_for('static', filename='img/dsc-reset.png') }}",
+            "{{ url_for('static', filename='img/dsc-cursor-left.png') }}",
+            "{{ url_for('static', filename='img/dsc-cursor-right.png') }}"
         ];
         //setup audio beeping
         var beep1 = new Audio("{{ url_for('static', filename='sounds/1beep.wav') }}");
@@ -228,6 +240,12 @@
             $('#button-F2').attr("src", buttonImageListSmall[27]);
             $('#button-F3').attr("src", buttonImageListSmall[29]);
             $('#button-F4').attr("src", buttonImageListSmall[31]);
+            $('#button-stay').attr("src", buttonImageListSmall[32]);
+            $('#button-away').attr("src", buttonImageListSmall[33]);
+            $('#button-chime').attr("src", buttonImageListSmall[34]);
+            $('#button-reset').attr("src", buttonImageListSmall[35]);
+            $('#button-left').attr("src", buttonImageListSmall[36]);
+            $('#button-right').attr("src", buttonImageListSmall[37]);
 
             //check to see if we're going to play sounds or not if we've set the checkbox
             if( storageSupported() )
@@ -775,14 +793,14 @@
                     <div class="col-sm-8 col-xs-8 no-gutter">
                         <div class="col-sm-1 col-xs-1 no-gutter"></div>
                         <div class="col-sm-2 col-xs-2 no-gutter">
-                            <div class="col-sm-2 col-xs-2 no-gutter"></div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <button id="button-left" class="btn btn-sm half_keypad-button">&larr;</button>
+                            <div class="col-sm-1 col-xs-1 no-gutter"></div>
+                            <div class="col-sm-5 col-xs-5 no-gutter">
+                                <img id="button-left" class="keypad-button img-responsive"/>
                             </div>
-                            <div class="col-sm-4 col-xs-4 no-gutter">
-                                <button id="button-right" class="btn btn-sm half_keypad-button">&rarr;</button>
+                            <div class="col-sm-5 col-xs-5 no-gutter">
+                                <img id="button-right" class="keypad-button img-responsive"/>
                             </div>
-                            <div class="col-sm-2 col-xs-2 no-gutter"></div>
+                            <div class="col-sm-1 col-xs-1 no-gutter"></div>
                         </div>
                         <div class="col-sm-2 col-xs-2 no-gutter">
                             <img id="button-1" class="keypad-button img-responsive"/>
@@ -794,7 +812,7 @@
                             <img id="button-3" class="keypad-button img-responsive"/>
                         </div>
                         <div class="col-sm-2 col-xs-2 no-gutter">
-                            <button id="button-stay" class="btn btn-sm half_keypad-button">Stay</button>
+                            <img id="button-stay" class="keypad-button img-responsive"/>
                         </div>
                         <div class="col-sm-1 col-xs-1 no-gutter"></div>
                     </div>
@@ -817,7 +835,7 @@
                             <img id="button-6" class="keypad-button img-responsive"/>
                         </div>
                         <div class="col-sm-2 col-xs-2 no-gutter">
-                            <button id="button-away" class="btn btn-sm half_keypad-button">Away</button>
+                            <img id="button-away" class="keypad-button img-responsive"/>
                         </div>
                         <div class="col-sm-1 col-xs-1 no-gutter"></div>
                     </div>
@@ -840,7 +858,7 @@
                             <img id="button-9" class="keypad-button img-responsive"/>
                         </div>
                         <div class="col-sm-2 col-xs-2 no-gutter">
-                            <button id="button-chime" class="btn btn-sm half_keypad-button">Chime</button>
+                            <img id="button-chime" class="keypad-button img-responsive"/>
                         </div>
                         <div class="col-sm-1 col-xs-1 no-gutter"></div>
                     </div>
@@ -863,7 +881,7 @@
                             <img id="button-pound" class="keypad-button img-responsive"/>
                         </div>
                         <div class="col-sm-2 col-xs-2 no-gutter">
-                            <button id="button-reset" class="btn btn-sm half_keypad-button">Reset</button>
+                            <img id="button-reset" class="keypad-button img-responsive"/>
                         </div>
                         <div class="col-sm-1 col-xs-1 no-gutter"></div>
                     </div>
