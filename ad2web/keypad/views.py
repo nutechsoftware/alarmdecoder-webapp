@@ -29,6 +29,21 @@ def index():
     else:
         return render_template('keypad/index.html', buttons=custom_buttons)
 
+@keypad.route('/legacy')
+@login_required
+def responsive():
+    panel_mode = Setting.get_by_name('panel_mode').value
+
+    custom_buttons = KeypadButton.query.filter_by(user_id=current_user.id).all()
+
+    if panel_mode is None:
+        return render_template('keypad/index_legacy.html', buttons=custom_buttons)
+
+    if panel_mode == DSC:
+        return render_template('keypad/dsc_legacy.html', buttons=custom_buttons)
+    else:
+        return render_template('keypad/index_legacy.html', buttons=custom_buttons)
+
 @keypad.route('/button_index')
 @login_required
 def custom_index():

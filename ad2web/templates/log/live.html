@@ -5,6 +5,7 @@
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.tableTools.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}">
 {% endblock %}
 
 {% block pagejs %}
@@ -82,12 +83,10 @@
                                 ],
                     "sSwfPath": "{{ url_for('static', filename='copy_csv_xls_pdf.swf') }}",
                 },
-                "bJQueryUI": true,
                 "bStateSave": true,
                 "iCookieDuration": 60*60*24,
                 "sPaginationType": "full_numbers",
                 "aaSorting": [[0, "desc" ]],
-                "sDom" : 'T<"H"lr>t<"F"fip>',
                 "oLanguage": {
                     "sInfoFiltered": "",
                     "sInfo": "_START_ to _END_ of _TOTAL_",
@@ -103,9 +102,11 @@
                     this.fnAdjustColumnSizing();
                 },
             });
+            var tt = new $.fn.dataTable.TableTools(oTable, { "sSwfPath": "{{ url_for('static', filename='copy_csv_xls_pdf.swf')}}"});
+            $(tt.fnContainer() ).insertBefore('div.dataTables_wrapper');
             $('#clearbutton').on('click', function() {
                 $.confirm({
-                    text: "Are you sure?",
+                    content: "Are you sure?",
                     title: "Clear Event Log",
                     confirm: function(button) {
                         oTable.fnClearTable();
@@ -133,7 +134,7 @@
                 if( charCode == 112 )
                 {
                     $.confirm({
-                        text: "Are you sure?",
+                        content: "Are you sure?",
                         title: "Call the Fire Department",
                         confirm: function(button) {
                             add_flash_message("Fire Department notified.", "error");
@@ -149,7 +150,7 @@
                 if( charCode == 113 )
                 {
                     $.confirm({
-                        text: "Are you sure?",
+                        content: "Are you sure?",
                         title: "Call the Police Department",
                         confirm: function(button) {
                             add_flash_message("Police Department notified.", "error");
@@ -165,7 +166,7 @@
                 if( charCode == 114 )
                 {
                     $.confirm({
-                        text: "Are you sure?",
+                        content: "Are you sure?",
                         title: "Call the Medics",
                         confirm: function(button) {
                             add_flash_message("Medical Help notified.", "error");
@@ -181,7 +182,7 @@
                 if( charCode == 115 )
                 {
                     $.confirm({
-                        text: "Are you sure?",
+                        content: "Are you sure?",
                         title: "Confirmation required",
                         confirm: function(button) {
                             add_flash_message("Notification sent.", "error");
@@ -224,7 +225,7 @@
 <div id="data">
     <div id="loading"></div>
     <div id="datatable" style="display: none;">
-        <table id='panel-log' cellpadding="3" class="display table-hover" border="1" bordercolor="EEEEEE">
+        <table id='panel-log' class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0">
             <thead>
                 <tr>
                     <th width="20%">Timestamp</th>
@@ -244,9 +245,9 @@
 
 {% block js_btm %}
 <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/datatables.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/dataTables.tableTools.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
-<script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery-confirm.min.js') }}"></script>
 {% endblock %}

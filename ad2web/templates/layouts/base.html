@@ -16,10 +16,11 @@
     <link rel="Shortcut Icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 
     {% block permanent_css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/normalize.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap3/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.toggle.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_responsive.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/user_custom.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css') }}">
     {% endblock %}
 
     {% block css %}
@@ -51,39 +52,39 @@
 <body>
     {% include "macros/_ask_user_to_update_ie.html" %}
 
-    <div id='wrap'>
-        {% block topbar %}
-        <div class="navbar">
-            <div class="navbar-inner">
-                <div class="container">
-                    <a class='brand' href='{{ url_for('frontend.index') }}'><img src="{{ url_for('static', filename='img/logo.png') }}" /></a>
-
+{% block topbar %}
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="brand" href="{{ url_for('frontend.index') }}"><img src="{{ url_for('static', filename='img/logo.png') }}"/></a>
+            </div> <!-- /.navbar-header -->
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
                     {% if user_is_authenticated(current_user) %}
-                    <div class="nav-collapse collapse pull-right">
-                        <ul class="nav">
-                            {% if update_available and current_user.is_admin() %}
-                            <li><a href="{{ url_for('update.index') }}" style="color: #86D47F;">Update available!</a></li>
-                            {% endif %}
-                            <li><a href="{{ url_for('keypad.index') }}">Keypad</a></li>
-                            {% if cameras is defined and cameras != 0 %}
-                            <li><a href="{{ url_for('cameras.index') }}">Cameras</a></li>
-                            {% endif %}
-                            <li><a href="{{ url_for('log.events') }}">Log</a></li>
-                            <li><a href="{{ url_for('settings.index') }}">Settings</a></li>
-                            <li><a href="{{ url_for('frontend.logout') }}">Log out</a></li>
-                        </ul>
-                    </div>
-                    {% else %}
-                    <div class="nav-collapse collapse pull-right">
-                        <ul class="nav">
-                            <li><a href="{{ url_for('frontend.login') }}">Sign in</a></li>
-                        </ul>
-                    </div>
+                    {% if update_available and current_user.is_admin() %}
+                    <li><a href="{{ url_for('update.index') }}" style="color: #86D47F;">Update Available!</a></li>
                     {% endif %}
-                </div>
-            </div>
-        </div>
-        {% endblock %}
+                    <li><a href="{{ url_for('keypad.index') }}">Keypad</a></li>
+                    {% if cameras is defined and cameras != 0 %}
+                    <li><a href="{{ url_for('cameras.index') }}">Cameras</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('log.events') }}">Log</a></li>
+                    <li><a href="{{ url_for('settings.index') }}">Settings</a></li>
+                    <li><a href="{{ url_for('frontend.logout') }}">Log out</a></li>
+                    {% else %}
+                    <li><a href="{{ url_for('frontend.login') }}">Sign in</a></li>
+                    {% endif %}
+                </ul>
+            </div> <!-- /.navbar-collapse -->
+        </div> <!-- /.container -->
+    </nav>
+{% endblock %}
 
         {% block flash_message %}
                 <div class="container">
@@ -125,36 +126,37 @@
 
             {% block body %}
             {% endblock %}
-
         </div>
         {% endblock %}
         <div id="push"></div>
-    </div>
-
-    <footer id="footer">
-        <ul class="footer-links">
-            <li>© 2014</li>
-            <li class="muted">&middot;</li>
-            <li><a href='http://www.alarmdecoder.com/'>AlarmDecoder</a></li>
-            <li class="muted">&middot;</li>
-            <li><a href='{{ url_for('frontend.help') }}'>Help</a></li>
-            <li class="muted">&middot;</li>
-            <li><a href='{{ url_for('frontend.license') }}'>Terms</a></li>
-            <li class="muted">&middot;</li>
-            <li class="muted">v{{ version }}</li>
+{% block footer %}
+<footer class="footer" id="footer">
+    <div class="container text-center">
+        <ul>
+            <li>&copy; 2014</li>
+            <li class="text-muted">&middot;</li>
+            <li><a href="https://www.alarmdecoder.com/">AlarmDecoder</a></li>
+            <li class="text-muted">&middot;</li>
+            <li><a href="{{ url_for('frontend.help') }}">Help</a></li>
+            <li class="text-muted">&middot;</li>
+            <li><a href="{{ url_for('frontend.license') }}">Terms</a></li>
+            <li class="text-muted">&middot;</li>
+            <li class="text-muted">v{{ version }}</li>
         </ul>
-    </footer>
+    </div>
+</footer>
+{% endblock %}
 
     {% block perm_js %}
     <script src="{{ url_for('static', filename='js/vendor/jquery-2.0.3.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/plugins.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/vendor/bootstrap.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap3/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/mobile-detect.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/mobile-detect-modernizr.js') }}"></script>
     {% endblock %}
     {% block js_btm %}
     <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/vendor/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/vendor/datatables.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/jquery.confirm.min.js') }}"></script>

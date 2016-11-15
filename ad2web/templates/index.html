@@ -7,11 +7,13 @@
 
 {% block container %}
 <div class="container" id="setup">
-    <div class="hero-unit">
-        <h1>AlarmDecoder</h1>
-        <p>Web-based keypad and notifications for your AlarmDecoder device.</p>
-                <br>
-        <p><a href="{{ url_for('frontend.login')}}" class="btn btn-success btn-large"><strong>Sign in »</strong></a></p>
+    <div class="jumbotron">
+        <div class="hero-unit">
+            <h1>AlarmDecoder</h1>
+            <p>Web-based keypad and notifications for your AlarmDecoder device.</p>
+                    <br>
+            <p><a href="{{ url_for('frontend.login')}}" class="btn btn-success btn-large"><strong>Sign in »</strong></a></p>
+        </div>
     </div>
 </div>
 {% endblock %}
