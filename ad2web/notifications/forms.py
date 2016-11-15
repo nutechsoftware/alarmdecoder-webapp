@@ -231,7 +231,7 @@ class TwiMLNotificationInternalForm(Form):
     auth_token = TextField(u'Auth Token', [Required(), Length(max=50)], description=u'Your Twilio User Auth Token')
     number_to = TextField(u'To', [Required(), Length(max=15)], description=u'Number to send SMS/call to')
     number_from = TextField(u'From', [Required(), Length(max=15)], description=u'Must Be A Valid Twilio Phone Number')
-    twimlet_url = TextField(u'Twimlet URL', [Required()], description=u'Your twimlet URL (http://twimlets.com/message)')
+    twimlet_url = TextField(u'Twimlet URL', [Required()], default="http://twimlets.com/message", description=u'Your twimlet URL (http://twimlets.com/message)')
 
     def __init__(self, *args, **kwargs):
         kwargs['csrf_enabled'] = False
