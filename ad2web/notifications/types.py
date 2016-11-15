@@ -40,9 +40,9 @@ except ImportError:
     from httplib import HTTPConnection
 
 try:
-    from urllib.parse import urlencode
+    from urllib.parse import urlencode, quote
 except ImportError:
-    from urllib import urlencode
+    from urllib import urlencode, quote
 
 import logging
 try:
@@ -324,12 +324,19 @@ class TwiMLNotification(BaseNotification):
         self.url = obj.get_setting('twimlet_url')
        
     def send(self, type, text):
+        if have_twilio == False:
+            raise Exception('Missing Twilio library: twilio')
+
         try:
             client = TwilioRestClient(self.account_sid, self.auth_token)
 
-            call = client.calls.create(to="+" . self.number_to,
-                                       from_="+" . self.number_from,
-                                       url=self.url + "?Message[0]=" + text)
+            message_to_send = quote(text)
+
+            query = quote("Message[0]")
+
+            call = client.calls.create(to="+" + self.number_to,
+                                       from_="+" + self.number_from,
+                                       url=self.url + "?" + query + "=" + message_to_send)
         except twilio.TwilioRestException as e:
             current_app.logger.info('Event TwiML Notification Failed: {0}' . format(e))
             raise Exception('TwiML Notification Failed: {0}' . format(e))
