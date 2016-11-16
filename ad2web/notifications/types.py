@@ -194,7 +194,7 @@ class EmailNotification(BaseNotification):
 
         msg = MIMEText(text)
 
-        msg['Subject'] = self.subject
+        msg['Subject'] = self.subject + " at: " + message_timestamp
         msg['From'] = self.source
         recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
         msg['To'] = ', '.join(recipients)
