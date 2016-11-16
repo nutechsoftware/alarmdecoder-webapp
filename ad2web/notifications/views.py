@@ -56,7 +56,7 @@ def index():
 @login_required
 def edit(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
-    if notification.user != current_user:
+    if notification.user != current_user and not current_user.is_admin():
         abort(403)
 
     type_id, form_type = NOTIFICATION_TYPE_DETAILS[NOTIFICATION_TYPES[notification.type]]
@@ -182,7 +182,7 @@ def zone_filter(id):
 @login_required
 def remove(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
-    if notification.user != current_user:
+    if notification.user != current_user and not current_user.is_admin():
         abort(403)
 
     db.session.delete(notification)
@@ -199,7 +199,7 @@ def copy_notification(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
     desc = notification.description
 
-    if notification.user != current_user:
+    if notification.user != current_user and not current_user.is_admin():
         abort(403)
 
     notification.id = None
@@ -228,6 +228,10 @@ def copy_notification(id):
 @login_required
 def toggle_notification(id):
     notification = Notification.query.filter_by(id=id).first_or_404()
+
+    if notification.user != current_user and not current_user.is_admin():
+        abort(403)
+
     status = "Enabled"
 
     if notification.enabled is 0:
@@ -251,7 +255,7 @@ def review(id):
     form = ReviewNotificationForm()
 
     notification = Notification.query.filter_by(id=id).first_or_404()
-    if notification.user != current_user:
+    if notification.user != current_user and not current_user.is_admin():
         abort(403)
 
     if form.validate_on_submit():
