@@ -737,20 +737,17 @@ def port_forwarding():
 
     if form.validate_on_submit():
         internal_port = Setting.get_by_name('upnp_internal_port')
-        internal_port.value = form.internal_port.data
+        internal_port.value = int(form.internal_port.data)
         external_port = Setting.get_by_name('upnp_external_port')
-        external_port.value = form.external_port.data
-
-        db.session.add(internal_port)
-        db.session.add(external_port)
-        db.session.commit()
+        external_port.value = int(form.external_port.data)
 
         if has_upnp:
             try:
                 upnp = UPNP(current_app.decoder)
 
                 #remove old bindings
-                upnp.removePortForward(current_external_port)
+                if current_external_port is not None:
+                    upnp.removePortForward(current_external_port)
 
                 #add new bindings
                 upnp.addPortForward(internal_port.value, external_port.value)
@@ -759,10 +756,15 @@ def port_forwarding():
             else:
                 flash(u'Port forwarding created successfully.', 'info')
 
-                return redirect(url_for('settings.index'))
 
         else:
             flash(u'Missing library: miniupnpc', 'error')
+
+        db.session.add(internal_port)
+        db.session.add(external_port)
+        db.session.commit()
+
+        return redirect(url_for('settings.index'))
 
     return render_template('settings/port_forward.html', form=form, current_internal_port=current_internal_port, current_external_port=current_external_port)
 
