@@ -190,11 +190,11 @@ class EmailNotification(BaseNotification):
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
-        text = text + " Message Sent at: " + message_timestamp
+        text = text + "\r\n\r\nMessage sent at " + message_timestamp + "."
 
         msg = MIMEText(text)
 
-        msg['Subject'] = self.subject + " at: " + message_timestamp
+        msg['Subject'] = self.subject + " (" + message_timestamp + ")"
         msg['From'] = self.source
         recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
         msg['To'] = ', '.join(recipients)
@@ -436,7 +436,7 @@ class GrowlNotification(BaseNotification):
             )
         else:
             self.growl = None
-        
+
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
         self.msg_to_send = text + " Message Sent at: " + message_timestamp
