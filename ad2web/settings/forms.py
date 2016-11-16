@@ -111,7 +111,7 @@ class EmailConfigureForm(Form):
     submit = SubmitField(u'Save')
 
 class UPNPForm(Form):
-    internal_port = TextField(u'Internal Port', [Required()], default=443,description=u'Internal Port to Forward To')
-    external_port = TextField(u'External Port', [Required()], default=random.randint(1200,60000), description=u'External Port to map to Internal Port')
+    internal_port = IntegerField(u'Internal Port', [Required()], default=443, description=u'Internal Port to Forward To')
+    external_port = IntegerField(u'External Port', [Required()], default=random.randint(1200,60000), description=u'External Port to map to Internal Port')
 
     submit = SubmitField(u'Save')

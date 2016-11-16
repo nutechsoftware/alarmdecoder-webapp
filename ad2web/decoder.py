@@ -160,6 +160,8 @@ class Decoder(object):
                 self._event_thread.join(5)
                 self._version_thread.join(5)
                 self._camera_thread.join(5)
+                if has_upnp:
+                    self._upnp_thread.join(5)
             except RuntimeError:
                 pass
 
@@ -565,7 +567,7 @@ class CameraChecker(threading.Thread):
                     self._cameras.write_image(n)
 
             time.sleep(self.TIMEOUT)
-        
+
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
     """
     Socket.IO namespace
