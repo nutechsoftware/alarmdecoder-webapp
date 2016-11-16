@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import string
+import random
 from flask.ext.wtf import Form
 from flask.ext.wtf.html5 import URLField, EmailField, TelField
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
@@ -109,3 +110,8 @@ class EmailConfigureForm(Form):
     default_sender = TextField(u'From Email', [Required(), Length(max=255)], default='root@alarmdecoder', description=u'Emails will come from this address')
     submit = SubmitField(u'Save')
 
+class UPNPForm(Form):
+    internal_port = IntegerField(u'Internal Port', [Required()], default=443, description=u'Internal Port to Forward To')
+    external_port = IntegerField(u'External Port', [Required()], default=random.randint(1200,60000), description=u'External Port to map to Internal Port')
+
+    submit = SubmitField(u'Save')

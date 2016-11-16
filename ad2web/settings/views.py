@@ -8,6 +8,7 @@ import tarfile
 import json
 import re
 import socket
+import random
 try:
     import netifaces
     hasnetifaces = 1
@@ -18,6 +19,12 @@ import compiler
 import sys
 import types
 import importlib
+
+try:
+    import miniupnpc
+    has_upnp = True
+except ImportError:
+    has_upnp = False
 
 from compiler.ast import Discard, Const
 from compiler.visitor import ASTVisitor
@@ -37,12 +44,13 @@ from ..user import User, UserDetail
 from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES
 from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
+from ..upnp import UPNP
 from sh import hostname, sudo
 
 try:
@@ -212,7 +220,7 @@ def get_ethernet_info(device):
             eth_properties['ipv6'] = addresses[netifaces.AF_INET6]
         eth_properties['mac_address'] = addresses[netifaces.AF_LINK]
         eth_properties['default_gateway'] = gateways['default'][netifaces.AF_INET]
-    
+
     return json.dumps(eth_properties)
 
 @settings.route('/reboot', methods=['GET', 'POST'])
@@ -355,7 +363,7 @@ def configure_ethernet_device(device):
                     del properties
                     properties = []
                     properties.append("auto " + device + "\n" + x + "\n")
-            
+
                     del device_map[interface_index]
                     for i in range(0, len(properties)):
                         device_map.insert(interface_index + i, properties[i])
@@ -418,7 +426,7 @@ def _write_network_file(device_map):
     f = open(NETWORK_FILE, 'r+')
     #go to beginning of file, rewrite ethernet device map, truncate old since we'll have a whole copy of the file in the map
     f.seek(0)
-    
+
     if device_map is not None:
         for i in range(0, len(device_map)):
             text = text + device_map[i]
@@ -443,7 +451,7 @@ def _get_system_uptime():
     with open('/proc/uptime', 'r') as f:
         uptime_seconds = float(f.readline().split()[0])
         uptime_string = str(timedelta(seconds = uptime_seconds))
-    
+
     uptime_string = uptime_string[:-4]
     return uptime_string
 
@@ -453,7 +461,7 @@ def _get_cpu_temperature():
         cpu_temperature = float(f.readline())
 	cpu_temperature_string = str(cpu_temperature / 1000)
     return cpu_temperature_string
-    
+
 @settings.route('/export', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -557,7 +565,7 @@ def switch_branch():
                 git.pull(remote, branch)
             except sh.ErrorReturnCode_1:
                 flash('Error pulling code from remote: ' + remote + ' branch: ' + branch, 'error')
- 
+
         return redirect(url_for('settings.switch_branch'))
 
     return render_template('settings/git.html', form=form, ssl=use_ssl, current_branch=current_branch)
@@ -709,8 +717,54 @@ def get_system_imports():
 #    for d, f in pyfiles(os.getcwd()):
 #        if d.find("alembic") == -1:  #ignore the alembic directory
 #            imported[d + '/' + f] = parse_python_source(os.path.join(d,f))
-        
+
     return json.dumps(imported)
+
+@settings.route('/port_forward', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def port_forwarding():
+    form = UPNPForm()
+
+    current_internal_port = Setting.get_by_name('upnp_internal_port',default=None).value
+    current_external_port = Setting.get_by_name('upnp_external_port',default=None).value
+    if not has_upnp:
+        flash(u'Missing library: miniupnpc', 'error')
+
+    if not form.is_submitted():
+        form.internal_port.data = Setting.get_by_name('upnp_internal_port',default=443).value
+        form.external_port.data = Setting.get_by_name('upnp_external_port',default=random.randint(1200,60000)).value
+
+    if form.validate_on_submit():
+        internal_port = Setting.get_by_name('upnp_internal_port')
+        internal_port.value = form.internal_port.data
+        external_port = Setting.get_by_name('upnp_external_port')
+        external_port.value = form.external_port.data
+
+        db.session.add(internal_port)
+        db.session.add(external_port)
+        db.session.commit()
+
+        if has_upnp:
+            try:
+                upnp = UPNP(current_app.decoder)
+
+                #remove old bindings
+                upnp.removePortForward(current_external_port)
+
+                #add new bindings
+                upnp.addPortForward(internal_port.value, external_port.value)
+            except Exception as ex:
+                flash(u'Error setting up port forwarding: {0}'.format(ex), 'error')
+            else:
+                flash(u'Port forwarding created successfully.', 'info')
+
+                return redirect(url_for('settings.index'))
+
+        else:
+            flash(u'Missing library: miniupnpc', 'error')
+
+    return render_template('settings/port_forward.html', form=form, current_internal_port=current_internal_port, current_external_port=current_external_port)
 
 @settings.route('/configure_system_email', methods=['GET', 'POST'])
 @login_required
@@ -781,7 +835,7 @@ class ImportVisitor(object):
             self.modules = []
             self.recent = []
             self.exists = []
-        
+
         def visitImport(self, node):
             self.accept_imports()
 
@@ -794,7 +848,7 @@ class ImportVisitor(object):
                 mod['level'] = 0
 
                 exist = {'modname': x[0], 'importname': None}
-                if exist not in self.exists:                
+                if exist not in self.exists:
                     self.recent.append(mod)
                     self.exists.append(exist)
 
@@ -819,7 +873,7 @@ class ImportVisitor(object):
                     mod['viewname'] = as_ or name
                     mod['lineno'] = node.lineno
                     mod['level'] = node.level
-            
+
                 exist = {'modname': mod['modname'], 'importname': mod['importname'] }
 
                 if exist not in self.exists:
