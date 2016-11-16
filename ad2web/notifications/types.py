@@ -284,14 +284,13 @@ class EmailNotification(BaseNotification):
         self.password = obj.get_setting('password')
 
     def send(self, type, text):
-        message_time = time.time()
-        message_timestamp = time.ctime(message_time)
-        text = text + " Message Sent at: " + message_timestamp
+        message_timestamp = time.ctime(time.time())
+        text = text + "\r\n\r\nMessage sent at " + message_timestamp + "."
 
         if check_time_restriction(self.starttime, self.endtime):
             msg = MIMEText(text)
 
-            msg['Subject'] = self.subject
+            msg['Subject'] = self.subject + " (" + message_timestamp + ")"
             msg['From'] = self.source
             recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
             msg['To'] = ', '.join(recipients)
