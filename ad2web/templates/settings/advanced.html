@@ -3,6 +3,11 @@
 {% extends 'settings/layout.html' %}
 
 {% block css %}
+<style type="text/css">
+#data li {
+    margin: 10px 0;
+}
+</style>
 {% endblock %}
 
 {% block pagejs %}
@@ -22,7 +27,7 @@
         <li><a href="{{ url_for('settings.system_diagnostics') }}">Diagnostics</a>: Perform tests on your device and see missing modules.</li>
         <li><a href="{{ url_for('setup.index') }}">Setup</a>: Go through the process of setting up your AlarmDecoder.
         <li><a href="{{ url_for('settings.import') }}">Import</a> / <a href="{{ url_for('settings.export') }}">Export</a> settings.</li>
-        <li><a href="{{ url_for('settings.port_forwarding') }}">Forward Ports</a></li>
+        <li><a href="{{ url_for('settings.port_forwarding') }}">Forward Ports</a>: Use UPnP to forward ports.</li>
     </ul>
     </p>
 </div>

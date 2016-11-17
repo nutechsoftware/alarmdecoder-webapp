@@ -15,7 +15,7 @@ class ButtonWidget(object):
         if 'onclick' not in kwargs:
             kwargs['onclick'] = self.onclick
 
-        return Markup('<button type="button" class="btn" {0}>{1}</button>'.format(self.html_params(name=field.name, **kwargs), self.text))
+        return Markup('<button type="button" class="btn btn-default" {0}>{1}</button>'.format(self.html_params(name=field.name, **kwargs), self.text))
 
 
 class ButtonField(Field):
