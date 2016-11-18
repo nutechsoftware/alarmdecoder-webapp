@@ -720,6 +720,33 @@ def get_system_imports():
 
     return json.dumps(imported)
 
+@settings.route('/disable_forward', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def disable_forwarding():
+    if not has_upnp:
+        flash(u'Missing library: miniupnpc', 'error')
+        return redirect(url_for('settings.index'))
+
+    current_external_port = Setting.get_by_name('upnp_external_port',default=None)
+    current_internal_port = Setting.get_by_name('upnp_internal_port',default=None)
+    try:
+        upnp = UPNP(current_app.decoder)
+        if current_external_port.value is not None:
+            upnp.removePortForward(current_external_port.value)
+            current_internal_port.value = None
+            current_external_port.value = None
+            db.session.add(current_internal_port)
+            db.session.add(current_external_port)
+            db.session.commit()
+
+    except Exception as ex:
+        flash(u'Unable to remove port forward - {0}'.format(ex), 'error')
+    else:
+        flash(u'Port Forward removed successfully.', 'info')
+
+    return redirect(url_for('settings.index'))
+    
 @settings.route('/port_forward', methods=['GET', 'POST'])
 @login_required
 @admin_required

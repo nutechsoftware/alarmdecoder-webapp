@@ -19,6 +19,10 @@
     <div>
         {{ render_form(url_for('settings.port_forwarding'), form) }}
     </div>
+    {% if current_external_port %}
+        <br/>
+        <a href="{{ url_for('settings.disable_forwarding') }}" class="btn btn-primary">Disable</a>
+    {% endif %}
 </div>
 {% endblock %}
 
