@@ -37,7 +37,7 @@ KNOWN_MODULES = [ 'heapq', 'code', 'functools', 'random', 'cffi', 'tty', 'dateti
  'exceptions', 'ctypes', 'codecs', 'posixpath', 'fcntl', 'logging', 'socket', 'thread', 'StringIO', 'traceback', 'unicodedata',
  'weakref', 'tempfile', 'itertools', 'opcode', 'wtforms', 'os', 'marshal', 'alembic', 'pprint', 'binascii', 'unittest',
  'pycparser', 'chump', 'pygments', 'operator', 'array', 'gntp', 'select', 'pkgutil', 'platform', 'errno', 'cv2', 'symbol', 'zlib',
- 'json', 'tokenize', 'numpy', 'sleekxmpp', 'cPickle', 'sqlalchemy', 'termios', 'site', 'hashlib',
+ 'json', 'tokenize', 'numpy', 'sleekxmpp', 'cPickle', 'sqlalchemy', 'termios', 'site', 'hashlib', 'miniupnpc',
  'pwd', 'pytz', 'copy', 'cryptography', 'smtplib', 'keyword', 'socketio', 'uu', 'stringprep', 'markupbase',
  'fnmatch', 'getpass', 'mimetools', 'pickle', 'parser', 'ad2web', 'contextlib', 'numbers', 'io', 'pyexpat',
  'shutil', 'serial', 'mako', 'grp', 'alarmdecoder', 'six', 'genericpath', 'OpenSSL', 'gettext', 'sqlite3',
