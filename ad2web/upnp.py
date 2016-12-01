@@ -15,8 +15,8 @@ class UPNPThread(threading.Thread):
     def __init__(self, decoder):
         threading.Thread.__init__(self)
         self._decoder = decoder
-        self.internal_port = Setting.get_by_name('upnp_internal_port',default=None).value
-        self.external_port = Setting.get_by_name('upnp_external_port',default=None).value
+        self.internal_port = None
+        self.external_port = None
 
         if has_upnp:
             self.upnp = UPNP(self._decoder)
@@ -40,6 +40,8 @@ class UPNPThread(threading.Thread):
 
         while self._running:
             with self._decoder.app.app_context():
+                self.internal_port = Setting.get_by_name('upnp_internal_port',default=None).value
+                self.external_port = Setting.get_by_name('upnp_external_port',default=None).value
                 if self.internal_port is not None and self.external_port is not None and self.upnp is not None:
                     try:
                         self.upnp.addPortForward(self.internal_port, self.external_port)
