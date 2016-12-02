@@ -688,7 +688,7 @@ class CustomNotification(BaseNotification):
             if notify_data:
                 for key,val in notify_data.items():
                     if val == CUSTOM_REPLACER_SEARCH[CUSTOM_TIMESTAMP]:
-                        notify_data[key] = time.time()
+                        notify_data[key] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())) # ex: 2016-12-02 10:33:19 PST
                     if val == CUSTOM_REPLACER_SEARCH[CUSTOM_MESSAGE]:
                         notify_data[key] = self.msg_to_send
 
