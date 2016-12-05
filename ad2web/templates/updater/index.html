@@ -126,11 +126,11 @@
             <span id="app_running"><span style="color:green">&#10004;</span> Application is running.</span>
         </div>
         <div style="float: right;">
-            <a class="btn" href="{{ url_for('update.check_for_updates') }}">Check for updates</a>
+            <a class="btn btn-default" href="{{ url_for('update.check_for_updates') }}">Check for updates</a>
         </div>
 
-        <div style="padding-top: 20px; clear: both;">
-            <table style="text-align: left">
+        <div style="padding-top: 30px; clear: both;">
+            <table style="text-align: left; width: 80%; margin: 0 auto;" class="table-bordered table-striped">
                 <tr><th>Component</th><th>Branch</th><th>Changes</th><th>Status</th><th></th></tr>
                 {% for component, (needs_update, branch, revision, new_revision, status, project_url) in updates.iteritems() %}
                 <tr>
@@ -140,8 +140,8 @@
                     <td>{{ status }}</td>
                     <td>
                         <span id="{{ component }}-status"></span>
-                        <input class="btn" name="{{ component }}-update-submit" id="{{ component }}-update-submit" value="Update" style=" width: 4em; display:none;">
-                        <input class="btn" name="{{ component }}-restart-submit" id="{{ component }}-restart-submit" value="Restart" style="display:none; width: 4em;">
+                        <input class="btn btn-default" name="{{ component }}-update-submit" id="{{ component }}-update-submit" value="Update" style=" width: 4em; display:none;">
+                        <input class="btn btn-default" name="{{ component }}-restart-submit" id="{{ component }}-restart-submit" value="Restart" style="display:none; width: 4em;">
                         <img id="{{ component }}-update-anim" src="{{ url_for('static', filename='img/spinner.gif') }}" style="display: none;">
                     </td>
                 </tr>
