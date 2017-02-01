@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name="alarmdecoder-webapp",
-    version='0.7.0',
+    version='0.7.1',
     url='https://github.com/nutechsoftware/alarmdecoder-webapp',
     description='AlarmDecoder-webapp provides a web interface for your AlarmDecoder device.',
     author='Nu Tech Software Solutions, Inc.',
