@@ -4,6 +4,13 @@
 
 {% extends "layouts/base.html" %}
 
+{% block permanent_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap3/css/bootstrap.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.toggle.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main_responsive.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/user_custom.css') }}">
+{% endblock %}
+
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_keypad.css') }}">
