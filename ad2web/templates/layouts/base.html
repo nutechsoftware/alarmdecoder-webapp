@@ -37,7 +37,7 @@
         var isiPad = navigator.userAgent.match(/iPad/i) != null;
         var isiPhone = navigator.userAgent.match(/iPhone/i) != null;
 
-        if( isiPad )
+        if( isiPad || isiPhone )
         {
             viewport = document.querySelector("meta[name=viewport]");
             viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, target-densitydpi=device-dpi, user-scalable=no, maximum-scale=1.0');
@@ -46,6 +46,7 @@
         {
             $(element).prop('title', text );
         }
+
     </script>
     {% endblock %}
 </head>
