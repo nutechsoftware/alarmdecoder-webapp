@@ -61,7 +61,7 @@ def create_button():
         button = KeypadButton()
         form.populate_obj(button)
         button.user_id = current_user.id
-        
+        button.label = form.text.data    
         db.session.add(button)
         db.session.commit()
 
