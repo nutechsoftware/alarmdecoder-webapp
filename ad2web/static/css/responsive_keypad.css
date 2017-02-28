@@ -96,3 +96,53 @@ fieldset[disabled] .half_keypad-button.active {
   color: #D4D0D9;
   background-color: #050505;
 }
+
+.table-nonfluid {
+    width: auto !important;
+}
+
+.borderless td, .borderless th {
+    border-top: none !important;
+}
+
+#buttons-table {
+    margin: 0px auto !important;
+    float: none;
+}
+
+@media only screen and (max-width: 768px) {
+    #status-image1 {
+        height: 20px;
+        width: 40px;
+    }
+
+    #status-image2 {
+        height: 20px;
+        width: 40px;
+    }
+
+    #chime-image1 {
+        height: 20px;
+        width: 40px;
+    }
+
+    #check-mute {
+        height: 20px;
+    }
+
+    .arrow-button {
+        width: 25px !important;
+    }
+
+    #buttons-table {
+        width: 50% !important;
+    }
+
+    .keypad-button {
+        width: 60px;
+    }
+
+    .half_keypad-button {
+        width: 80px !important;
+    }
+}
