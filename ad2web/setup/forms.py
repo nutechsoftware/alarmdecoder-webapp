@@ -52,14 +52,14 @@ class SSLHostForm(Form):
 class LocalDeviceForm(Form):
     device_path = TextField(u'Path', [Required(), Length(max=255), PathExists()], description=u'Filesystem path to your AlarmDecoder.', default='/dev/ttyAMA0')
     baudrate = SelectField(u'Baudrate', choices=[(baudrate, str(baudrate)) for baudrate in BAUDRATES], default=115200, coerce=int)
-    confirm_management = BooleanField(u'Share AlarmDecoder on your network?', description='This setting serves the AlarmDecoder on your network with ser2sock and allows other software (Software keypad, etc.) to use it in conjunction with this webapp.')
+    confirm_management = BooleanField(u'Share AlarmDecoder on your network?', description='This setting serves the AlarmDecoder on your network with ser2sock and allows other software (Software keypad, etc.) to use it in conjunction with this webapp.', default=True)
 
     buttons = FormField(SetupButtonForm)
 
 class LocalDeviceFormUSB(Form):
     device_path = SelectField(u'Path', choices=[('/dev/ttyUSB0', u'/dev/ttyUSB0')], default='/dev/ttyUSB0', coerce=str)
     baudrate = SelectField(u'Baudrate', choices=[(baudrate, str(baudrate)) for baudrate in BAUDRATES], default=115200, coerce=int)
-    confirm_management = BooleanField(u'Share AlarmDecoder on your network?', description='This setting serves the AlarmDecoder on your network with ser2sock and allows other software (Software keypad, etc.) to use it in conjunction with this webapp.')
+    confirm_management = BooleanField(u'Share AlarmDecoder on your network?', description='This setting serves the AlarmDecoder on your network with ser2sock and allows other software (Software keypad, etc.) to use it in conjunction with this webapp.', default=True)
 
     buttons = FormField(SetupButtonForm)
 
