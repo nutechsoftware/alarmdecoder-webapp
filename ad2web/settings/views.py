@@ -641,7 +641,7 @@ def _import_refresh():
     if config_path:
         kwargs = {}
 
-        kwargs['device_path'] = Setting.get_by_name('device_path', '/dev/ttyAMA0').value
+        kwargs['device_path'] = Setting.get_by_name('device_path', '/dev/ttyS0').value
         kwargs['device_baudrate'] = Setting.get_by_name('device_baudrate', 115200).value
         kwargs['device_port'] = Setting.get_by_name('device_port', 10000).value
         kwargs['use_ssl'] = Setting.get_by_name('use_ssl', False).value
