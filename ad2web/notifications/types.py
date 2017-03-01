@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 import sleekxmpp
 import json
 import re
+import ssl
 try:
     from chump import Application
     have_chump = True
@@ -475,7 +476,7 @@ class NMANotification(BaseNotification):
 
             headers = { 'User-Agent': NMA_USER_AGENT }
             headers['Content-type'] = NMA_HEADER_CONTENT_TYPE
-            http_handler = HTTPSConnection(NMA_URL)
+            http_handler = HTTPSConnection(NMA_URL, context=ssl._create_unverified_context())
             http_handler.request(NMA_METHOD, NMA_PATH, urlencode(notify_data), headers)
 
             http_response = http_handler.getresponse()
@@ -541,7 +542,7 @@ class ProwlNotification(BaseNotification):
                 'priority': self.priority
             }
 
-            http_handler = HTTPSConnection(PROWL_URL)
+            http_handler = HTTPSConnection(PROWL_URL, context=ssl._create_unverified_context())
             http_handler.request(PROWL_METHOD, PROWL_PATH, headers=self.headers,body=urlencode(notify_data))
 
             http_response = http_handler.getresponse()
@@ -639,7 +640,7 @@ class CustomNotification(BaseNotification):
 
     def _do_post(self, data):
         if self.is_ssl:
-            http_handler = HTTPSConnection(self.url)
+            http_handler = HTTPSConnection(self.url, context=ssl._create_unverified_context())
         else:
             http_handler = HTTPConnection(self.url)
 
@@ -654,7 +655,7 @@ class CustomNotification(BaseNotification):
 
     def _do_get(self, data):
         if self.is_ssl:
-            http_handler = HTTPSConnection(self.url)
+            http_handler = HTTPSConnection(self.url, context=ssl._create_unverified_context())
         else:
             http_handler = HTTPConnection(self.url)
 
