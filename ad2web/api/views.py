@@ -886,7 +886,12 @@ def system_reboot():
     if not check_admin(request_user):
         return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
 
-    sh.reboot()
+    try:
+        sh.reboot()
+    except sh.ErrorReturnCode_1:
+        return jsonify(build_error(ERROR_NOT_AUTHORIZED, "System did not respond correctly.")), UNAUTHORIZED
+    except sh.ErrorReturnCode_143:
+        pass
     
     return jsonify(), ACCEPTED
 
