@@ -140,6 +140,7 @@ fieldset[disabled] .half_keypad-button.active {
 
     .keypad-button {
         width: 60px;
+        height: 35px;
     }
 
     .half_keypad-button {
