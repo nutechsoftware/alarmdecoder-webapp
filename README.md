@@ -58,7 +58,7 @@ If you'd rather do it by hand you can follow these steps:
 25. ./opencv.sh
 26. Edit /etc/gunicorn.d/alarmdecoder and change the user/group you'd like it to run as.
 27. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
-28. Optionally install and set permissions for [ser2sock](http://github.com/alarmdecoder/ser2sock.git)
+28. Optionally install and set permissions for [ser2sock](http://github.com/nutechsoftware/ser2sock)
 29. Create self-signed SSL certificate for HTTPS - sudo openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt
 30. Set your device locale:  sudo dpkg-reconfigure locales
 31. Set your keyboard mapping: sudo dpkg-reconfigure keyboard-configuration
