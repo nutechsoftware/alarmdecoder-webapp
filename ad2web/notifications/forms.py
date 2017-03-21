@@ -11,7 +11,7 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
         FileField, DecimalField, BooleanField, SelectField, FormField, FieldList,
         SelectMultipleField)
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
-        URL, AnyOf, Optional)
+        URL, AnyOf, Optional, InputRequired)
 from wtforms.widgets import ListWidget, CheckboxInput
 from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES,
                         NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES, GROWL, GROWL_PRIORITIES, GROWL_TITLE,
@@ -68,9 +68,9 @@ class TimeValidator(object):
 
 
 class TimeSettingsInternalForm(Form):
-    starttime =  TextField(u'Start Time', [Optional(), Length(max=8), TimeValidator()], default='00:00:00', description=u'Start time for this event notification (24hr format)')
-    endtime =  TextField(u'End Time', [Optional(), Length(max=8), TimeValidator()], default='23:59:59', description=u'End time for this event notification (24hr format)')
-    delaytime = TextField(u'Notification Delay', [Optional(), Length(max=10)], default=0, description=u'Time in minutes to delay sending notification')
+    starttime =  TextField(u'Start Time', [InputRequired(), Length(max=8), TimeValidator()], default='00:00:00', description=u'Start time for this event notification (24hr format)')
+    endtime =  TextField(u'End Time', [InputRequired(), Length(max=8), TimeValidator()], default='23:59:59', description=u'End time for this event notification (24hr format)')
+    delaytime = IntegerField(u'Notification Delay', [InputRequired(), NumberRange(min=0)], default=0, description=u'Time in minutes to delay sending notification')
     suppress = BooleanField(u'Suppress Restore?', [Optional()], description=u'Suppress notification if restored before delay')
 
     def __init__(self, *args, **kwargs):
@@ -98,8 +98,11 @@ class EditNotificationForm(Form):
 
         self.time_field.starttime.data = self.populate_from_setting(id, 'starttime', default='00:00:00')
         self.time_field.endtime.data = self.populate_from_setting(id, 'endtime', default='23:59:59')
-        self.time_field.delaytime.data = self.populate_from_setting(id, 'delay')
-        self.time_field.suppress.data = self.populate_from_setting(id, 'suppress')
+        self.time_field.delaytime.data = self.populate_from_setting(id, 'delay', default=0)
+        # HACK: workaround for bad form that was pushed up.
+        if self.time_field.delaytime.data is None or self.time_field.delaytime.data == '':
+            self.time_field.delaytime.data = 0
+        self.time_field.suppress.data = self.populate_from_setting(id, 'suppress', default=False)
 
     def populate_setting(self, name, value, id=None):
         if id is not None:
@@ -283,7 +286,7 @@ class TwiMLNotificationInternalForm(Form):
 
 class TwiMLNotificationForm(EditNotificationForm):
     form_field = FormField(TwiMLNotificationInternalForm)
-    
+
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 

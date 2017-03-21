@@ -83,9 +83,7 @@ class NotificationSystem(object):
                     message = self._build_message(type, **kwargs)
 
                     if message:
-                        delay = int(n.delay)
-
-                        if delay > 0 and type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
+                        if n.delay > 0 and type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
                             message_send_time = time.mktime((datetime.datetime.combine(datetime.date.today(), datetime.datetime.time(datetime.datetime.now())) + datetime.timedelta(minutes=delay)).timetuple())
 
                             notify = {}
@@ -230,6 +228,9 @@ class BaseNotification(object):
         self.starttime = obj.get_setting('starttime', default='00:00:00')
         self.endtime = obj.get_setting('endtime', default='23:59:59')
         self.delay = obj.get_setting('delay', default=0)
+        # HACK: fix for bad form that was pushed.
+        if self.delay is None or self.delay == '':
+            self.delay = 0
         self.suppress = obj.get_setting('suppress', default=True)
 
     def subscribes_to(self, type, **kwargs):
@@ -427,7 +428,7 @@ class TwiMLNotification(BaseNotification):
         self.number_to = obj.get_setting('number_to')
         self.number_from = obj.get_setting('number_from')
         self.url = obj.get_setting('twimlet_url')
-       
+
     def send(self, type, text):
         if have_twilio == False:
             raise Exception('Missing Twilio library: twilio')
@@ -445,7 +446,7 @@ class TwiMLNotification(BaseNotification):
         except twilio.TwilioRestException as e:
             current_app.logger.info('Event TwiML Notification Failed: {0}' . format(e))
             raise Exception('TwiML Notification Failed: {0}' . format(e))
- 
+
 class NMANotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
