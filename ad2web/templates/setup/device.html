@@ -308,7 +308,7 @@
                 case '1':
                     label.html('Partition and Slot');
                     keypad_address_val = $('#keypad_address').val();
-                    if( keypad_address_val < 1 || keypad_address_val > 99 )
+                    if( keypad_address_val < 1 || keypad_address_val > 88 )
                         $('#keypad_address').val(11);
 
                     set_form_visible(false);
@@ -322,9 +322,9 @@
             mode = $('#panel_mode-1:checked').val();
             if( mode == 1 )
             {
-                if(keypad_address_val < 1 || keypad_address_val > 99 )
+                if(keypad_address_val < 1 || keypad_address_val > 88 )
                 {
-                    alert('DSC Partition and Slot has to be between 1 and 99');
+                    alert('DSC Partition and Slot has to be between 1 and 88');
                     event.preventDefault();
                 }
             }
