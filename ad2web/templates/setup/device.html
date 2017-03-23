@@ -279,7 +279,7 @@
         var mode = $('#panel_mode-1:checked').val();
         var label = $("label[for='keypad_address']");
         if( mode == 1 )
-            label.html('Partition');
+            label.html('Partition and Slot');
         else
             label.html('Keypad Address');
 
@@ -306,10 +306,10 @@
                     break;
 
                 case '1':
-                    label.html('Partition');
+                    label.html('Partition and Slot');
                     keypad_address_val = $('#keypad_address').val();
-                    if( keypad_address_val < 1 || keypad_address_val > 8 )
-                        $('#keypad_address').val(1);
+                    if( keypad_address_val < 1 || keypad_address_val > 99 )
+                        $('#keypad_address').val(11);
 
                     set_form_visible(false);
                     break;
@@ -322,9 +322,9 @@
             mode = $('#panel_mode-1:checked').val();
             if( mode == 1 )
             {
-                if(keypad_address_val < 1 || keypad_address_val > 8 )
+                if(keypad_address_val < 1 || keypad_address_val > 99 )
                 {
-                    alert('DSC Partition has to be between 1 and 8');
+                    alert('DSC Partition and Slot has to be between 1 and 99');
                     event.preventDefault();
                 }
             }
