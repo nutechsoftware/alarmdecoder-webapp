@@ -57,7 +57,7 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
-                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML )
+                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -135,14 +135,23 @@ class NotificationSystem(object):
         if message:
             message = message.text
 
-        if 'zone' in kwargs:
-            zone_name = Zone.get_name(kwargs['zone'])
-            kwargs['zone_name'] = zone_name if zone_name else '<unnamed>'
+        kwargs = self._fill_replacers(type, **kwargs)
 
         if message:
             message = message.format(**kwargs)
 
         return message
+
+    def _fill_replacers(self, type, **kwargs):
+        if 'zone' in kwargs:
+            zone_name = Zone.get_name(kwargs['zone'])
+            kwargs['zone_name'] = zone_name if zone_name else '<unnamed>'
+
+        if type == ARM:
+            status = kwargs.get('stay', False)
+            kwargs['arm_type'] = 'STAY' if status else 'AWAY'
+
+        return kwargs
 
     def process_wait_list(self):
         errors = []

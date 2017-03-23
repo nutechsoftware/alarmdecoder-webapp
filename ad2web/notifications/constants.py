@@ -21,7 +21,7 @@ CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
 
 DEFAULT_EVENT_MESSAGES = {
-    ARM: 'The alarm system has been armed.',
+    ARM: 'The alarm system has been armed {arm_type}.',
     DISARM: 'The alarm system has been disarmed.',
     POWER_CHANGED: 'Power status has changed to {status}.',
     ALARM: 'The alarm system has been triggered on zone {zone_name} ({zone})!',
