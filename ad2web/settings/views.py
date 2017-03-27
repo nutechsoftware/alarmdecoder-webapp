@@ -234,6 +234,8 @@ def system_reboot():
         except sh.ErrorReturnCode_1:
             flash('Unable to reboot device!', 'error')
             return redirect(url_for('settings.host'))
+        except sh.ErrorReturnCode_143:
+            pass
 
     flash('Rebooting device!', 'success')
     return redirect(url_for('settings.host'))
@@ -249,6 +251,8 @@ def system_shutdown():
         except sh.ErrorReturnCode_1:
             flash('Unable to shutdown device!', 'error')
             return redirect(url_for('settings.host'))
+        except sh.ErrorReturnCode_143:
+            pass
 
     flash('Shutting device down!', 'success')
     return redirect(url_for('settings.host'))
