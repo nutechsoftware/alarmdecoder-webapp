@@ -14,7 +14,7 @@ from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX, AGE_MIN, AGE_MAX, DEPOSI
 from ..widgets import ButtonField
 
 class KeypadButtonForm(Form):
-    label = TextField(u'Label', [Required(), Length(max=32)])
+    text = TextField(u'Label', [Required(), Length(max=32)])
     code = TextField(u'Code', [Required(), Length(max=32)])
 
     submit = SubmitField(u'Save')

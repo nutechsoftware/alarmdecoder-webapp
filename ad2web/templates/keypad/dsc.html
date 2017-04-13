@@ -216,6 +216,15 @@
         var mute = 0;
         var mobile = false;
         var tablet = false;
+
+        if( isMobile() )
+        {
+            var keypadline1 = document.getElementById("keypad-line1");
+            var keypadline2 = document.getElementById("keypad-line2");
+            keypadline1.style.fontSize = "25px";
+            keypadline2.style.fontSize = "25px";
+        }
+
         $(document).ready(function() {
             //detect mobile and tablet
             mobile = isMobile();
@@ -595,14 +604,67 @@
             bindButtonEvents('#button-right', '>', buttonImageListSmall[37], buttonImageListSmall[37], buttonImageListSmall[37], buttonImageListSmall[37]);
 //custom buttons
 
+                if( !tablet && !mobile )
+                {
+                    $('#special_buttons').click(function() {
+                        $('#special-dialog').dialog({
+                            modal: true,
+                            minWidth: 650,
+                            maxWidth: 650,
+                            position: { my: "center", at: "bottom", of: $('#keypad-row') },
+                        });
+                    });
+                }
+                else
+                {
+                    if( mobile && !isiPhone )
+                    {
+                        $('#special_buttons').on('touchend', function() {
+                            $('#keypad-buttons').hide();
+                            $('#special-dialog').dialog({
+                                modal: true,
+                                minWidth: 200,
+                                position: { my: "center", at: "center", of: window },
+                                close: function() {
+                                    $('#keypad-buttons').show();
+                                },
+                            });
+                        });
+                    }
+                    if( mobile && isiPhone )
+                    {
+                        $('#special_buttons').on('touchstart', function() {
+                            $('#keypad-buttons').hide();
+                            $('#special-dialog').dialog({
+                                modal: true,
+                                minWidth: 400,
+                                position: { my: "center", at: "center", of: window },
+                                close: function() {
+                                    $('#keypad-buttons').show();
+                                }
+                            });
+                        });
+                    }
+                    if( tablet )
+                    {
+                        $('#special_buttons').on('touchstart', function() {
+                            $('#special-dialog').dialog({
+                                modal: true,
+                                minWidth: 725,
+                                position: { my: "center", at: "bottom", of: window },
+                            });
+                        });
+                    }
+                }
             {% if buttons %}
+/*
                 $("#exit").on('mousedown', function() {
                     $('#dialog').dialog("close");
                 });
                 $("#exit").on('touchstart', function() {
                     $('#dialog').dialog("close");
                 });
-
+*/
                 {% for button in buttons %}
                     $("#custom_{{button.button_id}}").on('mousedown', function() {
                         var code = '{{button.code}}';
@@ -624,7 +686,7 @@
                             modal: true,
                             minWidth: 650,
                             maxWidth: 650,
-                            position: { my: "center", at: "bottom", of: $('#button-0') },
+                            position: { my: "center", at: "bottom", of: $('#keypad-row') },
                         });
                     });
                 }
@@ -775,144 +837,97 @@
 
 {% block container %}
 <div class="container" style="-webkit-user-select: none; user-select: none; -moz-user-select: none;">
-    <div class="row no-gutter">
+    <div class="row no-gutter" id="status-row">
         <div class="col-xs-12 col-sm-12 text-center"><div id="keypad-line1">Please Wait</div></div>
         <div class="col-xs-12 col-sm-12 text-center"><div id="keypad-line2">Loading...</div></div>
-        <div class="col-sm-12 text-center">
+        <div class="col-xs-12 col-sm-12 text-center">
             <hr>
             <div id="status-indicator">
                 <div class="row some-gutter">
-                    <div class="col-sm-4 col-xs-4"></div>
-                    <div class="col-sm-4 col-xs-4">
-                        <div class="row some-gutter">
-                            <div class="col-xs-6 col-sm-3 some-gutter">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
-                            <div class="col-xs-6 col-sm-3 some-gutter">Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"></div>
-                            <div class="col-xs-6 col-sm-3 some-gutter">Chime: <img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" width="40px" height="30px" alt="chime enabled"/></div>
-                            <div class="col-xs-6 col-sm-3 some-gutter" id="mute-row">Sounds: <input type="checkbox" name="check-mute" data-size="small" id="check-mute"/></div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4 col-xs-4 visible-sm visible-md visible-lg"></div>
+                    <div class="col-sm-4 col-xs-4">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}"/></div>
+                    <div class="col-sm-4 col-xs-4">Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}"/></div>
+                    <div class="col-sm-4 col-xs-4">Chime: <img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" width="40px" height="30px" alt="chime enabled"/></div>
                 </div>
             </div> <!-- /#status-indicator -->
+        </div>
+    </div> <!-- /#status-row -->
+    <div class="row no-gutter" id="keypad-row" style="-webkit-user-select: none; user-select: none; -moz-user-select: none;">
+        <div class="col-xs-12 col-sm-12">
             <hr>
             <div id="keypad-buttons">
-                <div class="row no-gutter">
-                    <div class="col-sm-2 col-xs-2 no-gutter"></div>
-                    <div class="col-sm-8 col-xs-8 no-gutter">
-                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                            <div class="col-sm-5 col-xs-5 no-gutter">
-                                <img id="button-left" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-5 col-xs-5 no-gutter">
-                                <img id="button-right" class="keypad-button img-responsive"/>
-                            </div>
-                            <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-1" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-2" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-3" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-stay" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                    </div>
-                    <div class="col-sm-2 col-xs-2"></div>
-                </div>
-                <div class="row no-gutter">
-                    <div class="col-sm-2 col-xs-2 no-gutter"></div>
-                    <div class="col-sm-8 col-xs-8 no-gutter">
-                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-F1" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-4" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-5" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-6" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-away" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                    </div>
-                    <div class="col-sm-2 col-xs-2"></div>
-                </div>
-                <div class="row no-gutter">
-                    <div class="col-sm-2 col-xs-2 no-gutter"></div>
-                    <div class="col-sm-8 col-xs-8 no-gutter">
-                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-F2" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-7" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-8" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-9" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-chime" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                    </div>
-                    <div class="col-sm-2 col-xs-2"></div>
-                </div>
-                <div class="row no-gutter">
-                    <div class="col-sm-2 col-xs-2 no-gutter"></div>
-                    <div class="col-sm-8 col-xs-8 no-gutter">
-                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-F3" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-star" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-0" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-pound" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-2 col-xs-2 no-gutter">
-                            <img id="button-reset" class="keypad-button img-responsive"/>
-                        </div>
-                        <div class="col-sm-1 col-xs-1 no-gutter"></div>
-                    </div>
-                    <div class="col-sm-2 col-xs-2"></div>
-                </div>
-            </div>
+                <table class="table table-nonfluid borderless" id="buttons-table">
+                    <tbody>
+                        <tr id="keypad-row1">
+                            <td id="direction-buttons">
+                                <div style="float: left; width:50%;"><img id="button-left" class="keypad-button arrow-button"/></div>
+                                <div style="float: right; width:50%;"><img id="button-right" class="keypad-button arrow-button"/></div>
+                            </td>
+                            <td><img id="button-1" class="keypad-button"/></td>
+                            <td><img id="button-2" class="keypad-button"/></td>
+                            <td><img id="button-3" class="keypad-button"/></td>
+                        </tr>
+                        <tr id="keypad-row2">
+                            <td><img id="button-F1" class="keypad-button"/></td>
+                            <td><img id="button-4" class="keypad-button"/></td>
+                            <td><img id="button-5" class="keypad-button"/></td>
+                            <td><img id="button-6" class="keypad-button"/></td>
+                        </tr>
+                        <tr id="keypad-row3">
+                            <td><img id="button-F2" class="keypad-button"/></td>
+                            <td><img id="button-7" class="keypad-button"/></td>
+                            <td><img id="button-8" class="keypad-button"/></td>
+                            <td><img id="button-9" class="keypad-button"/></td>
+                        </tr>
+                        <tr id="keypad-row4">
+                            <td><img id="button-F3" class="keypad-button"/></td>
+                            <td><img id="button-star" class="keypad-button"/></td>
+                            <td><img id="button-0" class="keypad-button"/></td>
+                            <td><img id="button-pound" class="keypad-button"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> <!-- /#keypad-buttons -->
         </div>
-    </div>
-</div>
+    </div> <!-- /#keypad-row -->
+    <br/>
+</div><!-- /container -->
     {% if buttons %}
         <div id="dialog" style="display: none;" title="Custom Buttons">
-            <img id="exit" src="{{ url_for('static', filename='img/red_x.png') }}" height="24" width="24"/><br/><br/>
         {% for button in buttons%}
-            <input id="custom_{{button.button_id}}" class="custom_button" type="button" value="{{button.label}}"></input>
+            <input id="custom_{{button.button_id}}" class="custom_button btn half_keypad-button" type="button" value="{{button.label}}"/>
         {% endfor%}
         </div>
-<div class="container">
-        <div id="custom-button-row">
-            <button class="btn half_keypad-button" id="custom_buttons" name="custom_buttons">Custom Buttons</button>
-        </div>
-</div>
     {% endif %}
-    </div>
+
+<div class="container" id="controls-container">
+    <div class="row" id="controls-row">
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+            <span class="pull-right"><button class="btn half_keypad-button" id="special_buttons" name="special_buttons" style="text-align: center;">Special</button></span>
+        </div>
+        {% if buttons %}
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+            <span class="pull-left"><button class="btn half_keypad-button" id="custom_buttons" name="custom_buttons">Custom</button></span>
+        </div>
+        {% else %}
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4"></div>
+        {% endif %}
+        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+            <span class="pull-left"><div class="hidden-xs">Sounds: </div><input type="checkbox" name="check-mute" data-size="small" id="check-mute"/><div class="hidden-sm hidden-md hidden-lg">Sounds</div></span>
+        </div>
+    </div> <!-- /#controls-row -->
+</div> <!-- /#controls-container -->
+
+<div id="special-dialog" style="display: none;" title="Special Buttons">
+    <table>
+        <tbody>
+            <tr>
+                <td><img id="button-stay" class="keypad-button"/></td>
+                <td><img id="button-away" class="keypad-button"/></td>
+                <td><img id="button-chime" class="keypad-button"/></td>
+                <td><img id="button-reset" class="keypad-button"/></td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 {% endblock %}
 

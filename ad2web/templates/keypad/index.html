@@ -204,6 +204,15 @@
         var mute = 0;
         var mobile = false;
         var tablet = false;
+
+        if( isMobile() )
+        {
+            var keypadline1 = document.getElementById("keypad-line1");
+            keypadline1.style.fontSize = "25px";
+            var keypadline2 = document.getElementById("keypad-line2");
+            keypadline2.style.fontSize = "25px";
+        
+        }
         $(document).ready(function() {
             //detect mobile and tablet
             mobile = isMobile();
@@ -715,77 +724,58 @@
 {% block container %}
 <div class="container">
     <div class="row no-gutter" style="-webkit-user-select: none; user-select: none; -moz-user-select: none;">
-        <div class="col-sm-12 text-center"><div id="keypad-line1">Please Wait</div></div>
-        <div class="col-sm-12 text-center"><div id="keypad-line2">Loading...</div></div>
-        <div class="col-sm-12 text-center">
+        <div class="col-xs-12 col-sm-12 text-center"><div id="keypad-line1">Please Wait</div></div>
+        <div class="col-xs-12 col-sm-12 text-center"><div id="keypad-line2">Loading...</div></div>
+        <div class="col-xs-12 col-sm-12 text-center">
             <hr>
             <div id="status-indicator">
                 <div class="row some-gutter">
-                    <div class="col-sm-4 col-xs-4"></div>
-                    <div class="col-sm-4 col-xs-4">
-                        <div class="row some-gutter">
-                            <div class="col-xs-6 col-sm-3 some-gutter">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}" class="img-responsive"></div>
-                            <div class="col-xs-6 col-sm-3 some-gutter">Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}" class="img-responsive"></div>
-                            <div class="col-xs-6 col-sm-3 some-gutter">Chime: <img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" class="img-responsive" width="40px" height="30px" alt="chime enabled"/></div>
-                            <div class="col-xs-6 col-sm-3 some-gutter" id="mute-row">Sounds: <input type="checkbox" name="check-mute" data-size="small" id="check-mute"/></div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4 col-xs-4 visible-sm visible-md visible-lg"></div>
+                    <div class="col-xs-4 col-sm-4">Armed: <img id="status-image1" src="{{ url_for('static', filename='img/led-off.png') }}" /></div>
+                    <div class="col-xs-4 col-sm-4">Ready: <img id="status-image2" src="{{ url_for('static', filename='img/led-off.png') }}" /></div>
+                    <div class="col-xs-4 col-sm-4">Chime: <img id="chime-image1" src="{{ url_for('static', filename='img/chime.png') }}" width="40px" height="30px" alt="chime enabled"/></div>
                 </div>
             </div> <!-- /#status-indicator -->
+        </div>
+    </div>
+    <div class="row no-gutter" style="-webkit-user-select: none; user-select: none; -moz-user-select: none;">
+        <div class="col-xs-12 col-sm-12">
             <hr>
             <div id="keypad-buttons">
-                <div class="row no-gutter">
-                    <div class="col-sm-3 col-xs-3"></div>
-                    <div class="col-sm-6 col-xs-6">
-                        <div class="row">
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-F1" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-1" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-2" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-3" class="keypad-button img-responsive"/></div>
-                        </div>
-                    </div>
-                    <div class="col-sm-3 col-xs-3 visible-sm visible-md visible-lg"></div>
-                </div>
-                <div class="row no-gutter">
-                    <div class="col-sm-3 col-xs-3"></div>
-                    <div class="col-sm-6 col-xs-6">
-                        <div class="row">
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-F2" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-4" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-5" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-6" class="keypad-button img-responsive"/></div>
-                        </div>
-                    </div>
-                    <div class="col-sm-3 col-xs-3"></div>
-                </div>
-                <div class="row no-gutter">
-                    <div class="col-sm-3 col-xs-3"></div>
-                    <div class="col-sm-6 col-xs-6">
-                        <div class="row">
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-F3" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-7" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-8" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-9" class="keypad-button img-responsive"/></div>
-                        </div>
-                    </div>
-                    <div class="col-sm-3 col-xs-3"></div>
-                </div>
-                <div class="row no-gutter">
-                    <div class="col-sm-3 col-xs-3"></div>
-                    <div class="col-sm-6 col-xs-6">
-                        <div class="row">
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-F4" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-star" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-0" class="keypad-button img-responsive"/></div>
-                            <div class="col-xs-3 col-sm-3 col-lg-3 no-gutter"><img id="button-pound" class="keypad-button img-responsive"/></div>
-                        </div>
-                    </div>
-                    <div class="col-sm-3 col-xs-3"></div>
-                </div>
+                <table class="table table-nonfluid borderless" id="buttons-table">
+                    <tbody>
+                        <tr id="keypad-row1">
+                            <td><img id="button-F1" class="keypad-button"/></td>
+                            <td><img id="button-1" class="keypad-button"/></td>
+                            <td><img id="button-2" class="keypad-button"/></td>
+                            <td><img id="button-3" class="keypad-button"/></td>
+                        </tr>
+                        <tr id="keypad-row2">
+                            <td><img id="button-F2" class="keypad-button"/></td>
+                            <td><img id="button-4" class="keypad-button"/></td>
+                            <td><img id="button-5" class="keypad-button"/></td>
+                            <td><img id="button-6" class="keypad-button"/></td>                                    
+                        </tr>
+                        <tr id="keypad-row3">
+                            <td><img id="button-F3" class="keypad-button"/></td>
+                            <td><img id="button-7" class="keypad-button"/></td>
+                            <td><img id="button-8" class="keypad-button"/></td>
+                            <td><img id="button-9" class="keypad-button"/></td>
+                        </tr>
+                        <tr id="keypad-row4">
+                            <td><img id="button-F4" class="keypad-button"/></td>
+                            <td><img id="button-star" class="keypad-button"/></td>
+                            <td><img id="button-0" class="keypad-button"/></td>
+                            <td><img id="button-pound" class="keypad-button"/></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div> <!-- /#keypad-buttons -->
         </div>
     </div> <!-- /.row -->
+    <br/>
+    <div class="row" id="mute-row">
+        <div class="col-xs-12 col-sm-12"><span class="pull-left">Sounds: <input type="checkbox" name="check-mute" data-size="small" id="check-mute"/></span></div>
+    </div>
 </div>  <!-- /.container -->
 
     {% if buttons %}
@@ -800,7 +790,7 @@
         <br/>
         <div class="container">
             <div id="custom-button-row">
-                <button class="btn half_keypad-button" id="custom_buttons" name="custom_buttons">Custom Buttons</button>
+                <span class="pull-left"><button class="btn half_keypad-button" id="custom_buttons" name="custom_buttons">Custom Buttons</button></span>
             </div>
         </div>
     {% endif %}

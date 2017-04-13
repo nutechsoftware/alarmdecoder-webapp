@@ -73,10 +73,40 @@ class ReverseProxied(object):
 
     :param app: the WSGI application
     '''
-    def __init__(self, app):
+    def __init__(self, app, num_proxies=1):
         self.app = app
+        self.num_proxies = num_proxies
+
+    def get_remote_addr(self, forwarded_for):
+        """Selects the new remote addr from given list of ips in X-Forwarded-For
+        By default it picks the one that the num_proxies proxy server provides.
+        """
+
+        if len(forwarded_for) >= self.num_proxies:
+            return forwarded_for[-1 * self.num_proxies]
 
     def __call__(self, environ, start_response):
+        # Adapted from werkzeug fixer ProxyFix
+        getter = environ.get
+        forwarded_proto = getter('HTTP_X_FORWARDED_PROTO', '')
+        forwarded_for = getter('HTTP_X_FORWARDED_FOR', '').split(',')
+        forwarded_host = getter('HTTP_X_FORWARDED_HOST', '')
+
+        environ.update({
+            'werkzeug.proxy_fix.orig_wsgi_url_scheme': getter('wsgi.url_scheme'),
+            'werkzeug.proxy_fix.orig_remote_addr': getter('REMOTE_ADDR'),
+            'werkzeug.proxy_fix.orig_http_host': getter('HTTP_HOST')
+        })
+
+        forwarded_for = [x for x in [x.strip() for x in forwarded_for] if x]
+        remote_addr = self.get_remote_addr(forwarded_for)
+
+        if remote_addr is not None:
+            environ['REMOTE_ADDR'] = remote_addr
+
+        if forwarded_host:
+            environ['HTTP_HOST'] = forwarded_host
+
         script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
         if script_name:
             environ['SCRIPT_NAME'] = script_name
@@ -87,6 +117,9 @@ class ReverseProxied(object):
         scheme = environ.get('HTTP_X_SCHEME', '')
         if scheme:
             environ['wsgi.url_scheme'] = scheme
+
+        if forwarded_proto:
+            environ['wsgi.url_scheme'] = forwarded_proto
 
         server = environ.get('HTTP_X_FORWARDED_SERVER', '')
         if server:

@@ -42,29 +42,31 @@ If you'd rather do it by hand you can follow these steps:
 10. sudo mkdir -p /var/www
 11. sudo mkdir -p /etc/nginx/ssl
 11. sudo cp html/* /var/www
-12. sudo service nginx start
-13. sudo pip install gunicorn --upgrade
-14. sudo ln -s /usr/local/bin/gunicorn /usr/bin/gunicorn
-15. cd /opt/
-16. sudo git clone http://github.com/nutechsoftware/alarmdecoder-webapp.git
-17. cd alarmdecoder-webapp
-18. sudo pip install -r requirements.txt
-19. sudo python manage.py initdb
-20. sudo cp contrib/nginx/alarmdecoder /etc/nginx/sites-available/
-21. sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
-22. sudo rm /etc/nginx/sites-enabled/default
-23. sudo cp contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
-24. cd contrib/opencv/
-25. ./opencv.sh
-26. Edit /etc/gunicorn.d/alarmdecoder and change the user/group you'd like it to run as.
-27. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
-28. Optionally install and set permissions for [ser2sock](http://github.com/alarmdecoder/ser2sock.git)
-29. Create self-signed SSL certificate for HTTPS - sudo openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt
-30. Set your device locale:  sudo dpkg-reconfigure locales
-31. Set your keyboard mapping: sudo dpkg-reconfigure keyboard-configuration
-32. Set your timezone: sudo dpkg-reconfigure tzdata
-33. sudo service nginx restart
-34. sudo service gunicorn restart
+12. sudo cp /opt/alarmdecoder-webapp/contrib/nginx/nginx.service /lib/systemd/system/nginx.service
+13. sudo systemctl daemon-reload
+14. sudo service nginx start
+15. sudo pip install gunicorn --upgrade
+16. sudo ln -s /usr/local/bin/gunicorn /usr/bin/gunicorn
+17. cd /opt/
+18. sudo git clone http://github.com/nutechsoftware/alarmdecoder-webapp.git
+19. cd alarmdecoder-webapp
+20. sudo pip install -r requirements.txt
+21. sudo python manage.py initdb
+22. sudo cp contrib/nginx/alarmdecoder /etc/nginx/sites-available/
+23. sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
+24. sudo rm /etc/nginx/sites-enabled/default
+25. sudo cp contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
+26. cd contrib/opencv/
+27. ./opencv.sh
+28. Edit /etc/gunicorn.d/alarmdecoder and change the user/group you'd like it to run as.
+29. Change permissions on /opt/alarmdecoder-webapp to grant permissions for your chosen user.
+30. Optionally install and set permissions for [ser2sock](http://github.com/alarmdecoder/ser2sock.git)
+31. Create self-signed SSL certificate for HTTPS - sudo openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt
+32. Set your device locale:  sudo dpkg-reconfigure locales
+33. Set your keyboard mapping: sudo dpkg-reconfigure keyboard-configuration
+34. Set your timezone: sudo dpkg-reconfigure tzdata
+35. sudo service nginx restart
+36. sudo service gunicorn restart
 
 ## Raspberry Pi 3 GPIO Serial Port for AD2Pi, turn bluetooth into software uart
 

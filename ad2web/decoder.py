@@ -649,9 +649,6 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                     enable_reconfiguring = True
                     orig_config_string = self._alarmdecoder.device.get_config_string()
 
-                self._alarmdecoder.close()
-                self._alarmdecoder.open(no_reader_thread=True)
-
                 current_app.logger.info('Beginning firmware upload - filename=%s', self._alarmdecoder.firmware_file)
                 firmware_updater = FirmwareUpdater(filename=self._alarmdecoder.firmware_file, length=self._alarmdecoder.firmware_length)
                 firmware_updater.update()

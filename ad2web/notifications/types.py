@@ -9,6 +9,8 @@ from email.mime.text import MIMEText
 import sleekxmpp
 import json
 import re
+import ssl
+import sys
 try:
     from chump import Application
     have_chump = True
@@ -57,7 +59,7 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
-                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML )
+                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -83,9 +85,7 @@ class NotificationSystem(object):
                     message = self._build_message(type, **kwargs)
 
                     if message:
-                        delay = int(n.delay)
-
-                        if delay > 0 and type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
+                        if n.delay > 0 and type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
                             message_send_time = time.mktime((datetime.datetime.combine(datetime.date.today(), datetime.datetime.time(datetime.datetime.now())) + datetime.timedelta(minutes=delay)).timetuple())
 
                             notify = {}
@@ -137,14 +137,23 @@ class NotificationSystem(object):
         if message:
             message = message.text
 
-        if 'zone' in kwargs:
-            zone_name = Zone.get_name(kwargs['zone'])
-            kwargs['zone_name'] = zone_name if zone_name else '<unnamed>'
+        kwargs = self._fill_replacers(type, **kwargs)
 
         if message:
             message = message.format(**kwargs)
 
         return message
+
+    def _fill_replacers(self, type, **kwargs):
+        if 'zone' in kwargs:
+            zone_name = Zone.get_name(kwargs['zone'])
+            kwargs['zone_name'] = zone_name if zone_name else '<unnamed>'
+
+        if type == ARM:
+            status = kwargs.get('stay', False)
+            kwargs['arm_type'] = 'STAY' if status else 'AWAY'
+
+        return kwargs
 
     def process_wait_list(self):
         errors = []
@@ -230,6 +239,9 @@ class BaseNotification(object):
         self.starttime = obj.get_setting('starttime', default='00:00:00')
         self.endtime = obj.get_setting('endtime', default='23:59:59')
         self.delay = obj.get_setting('delay', default=0)
+        # HACK: fix for bad form that was pushed.
+        if self.delay is None or self.delay == '':
+            self.delay = 0
         self.suppress = obj.get_setting('suppress', default=True)
 
     def subscribes_to(self, type, **kwargs):
@@ -427,7 +439,7 @@ class TwiMLNotification(BaseNotification):
         self.number_to = obj.get_setting('number_to')
         self.number_from = obj.get_setting('number_from')
         self.url = obj.get_setting('twimlet_url')
-       
+
     def send(self, type, text):
         if have_twilio == False:
             raise Exception('Missing Twilio library: twilio')
@@ -445,7 +457,7 @@ class TwiMLNotification(BaseNotification):
         except twilio.TwilioRestException as e:
             current_app.logger.info('Event TwiML Notification Failed: {0}' . format(e))
             raise Exception('TwiML Notification Failed: {0}' . format(e))
- 
+
 class NMANotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
@@ -475,7 +487,11 @@ class NMANotification(BaseNotification):
 
             headers = { 'User-Agent': NMA_USER_AGENT }
             headers['Content-type'] = NMA_HEADER_CONTENT_TYPE
-            http_handler = HTTPSConnection(NMA_URL)
+            if sys.version_info >= (2, 7, 9):
+                http_handler = HTTPSConnection(NMA_URL, context=ssl._create_unverified_context())
+            else:
+                http_handler = HTTPSConnection(NMA_URL)
+
             http_handler.request(NMA_METHOD, NMA_PATH, urlencode(notify_data), headers)
 
             http_response = http_handler.getresponse()
@@ -541,7 +557,11 @@ class ProwlNotification(BaseNotification):
                 'priority': self.priority
             }
 
-            http_handler = HTTPSConnection(PROWL_URL)
+            if sys.version_info >= (2,7,9):
+                http_handler = HTTPSConnection(PROWL_URL, context=ssl._create_unverified_context())
+            else:
+                http_handler = HTTPSConnection(PROWL_URL)
+
             http_handler.request(PROWL_METHOD, PROWL_PATH, headers=self.headers,body=urlencode(notify_data))
 
             http_response = http_handler.getresponse()
@@ -639,7 +659,10 @@ class CustomNotification(BaseNotification):
 
     def _do_post(self, data):
         if self.is_ssl:
-            http_handler = HTTPSConnection(self.url)
+            if sys.version_info >= (2,7,9):
+                http_handler = HTTPSConnection(self.url, context=ssl._create_unverified_context())
+            else:
+                http_handler = HTTPSConnection(self.url)
         else:
             http_handler = HTTPConnection(self.url)
 
@@ -654,7 +677,10 @@ class CustomNotification(BaseNotification):
 
     def _do_get(self, data):
         if self.is_ssl:
-            http_handler = HTTPSConnection(self.url)
+            if sys.version_info >= (2,7,9):
+                http_handler = HTTPSConnection(self.url, context=ssl._create_unverified_context())
+            else:
+                http_handler = HTTPSConnection(self.url)
         else:
             http_handler = HTTPConnection(self.url)
 

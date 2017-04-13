@@ -13,7 +13,8 @@
         function RenderDateLocal(oObj)
         {
             //parse date from python to format Date object understands
-            var match = oObj.aData[oObj.iDataColumn].match(/^(\d+)-(\d+)-(\d+) (\d+)\:(\d+)\:(\d+)$/);
+            var match = oObj.match(/^(\d+)-(\d+)-(\d+) (\d+)\:(\d+)\:(\d+)$/);
+
             var localDate = new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
 
             //take care of timezone offset in minutes to hours by negating and then adding to the hours
@@ -79,7 +80,7 @@
                     "sProcessing": "",
                 },
                 "aoColumns": [
-                    {"fnRender": RenderDateLocal },
+                    {"mRender": RenderDateLocal },
                     null,
                     null
                 ],

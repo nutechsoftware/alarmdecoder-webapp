@@ -234,6 +234,8 @@ def system_reboot():
         except sh.ErrorReturnCode_1:
             flash('Unable to reboot device!', 'error')
             return redirect(url_for('settings.host'))
+        except sh.ErrorReturnCode_143:
+            pass
 
     flash('Rebooting device!', 'success')
     return redirect(url_for('settings.host'))
@@ -249,6 +251,8 @@ def system_shutdown():
         except sh.ErrorReturnCode_1:
             flash('Unable to shutdown device!', 'error')
             return redirect(url_for('settings.host'))
+        except sh.ErrorReturnCode_143:
+            pass
 
     flash('Shutting device down!', 'success')
     return redirect(url_for('settings.host'))
@@ -641,7 +645,7 @@ def _import_refresh():
     if config_path:
         kwargs = {}
 
-        kwargs['device_path'] = Setting.get_by_name('device_path', '/dev/ttyAMA0').value
+        kwargs['device_path'] = Setting.get_by_name('device_path', '/dev/ttyS0').value
         kwargs['device_baudrate'] = Setting.get_by_name('device_baudrate', 115200).value
         kwargs['device_port'] = Setting.get_by_name('device_port', 10000).value
         kwargs['use_ssl'] = Setting.get_by_name('use_ssl', False).value

@@ -9,7 +9,7 @@
     <title>{% block title %}{{ page_title|default(_('Project')) }}{% endblock %}</title>
     <meta name="description" content="The AlarmDecoder Webapp provides a standard interface across all of your devices for your alarm panel.">
     <meta name="author" content="Nu Tech Software Solutions, Inc.">
-    <meta name="viewport" content="width=extend-to-zoom, initial-scale=0.5, target-densitydpi=device-dpi, user-scalable=no, maximum-scale=0.5">
+    <meta name="viewport" content="width=extend-to-zoom, initial-scale=1.0, target-densitydpi=device-dpi, user-scalable=no, maximum-scale=1.0">
     <meta name="HandheldFriendly" content="true"/>
     <meta name="MobileOptimized" content="width"/>
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
@@ -37,15 +37,11 @@
         var isiPad = navigator.userAgent.match(/iPad/i) != null;
         var isiPhone = navigator.userAgent.match(/iPhone/i) != null;
 
-        if( isiPad )
-        {
-            viewport = document.querySelector("meta[name=viewport]");
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, target-densitydpi=device-dpi, user-scalable=no, maximum-scale=1.0');
-        }
         function createFormTooltip(element, text)
         {
             $(element).prop('title', text );
         }
+
     </script>
     {% endblock %}
 </head>
