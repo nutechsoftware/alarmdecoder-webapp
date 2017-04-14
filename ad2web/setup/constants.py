@@ -49,7 +49,7 @@ BAUDRATES = [115200, 19200]
 DEFAULT_PATHS = {
     None: '/dev/ttyUSB0',
     'AD2USB': '/dev/ttyUSB0',
-    'AD2PI': '/dev/ttyS0',
+    'AD2PI': '/dev/serial0',
     'AD2SERIAL': '/dev/ttyS0'
 }
 
