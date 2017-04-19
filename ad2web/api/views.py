@@ -115,7 +115,7 @@ def api_authorized(f):
 
         #support getting API Key over Authorization Header
         request_apikey = request.headers.get('Authorization', None)
-        
+
         if request_apikey is None:
             request_apikey = request.args.get('apikey', None)
 
@@ -188,6 +188,9 @@ def alarmdecoder():
         'panel_zones_faulted': faulted_zones,
         'last_message_received': current_app.decoder.last_message_received
     }
+
+    if hasattr(current_app.decoder.device, '_armed_stay'):
+        ret['panel_armed_stay'] = current_app.decoder.device._armed_stay
 
     return jsonify(ret), OK
 
@@ -341,7 +344,7 @@ def zones():
             return jsonify(build_error(ERROR_RECORD_ALREADY_EXISTS, 'Zone already exists.')), CONFLICT
 
         zone = Zone(zone_id=zone_id, name=name, description=description)
-        
+
         db.session.add(zone)
         db.session.commit()
 
@@ -892,7 +895,7 @@ def system_reboot():
         return jsonify(build_error(ERROR_NOT_AUTHORIZED, "System did not respond correctly.")), UNAUTHORIZED
     except sh.ErrorReturnCode_143:
         pass
-    
+
     return jsonify(), ACCEPTED
 
 @api.route('/system/shutdown', methods=['POST'])
@@ -903,5 +906,5 @@ def system_shutdown():
         return jsonify(build_error(ERROR_NOT_AUTHORIZED, "Insufficient privileges for request.")), UNAUTHORIZED
 
     sh.shutdown()
-    
+
     return jsonify(), ACCEPTED
