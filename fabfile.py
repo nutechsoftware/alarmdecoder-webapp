@@ -6,8 +6,6 @@ import os
 
 from fabric.api import *
 from flask.ext.script import Manager
-import git
-import git.exc
 
 from ad2web import create_app
 from ad2web.extensions import db
