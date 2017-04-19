@@ -499,5 +499,55 @@ class ZoneFilterForm(Form):
         return ret
 
 
+class SmartThingsNotificationInternalForm(Form):
+    url = TextField(u'URL', [Required(), Length(max=255)], description=u'URL for the SmartThings API')
+    token = TextField(u'Token', [Required(), Length(max=255)], description=u'Authentication token')
+
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(SmartThingsNotificationInternalForm, self).__init__(*args, **kwargs)
+
+
+class SmartThingsNotificationForm(Form):
+    type = HiddenField()
+    subscriptions = HiddenField()
+    description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')
+    form_field = FormField(SmartThingsNotificationInternalForm)
+
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
+
+    def populate_settings(self, settings, id=None):
+        #EditNotificationForm.populate_settings(self, settings, id)
+
+        settings['url'] = self.populate_setting('url', self.form_field.url.data)
+        settings['token'] = self.populate_setting('token', self.form_field.token.data)
+
+    def populate_from_settings(self, id):
+        #EditNotificationForm.populate_from_settings(self, id)
+
+        self.form_field.url.data = self.populate_from_setting(id, 'url')
+        self.form_field.token.data = self.populate_from_setting(id, 'token')
+
+    def populate_setting(self, name, value, id=None):
+        if id is not None:
+            setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
+        else:
+            setting = NotificationSetting(name=name)
+
+        setting.value = value
+
+        return setting
+
+    def populate_from_setting(self, id, name, default=None):
+        ret = default
+
+        setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
+        if setting is not None:
+            ret = setting.value
+
+        return ret
+
+
 class ReviewNotificationForm(Form):
     buttons = FormField(NotificationButtonForm)

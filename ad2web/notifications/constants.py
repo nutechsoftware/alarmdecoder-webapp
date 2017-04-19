@@ -63,6 +63,7 @@ PROWL = 5
 GROWL = 6
 CUSTOM = 7
 TWIML = 8
+SMARTTHINGS = 9
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
@@ -73,7 +74,8 @@ NOTIFICATION_TYPES = {
     PROWL: 'prowl',
     GROWL: 'growl',
     CUSTOM: 'custom',
-    TWIML: 'twiml'
+    TWIML: 'twiml',
+    SMARTTHINGS: 'smartthings'
 }
 
 NOTIFICATIONS = {
@@ -85,7 +87,8 @@ NOTIFICATIONS = {
     PROWL: ('prowl', u'Prowl'),
     GROWL: ('growl', u'Growl'),
     CUSTOM: ('custom', u'Custom'),
-    TWIML: ('twiml', u'TwiML')
+    TWIML: ('twiml', u'TwiML'),
+    SMARTTHINGS: ('smartthings', u'SmartThings Integration')
 }
 
 DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]

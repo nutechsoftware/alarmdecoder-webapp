@@ -6,6 +6,7 @@ import datetime
 import smtplib
 import threading
 from email.mime.text import MIMEText
+from urlparse import urlparse
 import sleekxmpp
 import json
 import re
@@ -59,7 +60,7 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
-                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM)
+                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM, DISARM, ALARM, PANIC, FIRE, SMARTTHINGS)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -276,6 +277,36 @@ class LogNotification(object):
         db.session.add(EventLogEntry(type=type, message=text))
         db.session.commit()
 
+class SmartThingsNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+
+        self._events = [ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE]
+
+        self.api_token = obj.get_setting('token')
+        self.api_endpoint = obj.get_setting('url')
+
+    def subscribes_to(self, type, **kwargs):
+        return (type in self._events)
+
+    def send(self, type, text):
+        with current_app.app_context():
+            if type in self._events:
+                self._force_update()
+
+    def _force_update(self):
+        parsed_url = urlparse(self.api_endpoint + "/update")
+        headers = { 'Authorization': "Bearer " + self.api_token }
+
+        http_handler = HTTPSConnection(parsed_url.netloc)
+        http_handler.request("GET", parsed_url.path, headers=headers)
+        http_response = http_handler.getresponse()
+
+        if http_response.status != 200:
+            error_msg = 'SmartThings Notification failed: ({0}: {1})'.format(http_response.status, http_response.read())
+
+            current_app.logger.warning(error_msg)
+            raise Exception(error_msg)
 
 class EmailNotification(BaseNotification):
     def __init__(self, obj):
@@ -750,5 +781,6 @@ TYPE_MAP = {
     PROWL: ProwlNotification,
     GROWL: GrowlNotification,
     CUSTOM: CustomNotification,
-    TWIML: TwiMLNotification
+    TWIML: TwiMLNotification,
+    SMARTTHINGS: SmartThingsNotification
 }

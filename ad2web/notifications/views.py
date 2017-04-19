@@ -11,13 +11,15 @@ from ..zones import Zone
 from .forms import (CreateNotificationForm, EditNotificationForm,
                     EditNotificationMessageForm,
                     EmailNotificationForm, GoogleTalkNotificationForm, PushoverNotificationForm,
-                    TwilioNotificationForm, TwiMLNotificationForm, NMANotificationForm, ProwlNotificationForm, 
-                    GrowlNotificationForm, CustomPostForm, ZoneFilterForm, ReviewNotificationForm)
+                    TwilioNotificationForm, TwiMLNotificationForm, NMANotificationForm, ProwlNotificationForm,
+                    GrowlNotificationForm, CustomPostForm, ZoneFilterForm, ReviewNotificationForm,
+                    SmartThingsNotificationForm)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 
-from .constants import (EVENT_TYPES, NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS, 
-                        EMAIL, GOOGLETALK, PUSHOVER, TWILIO, NMA, PROWL, GROWL, CUSTOM, TWIML, ZONE_FAULT, ZONE_RESTORE)
+from .constants import (EVENT_TYPES, NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS,
+                        EMAIL, GOOGLETALK, PUSHOVER, TWILIO, NMA, PROWL, GROWL,
+                        CUSTOM, TWIML, SMARTTHINGS, ZONE_FAULT, ZONE_RESTORE)
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
@@ -28,7 +30,8 @@ NOTIFICATION_TYPE_DETAILS = {
     'prowl': (PROWL, ProwlNotificationForm),
     'growl': (GROWL, GrowlNotificationForm),
     'custom': (CUSTOM, CustomPostForm),
-    'twiml': (TWIML, TwiMLNotificationForm)
+    'twiml': (TWIML, TwiMLNotificationForm),
+    'smartthings': (SMARTTHINGS, SmartThingsNotificationForm)
 }
 
 notifications = Blueprint('notifications',
@@ -271,7 +274,7 @@ def review(id):
                 flash('Test notification sent.', 'success')
         else:
             flash('Notification saved.', 'success')
-            
+
         if error is None:
             return redirect(url_for('notifications.index'))
 
@@ -315,4 +318,3 @@ def edit_message(id):
                             form=form,
                             message_id=message.id,
                             active='notifications')
-
