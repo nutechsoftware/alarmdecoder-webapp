@@ -291,7 +291,7 @@ class SmartThingsNotification(BaseNotification):
 
     def send(self, type, text):
         with current_app.app_context():
-            if type in self._events:
+            if type is None or type in self._events:
                 self._force_update()
 
     def _force_update(self):
