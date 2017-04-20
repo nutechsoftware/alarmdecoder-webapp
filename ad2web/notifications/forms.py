@@ -518,14 +518,10 @@ class SmartThingsNotificationForm(Form):
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
-        #EditNotificationForm.populate_settings(self, settings, id)
-
         settings['url'] = self.populate_setting('url', self.form_field.url.data)
         settings['token'] = self.populate_setting('token', self.form_field.token.data)
 
     def populate_from_settings(self, id):
-        #EditNotificationForm.populate_from_settings(self, id)
-
         self.form_field.url.data = self.populate_from_setting(id, 'url')
         self.form_field.token.data = self.populate_from_setting(id, 'token')
 
