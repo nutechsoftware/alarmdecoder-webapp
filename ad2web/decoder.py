@@ -243,7 +243,7 @@ class Decoder(object):
         with self.app.app_context():
             self._device_type = Setting.get_by_name('device_type').value
             self._device_location = Setting.get_by_name('device_location').value
-            self._internal_address_mask = int(Setting.get_by_name('internal_address_mask', 'FFFFFFF').value, 16)
+            self._internal_address_mask = int(Setting.get_by_name('internal_address_mask', 'FFFFFFFF').value, 16)
 
             if self._device_type:
                 interface = ('localhost', 10000)

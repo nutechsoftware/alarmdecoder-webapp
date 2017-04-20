@@ -203,11 +203,15 @@ def alarmdecoder_send():
     if keys is None:
         return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'keys' in request.")), UNPROCESSABLE_ENTITY
 
-    keys = keys.replace("<F1>", unichr(1) + unichr(1) + unichr(1))
-    keys = keys.replace("<F2>", unichr(2) + unichr(2) + unichr(2))
-    keys = keys.replace("<F3>", unichr(3) + unichr(3) + unichr(3))
-    keys = keys.replace("<F4>", unichr(4) + unichr(4) + unichr(4))
-    keys = keys.replace("<PANIC>", unichr(5) + unichr(5) + unichr(5))
+    keys = keys.replace("<S1>", unichr(1) + unichr(1) + unichr(1)) # Fire
+    keys = keys.replace("<S2>", unichr(2) + unichr(2) + unichr(2)) # Police
+    keys = keys.replace("<S3>", unichr(3) + unichr(3) + unichr(3)) # Medical
+    keys = keys.replace("<S4>", unichr(4) + unichr(4) + unichr(4)) # DSC: Stay
+    keys = keys.replace("<S5>", unichr(5) + unichr(5) + unichr(5)) # DSC: Away, Ademco: panic, programming mode
+    keys = keys.replace("<S6>", unichr(6) + unichr(6) + unichr(6)) # DSC: Chime
+    keys = keys.replace("<S7>", unichr(7) + unichr(7) + unichr(7)) # DSC: Reset
+    keys = keys.replace("<S8>", unichr(8) + unichr(8) + unichr(8)) # DSC: Exit
+    keys = keys.replace("<PANIC>", unichr(5) + unichr(5) + unichr(5))  # Ademco-specific, hardcoded panic.
 
     current_app.decoder.device.send(keys)
 
