@@ -19,6 +19,7 @@ import compiler
 import sys
 import types
 import importlib
+import time
 
 try:
     import miniupnpc
@@ -44,7 +45,7 @@ from ..user import User, UserDetail
 from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm, VersionCheckerForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES
 from ..certificate import Certificate, CA, SERVER
@@ -798,6 +799,40 @@ def port_forwarding():
         return redirect(url_for('settings.index'))
 
     return render_template('settings/port_forward.html', form=form, current_internal_port=current_internal_port, current_external_port=current_external_port)
+
+@settings.route('/configure_updater', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def configure_updater():
+    form = VersionCheckerForm()
+    last_check_time = float(Setting.get_by_name('version_checker_last_check_time', default=time.time()).value)
+
+    if not form.is_submitted():
+        form.version_checker_timeout.data = Setting.get_by_name('version_checker_timeout',default=600).value
+        form.version_checker_disable.data = Setting.get_by_name('version_checker_disable',default=False).value
+
+    if form.validate_on_submit():
+        timeout = form.version_checker_timeout.data
+        disable = form.version_checker_disable.data
+
+        version_checker_timeout = Setting.get_by_name('version_checker_timeout')
+        version_checker_timeout.value = int(timeout)
+
+        version_checker_disable = Setting.get_by_name('version_checker_disable')
+        version_checker_disable.value = disable
+        current_app.decoder._version_thread.setTimeout(timeout)
+        current_app.decoder._version_thread.setDisable(disable)
+        db.session.add(version_checker_disable)
+        db.session.add(version_checker_timeout)
+
+        db.session.commit()
+
+        flash('Update settings updated.', 'success')
+        return redirect(url_for('settings.index'))
+
+    last_check = datetime.fromtimestamp(last_check_time).strftime('%m-%d-%Y %H:%M:%S')
+    return render_template('settings/updater_config.html', active="advanced", form=form, last_check=last_check)
+
 
 @settings.route('/configure_system_email', methods=['GET', 'POST'])
 @login_required

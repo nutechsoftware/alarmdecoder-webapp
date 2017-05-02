@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import datetime
 import traceback
 import threading
 import binascii
@@ -503,6 +504,9 @@ class VersionChecker(threading.Thread):
     TIMEOUT = 60 * 10
     """Version checker sleep time."""
 
+    DISABLE = False
+    """Disable version checking."""
+
     def __init__(self, decoder):
         """
         Constructor
@@ -514,6 +518,10 @@ class VersionChecker(threading.Thread):
         self._decoder = decoder
         self._updater = decoder.updater
         self._running = False
+        self.last_check_time = time.time()
+        #ability to get update check timeout values from user configured setting
+        self.version_checker_timeout = int(Setting.get_by_name('version_checker_timeout',default=self.TIMEOUT).value)
+        self.disable_version_checker = Setting.get_by_name('version_checker_disable',default=self.DISABLE).value
 
     def stop(self):
         """
@@ -522,6 +530,22 @@ class VersionChecker(threading.Thread):
 
         self._running = False
 
+    def setTimeout(self, timeout):
+        """
+        Sets the thread sleep time.
+        """
+
+        self._decoder.app.logger.info('Updating version check thread timeout to: {0} seconds'.format(timeout))
+        self.version_checker_timeout = int(timeout)
+        
+    def setDisable(self, disable):
+        """
+        Sets the disable flag of the thread.
+        """
+
+        self._decoder.app.logger.info('Updating version check enable/disable to: {0}'.format("Enabled" if disable is False else "Disabled"))
+        self.disable_version_checker = disable
+
     def run(self):
         """
         The thread processing loop.
@@ -529,13 +553,22 @@ class VersionChecker(threading.Thread):
         self._running = True
 
         while self._running:
-            with self._decoder.app.app_context():
-                self._decoder.updates = self._updater.check_updates()
-                update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status, project_url) in self._decoder.updates.iteritems())
+            if self.disable_version_checker is False:
+                with self._decoder.app.app_context():
+                    self._decoder.app.logger.info('Checking for version updates - last check at: {0}'.format(datetime.datetime.fromtimestamp(self.last_check_time).strftime('%m-%d-%Y %H:%M:%S')))
+                    self._decoder.updates = self._updater.check_updates()
+                    update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status, project_url) in self._decoder.updates.iteritems())
 
-                current_app.jinja_env.globals['update_available'] = update_available
+                    current_app.jinja_env.globals['update_available'] = update_available
 
-            time.sleep(self.TIMEOUT)
+                    self.last_check_time = time.time()
+                    version_checker_last_check_time = Setting.get_by_name('version_checker_last_check_time')
+                    version_checker_last_check_time.value = self.last_check_time
+
+                    db.session.add(version_checker_last_check_time)
+                    db.session.commit()
+
+            time.sleep(self.version_checker_timeout)
 
 class CameraChecker(threading.Thread):
     """

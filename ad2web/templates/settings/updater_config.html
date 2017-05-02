@@ -1,0 +1,43 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        createFormTooltip('#version_checker_timeout', 'In Seconds, how often to check for version updates')
+        createFormTooltip('#version_checker_disable', 'Disable version Update Checking?');
+
+        $('#version_checker_disable').click(function() {
+            if( !$('#version_checker_disable').is(":checked")) {
+                    $('#version_checker_timeout').prop('disabled', false);
+            }
+            else
+            {
+                $('#version_checker_timeout').prop('disabled', true);
+            }
+        });
+
+
+        if( $('#version_checker_disable').is(":checked") ){
+            $('#version_checker_timeout').prop('disabled', true);
+        }
+
+        $('#version_checker_disable').css({marginTop: '-=5px'});
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    {{ render_form(url_for('settings.configure_updater'), form) }}
+
+<B>Last Check</B>: {{ last_check }} 
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}
