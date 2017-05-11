@@ -41,17 +41,18 @@ from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
 from ..ser2sock import ser2sock
 from ..extensions import db
 from ..user import User, UserDetail
-from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile
+from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile, INSTANCE_FOLDER_PATH
 from ..decorators import admin_required
 from ..settings import Setting
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm, ExportConfigureForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
-from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES
+from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES, DAILY
 from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
 from ..upnp import UPNP
 from sh import hostname, sudo
+from ..exporter import Exporter
 
 try:
     from sh import service
@@ -466,40 +467,73 @@ def _get_cpu_temperature():
 	cpu_temperature_string = str(cpu_temperature / 1000)
     return cpu_temperature_string
 
+@settings.route('/configure_exports', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def configure_exports():
+    form = ExportConfigureForm()
+
+    if not form.is_submitted():
+        email_server = Setting.get_by_name('system_email_server',default=None).value
+
+        if email_server is None:
+            flash('No system email configured!', 'error')
+            return redirect(url_for('settings.configure_system_email'))
+
+        form.frequency.data = Setting.get_by_name('export_frequency',default=DAILY).value
+        form.email.data = Setting.get_by_name('export_email_enable',default=True).value
+        form.email_address.data = Setting.get_by_name('export_mailer_to',default=None).value 
+        form.local_file.data = Setting.get_by_name('enable_local_file_storage',default=True).value
+        form.local_file_path.data = Setting.get_by_name('export_local_path',default=os.path.join(INSTANCE_FOLDER_PATH, 'exports')).value
+        form.days_to_keep.data = Setting.get_by_name('days_to_keep',default=7).value
+
+    if form.validate_on_submit():
+        frequency = int(form.frequency.data)
+        email_enable = form.email.data
+        email_address = form.email_address.data
+        local_file = form.local_file.data
+        local_file_path = form.local_file_path.data
+        days = form.days_to_keep.data
+
+        to_email = Setting.get_by_name('export_mailer_to')
+        to_email.value = email_address
+
+        email = Setting.get_by_name('export_email_enable')
+        email.value = email_enable
+
+        export_frequency = Setting.get_by_name('export_frequency')
+        export_frequency.value = frequency
+
+        localfile = Setting.get_by_name('enable_local_file_storage')
+        localfile.value = local_file
+
+        localpath = Setting.get_by_name('export_local_path')
+        localpath.value = local_file_path
+        days_to_keep = Setting.get_by_name('days_to_keep')
+        days_to_keep.value = days
+
+        db.session.add(to_email)
+        db.session.add(email)
+        db.session.add(export_frequency)
+        db.session.add(localfile)
+        db.session.add(localpath)
+        db.session.add(days_to_keep)
+
+        db.session.commit()
+
+        current_app.decoder._exporter_thread.prepParams()
+
+        return redirect(url_for('settings.index'))
+    return render_template('settings/configure_exports.html', form=form, active='advanced')
+    
 @settings.route('/export', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def export():
-    prefix = 'alarmdecoder-export'
-    filename = '{0}-{1}.tar.gz'.format(prefix, datetime.now().strftime('%Y%m%d%H%M%S'))
-    fileobj = io.BytesIO()
+    exporter = Exporter()
 
-    with tarfile.open(name=bytes(filename), mode='w:gz', fileobj=fileobj) as tar:
-        tar_add_directory(tar, prefix)
-
-        for export_file, model in EXPORT_MAP.iteritems():
-            tar_add_textfile(tar, export_file, bytes(_export_model(model)), prefix)
-
-    return Response(fileobj.getvalue(), mimetype='application/x-gzip', headers={ 'Content-Type': 'application/x-gzip', 'Content-Disposition': 'attachment; filename=' + filename })
-
-def _export_model(model):
-    data = []
-    for res in model.query.all():
-        res_dict = {}
-        for c in class_mapper(res.__class__).columns:
-            value = getattr(res, c.key)
-
-            if isinstance(value, datetime):
-                value = value.strftime('%Y-%m-%d %H:%M:%S.%f')
-
-            elif isinstance(value, set):
-                continue
-
-            res_dict[c.key] = value
-
-        data.append(res_dict)
-
-    return json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '), skipkeys=True)
+    exporter.exportSettings()
+    return exporter.ReturnResponse()
 
 @settings.route('/git', methods=['GET', 'POST'] )
 @login_required
@@ -810,6 +844,7 @@ def configure_system_email():
         form.mail_server.data = Setting.get_by_name('system_email_server', default='localhost').value
         form.port.data = Setting.get_by_name('system_email_port', default=25).value
         form.tls.data = Setting.get_by_name('system_email_tls', default=False).value
+        form.auth_required.data = Setting.get_by_name('system_email_auth',default=False).value
         form.username.data = Setting.get_by_name('system_email_username').value
         form.password.data = Setting.get_by_name('system_email_password').value
         form.default_sender.data = Setting.get_by_name('system_email_from', default='root@alarmdecoder').value
@@ -821,6 +856,7 @@ def configure_system_email():
         email_username = form.username.data
         email_password = form.password.data
         email_from = form.default_sender.data
+        email_auth = form.auth_required.data
 
         system_email_server = Setting.get_by_name('system_email_server')
         system_email_server.value = email_server
@@ -834,6 +870,8 @@ def configure_system_email():
         system_email_password.value = email_password
         system_email_from = Setting.get_by_name('system_email_from')
         system_email_from.value = email_from
+        system_email_auth = Setting.get_by_name('system_email_auth')
+        system_email_auth.value = email_auth
 
         db.session.add(system_email_server)
         db.session.add(system_email_port)
@@ -841,6 +879,7 @@ def configure_system_email():
         db.session.add(system_email_username)
         db.session.add(system_email_password)
         db.session.add(system_email_from)
+        db.session.add(system_email_auth)
 
         db.session.commit()
 

@@ -13,6 +13,10 @@ HOSTS_FILE = '/etc/hosts'
 HOSTNAME_FILE = '/etc/hostname'
 NETWORK_FILE = '/etc/network/interfaces'
 
+DAILY = 86400
+WEEKLY = 7 * DAILY
+MONTHLY = 30 * DAILY
+
 EXPORT_MAP = {
     'settings.json': Setting,
     'certificates.json': Certificate,
