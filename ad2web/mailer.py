@@ -62,11 +62,10 @@ class Mailer(object):
 
         s = None
 
+        s = smtplib.SMTP(self.server, self.port)
+
         if self.tls:
-            s = smtplib.SMTP_SSL(self.server, self.port)
             s.starttls()
-        else:
-            s = smtplib.SMTP(self.server, self.port)
 
         if self.authentication_required:
             s.login(str(self.username), str(self.password))
