@@ -1,5 +1,15 @@
-{% extends 'errors/layout.html' %}
+{% extends 'layouts/base.html' %}
 {% set page_title = _('Server error') %}
 {% block body %}
+<div class="jumbotron">
 <h1>Server Error</h1>
+<p>Oopsie! Looks like something went wrong.  Please try and restart the software, if the problem persists, please email support at: <a href="mailto:ad2usb@support.nutech.com?Subject=Help, I got a Server Error 500!">ad2usb@support.nutech.com</a></p>
+<p>You can provide logs from the following locations:</p>
+<ul>
+<li>/var/log/daemon.log</li>
+<li>/var/log/messages</li>
+<li>/opt/alarmdecoder-webapp/instance/logs</li>
+<li>/var/log/nginx</li>
+<p>Please also provide the steps to reproduce your issue</p>
+</div>
 {% endblock %}

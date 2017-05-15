@@ -1,9 +1,12 @@
-{% extends 'errors/layout.html' %}
+{% extends 'layouts/base.html' %}
 {% set page_title = _('Forbidden page') %}
 {% block body %}
+<div class="jumbotron">
 <h1>Forbidden Page</h1>
 <p>It looks like this was the result of:</p>
 <ul>
     <li>no permission</li>
 </ul>
+<p>If this is in error, please contact your system administrator.</p>
+</div>
 {% endblock %}

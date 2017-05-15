@@ -1,10 +1,14 @@
-{% extends 'errors/layout.html' %}
+{% extends 'layouts/base.html' %}
 {% set page_title = _('Page not found') %}
 {% block body %}
-<h1>Not found</h1>
+<div class="jumbotron">
+<h1>Page Not found</h1>
 <p>It looks like this was the result of:</p>
 <ul>
     <li>a mistyped address</li>
     <li>an out-of-date link</li>
+    <li>invalid information requested</li>
 </ul>
+<p>If this is in error, please email support at:  <a href="mailto:ad2usb@support.nutech.com?Subject=404 Page in Web App">ad2usb@support.nutech.com</a></p>
+</div>
 {% endblock %}
