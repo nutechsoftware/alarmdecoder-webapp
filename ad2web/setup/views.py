@@ -150,6 +150,16 @@ def local():
             if ser2sock.exists():
                 try:
                     ser2sock.stop()
+                    config_path = Setting.get_by_name('ser2sock_config_path',default='/etc/ser2sock').value
+
+                    config_settings = {
+                        'device_path': '',
+                    }
+
+                    db.session.commit()
+                    ser2sock.update_config(config_path, **config_settings)
+                    db.session.commit()
+
                 except OSError:
                     flash("We've detected that ser2sock is running and failed to stop it.  There may be communication issues unless it is killed manually.", 'warning')
 
