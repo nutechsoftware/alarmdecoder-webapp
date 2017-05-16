@@ -2,13 +2,14 @@
 {% set page_title = _('Page not found') %}
 {% block body %}
 <div class="jumbotron">
-<h1>Page Not found</h1>
+<h1>Page Not Found</h1>
 <p>It looks like this was the result of:</p>
 <ul>
     <li>a mistyped address</li>
     <li>an out-of-date link</li>
     <li>invalid information requested</li>
+    <li>the page may have been moved or deleted</li>
 </ul>
-<p>If this is in error, please email support at:  <a href="mailto:ad2usb@support.nutech.com?Subject=404 Page in Web App">ad2usb@support.nutech.com</a></p>
+{% include 'errors/help_block.html' %}
 </div>
 {% endblock %}
