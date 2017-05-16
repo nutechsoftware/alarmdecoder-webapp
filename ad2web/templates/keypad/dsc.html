@@ -434,6 +434,16 @@
                     $('#button-exit').trigger('mouseup');
                 }
 
+// arrow keys
+                if( charCode == 37 && !event.ctrlKey )
+                {
+                    $('#button-left').trigger('mouseup');
+                }
+
+                if( charCode == 39 && !event.ctrlKey )
+                {
+                    $('#button-right').trigger('mouseup');
+                }
 //F1-F4
                 if( charCode == 112 )
                     $('#button-F1').trigger('mouseup');
@@ -489,6 +499,17 @@
                 if( charCode == 69 && !event.ctrlKey )
                 {
                     $('#button-exit').trigger('mousedown');
+                }
+
+//arrow keys
+                if( charCode == 37 && !event.ctrlKey )
+                {
+                    $('#button-left').trigger('mousedown');
+                }
+
+                if( charCode == 39 && !event.ctrlKey )
+                {
+                    $('#button-right').trigger('mousedown');
                 }
 //F1-F4
                 if( charCode == 112 )
