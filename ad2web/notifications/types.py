@@ -237,6 +237,9 @@ class BaseNotification(object):
         else:
             self._zone_filters = []
 
+        self.id = obj.id
+        self.description = obj.description
+
         self.starttime = obj.get_setting('starttime', default='00:00:00')
         self.endtime = obj.get_setting('endtime', default='23:59:59')
         self.delay = obj.get_setting('delay', default=0)
@@ -260,6 +263,7 @@ class BaseNotification(object):
 
 class LogNotification(object):
     def __init__(self):
+        self.id = -1
         self.description = 'Logger'
         self.delay = 0
         self.suppress = 0
@@ -312,8 +316,6 @@ class EmailNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
-        self.id = obj.id
-        self.description = obj.description
         self.source = obj.get_setting('source')
         self.destination = obj.get_setting('destination')
         self.subject = obj.get_setting('subject')
@@ -358,8 +360,6 @@ class GoogleTalkNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
-        self.id = obj.id
-        self.description = obj.description
         self.source = obj.get_setting('source')
         self.password = obj.get_setting('password')
         self.destination = obj.get_setting('destination')
@@ -389,8 +389,6 @@ class PushoverNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
-        self.id = obj.id
-        self.description = obj.description
         self.token = obj.get_setting('token')
         self.user_key = obj.get_setting('user_key')
         self.priority = obj.get_setting('priority')
@@ -434,8 +432,6 @@ class TwilioNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
-        self.id = obj.id
-        self.description = obj.description
         self.account_sid = obj.get_setting('account_sid')
         self.auth_token = obj.get_setting('auth_token')
         self.number_to = obj.get_setting('number_to')
@@ -463,8 +459,6 @@ class TwiMLNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
-        self.id = obj.id
-        self.description = obj.description
         self.account_sid = obj.get_setting('account_sid')
         self.auth_token = obj.get_setting('auth_token')
         self.number_to = obj.get_setting('number_to')
@@ -492,8 +486,7 @@ class TwiMLNotification(BaseNotification):
 class NMANotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
-        self.id = obj.id
-        self.description = obj.description
+
         self.api_key = obj.get_setting('api_key')
         self.app_name = obj.get_setting('app_name')
         self.priority = obj.get_setting('nma_priority')
@@ -561,8 +554,7 @@ class NMANotification(BaseNotification):
 class ProwlNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
-        self.id = obj.id
-        self.description = obj.description
+
         self.api_key = obj.get_setting('prowl_api_key')
         self.app_name = obj.get_setting('prowl_app_name')[:256].encode('utf8')
         self.priority = obj.get_setting('prowl_priority')
@@ -607,8 +599,7 @@ class ProwlNotification(BaseNotification):
 class GrowlNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
-        self.id = obj.id
-        self.description = obj.description
+
         self.priority = obj.get_setting('growl_priority')
         self.hostname = obj.get_setting('growl_hostname')
         self.port = obj.get_setting('growl_port')
@@ -661,8 +652,7 @@ class GrowlNotification(BaseNotification):
 class CustomNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
-        self.id = obj.id
-        self.description = obj.description
+
         self.url = obj.get_setting('custom_url')
         self.path = obj.get_setting('custom_path')
         self.is_ssl = obj.get_setting('is_ssl')
