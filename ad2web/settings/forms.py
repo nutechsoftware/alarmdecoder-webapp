@@ -115,3 +115,8 @@ class UPNPForm(Form):
     external_port = IntegerField(u'External Port', [Required()], default=random.randint(1200,60000), description=u'External Port to map to Internal Port')
 
     submit = SubmitField(u'Save')
+
+class VersionCheckerForm(Form):
+    version_checker_timeout = IntegerField(u'Timeout in Seconds', [Required(), NumberRange(600)], default=600, description=u'How often to check for version updates')
+    version_checker_disable = BooleanField(u'Disable?', default=False)
+    submit = SubmitField(u'Save') 
