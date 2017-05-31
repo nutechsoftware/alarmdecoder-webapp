@@ -156,9 +156,7 @@ def local():
                         'device_path': '',
                     }
 
-                    db.session.commit()
                     ser2sock.update_config(config_path, **config_settings)
-                    db.session.commit()
 
                 except OSError:
                     flash("We've detected that ser2sock is running and failed to stop it.  There may be communication issues unless it is killed manually.", 'warning')
@@ -321,9 +319,7 @@ def sslserver():
                 'server_cert': server_cert
             }
 
-            db.session.commit()
             ser2sock.update_config(config_path.value, **config_settings)
-            db.session.commit()
 
         except RuntimeError, err:
             flash("{0}".format(err), 'error')
@@ -332,7 +328,7 @@ def sslserver():
             flash("We had an issue restarting ser2sock: {0}".format(err), 'error')
 
         except ser2sock.NotFound, err:
-            flash("We weren't able to find ser2sock on your system.", 'error')            
+            flash("We weren't able to find ser2sock on your system.", 'error')
 
         except Exception, err:
             flash("Unexpected Error: {0}".format(err), 'error')
