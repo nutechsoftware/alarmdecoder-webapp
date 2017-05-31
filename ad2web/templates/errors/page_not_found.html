@@ -1,10 +1,15 @@
-{% extends 'errors/layout.html' %}
+{% extends 'layouts/base.html' %}
 {% set page_title = _('Page not found') %}
 {% block body %}
-<h1>Not found</h1>
+<div class="jumbotron">
+<h1>Page Not Found</h1>
 <p>It looks like this was the result of:</p>
 <ul>
     <li>a mistyped address</li>
     <li>an out-of-date link</li>
+    <li>invalid information requested</li>
+    <li>the page may have been moved or deleted</li>
 </ul>
+{% include 'errors/help_block.html' %}
+</div>
 {% endblock %}
