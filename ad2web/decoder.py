@@ -50,8 +50,9 @@ from .upnp import UPNPThread
 
 from .setup.constants import SETUP_COMPLETE
 
-from .utils import user_is_authenticated
-
+from .utils import user_is_authenticated, INSTANCE_FOLDER_PATH
+from .mailer import Mailer
+from .exporter import Exporter
 
 EVENT_MAP = {
     ARM: 'on_arm',
@@ -136,6 +137,7 @@ class Decoder(object):
         self._camera_thread.start()
         self._discovery_thread.start()
         self._notification_thread.start()
+        self._exporter_thread.start()
         if has_upnp:
             self._upnp_thread.start()
 
@@ -156,6 +158,7 @@ class Decoder(object):
         self._camera_thread.stop()
         self._discovery_thread.stop()
         self._notification_thread.stop()
+        self._exporter_thread.stop()
         if has_upnp:
             self._upnp_thread.stop()
 
@@ -166,6 +169,7 @@ class Decoder(object):
                 self._camera_thread.join(5)
                 self._discovery_thread.join(5)
                 self._notification_thread.join(5)
+                self._exporter_thread.join(5)
                 if has_upnp:
                     self._upnp_thread.join(5)
 
@@ -234,6 +238,8 @@ class Decoder(object):
             self._camera_thread = CameraChecker(self)
             self._discovery_thread = DiscoveryServer(self)
             self._notification_thread = NotificationThread(self)
+            self._exporter_thread = ExportChecker(self)
+
             if has_upnp:
                 self._upnp_thread = UPNPThread(self)
 
@@ -604,6 +610,115 @@ class CameraChecker(threading.Thread):
                     self._cameras.write_image(n)
 
             time.sleep(self.TIMEOUT)
+
+class ExportChecker(threading.Thread):
+    """
+    Thread responsible for sending out scheduled system exports
+    """
+
+    TIMEOUT = 60000
+
+    def __init__(self, decoder):
+        threading.Thread.__init__(self)
+        self._decoder = decoder
+        self._running = False
+        self.first_run = True
+        self.local_storage = None
+        self.prepParams()
+        
+
+    def prepParams(self):
+        self.server = Setting.get_by_name('system_email_server', default='localhost').value
+        self.port = Setting.get_by_name('system_email_port', default=25).value
+        self.tls = Setting.get_by_name('system_email_tls', default=False).value
+        self.auth_required = Setting.get_by_name('system_email_auth',default=False).value
+        self.username = Setting.get_by_name('system_email_username', default=None).value
+        self.password = Setting.get_by_name('system_email_password', default=None).value
+        self.send_from = Setting.get_by_name('system_email_from',default='root@alarmdecoder').value
+        self.subject = "AlarmDecoder Settings Database Backup"
+        self.body = "AlarmDecoder Settings Database Backup\r\n"
+        self.to = []
+        self.to.append(Setting.get_by_name('export_mailer_to', default=None).value)
+
+        self._mailer = Mailer(self.server, self.port, self.tls, self.auth_required, self.username, self.password)
+        self._exporter = Exporter()
+
+        self.thread_timeout = Setting.get_by_name('export_frequency',default=self.TIMEOUT).value
+        self.local_storage = Setting.get_by_name('enable_local_file_storage',default=False).value
+        self.local_path = Setting.get_by_name('export_local_path',default=os.path.join(INSTANCE_FOLDER_PATH, 'exports')).value
+        self.email_enable = Setting.get_by_name('export_email_enable',default=False).value
+        self.days_to_keep = Setting.get_by_name('days_to_keep',default=7).value
+
+        self._decoder.app.logger.info('Set export parameters to:  server {0} port {1} tls {2} auth {3} from {4} frequency {5} store files {6} storage path {7} days to keep files {8} email enable {9}'.format(self.server, self.port, self.tls, self.auth_required, self.send_from, self.thread_timeout, self.local_storage, self.local_path, self.days_to_keep, self.email_enable))
+
+    def stop(self):
+        """
+        Stops the thread.
+        """
+
+        self._running = False
+
+    def updateTimeout(self, timeout):
+        self.thread_timeout = timeout
+
+    def addTo(self, to):
+        self.to.append(to)
+
+    def updateUsername(self, username):
+        self._mailer.updateUsername(username)
+
+    def updatePassword(self, password):
+        self._mailer.updatePassword(password)
+
+    def updateFrom(self, email_from):
+        self.send_from = email_from
+
+    def updateServer(self, server):
+        self._mailer.updateServer(server)
+
+    def updatePort(self, port):
+        self._mailer.updatePort(port)
+
+    def updateTls(self, tls):
+        self._mailer.updateTls(tls)
+
+    def updateAuth(self, auth):
+        self._mailer.updateAuth(auth)
+
+    def updateSubject(self, subject):
+        self.subject = subject
+
+    def updateBody(self, body):
+        self.body = body
+
+    def run(self):
+        """
+        The thread processing loop.
+        """
+        self._running = True
+
+        while self._running:
+            with self._decoder.app.app_context():
+                self._decoder.app.logger.info('Checking if we need to export settings.')
+                if self.first_run is False:
+                    self._exporter.exportSettings()
+                    full_path = self._exporter.writeFile()
+
+                    files = []
+                    files.append(full_path)
+                    if self.email_enable and full_path is not None:
+                        self._decoder.app.logger.info('Sending export email: {0} - {1}'.format(self.to, files))
+                        self._mailer.send_mail(self.send_from, self.to, self.subject, self.body, files)
+
+                    if not self.local_storage:
+                        self._decoder.app.logger.info('Not keeping export on disk - {0}'.format(full_path))
+                        self._exporter.removeFile()
+                else:
+                    self.first_run = False
+                
+                self._exporter.removeOldFiles(self.days_to_keep)
+
+            time.sleep(self.thread_timeout)
 
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
     """

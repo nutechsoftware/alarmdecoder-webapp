@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import string
 import random
 from flask.ext.wtf import Form
@@ -13,11 +14,12 @@ from flask.ext.login import current_user
 
 from ..user import User
 from ..utils import PASSWORD_LEN_MIN, PASSWORD_LEN_MAX, AGE_MIN, AGE_MAX, DEPOSIT_MIN, DEPOSIT_MAX
-from ..utils import allowed_file, ALLOWED_AVATAR_EXTENSIONS
+from ..utils import allowed_file, ALLOWED_AVATAR_EXTENSIONS, INSTANCE_FOLDER_PATH
 from ..utils import SEX_TYPE
 
 from ..widgets import ButtonField
 from ..settings import Setting
+from .constants import DAILY, WEEKLY, MONTHLY
 
 class ProfileForm(Form):
     multipart = True
@@ -105,6 +107,7 @@ class EmailConfigureForm(Form):
     mail_server = TextField(u'Email Server', [Required(), Length(max=255)], description=u'ex: smtp.gmail.com')
     port = IntegerField(u'Server Port', [Required(), NumberRange(1, 65535)], description=u'ex: 25 for normal or 587 for TLS')
     tls = BooleanField(u'Use TLS?', default=False)
+    auth_required = BooleanField(u'Authentication Required?',default=False)
     username = TextField(u'Username', [Optional(), Length(max=255)], description=u'Email Username')
     password = PasswordField(u'Password', [Optional(), Length(max=255)], description=u'Email Password')
     default_sender = TextField(u'From Email', [Required(), Length(max=255)], default='root@alarmdecoder', description=u'Emails will come from this address')
@@ -119,4 +122,15 @@ class UPNPForm(Form):
 class VersionCheckerForm(Form):
     version_checker_timeout = IntegerField(u'Timeout in Seconds', [Required(), NumberRange(600)], default=600, description=u'How often to check for version updates')
     version_checker_disable = BooleanField(u'Disable?', default=False)
-    submit = SubmitField(u'Save') 
+
+    submit = SubmitField(u'Save')
+
+class ExportConfigureForm(Form):
+    frequency = SelectField(u'Frequency', choices=[(DAILY, u'Daily'), (WEEKLY, u'Weekly'), (MONTHLY, u'Monthly')], default=WEEKLY, description=u'Frequency of Automatic Export', coerce=int)
+    email = BooleanField(u'Email Export?', default=True)
+    email_address = TextField(u'Email Address', [Optional(), Length(max=255)], description=u'Email Address to Send Export to')
+    local_file = BooleanField(u'Save to Local File?', default=True)
+    local_file_path = TextField(u'Path to Save file', [Optional(), Length(max=255)], default=os.path.join(INSTANCE_FOLDER_PATH, 'exports'), description='Path on AlarmDecoder to Save Export')
+    days_to_keep = IntegerField(u'Days to Keep Exports on Disk?', [Optional(), NumberRange(1, 255)],default=7)
+
+    submit = SubmitField(u'Save')

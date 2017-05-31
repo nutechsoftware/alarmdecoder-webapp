@@ -1,0 +1,54 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function() {
+
+        $('#email').click(function() {
+            if( $('#email').is(":checked") ) {
+                $('#email_address').prop('disabled', false);
+            }
+            else {
+                $('#email_address').prop('disabled', true);
+            }
+        });
+
+        $('#local_file').click(function() {
+            if( $('#local_file').is(":checked")) {
+                $('#local_file_path').prop('disabled', false);
+                $('#days_to_keep').prop('disabled', false);
+            }
+            else
+            {
+                $('#local_file_path').prop('disabled', true);
+                $('#days_to_keep').prop('disabled', true);
+            }
+        });
+
+        $('#email').css({marginTop: '-=5px'});
+        $('#local_file').css({marginTop: '-=5px'});
+
+        if( $('#email').is(":checked") )
+            $('#email_address').prop('disabled', false);
+
+        if( $('#local_file').is(":checked") ) {
+            $('#local_file_path').prop('disabled', false );
+            $('#days_to_keep').prop('disabled', false );
+        }
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    {{ render_form(url_for('settings.configure_exports'), form) }}
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}
