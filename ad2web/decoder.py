@@ -504,9 +504,6 @@ class VersionChecker(threading.Thread):
     TIMEOUT = 60 * 10
     """Version checker sleep time."""
 
-    DISABLE = False
-    """Disable version checking."""
-
     def __init__(self, decoder):
         """
         Constructor
@@ -520,8 +517,8 @@ class VersionChecker(threading.Thread):
         self._running = False
         self.last_check_time = time.time()
         #ability to get update check timeout values from user configured setting
-        self.version_checker_timeout = int(Setting.get_by_name('version_checker_timeout',default=self.TIMEOUT).value)
-        self.disable_version_checker = Setting.get_by_name('version_checker_disable',default=self.DISABLE).value
+        self.version_checker_timeout = int(Setting.get_by_name('version_checker_timeout', default=self.TIMEOUT).value)
+        self.disable_version_checker = Setting.get_by_name('version_checker_disable', default=False).value
 
     def stop(self):
         """
@@ -537,7 +534,7 @@ class VersionChecker(threading.Thread):
 
         self._decoder.app.logger.info('Updating version check thread timeout to: {0} seconds'.format(timeout))
         self.version_checker_timeout = int(timeout)
-        
+
     def setDisable(self, disable):
         """
         Sets the disable flag of the thread.
