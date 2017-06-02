@@ -46,7 +46,7 @@ from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile,
 from ..decorators import admin_required
 from ..settings import Setting
 from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm, VersionCheckerForm, ExportConfigureForm
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm,
+from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES, DAILY
 from ..certificate import Certificate, CA, SERVER
