@@ -82,16 +82,20 @@ class DiscoveryServer(threading.Thread):
 
         while self._running:
             with self._decoder.app.app_context():
-                rl, wl, xl = select([self._socket], [], [])
-                for s in rl:
-                    data, addr = s.recvfrom(4096)
+                try:
+                    rl, wl, xl = select([self._socket], [], [])
+                    for s in rl:
+                        data, addr = s.recvfrom(4096)
 
-                    request = DiscoveryRequest(data)
+                        request = DiscoveryRequest(data)
 
-                    self._handle_request(request, addr)
+                        self._handle_request(request, addr)
 
-                    # TODO: Likely needs to be separate from this loop.
-                    self._update()
+                        # TODO: Likely needs to be separate from this loop.
+                        self._update()
+                        
+                except Exception, err:
+                    self._decoder.app.logger.error('Error in DiscoveryServer: {0}'.format(err), exc_info=True)
 
     def _handle_request(self, request, addr):
         if request.error_code:

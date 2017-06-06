@@ -46,7 +46,6 @@ from ..utils import allowed_file, make_dir, tar_add_directory, tar_add_textfile,
 from ..decorators import admin_required
 from ..settings import Setting
 from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm, VersionCheckerForm, ExportConfigureForm
-from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm,
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
 from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES, DAILY
 from ..certificate import Certificate, CA, SERVER
@@ -487,6 +486,8 @@ def configure_exports():
         form.email_address.data = Setting.get_by_name('export_mailer_to',default=None).value
         form.local_file.data = Setting.get_by_name('enable_local_file_storage',default=True).value
         form.local_file_path.data = Setting.get_by_name('export_local_path',default=os.path.join(INSTANCE_FOLDER_PATH, 'exports')).value
+        if form.local_file_path.data == '':
+            form.local_file_path.data = os.path.join(INSTANCE_FOLDER_PATH, 'exports')
         form.days_to_keep.data = Setting.get_by_name('days_to_keep',default=7).value
 
     if form.validate_on_submit():

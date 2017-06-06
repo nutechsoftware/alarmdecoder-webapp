@@ -34,7 +34,7 @@ class Exporter(object):
         self.fileobj = None
         self.filename = None
 
-        if not os.path.exists(self.export_path):
+        if self.export_path != '' and not os.path.exists(self.export_path):
             os.makedirs(self.export_path)
 
     def exportSettings(self):
@@ -59,22 +59,23 @@ class Exporter(object):
             os.remove(self.full_path)
 
     def removeOldFiles(self, days):
-        current_time = time.time()
-        cutoff = current_time - (days * self.DAY_SECONDS)
+        if self.export_path != '':
+            current_time = time.time()
+            cutoff = current_time - (days * self.DAY_SECONDS)
 
-        files = os.listdir(self.export_path)
-        
-        for f in files:
-            fullpath = os.path.join(self.export_path, f)
-            if os.path.isfile(fullpath):
-                #file stats
-                t = os.stat(fullpath)
-                #creation time
-                c = t.st_ctime
+            files = os.listdir(self.export_path)
+            
+            for f in files:
+                fullpath = os.path.join(self.export_path, f)
+                if os.path.isfile(fullpath):
+                    #file stats
+                    t = os.stat(fullpath)
+                    #creation time
+                    c = t.st_ctime
 
-                # delete file if older than days
-                if c < cutoff:
-                    os.remove(fullpath)
+                    # delete file if older than days
+                    if c < cutoff:
+                        os.remove(fullpath)
 
     def ReturnResponse(self):
         return Response(self.fileobj.getvalue(), mimetype='application/x-gzip', headers= { 'Content-Type': 'application/x-gzip', 'Content-Disposition': 'attachment; filename=' + self.filename } )

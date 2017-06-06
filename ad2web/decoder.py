@@ -558,18 +558,22 @@ class VersionChecker(threading.Thread):
         while self._running:
             if self.disable_version_checker is False:
                 with self._decoder.app.app_context():
-                    self._decoder.app.logger.info('Checking for version updates - last check at: {0}'.format(datetime.datetime.fromtimestamp(self.last_check_time).strftime('%m-%d-%Y %H:%M:%S')))
-                    self._decoder.updates = self._updater.check_updates()
-                    update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status, project_url) in self._decoder.updates.iteritems())
+                    try:
+                        self._decoder.app.logger.info('Checking for version updates - last check at: {0}'.format(datetime.datetime.fromtimestamp(self.last_check_time).strftime('%m-%d-%Y %H:%M:%S')))
+                        self._decoder.updates = self._updater.check_updates()
+                        update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status, project_url) in self._decoder.updates.iteritems())
 
-                    current_app.jinja_env.globals['update_available'] = update_available
+                        current_app.jinja_env.globals['update_available'] = update_available
 
-                    self.last_check_time = time.time()
-                    version_checker_last_check_time = Setting.get_by_name('version_checker_last_check_time')
-                    version_checker_last_check_time.value = self.last_check_time
+                        self.last_check_time = time.time()
+                        version_checker_last_check_time = Setting.get_by_name('version_checker_last_check_time')
+                        version_checker_last_check_time.value = self.last_check_time
 
-                    db.session.add(version_checker_last_check_time)
-                    db.session.commit()
+                        db.session.add(version_checker_last_check_time)
+                        db.session.commit()
+
+                    except Exception, err:
+                        self._decoder.app.logger.error('Error in VersionChecker: {0}'.format(err), exc_info=True)
 
             time.sleep(self.version_checker_timeout)
 
@@ -605,9 +609,13 @@ class CameraChecker(threading.Thread):
 
         while self._running:
             with self._decoder.app.app_context():
-                self._cameras.refresh_camera_ids()
-                for n in self._cameras.get_camera_ids():
-                    self._cameras.write_image(n)
+                try:
+                    self._cameras.refresh_camera_ids()
+                    for n in self._cameras.get_camera_ids():
+                        self._cameras.write_image(n)
+
+                except Exception, err:
+                    self._decoder.app.logger.error('Error in CameraChecker: {0}'.format(err), exc_info=True)
 
             time.sleep(self.TIMEOUT)
 
@@ -699,24 +707,28 @@ class ExportChecker(threading.Thread):
 
         while self._running:
             with self._decoder.app.app_context():
-                self._decoder.app.logger.info('Checking if we need to export settings.')
-                if self.first_run is False:
-                    self._exporter.exportSettings()
-                    full_path = self._exporter.writeFile()
+                try:
+                    self._decoder.app.logger.info('Checking if we need to export settings.')
+                    if self.first_run is False:
+                        self._exporter.exportSettings()
+                        full_path = self._exporter.writeFile()
 
-                    files = []
-                    files.append(full_path)
-                    if self.email_enable and full_path is not None:
-                        self._decoder.app.logger.info('Sending export email: {0} - {1}'.format(self.to, files))
-                        self._mailer.send_mail(self.send_from, self.to, self.subject, self.body, files)
+                        files = []
+                        files.append(full_path)
+                        if self.email_enable and full_path is not None:
+                            self._decoder.app.logger.info('Sending export email: {0} - {1}'.format(self.to, files))
+                            self._mailer.send_mail(self.send_from, self.to, self.subject, self.body, files)
 
-                    if not self.local_storage:
-                        self._decoder.app.logger.info('Not keeping export on disk - {0}'.format(full_path))
-                        self._exporter.removeFile()
-                else:
-                    self.first_run = False
-                
-                self._exporter.removeOldFiles(self.days_to_keep)
+                        if not self.local_storage:
+                            self._decoder.app.logger.info('Not keeping export on disk - {0}'.format(full_path))
+                            self._exporter.removeFile()
+                    else:
+                        self.first_run = False
+                    
+                    self._exporter.removeOldFiles(self.days_to_keep)
+                    
+                except Exception, err:
+                    self._decoder.app.logger.error('Error in ExportChecker: {0}'.format(err), exc_info=True)
 
             time.sleep(self.thread_timeout)
 

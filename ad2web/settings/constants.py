@@ -8,6 +8,7 @@ from ..notifications import Notification, NotificationSetting, NotificationMessa
 from ..zones import Zone
 from ..keypad import KeypadButton
 from ..cameras import Camera
+from ..api import APIKey
 
 HOSTS_FILE = '/etc/hosts'
 HOSTNAME_FILE = '/etc/hostname'
@@ -27,7 +28,8 @@ EXPORT_MAP = {
     'user_details.json': UserDetail,
     'zones.json': Zone,
     'buttons.json': KeypadButton,
-    'cameras.json': Camera
+    'cameras.json': Camera,
+    'apikeys.json': APIKey
 }
 
 
