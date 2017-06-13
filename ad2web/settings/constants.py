@@ -14,6 +14,7 @@ HOSTS_FILE = '/etc/hosts'
 HOSTNAME_FILE = '/etc/hostname'
 NETWORK_FILE = '/etc/network/interfaces'
 
+NONE = 0
 DAILY = 86400
 WEEKLY = 7 * DAILY
 MONTHLY = 30 * DAILY

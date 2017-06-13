@@ -19,7 +19,7 @@ from ..utils import SEX_TYPE
 
 from ..widgets import ButtonField
 from ..settings import Setting
-from .constants import DAILY, WEEKLY, MONTHLY
+from .constants import DAILY, WEEKLY, MONTHLY, NONE
 
 class ProfileForm(Form):
     multipart = True
@@ -126,7 +126,7 @@ class VersionCheckerForm(Form):
     submit = SubmitField(u'Save')
 
 class ExportConfigureForm(Form):
-    frequency = SelectField(u'Frequency', choices=[(DAILY, u'Daily'), (WEEKLY, u'Weekly'), (MONTHLY, u'Monthly')], default=WEEKLY, description=u'Frequency of Automatic Export', coerce=int)
+    frequency = SelectField(u'Frequency', choices=[(NONE, u'None'), (DAILY, u'Daily'), (WEEKLY, u'Weekly'), (MONTHLY, u'Monthly')], default=WEEKLY, description=u'Frequency of Automatic Export', coerce=int)
     email = BooleanField(u'Email Export?', default=True)
     email_address = TextField(u'Email Address', [Optional(), Length(max=255)], description=u'Email Address to Send Export to')
     local_file = BooleanField(u'Save to Local File?', default=True)

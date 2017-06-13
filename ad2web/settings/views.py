@@ -601,7 +601,7 @@ def switch_branch():
             flash('Error switching branches! ' + err, 'error')
             checked_out = False
 
-        if checked_out is True:
+        if checked_out:
             try:
                 git.pull(remote, branch)
             except sh.ErrorReturnCode_1:

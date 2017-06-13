@@ -67,7 +67,7 @@ class Exporter(object):
             
             for f in files:
                 fullpath = os.path.join(self.export_path, f)
-                if os.path.isfile(fullpath):
+                if f.startswith(self.prefix) and os.path.isfile(fullpath):
                     #file stats
                     t = os.stat(fullpath)
                     #creation time

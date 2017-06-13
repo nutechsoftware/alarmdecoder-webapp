@@ -67,8 +67,7 @@ EVENT_MAP = {
     ZONE_FAULT: 'on_zone_fault',
     ZONE_RESTORE: 'on_zone_restore',
     LOW_BATTERY: 'on_low_battery',
-    PANIC: 'on_panic',
-    RELAY_CHANGED: 'on_relay_changed'
+    PANIC: 'on_panic'
 }
 
 decodersocket = Blueprint('sock', __name__, url_prefix='/socket.io')
@@ -507,7 +506,7 @@ class VersionChecker(threading.Thread):
     """
     Thread responsible for checking for new software versions.
     """
-    TIMEOUT = 60 * 10
+    TIMEOUT = 60
     """Version checker sleep time."""
 
     def __init__(self, decoder):
@@ -521,9 +520,8 @@ class VersionChecker(threading.Thread):
         self._decoder = decoder
         self._updater = decoder.updater
         self._running = False
-        self.last_check_time = time.time()
-        #ability to get update check timeout values from user configured setting
-        self.version_checker_timeout = int(Setting.get_by_name('version_checker_timeout', default=self.TIMEOUT).value)
+        self.last_check_time = int(Setting.get_by_name('version_checker_last_check_time', default=0).value)
+        self.version_checker_timeout = int(Setting.get_by_name('version_checker_timeout', default=600).value)
         self.disable_version_checker = Setting.get_by_name('version_checker_disable', default=False).value
 
     def stop(self):
@@ -546,7 +544,7 @@ class VersionChecker(threading.Thread):
         Sets the disable flag of the thread.
         """
 
-        self._decoder.app.logger.info('Updating version check enable/disable to: {0}'.format("Enabled" if disable is False else "Disabled"))
+        self._decoder.app.logger.info('Updating version check enable/disable to: {0}'.format("Enabled" if not disable else "Disabled"))
         self.disable_version_checker = disable
 
     def run(self):
@@ -556,26 +554,28 @@ class VersionChecker(threading.Thread):
         self._running = True
 
         while self._running:
-            if self.disable_version_checker is False:
-                with self._decoder.app.app_context():
+            with self._decoder.app.app_context():
+                if not self.disable_version_checker:
                     try:
-                        self._decoder.app.logger.info('Checking for version updates - last check at: {0}'.format(datetime.datetime.fromtimestamp(self.last_check_time).strftime('%m-%d-%Y %H:%M:%S')))
-                        self._decoder.updates = self._updater.check_updates()
-                        update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status, project_url) in self._decoder.updates.iteritems())
+                        check_time = time.time()
+                        if check_time > self.last_check_time + self.version_checker_timeout:
+                            self._decoder.app.logger.info('Checking for version updates - last check at: {0}'.format(datetime.datetime.fromtimestamp(self.last_check_time).strftime('%m-%d-%Y %H:%M:%S')))
+                            self._decoder.updates = self._updater.check_updates()
+                            update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status, project_url) in self._decoder.updates.iteritems())
 
-                        current_app.jinja_env.globals['update_available'] = update_available
+                            current_app.jinja_env.globals['update_available'] = update_available
 
-                        self.last_check_time = time.time()
-                        version_checker_last_check_time = Setting.get_by_name('version_checker_last_check_time')
-                        version_checker_last_check_time.value = self.last_check_time
+                            self.last_check_time = check_time
+                            version_checker_last_check_time = Setting.get_by_name('version_checker_last_check_time')
+                            version_checker_last_check_time.value = int(self.last_check_time)
 
-                        db.session.add(version_checker_last_check_time)
-                        db.session.commit()
+                            db.session.add(version_checker_last_check_time)
+                            db.session.commit()
 
                     except Exception, err:
                         self._decoder.app.logger.error('Error in VersionChecker: {0}'.format(err), exc_info=True)
 
-            time.sleep(self.version_checker_timeout)
+            time.sleep(self.TIMEOUT)
 
 class CameraChecker(threading.Thread):
     """
@@ -624,7 +624,7 @@ class ExportChecker(threading.Thread):
     Thread responsible for sending out scheduled system exports
     """
 
-    TIMEOUT = 60000
+    TIMEOUT = 600
 
     def __init__(self, decoder):
         threading.Thread.__init__(self)
@@ -651,13 +651,14 @@ class ExportChecker(threading.Thread):
         self._mailer = Mailer(self.server, self.port, self.tls, self.auth_required, self.username, self.password)
         self._exporter = Exporter()
 
-        self.thread_timeout = Setting.get_by_name('export_frequency',default=self.TIMEOUT).value
-        self.local_storage = Setting.get_by_name('enable_local_file_storage',default=False).value
-        self.local_path = Setting.get_by_name('export_local_path',default=os.path.join(INSTANCE_FOLDER_PATH, 'exports')).value
-        self.email_enable = Setting.get_by_name('export_email_enable',default=False).value
-        self.days_to_keep = Setting.get_by_name('days_to_keep',default=7).value
+        self.export_frequency = Setting.get_by_name('export_frequency', default=0).value
+        self.local_storage = Setting.get_by_name('enable_local_file_storage', default=False).value
+        self.local_path = Setting.get_by_name('export_local_path', default=os.path.join(INSTANCE_FOLDER_PATH, 'exports')).value
+        self.email_enable = Setting.get_by_name('export_email_enable', default=False).value
+        self.days_to_keep = Setting.get_by_name('days_to_keep', default=7).value
+        self.last_check_time = int(Setting.get_by_name('export_last_check_time', default=0).value)
 
-        self._decoder.app.logger.info('Set export parameters to:  server {0} port {1} tls {2} auth {3} from {4} frequency {5} store files {6} storage path {7} days to keep files {8} email enable {9}'.format(self.server, self.port, self.tls, self.auth_required, self.send_from, self.thread_timeout, self.local_storage, self.local_path, self.days_to_keep, self.email_enable))
+        self._decoder.app.logger.info('Set export parameters to:  server {0} port {1} tls {2} auth {3} from {4} frequency {5} store files {6} storage path {7} days to keep files {8} email enable {9}'.format(self.server, self.port, self.tls, self.auth_required, self.send_from, self.export_frequency, self.local_storage, self.local_path, self.days_to_keep, self.email_enable))
 
     def stop(self):
         """
@@ -666,8 +667,8 @@ class ExportChecker(threading.Thread):
 
         self._running = False
 
-    def updateTimeout(self, timeout):
-        self.thread_timeout = timeout
+    def updateFrequency(self, frequency):
+        self.export_frequency = frequency
 
     def addTo(self, to):
         self.to.append(to)
@@ -707,30 +708,40 @@ class ExportChecker(threading.Thread):
 
         while self._running:
             with self._decoder.app.app_context():
-                try:
-                    self._decoder.app.logger.info('Checking if we need to export settings.')
-                    if self.first_run is False:
-                        self._exporter.exportSettings()
-                        full_path = self._exporter.writeFile()
+                if self.export_frequency > 0:
+                    try:
+                        check_time = time.time()
+                        if check_time > self.last_check_time + self.export_frequency:
+                            self._decoder.app.logger.info('Checking if we need to export settings.')
+                            if not self.first_run:
+                                self._exporter.exportSettings()
+                                full_path = self._exporter.writeFile()
 
-                        files = []
-                        files.append(full_path)
-                        if self.email_enable and full_path is not None:
-                            self._decoder.app.logger.info('Sending export email: {0} - {1}'.format(self.to, files))
-                            self._mailer.send_mail(self.send_from, self.to, self.subject, self.body, files)
+                                files = []
+                                files.append(full_path)
+                                if self.email_enable and full_path is not None:
+                                    self._decoder.app.logger.info('Sending export email: {0} - {1}'.format(self.to, files))
+                                    self._mailer.send_mail(self.send_from, self.to, self.subject, self.body, files)
 
-                        if not self.local_storage:
-                            self._decoder.app.logger.info('Not keeping export on disk - {0}'.format(full_path))
-                            self._exporter.removeFile()
-                    else:
-                        self.first_run = False
+                                if not self.local_storage:
+                                    self._decoder.app.logger.info('Not keeping export on disk - {0}'.format(full_path))
+                                    self._exporter.removeFile()
+
+                                self.last_check_time = check_time
+                                export_last_check_time = Setting.get_by_name('export_last_check_time')
+                                export_last_check_time.value = int(self.last_check_time)
+
+                                db.session.add(export_last_check_time)
+                                db.session.commit()
+                            else:
+                                self.first_run = False
+                            
+                            self._exporter.removeOldFiles(self.days_to_keep)
                     
-                    self._exporter.removeOldFiles(self.days_to_keep)
-                    
-                except Exception, err:
-                    self._decoder.app.logger.error('Error in ExportChecker: {0}'.format(err), exc_info=True)
+                    except Exception, err:
+                        self._decoder.app.logger.error('Error in ExportChecker: {0}'.format(err), exc_info=True)
 
-            time.sleep(self.thread_timeout)
+            time.sleep(self.TIMEOUT)
 
 class DecoderNamespace(BaseNamespace, BroadcastMixin):
     """
