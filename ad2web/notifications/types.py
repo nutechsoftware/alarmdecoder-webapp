@@ -12,6 +12,7 @@ import json
 import re
 import ssl
 import sys
+import numbers
 try:
     from chump import Application
     have_chump = True
@@ -86,8 +87,8 @@ class NotificationSystem(object):
                     message = self._build_message(type, **kwargs)
 
                     if message:
-                        if n.delay > 0 and type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
-                            message_send_time = time.mktime((datetime.datetime.combine(datetime.date.today(), datetime.datetime.time(datetime.datetime.now())) + datetime.timedelta(minutes=delay)).timetuple())
+                        if isinstance(n.delay, numbers.Number) and n.delay > 0 and type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
+                            message_send_time = time.mktime((datetime.datetime.combine(datetime.date.today(), datetime.datetime.time(datetime.datetime.now())) + datetime.timedelta(minutes=n.delay)).timetuple())
 
                             notify = {}
                             notify['notification'] = n
