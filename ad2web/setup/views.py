@@ -423,8 +423,8 @@ def device():
         if current_app.decoder.device is not None:
             form.panel_mode.data = current_app.decoder.device.mode
             form.keypad_address.data = current_app.decoder.device.address
-            form.address_mask.data = '{0:x}'.format(current_app.decoder.device.address_mask)
-            form.internal_address_mask.data = '{0:x}'.format(current_app.decoder.internal_address_mask)
+            form.address_mask.data = '{0:0>8x}'.format(current_app.decoder.device.address_mask)
+            form.internal_address_mask.data = '{0:0>8x}'.format(current_app.decoder.internal_address_mask)
             form.lrr_enabled.data = current_app.decoder.device.emulate_lrr
             form.deduplicate.data = current_app.decoder.device.deduplicate
             form.zone_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_zone)]
