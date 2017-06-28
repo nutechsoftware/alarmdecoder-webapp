@@ -1,0 +1,60 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+const keypadSpecials = {
+    FIRE: 0,
+    POLICE: 1,
+    MEDICAL: 2,
+    SPECIAL_4: 3,
+    SPECIAL_CUSTOM: 5,
+    STAY: 6,
+    AWAY: 7,
+    CHIME: 8,
+    RESET: 9,
+    EXIT: 10
+};
+
+function checkSpecial(specialSelect, specialText) {
+    if( specialSelect.val() != keypadSpecials.SPECIAL_CUSTOM )
+    {
+        specialText.hide();
+        $('label[for="' + specialText.attr('id') + '"]').hide();
+    }
+    else
+    {
+        specialText.show();
+        $('label[for="' + specialText.attr('id') + '"]').show();
+    }
+
+}
+
+$(document).ready( function() {
+    $('#button_form select').each(function() {
+        var selectId = $(this).attr('id');
+        var keyId = '#' + selectId;
+        var keyVal = keyId + '_key';
+        checkSpecial($(keyId), $(keyVal) );
+
+        $(keyId).on('change', function() {
+            checkSpecial($(keyId), $(keyVal) );
+        });
+    });
+});
+
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper" id="button_form">
+    {{ render_form(url_for('keypad.special_buttons'), form) }}
+</div>
+{% endblock %}
+
+{% block js_btm %}
+{% endblock %}

@@ -172,6 +172,17 @@
             "{{ url_for('static', filename='img/f4-led-text-small-on.png') }}",
             "{{ url_for('static', filename='img/f4-led-text-small.png') }}"
         ];
+
+        var specialImageList = [
+            "{{ url_for('static', filename='img/s1-off.png') }}",
+            "{{ url_for('static', filename='img/s1-on.png') }}",
+            "{{ url_for('static', filename='img/s2-off.png') }}",
+            "{{ url_for('static', filename='img/s2-on.png') }}",
+            "{{ url_for('static', filename='img/s3-off.png') }}",
+            "{{ url_for('static', filename='img/s3-on.png') }}",
+            "{{ url_for('static', filename='img/s4-off.png') }}",
+            "{{ url_for('static', filename='img/s4-on.png') }}",
+        ];
         //setup audio beeping
         var beep1 = new Audio("{{ url_for('static', filename='sounds/1beep.wav') }}");
         var beep2 = new Audio("{{ url_for('static', filename='sounds/2beep.wav') }}");
@@ -192,6 +203,109 @@
             keypadline2.style.fontSize = "25px";
         
         }
+
+        const keypadSpecials = {
+            FIRE: 0,
+            POLICE: 1,
+            MEDICAL: 2,
+            SPECIAL_4: 3,
+            SPECIAL_CUSTOM: 5,
+            STAY: 6,
+            AWAY: 7,
+            CHIME: 8,
+            RESET: 9,
+            EXIT: 10
+        };
+
+        function checkConfirm(special_button_id, special_button_value)
+        {
+            if( special_button_id == keypadSpecials.SPECIAL_CUSTOM )
+            {
+                $.confirm({
+                    content: "Are you sure?",
+                    title: "Custom Special Button",
+                    confirm: function(button) {
+                        add_flash_message("Custom Command Sent", "error");
+                        decoder.emit('keypress', special_button_value);
+                    },
+                    cancel: function(button) {
+                    },
+                    confirmButton: "Yes I am",
+                    cancelButton: "No",
+                    post: false,
+                });
+            }
+
+            if( special_button_id == keypadSpecials.FIRE )
+            {
+                $.confirm({
+                    content: "Are you sure?",
+                    title: "Call the Fire Department",
+                    confirm: function(button) {
+                       add_flash_message("Fire Department notified.", "error");
+                       decoder.emit('keypress', 1);
+                    },
+                    cancel: function(button) {
+                    },
+                    confirmButton: "Yes I am",
+                    cancelButton: "No",
+                    post: false,
+                });
+            }
+
+            if( special_button_id == keypadSpecials.POLICE )
+            {
+                $.confirm({
+                    content: "Are you sure?",
+                    title: "Call the Police Department",
+                    confirm: function(button) {
+                        add_flash_message("Police Department notified.", "error");
+                        decoder.emit('keypress', 2);
+                    },
+                    cancel: function(button) {
+                    },
+                    confirmButton: "Yes I am",
+                    cancelButton: "No",
+                    post: false,
+                });
+            }
+
+            if( special_button_id == keypadSpecials.MEDICAL )
+            {
+                 $.confirm({
+                    content: "Are you sure?",
+                    title: "Call the Medics",
+                    confirm: function(button) {
+                        add_flash_message("Medical Help notified.", "error");
+                        decoder.emit('keypress', 3);
+                    },
+                    cancel: function(button) {
+                    },
+                    confirmButton: "Yes I am",
+                    cancelButton: "No",
+                    post: false,
+                });
+            }
+
+            if( special_button_id == keypadSpecials.SPECIAL_4 )
+            {
+                $.confirm({
+                    content: "Are you sure?",
+                    title: "Confirmation required",
+                    confirm: function(button) {
+                        add_flash_message("Notification sent.", "error");
+                        decoder.emit('keypress', 4);
+                    },
+                    cancel: function(button) {
+                    },
+                    confirmButton: "Yes I am",
+                    cancelButton: "No",
+                    post: false,
+                });
+
+            }
+        }
+
         $(document).ready(function() {
             //detect mobile and tablet
             mobile = isMobile();
@@ -206,6 +320,11 @@
 
             //button Images
             preloadImages(buttonImageListLarge);
+            preloadImages(specialImageList);
+
+            special_image_defaults = { 0: buttonImageListSmall[25], 1: buttonImageListSmall[27], 2: buttonImageListSmall[29], 3: specialImageList[6], 5: specialImageList[0] };
+
+            special_image_defaults_on = { 0: buttonImageListSmall[24], 1: buttonImageListSmall[26], 2: buttonImageListSmall[28], 3: specialImageList[7], 5: specialImageList[1] };
 
             //set image sources for buttons after preloaded
             $('#button-0').attr("src", buttonImageListLarge[1]);
@@ -220,10 +339,10 @@
             $('#button-9').attr("src", buttonImageListLarge[19]);
             $('#button-star').attr("src", buttonImageListLarge[21]);
             $('#button-pound').attr("src", buttonImageListLarge[23]);
-            $('#button-F1').attr("src", buttonImageListSmall[25]);
-            $('#button-F2').attr("src", buttonImageListSmall[27]);
-            $('#button-F3').attr("src", buttonImageListSmall[29]);
-            $('#button-F4').attr("src", buttonImageListSmall[31]);
+            $('#button-F1').attr("src", special_image_defaults[{{special_buttons['special_1']}}]);
+            $('#button-F2').attr("src", special_image_defaults[{{special_buttons['special_2']}}]);
+            $('#button-F3').attr("src", special_image_defaults[{{special_buttons['special_3']}}]);
+            $('#button-F4').attr("src", special_image_defaults[{{special_buttons['special_4']}}]);
             //check to see if we're going to play sounds or not if we've set the checkbox
             if( storageSupported() )
             {
@@ -420,71 +539,18 @@
                 if( charCode == 112 )
                 {
                     $('#button-F1').trigger('mousedown');
-
-                    $.confirm({
-                        content: "Are you sure?",
-                        title: "Call the Fire Department",
-                        confirm: function(button) {
-                            add_flash_message("Fire Department notified.", "error");
-                            decoder.emit('keypress', 1);
-                        },
-                        cancel: function(button) {
-                        },
-                        confirmButton: "Yes I am",
-                        cancelButton: "No",
-                        post: false,
-                    });
                 }
                 if( charCode == 113 )
                 {
                     $('#button-F2').trigger('mousedown');
-                    $.confirm({
-                        content: "Are you sure?",
-                        title: "Call the Police Department",
-                        confirm: function(button) {
-                            add_flash_message("Police Department notified.", "error");
-                            decoder.emit('keypress', 2);
-                        },
-                        cancel: function(button) {
-                        },
-                        confirmButton: "Yes I am",
-                        cancelButton: "No",
-                        post: false,
-                    });
                 }
                 if( charCode == 114 )
                 {
                     $('#button-F3').trigger('mousedown');
-                    $.confirm({
-                        content: "Are you sure?",
-                        title: "Call the Medics",
-                        confirm: function(button) {
-                            add_flash_message("Medical Help notified.", "error");
-                            decoder.emit('keypress', 3);
-                        },
-                        cancel: function(button) {
-                        },
-                        confirmButton: "Yes I am",
-                        cancelButton: "No",
-                        post: false,
-                    });
                 }
                 if( charCode == 115 )
                 {
                     $('#button-F4').trigger('mousedown');
-                    $.confirm({
-                        content: "Are you sure?",
-                        title: "Confirmation required",
-                        confirm: function(button) {
-                            add_flash_message("Notification sent.", "error");
-                            decoder.emit('keypress', 4);
-                        },
-                        cancel: function(button) {
-                        },
-                        confirmButton: "Yes I am",
-                        cancelButton: "No",
-                        post: false,
-                    });
                 }
 //the rest
                 if( charCode == 8 || charCode == 9 || charCode == 46 || charCode == 37 || charCode == 39 || (charCode >= 48 && charCode <= 57) || (charCode >= 96 && charCode <= 105 ))
@@ -597,86 +663,33 @@
                 }
             {% endif %}
 
-//set up confirmations for F1-F4
-            $("#button-F1").confirm({
-                content: "Are you sure?",
-                title: "Call the Fire Department",
-                confirm: function(button) {
-                    add_flash_message("Fire Department notified.", "error");
-                    decoder.emit('keypress', 1);
-                },
-                cancel: function(button) {
-                },
-                confirmButton: "Yes I am",
-                cancelButton: "No",
-                post: false,
-            });
-
-            $("#button-F2").confirm({
-                content: "Are you sure?",
-                title: "Call the Police Department",
-                confirm: function(button) {
-                    add_flash_message("Police Department notified.", "error");
-                    decoder.emit('keypress', 2);
-                },
-                cancel: function(button) {
-                },
-                confirmButton: "Yes I am",
-                cancelButton: "No",
-                post: false,
-            });
-
-            $("#button-F3").confirm({
-                content: "Are you sure?",
-                title: "Call the Medics",
-                confirm: function(button) {
-                    add_flash_message("Medical Help notified.", "error");
-                    decoder.emit('keypress', 3);
-                },
-                cancel: function(button) {
-                },
-                confirmButton: "Yes I am",
-                cancelButton: "No",
-                post: false,
-            });
-
-            $("#button-F4").confirm({
-                content: "Are you sure?",
-                title: "Confirmation required",
-                confirm: function(button) {
-                    add_flash_message("Notification sent.", "error");
-                    decoder.emit('keypress', 4);
-                },
-                cancel: function(button) {
-                },
-                confirmButton: "Yes I am",
-                cancelButton: "No",
-                post: false,
-            });
-
             $('#button-F1').on('mousedown', function() {
-                $(this).attr("src", buttonImageListSmall[24] );
+                $(this).attr("src", special_image_defaults_on[{{special_buttons['special_1']}}]);
+                checkConfirm({{special_buttons['special_1']}}, "{{special_buttons['special_1_key']}}");
             });
             $('#button-F1').on('mouseup', function() {
-                $(this).attr("src", buttonImageListSmall[25]);
+                $(this).attr("src", special_image_defaults[{{special_buttons['special_1']}}]);
             });
             $('#button-F2').on('mousedown', function() {
-                $(this).attr("src", buttonImageListSmall[26] );
+                $(this).attr("src", special_image_defaults_on[{{special_buttons['special_2']}}]);
+                checkConfirm({{special_buttons['special_2']}}, "{{special_buttons['special_2_key']}}");
             });
             $('#button-F2').on('mouseup', function() {
-                $(this).attr("src", buttonImageListSmall[27]);
+                $(this).attr("src", special_image_defaults[{{special_buttons['special_2']}}]);
             });
             $('#button-F3').on('mousedown', function() {
-                $(this).attr("src", buttonImageListSmall[28]);
+                $(this).attr("src", special_image_defaults_on[{{special_buttons['special_3']}}]);
+                checkConfirm({{special_buttons['special_3']}}, "{{special_buttons['special_3_key']}}");
             });
             $('#button-F3').on('mouseup', function() {
-                $(this).attr("src", buttonImageListSmall[29]);
+                $(this).attr("src", special_image_defaults[{{special_buttons['special_3']}}]);
             });
             $('#button-F4').on('mousedown', function() {
-                $(this).attr("src", buttonImageListSmall[30]);
+                $(this).attr("src", special_image_defaults_on[{{special_buttons['special_4']}}]);
+                checkConfirm({{special_buttons['special_4']}},"{{special_buttons['special_4_key']}}");
             });
             $('#button-F4').on('mouseup', function() {
-                $(this).attr("src", buttonImageListSmall[31]);
+                $(this).attr("src", special_image_defaults[{{special_buttons['special_4']}}]);
             });
 
             if( isiPad || isiPhone )
