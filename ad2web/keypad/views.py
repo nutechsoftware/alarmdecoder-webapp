@@ -82,6 +82,31 @@ def get_special_buttons():
 
     return special_buttons
 
+def interpret_key(button_data):
+    five = chr(5) + chr(5) + chr(5)
+    six = chr(6) + chr(6) + chr(6)
+    seven = chr(7) + chr(7) + chr(7)
+    eight = chr(8) + chr(8) + chr(8)
+
+    if button_data == "<S1>" or button_data == AlarmDecoder.KEY_F1:
+        return AlarmDecoder.KEY_F1
+    if button_data == "<S2>" or button_data == AlarmDecoder.KEY_F2:
+        return AlarmDecoder.KEY_F2
+    if button_data == "<S3>" or button_data == AlarmDecoder.KEY_F3:
+        return AlarmDecoder.KEY_F3
+    if button_data == "<S4>" or button_data == AlarmDecoder.KEY_F4:
+        return AlarmDecoder.KEY_F5
+    if button_data == "<S5>" or button_data == five:
+        return five
+    if button_data == "<S6>" or button_data == six:
+        return six
+    if button_data == "<S7>" or button_data == seven:
+        return seven
+    if button_data == "<S8>" or button_data == eight:
+        return eight
+
+    return button_data
+
 @keypad.route('/legacy')
 @login_required
 def responsive():
@@ -148,16 +173,16 @@ def special_buttons():
     if form.validate_on_submit():
 
         special_1 = create_special_setting('special_1', form.special_1.data )
-        special_1_key = create_special_setting_key(special_1, 'special_1_key', form.special_1_key.data)
+        special_1_key = create_special_setting_key(special_1, 'special_1_key', interpret_key(form.special_1_key.data))
 
         special_2 = create_special_setting('special_2', form.special_2.data )
-        special_2_key = create_special_setting_key(special_2, 'special_2_key', form.special_2_key.data )
+        special_2_key = create_special_setting_key(special_2, 'special_2_key', interpret_key(form.special_2_key.data ))
 
         special_3 = create_special_setting('special_3', form.special_3.data )
-        special_3_key = create_special_setting_key(special_3, 'special_3_key', form.special_3_key.data )
+        special_3_key = create_special_setting_key(special_3, 'special_3_key', interpret_key(form.special_3_key.data ))
 
         special_4 = create_special_setting('special_4', form.special_4.data )
-        special_4_key = create_special_setting_key(special_4, 'special_4_key', form.special_4_key.data )
+        special_4_key = create_special_setting_key(special_4, 'special_4_key', interpret_key(form.special_4_key.data ))
 
         db.session.add(special_1)
         db.session.add(special_1_key)
@@ -170,16 +195,16 @@ def special_buttons():
        
         if panel_mode == DSC:
             special_5 = create_special_setting('special_5', form.special_5.data)
-            special_5_key = create_special_setting_key(special_5, 'special_5_key', form.special_5_key.data)
+            special_5_key = create_special_setting_key(special_5, 'special_5_key', interpret_key(form.special_5_key.data))
             
             special_6 = create_special_setting('special_6', form.special_6.data )
-            special_6_key = create_special_setting_key(special_6, 'special_6_key', form.special_6_key.data)
+            special_6_key = create_special_setting_key(special_6, 'special_6_key', interpret_key(form.special_6_key.data))
 
             special_7 = create_special_setting('special_7', form.special_7.data)
-            special_7_key = create_special_setting_key(special_7, 'special_7_key', form.special_7_key.data)
+            special_7_key = create_special_setting_key(special_7, 'special_7_key', interpret_key(form.special_7_key.data))
 
             special_8 = create_special_setting('special_8', form.special_8.data)
-            special_8_key = create_special_setting_key(special_8, 'special_8_key', form.special_8_key.data)
+            special_8_key = create_special_setting_key(special_8, 'special_8_key', interpret_key(form.special_8_key.data))
 
             db.session.add(special_5)
             db.session.add(special_5_key)

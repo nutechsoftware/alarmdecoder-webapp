@@ -217,18 +217,20 @@
             EXIT: 10
         };
 
-        function checkConfirm(special_button_id, special_button_value)
+        function checkConfirm(special_button_id, special_button_value, element)
         {
             if( special_button_id == keypadSpecials.SPECIAL_CUSTOM )
             {
                 $.confirm({
-                    content: "Are you sure?",
+                    content: "Are you sure you want to send " + special_button_value + "?",
                     title: "Custom Special Button",
                     confirm: function(button) {
-                        add_flash_message("Custom Command Sent", "error");
+                        add_flash_message("Custom Command " + special_button_value + " Sent", "error");
                         decoder.emit('keypress', special_button_value);
+                        element.trigger('mouseup');
                     },
                     cancel: function(button) {
+                        element.trigger('mouseup');
                     },
                     confirmButton: "Yes I am",
                     cancelButton: "No",
@@ -242,10 +244,12 @@
                     content: "Are you sure?",
                     title: "Call the Fire Department",
                     confirm: function(button) {
-                       add_flash_message("Fire Department notified.", "error");
-                       decoder.emit('keypress', 1);
+                        add_flash_message("Fire Department notified.", "error");
+                        decoder.emit('keypress', 1);
+                        element.trigger('mouseup');
                     },
                     cancel: function(button) {
+                        element.trigger('mouseup');
                     },
                     confirmButton: "Yes I am",
                     cancelButton: "No",
@@ -261,8 +265,10 @@
                     confirm: function(button) {
                         add_flash_message("Police Department notified.", "error");
                         decoder.emit('keypress', 2);
+                        element.trigger('mouseup');
                     },
                     cancel: function(button) {
+                        element.trigger('mouseup');
                     },
                     confirmButton: "Yes I am",
                     cancelButton: "No",
@@ -278,8 +284,10 @@
                     confirm: function(button) {
                         add_flash_message("Medical Help notified.", "error");
                         decoder.emit('keypress', 3);
+                        element.trigger('mouseup');
                     },
                     cancel: function(button) {
+                        element.trigger('mouseup');
                     },
                     confirmButton: "Yes I am",
                     cancelButton: "No",
@@ -295,8 +303,10 @@
                     confirm: function(button) {
                         add_flash_message("Notification sent.", "error");
                         decoder.emit('keypress', 4);
+                        element.trigger('mouseup');
                     },
                     cancel: function(button) {
+                        element.trigger('mouseup');
                     },
                     confirmButton: "Yes I am",
                     cancelButton: "No",
@@ -322,9 +332,9 @@
             preloadImages(buttonImageListLarge);
             preloadImages(specialImageList);
 
-            special_image_defaults = { 0: buttonImageListSmall[25], 1: buttonImageListSmall[27], 2: buttonImageListSmall[29], 3: specialImageList[6], 5: specialImageList[0] };
+            special_image_defaults = { 0: buttonImageListSmall[25], 1: buttonImageListSmall[27], 2: buttonImageListSmall[29], 3: specialImageList[6]};
 
-            special_image_defaults_on = { 0: buttonImageListSmall[24], 1: buttonImageListSmall[26], 2: buttonImageListSmall[28], 3: specialImageList[7], 5: specialImageList[1] };
+            special_image_defaults_on = { 0: buttonImageListSmall[24], 1: buttonImageListSmall[26], 2: buttonImageListSmall[28], 3: specialImageList[7]};
 
             //set image sources for buttons after preloaded
             $('#button-0').attr("src", buttonImageListLarge[1]);
@@ -339,10 +349,27 @@
             $('#button-9').attr("src", buttonImageListLarge[19]);
             $('#button-star').attr("src", buttonImageListLarge[21]);
             $('#button-pound').attr("src", buttonImageListLarge[23]);
-            $('#button-F1').attr("src", special_image_defaults[{{special_buttons['special_1']}}]);
-            $('#button-F2').attr("src", special_image_defaults[{{special_buttons['special_2']}}]);
-            $('#button-F3').attr("src", special_image_defaults[{{special_buttons['special_3']}}]);
-            $('#button-F4').attr("src", special_image_defaults[{{special_buttons['special_4']}}]);
+
+            if( {{special_buttons['special_1']}} != keypadSpecials.SPECIAL_CUSTOM )
+                $('#button-F1').attr("src", special_image_defaults[{{special_buttons['special_1']}}]);
+            else
+                $('#button-F1').attr("src", specialImageList[0]);
+
+            if( {{special_buttons['special_2']}} != keypadSpecials.SPECIAL_CUSTOM )
+                $('#button-F2').attr("src", special_image_defaults[{{special_buttons['special_2']}}]);
+            else
+                $('#button-F2').attr("src", specialImageList[2]);
+
+            if( {{special_buttons['special_3']}} != keypadSpecials.SPECIAL_CUSTOM )
+                $('#button-F3').attr("src", special_image_defaults[{{special_buttons['special_3']}}]);
+            else
+                $('#button-F3').attr("src", specialImageList[4]);
+
+            if( {{special_buttons['special_4']}} != keypadSpecials.SPECIAL_CUSTOM )
+                $('#button-F4').attr("src", special_image_defaults[{{special_buttons['special_4']}}]);
+            else
+                $('#button-F4').attr("src", specialImageList[6]);
+
             //check to see if we're going to play sounds or not if we've set the checkbox
             if( storageSupported() )
             {
@@ -664,32 +691,64 @@
             {% endif %}
 
             $('#button-F1').on('mousedown', function() {
-                $(this).attr("src", special_image_defaults_on[{{special_buttons['special_1']}}]);
-                checkConfirm({{special_buttons['special_1']}}, "{{special_buttons['special_1_key']}}");
+                if( {{special_buttons['special_1']}} != keypadSpecials.SPECIAL_CUSTOM )
+                    $(this).attr("src", special_image_defaults_on[{{special_buttons['special_1']}}]);
+                else
+                    $(this).attr("src", specialImageList[1]);
+
+                var key = "{{special_buttons['special_1_key']}}";
+                checkConfirm({{special_buttons['special_1']}}, key, $('#button-F1'));
             });
             $('#button-F1').on('mouseup', function() {
-                $(this).attr("src", special_image_defaults[{{special_buttons['special_1']}}]);
+                if( {{special_buttons['special_1']}} != keypadSpecials.SPECIAL_CUSTOM )
+                    $(this).attr("src", special_image_defaults[{{special_buttons['special_1']}}]);
+                else
+                    $(this).attr("src", specialImageList[0]);
             });
             $('#button-F2').on('mousedown', function() {
-                $(this).attr("src", special_image_defaults_on[{{special_buttons['special_2']}}]);
-                checkConfirm({{special_buttons['special_2']}}, "{{special_buttons['special_2_key']}}");
+                if( {{special_buttons['special_2']}} != keypadSpecials.SPECIAL_CUSTOM )
+                    $(this).attr("src", special_image_defaults_on[{{special_buttons['special_2']}}]);
+                else
+                    $(this).attr("src", specialImageList[3]);
+
+                var key = "{{special_buttons['special_2_key']}}";
+                checkConfirm({{special_buttons['special_2']}}, key, $('#button-F2'));
             });
             $('#button-F2').on('mouseup', function() {
-                $(this).attr("src", special_image_defaults[{{special_buttons['special_2']}}]);
+                if( {{special_buttons['special_2']}} != keypadSpecials.SPECIAL_CUSTOM )
+                    $(this).attr("src", special_image_defaults[{{special_buttons['special_2']}}]);
+                else
+                    $(this).attr("src", specialImageList[2]);
             });
             $('#button-F3').on('mousedown', function() {
-                $(this).attr("src", special_image_defaults_on[{{special_buttons['special_3']}}]);
-                checkConfirm({{special_buttons['special_3']}}, "{{special_buttons['special_3_key']}}");
+                if( {{special_buttons['special_3']}} != keypadSpecials.SPECIAL_CUSTOM )
+                    $(this).attr("src", special_image_defaults_on[{{special_buttons['special_3']}}]);
+                else
+                    $(this).attr("src", specialImageList[5] );
+
+                var key = "{{special_buttons['special_3_key']}}";
+                checkConfirm({{special_buttons['special_3']}}, key, $('#button-F3'));
             });
             $('#button-F3').on('mouseup', function() {
-                $(this).attr("src", special_image_defaults[{{special_buttons['special_3']}}]);
+                if( {{special_buttons['special_3']}} != keypadSpecials.SPECIAL_CUSTOM )
+                    $(this).attr("src", special_image_defaults[{{special_buttons['special_3']}}]);
+                else
+                    $(this).attr("src", specialImageList[4]);
             });
             $('#button-F4').on('mousedown', function() {
-                $(this).attr("src", special_image_defaults_on[{{special_buttons['special_4']}}]);
-                checkConfirm({{special_buttons['special_4']}},"{{special_buttons['special_4_key']}}");
+                if( {{special_buttons['special_4']}} != keypadSpecials.SPECIAL_CUSTOM )
+                    $(this).attr("src", special_image_defaults_on[{{special_buttons['special_4']}}]);
+                else
+                    $(this).attr("src", specialImageList[7]);
+
+                var key = "{{special_buttons['special_4_key']}}";
+                checkConfirm({{special_buttons['special_4']}}, key, $('#button-F4'));
             });
             $('#button-F4').on('mouseup', function() {
-                $(this).attr("src", special_image_defaults[{{special_buttons['special_4']}}]);
+                if( {{special_buttons['special_4']}} != keypadSpecials.SPECIAL_CUSTOM )
+                    $(this).attr("src", special_image_defaults[{{special_buttons['special_4']}}]);
+                else
+                    $(this).attr("src", specialImageList[6]);
             });
 
             if( isiPad || isiPhone )
