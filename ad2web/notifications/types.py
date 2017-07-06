@@ -12,6 +12,8 @@ import json
 import re
 import ssl
 import sys
+import base64
+
 try:
     from chump import Application
     have_chump = True
@@ -657,6 +659,9 @@ class CustomNotification(BaseNotification):
         self.path = obj.get_setting('custom_path')
         self.is_ssl = obj.get_setting('is_ssl')
         self.post_type = obj.get_setting('post_type')
+        self.require_auth = obj.get_setting('require_auth')
+        self.auth_username = obj.get_setting('auth_username')
+        self.auth_password = obj.get_setting('auth_password')
         self.custom_values = obj.get_setting('custom_values')
         self.content_type = CUSTOM_CONTENT_TYPES[self.post_type]
         self.method = obj.get_setting('method')
@@ -665,6 +670,10 @@ class CustomNotification(BaseNotification):
             'User-Agent': CUSTOM_USER_AGENT,
             'Content-type': self.content_type
         }
+
+        if self.require_auth:
+            auth_string = base64.encodestring('%s:%s', (self.auth_username, self.auth_password)).replace('\n', '')
+            self.headers['Authentication'] = "Basic: " + auth_string
 
     def _dict_to_xml(self,tag, d):
         el = Element(tag)
