@@ -173,7 +173,6 @@
                         var mask = calculateMask();
                         bindValueToInput( mask, "#address_mask");
                     }
-                    }
                 });
             });
         }
