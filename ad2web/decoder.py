@@ -201,7 +201,7 @@ class Decoder(object):
             current_app.config['MAIL_USE_TLS'] = Setting.get_by_name('system_email_tls',default=False).value
             current_app.config['MAIL_USERNAME'] = Setting.get_by_name('system_email_username',default='').value
             current_app.config['MAIL_PASSWORD'] = Setting.get_by_name('system_email_password',default='').value
-            current_app.config['MAIL_DEFAULT_SENDER'] = Setting.get_by_name('system_email_from',default='root@localhost').value
+            current_app.config['MAIL_DEFAULT_SENDER'] = Setting.get_by_name('system_email_from',default='youremail@example.com').value
 
             mail.init_app(current_app)
 
