@@ -10,6 +10,7 @@ from OpenSSL import crypto
 DEFAULT_SETTINGS = OrderedDict([
     ('daemonize', 1),
     ('device', ''),
+    ('raw_device_mode', 1),
     ('baudrate', 19200),
     ('port', 10000),
     ('preserve_connections', 1),
