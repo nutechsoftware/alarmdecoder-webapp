@@ -24,6 +24,17 @@
         <a href="{{ url_for('settings.disable_forwarding') }}" class="btn btn-primary">Disable</a>
     {% endif %}
 </div>
+<br/>
+<p>
+Internal Address: <a href="https://{{ internal_ip }}">https://{{ internal_ip }}</a>
+</p>
+<p>
+{% if current_external_port %}
+External Address: <a href="https://{{ external_ip }}:{{ current_external_port }}">https://{{ external_ip }}:{{ current_external_port }}</a>
+{% else %}
+External Address: <a href="https://{{ external_ip }}">https://{{ external_ip }}</a>
+{% endif %}
+</p>
 {% endblock %}
 
 {% block js_btm %}

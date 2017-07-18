@@ -48,7 +48,7 @@ from ..settings import Setting
 from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm, VersionCheckerForm, ExportConfigureForm
 from .forms import ProfileForm, PasswordForm, ImportSettingsForm, HostSettingsForm, EthernetSelectionForm, EthernetConfigureForm, SwitchBranchForm, EmailConfigureForm, UPNPForm
 from ..setup.forms import DeviceTypeForm, LocalDeviceForm, NetworkDeviceForm
-from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES, DAILY
+from .constants import NETWORK_DEVICE, SERIAL_DEVICE, EXPORT_MAP, HOSTS_FILE, HOSTNAME_FILE, NETWORK_FILE, KNOWN_MODULES, DAILY, IP_CHECK_SERVER_URL
 from ..certificate import Certificate, CA, SERVER
 from ..notifications import Notification, NotificationSetting
 from ..zones import Zone
@@ -62,6 +62,8 @@ try:
 except ImportError:
     hasservice = False
 
+import urllib2
+import ssl
 
 settings = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -765,7 +767,7 @@ def get_system_imports():
 @admin_required
 def disable_forwarding():
     if not has_upnp:
-        flash(u'Missing library: miniupnpc', 'error')
+        flash(u'Missing library: miniupnpc - install using pip', 'error')
         return redirect(url_for('settings.index'))
 
     current_external_port = Setting.get_by_name('upnp_external_port',default=None)
@@ -793,10 +795,13 @@ def disable_forwarding():
 def port_forwarding():
     form = UPNPForm()
 
+    internal_ip = "alarmdecoder.local"
+    external_ip = get_external_ip()
+
     current_internal_port = Setting.get_by_name('upnp_internal_port',default=None).value
     current_external_port = Setting.get_by_name('upnp_external_port',default=None).value
     if not has_upnp:
-        flash(u'Missing library: miniupnpc', 'error')
+        flash(u'Missing library: miniupnpc - install using pip', 'error')
 
     if not form.is_submitted():
         form.internal_port.data = Setting.get_by_name('upnp_internal_port',default=443).value
@@ -825,7 +830,7 @@ def port_forwarding():
 
 
         else:
-            flash(u'Missing library: miniupnpc', 'error')
+            flash(u'Missing library: miniupnpc - install using pip', 'error')
 
         db.session.add(internal_port)
         db.session.add(external_port)
@@ -833,7 +838,15 @@ def port_forwarding():
 
         return redirect(url_for('settings.index'))
 
-    return render_template('settings/port_forward.html', form=form, current_internal_port=current_internal_port, current_external_port=current_external_port)
+    return render_template('settings/port_forward.html', form=form, current_internal_port=current_internal_port, current_external_port=current_external_port, internal_ip=internal_ip, external_ip=external_ip)
+
+def get_external_ip():
+    try:
+        my_ip = json.load(urllib2.urlopen(IP_CHECK_SERVER_URL, context=ssl._create_unverified_context()))['origin']
+    except Exception as e:
+        return None
+
+    return my_ip
 
 @settings.route('/configure_updater', methods=['GET', 'POST'])
 @login_required
