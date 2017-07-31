@@ -418,6 +418,9 @@ class CustomPostInternalForm(Form):
     is_ssl = BooleanField(u'SSL?', default=False, description=u'Is the URL SSL or No?')
     method = RadioField(u'Method', choices=[(CUSTOM_METHOD_POST, 'POST'), (CUSTOM_METHOD_GET_TYPE, 'GET')], default=CUSTOM_METHOD_POST, coerce=int)
     post_type = RadioField(u'Type', choices=[(URLENCODE, 'urlencoded'), (JSON, 'JSON'), (XML, 'XML')], default=URLENCODE, coerce=int)
+    require_auth = BooleanField(u'Basic Auth?', default=False, description=u'Does the URL require basic authentication?')
+    auth_username = TextField(u'Username', [Optional(), Length(max=255)], description=u'Username for Basic Authentication')
+    auth_password = PasswordField(u'Password', [Optional(), Length(max=255)], description=u'Password for Basic Authentication')
 
     custom_values = FieldList(FormField(CustomValueForm), validators=[Optional()], label=None)
     add_field = ButtonField(u'Add Field', onclick='addField();')
@@ -441,6 +444,9 @@ class CustomPostForm(EditNotificationForm):
         settings['is_ssl'] = self.populate_setting('is_ssl', self.form_field.is_ssl.data)
         settings['method'] = self.populate_setting('method', self.form_field.method.data)
         settings['post_type'] = self.populate_setting('post_type', self.form_field.post_type.data)
+        settings['require_auth'] = self.populate_setting('require_auth', self.form_field.require_auth.data)
+        settings['auth_username'] = self.populate_setting('auth_username', self.form_field.auth_username.data)
+        settings['auth_password'] = self.populate_setting('auth_password', self.form_field.auth_password.data)
         settings['custom_values'] = self.populate_setting('custom_values', self.form_field.custom_values.data)
 
     def populate_from_settings(self, id):
@@ -451,7 +457,9 @@ class CustomPostForm(EditNotificationForm):
         self.form_field.is_ssl.data = self.populate_from_setting(id, 'is_ssl')
         self.form_field.method.data = self.populate_from_setting(id, 'method')
         self.form_field.post_type.data = self.populate_from_setting(id, 'post_type')
-
+        self.form_field.require_auth.data = self.populate_from_setting(id, 'require_auth')
+        self.form_field.auth_username.data = self.populate_from_setting(id, 'auth_username')
+        self.form_field.auth_password.data = self.populate_from_setting(id, 'auth_password')
         custom = self.populate_from_setting(id, 'custom_values')
 
         if custom is not None:
