@@ -33,6 +33,7 @@ EXPORT_MAP = {
     'apikeys.json': APIKey
 }
 
+IP_CHECK_SERVER_URL = "https://www.httpbin.org/ip"
 
 KNOWN_MODULES = [ 'heapq', 'code', 'functools', 'random', 'cffi', 'tty', 'datetime', 'sysconfig', 'gc', 'pty', 'xml', 
  'importlib', 'flask', 'base64', 'collections', 'imp', 'itsdangerous', 'ConfigParser', 'zipimport',

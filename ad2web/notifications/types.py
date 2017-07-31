@@ -401,7 +401,7 @@ class PushoverNotification(BaseNotification):
 
         if check_time_restriction(self.starttime, self.endtime):
             if not have_chump:
-                raise Exception('Missing Pushover library: chump')
+                raise Exception('Missing Pushover library: chump - install using pip')
 
             app = Application(self.token)
             if app.is_authenticated:
@@ -447,7 +447,7 @@ class TwilioNotification(BaseNotification):
             self.msg_to_send = text + " Message Sent at: " + message_timestamp
 
             if have_twilio == False:
-                raise Exception('Missing Twilio library: twilio')
+                raise Exception('Missing Twilio library: twilio - install using pip')
 
             try:
                 client = TwilioRestClient(self.account_sid, self.auth_token)
@@ -469,7 +469,7 @@ class TwiMLNotification(BaseNotification):
 
     def send(self, type, text):
         if have_twilio == False:
-            raise Exception('Missing Twilio library: twilio')
+            raise Exception('Missing Twilio library: twilio - install using pip')
 
         try:
             client = TwilioRestClient(self.account_sid, self.auth_token)
@@ -631,7 +631,7 @@ class GrowlNotification(BaseNotification):
             self.msg_to_send = text + " Message Sent at: " + message_timestamp
 
             if not have_gntp:
-                raise Exception('Missing Growl library: gntp')
+                raise Exception('Missing Growl library: gntp - install using pip')
 
             growl_status = self.growl.register()
             if growl_status == True:

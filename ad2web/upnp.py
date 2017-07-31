@@ -69,7 +69,7 @@ class UPNP():
                 with self._decoder.app.app_context():
                     self._decoder.app.logger.info("Port Forward Attempt: Discovery={0}, IGD={1}, Result={2}".format(discover, igd, port_result))
             else:
-                raise ValueError('Missing library: miniupnpc')
+                raise ValueError('Missing library: miniupnpc - install using pip')
 
         except Exception as e:
             raise
@@ -84,7 +84,7 @@ class UPNP():
                 with self._decoder.app.app_context():
                     self._decoder.app.logger.info("Port Delete Attempt: Discovery={0}, IGD={1}, Result={2}".format(discover, igd, port_result))
             else:
-                raise ValueError('Missing library: miniupnpc')
+                raise ValueError('Missing library: miniupnpc - install using pip')
 
         except Exception as e:
             raise

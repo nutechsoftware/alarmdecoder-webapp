@@ -125,7 +125,7 @@ class EditNotificationForm(Form):
 
 
 class EmailNotificationInternalForm(Form):
-    source = TextField(u'Source Address (From)', [Required(), Length(max=255)], default='root@localhost', description=u'Emails will originate from this address')
+    source = TextField(u'Source Address (From)', [Required(), Length(max=255)], default='youremail@example.com', description=u'Emails will originate from this address')
     destination = TextField(u'Destination Address (To)', [Required(), Length(max=255)], description=u'Emails will be sent to this address')
 
     subject = TextField(u'Email Subject', [Required(), Length(max=255)], default='AlarmDecoder: Alarm Event', description=u'Emails will contain this text as the subject')
@@ -180,7 +180,7 @@ class EmailNotificationForm(EditNotificationForm):
 
 
 class GoogleTalkNotificationInternalForm(Form):
-    source = TextField(u'Source Address', [Required(), Length(max=255)], default='root@localhost', description=u'Messages will originate from this address')
+    source = TextField(u'Source Address', [Required(), Length(max=255)], default='youremail@example.com', description=u'Messages will originate from this address')
     password = PasswordField(u'Password', [Required(), Length(max=255)], description=u'Password for the source account')
     destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Messages will be sent to this address')
 
