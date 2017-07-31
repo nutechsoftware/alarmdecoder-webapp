@@ -51,6 +51,12 @@ body {
 .blink {
     color: red !important;
 }
+
+.cursor_location {
+    color: green !important;
+    text-decoration: underline !important;
+}
+
 .half_keypad-button {
   color: #050505;
   background-color: #D4D0D9;
