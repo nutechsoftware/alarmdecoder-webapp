@@ -67,7 +67,7 @@ SMARTTHINGS = 9
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
-    GOOGLETALK: 'googletalk',
+#    GOOGLETALK: 'googletalk',
     PUSHOVER: 'pushover',
     TWILIO: 'twilio',
     NMA: 'NMA',
@@ -80,7 +80,7 @@ NOTIFICATION_TYPES = {
 
 NOTIFICATIONS = {
     EMAIL: ('email', u'Email'),
-    GOOGLETALK: ('googletalk', u'Google Talk'),
+#    GOOGLETALK: ('googletalk', u'Google Talk'),
     PUSHOVER: ('pushover', u'Pushover.net'),
     TWILIO: ('twilio', u'Twilio'),
     NMA: ('NMA', u'NotifyMyAndroid'),
