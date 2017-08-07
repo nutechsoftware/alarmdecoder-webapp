@@ -81,6 +81,7 @@ class TimeSettingsInternalForm(Form):
 class EditNotificationForm(Form):
     type = HiddenField()
     description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')
+    suppress_timestamp = BooleanField(u'Suppress Timestamp?', [Optional()], description=u'Removes Timestamp from Message Body and Subject')
     time_field = FormField(TimeSettingsInternalForm)
     subscriptions = MultiCheckboxField(u'Notification Events', choices=[(str(k), v) for k, v in SUBSCRIPTIONS.iteritems()])
 
@@ -90,6 +91,7 @@ class EditNotificationForm(Form):
         settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data or '23:59:59')
         settings['delay'] = self.populate_setting('delay', self.time_field.delaytime.data)
         settings['suppress'] = self.populate_setting('suppress', self.time_field.suppress.data)
+        settings['suppress_timestamp'] = self.populate_setting('suppress_timestamp', self.suppress_timestamp.data)
 
     def populate_from_settings(self, id):
         subscriptions = self.populate_from_setting(id, 'subscriptions')
@@ -103,6 +105,7 @@ class EditNotificationForm(Form):
         if self.time_field.delaytime.data is None or self.time_field.delaytime.data == '':
             self.time_field.delaytime.data = 0
         self.time_field.suppress.data = self.populate_from_setting(id, 'suppress', default=False)
+        self.suppress_timestamp.data = self.populate_from_setting(id, 'suppress_timestamp', default=False)
 
     def populate_setting(self, name, value, id=None):
         if id is not None:
