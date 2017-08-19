@@ -54,7 +54,7 @@ def api_doc():
     #modify the host in the json to get their local fqdn if not alarmdecoder (using gunicorn port)
     host = socket.getfqdn()
     if host != 'alarmdecoder':
-        data['host'] = host + ':5000'
+        data['host'] = host + ':' + os.getenv('AD_LISTENER_PORT', '5000')
 
     data = jsonify(data)
     return data, OK
