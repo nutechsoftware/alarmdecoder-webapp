@@ -4,6 +4,21 @@
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}">
+<style type="text/css">
+#info_dialog{
+    position: relative;
+}
+.progress_label {
+    position: absolute;
+    bottom: 15%;
+}
+#progressbar {
+    position: absolute;
+    bottom: 0;
+    width: 90%;
+}
+</style>
 {% endblock %}
 
 {% block pagejs %}
@@ -20,8 +35,26 @@
         <p>
               "SE" panels need to be set to address 31 but on other panels you are welcome to use any free keypad address you have after it has been enabled on your panel.  Check your panel documentation, or call your alarm system provider, to add one for the AlarmDecoder to use.
         </p>
+        <p id="honeywellHelper">For some Honeywell/Ademco panels, clicking the Get Panel Info button will provide you with your installer code and more.  This only works on panels that support the AUI protocol.  You will be notified if it is not supported when you click.
+        </p>
     </div>
-    <br>
+<div id="info_dialog" style="display: none;">
+    <div id="panel_version" style="display: none;">
+    </div>
+    <div id="panel_firmware" style="display: none;">
+    </div>
+    <div id="asciicode" style="display: none;">
+    </div>
+    <div id="numdevices" style="display: none;">
+    </div>
+    <div id="devices" style="display: none;">
+    <b>Possible Keypads</b>
+    </div>
+    <br/>
+    <div class="progress_label" style="display: none;">Starting...</div>
+    <div id="progressbar" style="display: none;"></div>
+</div>
+    <button id="getPanelInfo" class="btn btn-primary">Get Panel Info</button><br/><br/><div id="loading"></div>
     {{ render_form(url_for('setup.device'), form) }}
     <button id="address_mask_builder">Build Address Mask</button>
     <button id="internal_address_mask_builder">Build Address Mask</button>
@@ -43,4 +76,7 @@
 
 {% block js_btm %}
 <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery-confirm.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
 {% endblock %}

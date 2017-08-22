@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from flask import Blueprint, render_template, current_app, request, flash, redirect, url_for
+from flask import Blueprint, render_template, current_app, request, flash, redirect, url_for, jsonify
 from flask.ext.login import login_required, current_user
 
 from ..extensions import db
@@ -12,6 +12,7 @@ from ..decorators import admin_required
 from ..settings import Setting
 from .forms import ZoneForm
 from .models import Zone
+import pprint
 
 zones = Blueprint('zones', __name__, url_prefix='/settings/zones')
 
@@ -20,10 +21,11 @@ zones = Blueprint('zones', __name__, url_prefix='/settings/zones')
 @admin_required
 def index():
     zones = Zone.query.all()
+    panel_mode = Setting.get_by_name('panel_mode').value
 
     use_ssl = Setting.get_by_name('use_ssl', default=False).value
 
-    return render_template('zones/index.html', zones=zones, active="zones", ssl=use_ssl)
+    return render_template('zones/index.html', zones=zones, active="zones", ssl=use_ssl, panel_mode=panel_mode)
 
 @zones.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -76,3 +78,56 @@ def remove(id):
     flash('Zone deleted.', 'success')
 
     return redirect(url_for('zones.index'))
+
+@zones.route('/import', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def import_zone():
+    data = request.get_json()
+    numZones = 0
+    zones = {}
+    
+    if len(data) == 0:
+        return jsonify(success="Failure to enumerate zones, possibly unsupported")
+
+    delete_all_zones()
+
+    for d in data:
+        address = d['address']
+        name = d['zone_name']
+        description = d['zone_name'] if d['zone_name'] != '' else 'Generated - No Alpha Found'
+
+        if not zone_exists_in_db(address):
+            zone = Zone()
+
+            zone.zone_id = address
+            zone.name = name
+            zone.description = description
+
+            db.session.add(zone)
+            z = { 'zone_id': address, 'name': name, 'description': description }
+            zones[address] = z
+            numZones = numZones + 1
+
+    if numZones > 0:
+        db.session.commit()
+
+    if numZones == 0:
+        return jsonify(success=numZones)
+
+    return jsonify(success=zones)
+
+def zone_exists_in_db(id):
+    zone = Zone.query.filter_by(zone_id=id).first()
+
+    if zone:
+        return True
+
+    return False
+
+def delete_all_zones():
+    try:
+        db.session.query(Zone).delete()
+        db.session.commit()
+    except:
+        db.session.rollback()

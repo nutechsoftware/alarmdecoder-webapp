@@ -4,6 +4,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}">
 {% endblock %}
 
 {% block pagejs %}
@@ -35,12 +36,16 @@
         </table>
     </div>
     <br>
-    <a id="clear" class="btn btn-primary" href="{{ url_for('zones.create') }}">New Zone</a>
+    <div id="zone_scanning"></div>
+    <div class="progress_label" style="display: none;">Starting Scan...</div>
+    <div id="progressbar" style="display: none;"></div>
+    <a id="clear" class="btn btn-primary" href="{{ url_for('zones.create') }}">New Zone</a>&nbsp;<button id="importZone" class="btn btn-primary">Scan Panel</button>
 </div>
 {% endblock %}
 
 {% block js_btm %}
 <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery-confirm.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/datatables.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>

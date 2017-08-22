@@ -21,6 +21,7 @@ from .constants import (SETUP_TYPE, SETUP_LOCATION, SETUP_NETWORK,
 from ..ser2sock import ser2sock
 from ..user.models import User
 from ..user.constants import ADMIN as USER_ADMIN, ACTIVE as USER_ACTIVE
+from alarmdecoder.panels import ADEMCO, DSC
 
 setup = Blueprint('setup', __name__, url_prefix='/setup')
 
@@ -418,6 +419,7 @@ def account():
 @setup.route('/device', methods=['GET', 'POST'])
 @admin_or_first_run_required
 def device():
+    panel_mode = Setting.get_by_name('panel_mode',default=ADEMCO).value
     form = DeviceForm()
     if not form.is_submitted():
         if current_app.decoder.device is not None:
@@ -500,7 +502,7 @@ def device():
 
             return redirect(url_for('setup.test'))
 
-    return render_template('setup/device.html', form=form)
+    return render_template('setup/device.html', form=form, panel_mode=panel_mode)
 
 @setup.route('/complete', methods=['GET'])
 def complete():

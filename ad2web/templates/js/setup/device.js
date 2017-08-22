@@ -1,4 +1,7 @@
+{% include 'js/setup/enrollment.js' %}
 <script type="text/javascript">
+    addresses = [];
+    new_address = 18;
 
     //detect if mobile
     function isMobile()
@@ -133,11 +136,20 @@
 
         $(row).appendTo(table);
     }
-    $(document).ready(function() {
+    $(document).ready(function() 
+    {
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
 
         mobile = isMobile();
         tablet = isTablet();
 
+        setConfigBits();
         $(function() {
             FastClick.attach(document.body);
         });
@@ -172,7 +184,6 @@
                     close: function() {
                         var mask = calculateMask();
                         bindValueToInput( mask, "#address_mask");
-                    }
                     }
                 });
             });
@@ -263,6 +274,273 @@
                 });
             }
         }
+        $('#getDeviceInfo').button("disable");
+        PubSub.subscribe('message', function(type, msg) 
+        {
+            if( msg.message_type == "panel" )
+            {
+                if( state == states['programmingMode'] )
+                {
+                    if( msg.programming_mode && programmingModeRetries < 4)
+                    {
+                        inProgrammingMode = true;
+                        state = states['programmingModeDone'];
+                    }
+                    else
+                    {
+                        if( programmingModeRetries >= 4 )
+                        {
+                            state = states['programmingModeDone'];
+                        }
+                        programmingModeRetries++;
+                    }
+                }
+            }
+            if( state == states['programmingModeDone'] )
+            {
+                wait2seconds();
+                if( unlockSlot != 0 )
+                {
+                    tryUnlock(unlockSlot);
+                    $('#loading').stop();
+                    $('#loading').hide();
+                }
+                else
+                {
+                    $.alert('No keypad slots found.');
+                    state = states['doneDone'];
+                    $('#loading').stop();
+                    $('#loading').hide();
+                }
+            }
+
+            if( state == states['unlockDone'] )
+            {
+                $.alert('Done attempting to enroll, please verify settings and click next to continue');
+                state = states['doneDone'];
+            }
+            if( msg.message_type == "aui" )
+            {
+                prefix = getAUIPrefix(msg.value);
+                value = msg.value.trim();
+
+                if( state == states['getDeviceCount'] )
+                {
+                    ascii = parseAUIMessage(prefix, value);
+                    $('#numdevices').css('font-weight', 'Bold');
+                    $('#numdevices').text('Number of Devices: ' + ascii );
+                    $('#numdevices').show();
+                    decoder.emit('keypress', 'K18\r\n');
+                    if( isNaN(ascii) )
+                    {
+                        getDeviceCount();
+                    }
+                    else
+                    {
+                        numberOfDevices = ascii;
+                        state = states['getDeviceCountDone'];
+                        getDeviceDetails();
+                    }
+                }
+                if( state == states['getCode'] && prefix == '0d' ) //(81)
+                {
+                    $('#getDeviceInfo').button("disable");
+                    ascii = parseAUIMessage(prefix, value);
+                    $('#asciicode').css("font-weight", "Bold");
+                    $('#asciicode').text('Potential Installer Code: ' + ascii);
+                    $('#asciicode').show();
+                    iCode = ascii;
+                    state = states['getCodeDone'];
+                    decoder.emit('keypress', "K18\r\n");
+                    getPanelType();
+                }
+                if( state == states['getPanelType'] )
+                {
+                    if( isNaN(iCode) )
+                    {
+                        state = states['getCode'];
+                        if( retries < 3 )
+                        {
+                            getCode();
+                        }
+                        else
+                        {
+                            state = states['unsupported'];
+                            $.alert("Unable to get response from AUI command.  Possibly unsupported. Setting Address 31 in case of SE Panel");
+                            new_address = 31;
+                            $('#keypad_address').val(new_address);
+                        }
+                        retries++;
+                    }
+                    else
+                    {
+                        ascii = parseAUIMessage(prefix, value);
+                        $('#panel_version').css('font-weight', 'Bold');
+                        $('#panel_version').text('Panel Model: ' + ascii);
+                        $('#panel_version').show();
+                        state = states['getPanelTypeDone'];
+                        decoder.emit('keypress', "K18\r\n");
+                        panelType = ascii;
+                        getPanelFirmware(); 
+                    }
+                }
+                if( state == states['getFirmware'])
+                {
+                    ascii = parseAUIMessage(prefix, value);
+                    $('#panel_firmware').css('font-weight', 'Bold');
+                    $('#panel_firmware').text('Panel Firmware Version: ' + ascii);
+                    $('#panel_firmware').show();
+                    state = states['getFirmwareDone'];
+                    decoder.emit('keypress', "K18\r\n");
+                    $('#getDeviceInfo').button("enable");
+                }
+                if( state == states['getDeviceDetails'] )
+                {
+                    if( isNaN(numberOfDevices) )
+                    {
+                        getDeviceCount();
+                    }
+                    else
+                    {
+                        details = parseAUIMessage(prefix, value);
+
+                        addr = parseInt(details['address']);
+                        if( !in_array(addresses, addr ) )
+                        {
+                            if( details['type'] == 'Keypad' )
+                            {
+                                $('#devices').css('font-weight', 'Bold');
+                                $('#devices').show();
+                                $('#devices').append("<br/>Address: " + details['address'] + " Type: " + details['type']);
+                                addresses.push(addr);
+                            }
+                        }
+                        if( count > parseInt(originalNumDevices) )
+                        {
+                            state = states['getDeviceDetailsDone'];
+                            max_address = Math.max.apply(null, addresses);
+                            if( panelDefinitions[panelType] === "undefined" )
+                            {
+                                $.alert("Unable to find your panel definition of addresses in the javascript, please try manually entering your information");
+                            }
+                            else
+                            {
+                                if( panelDefinitions[panelType][max_address +1] !== "undefined" )
+                                {
+                                    if( addresses.length == 0 )
+                                        new_address = 17;
+                                    else
+                                        new_address = max_address + 1;
+
+                                    $('#keypad_address').val(new_address);
+                                    unlockSlot = panelDefinitions[panelType][new_address];
+                                    $('.progress_label').hide();
+                                    $('#progressbar').hide();
+                                    $.confirm({
+                                        content: "Try to unlock and set address " + new_address + "?  You may have to unplug your main keypad to avoid command collisions.",
+                                        title: "Enroll Attempt",
+                                        confirm: function(button) {
+                                            $('#info_dialog').dialog("close");
+                                            $('#loading').show();
+                                            $('#loading').spin('flower');
+                                            programmingMode();
+                                        },
+                                        cancel: function(button) {
+                                        },
+                                        confirmButton: "Yes",
+                                        cancelButton: "No",
+                                        post: false,
+                                    });
+                                }
+                                else
+                                {
+                                    if( panelDefinitions[panelType][0] == "31" )
+                                    {
+                                        $.alert("Somehow we've made it this far with an SE Panel?? Setting to address 31.");
+                                        $('#keypad_address').val(31);
+                                    }
+                                    else
+                                    {
+                                        $.alert("Unable to find address slot in panel definition, please confirm you have a free keypad slot and your panel addresses are defined within the app. (enrollment.js)");
+                                    }
+                                }
+                            }
+                            $('#getDeviceInfo').button("disable");
+                            $('#getPanelInfo').prop("disabled", false);
+                        }
+                        decoder.emit('keypress', "K18\r\n");
+                    }
+                }
+            }
+        });
+
+        PubSub.subscribe('test', function(type, msg) {
+            result_text = {
+                'PASS': '<span style="color:green">&#10004;</span>',
+                'FAIL': '<span style="color:red">&#10008;</span>',
+                'TIMEOUT': '<span style="color:orange">&#9888;</span>'
+            };
+
+            result = result_text[msg.results] + ' : ' + msg.details;
+        });
+
+        $('#getPanelInfo').on('click', function() {
+            $('#info_dialog').dialog({
+                title: "Panel Information",
+                modal: false,
+                minWidth: 450,
+                maxWidth: 450,
+                height: 450,
+                position: ['center', 80],
+                buttons: {
+                    "getDeviceInfo": {
+                        text: "Get Device Info",
+                        id: "getDeviceInfo",
+                        click: function() {
+                            $('.progress_label').show();
+                            $('#progressbar').show();
+                            $('#progressbar').progressbar({
+                                change: function() {
+                                    $('.progress_label').text("Current Progress: " + $('#progressbar').progressbar("value") + "%" );
+                                }
+                            });
+                            $('#progressbar').progressbar('option', 'value', 0);
+                            getDeviceCount();
+                        }
+                    }
+                },
+                close: function() {
+                    $('#info_dialog').hide();
+                    $('#panel_version').empty();
+                    $('#panel_firmware').empty();
+                    $('#asciicode').empty();
+                    $('#numdevices').empty();
+                    $('#devices').empty();
+                    addresses = [];
+                    $('#getPanelInfo').prop("disabled", false);
+                }
+            });
+            $('#getDeviceInfo').button("disable");
+            $('#info_dialog').show();
+            retries = 0;
+            $('#getPanelInfo').prop("disabled", true);
+            getCode();
+        });
+        var form = document.getElementsByTagName("form");
+        $(form).change(function() {
+            selected_value = $("input[name='panel_mode']:checked").val();
+
+            if( selected_value == 1 )
+            {
+                $('#getPanelInfo').hide();
+                $('#honeywellHelper').hide();
+            }
+            else
+            {
+                $('#getPanelInfo').show();
+                $('#honeywellHelper').show();
+            }
+        });
     });
 
     $('body').ready(function() {
@@ -313,7 +591,7 @@
             {
                 if(keypad_address_val < 1 || keypad_address_val > 88 )
                 {
-                    alert('DSC Partition and Slot has to be between 1 and 88');
+                    $.alert('DSC Partition and Slot has to be between 1 and 88');
                     event.preventDefault();
                 }
             }

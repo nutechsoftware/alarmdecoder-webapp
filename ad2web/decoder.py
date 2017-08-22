@@ -316,6 +316,7 @@ class Decoder(object):
         self.device.on_message += build_message_handler('panel')
         self.device.on_lrr_message += build_message_handler('lrr')
         self.device.on_rfx_message += build_message_handler('rfx')
+        self.device.on_aui_message += build_message_handler('aui')
         self.device.on_expander_message += build_message_handler('exp')
 
         self.device.on_open += self._on_device_open

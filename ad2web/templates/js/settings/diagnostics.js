@@ -1,4 +1,7 @@
+{% include 'js/setup/enrollment.js' %}
 <script type="text/javascript">
+fullMessages = [];
+
     $(document).ready(function() {
         var allmodsfound = 1;
         $.fn.spin.presets.flower = {
@@ -84,6 +87,48 @@
 
         });
 
+        PubSub.subscribe('message', function(type, msg) {
+            if( msg.message_type == "aui" )
+            {
+                value = msg.value.trim();
+                prefix = getAUIPrefix(value);
+
+                if( state == states['queryLog'] )
+                {
+                    numLogEntries = parseAUIMessage(prefix, value);
+                    state = states['queryLogDone'];
+                    if( !isNaN(numLogEntries) )
+                    {
+                        $('#numDevices').html('Number of Event Log Entries: ' + numLogEntries + '<br/>');
+                        $('#dialog').dialog({ width: 600, height: 500, close: function() { $('#numDevices').text('');  $('#textLogEntries').val(''); state = state['queryLogDetailsDone']; countLogEntries = 0;}});
+                        state = states['queryLogDetails'];
+                        checkDeviceLogs(numLogEntries);
+                    }
+                }
+                if( state == states['queryLogDetails'] )
+                {
+                    logMessage = parseAUIMessage(prefix, value);
+                    fullMessage = countLogEntries + ': ' + logMessage + '\r\n';
+
+                    if( !asciiToHex(logMessage).startsWith("05") )
+                    {
+                        if( !in_array(fullMessages, fullMessage) )
+                        {
+                            $('#textLogEntries').append(fullMessage);
+                            fullMessages.push(fullMessage);
+                        }
+                    }
+                    if( countLogEntries > parseInt(numLogEntries) )
+                        state = states['queryLogDetailsDone'];
+                }
+                if( state == states['queryLogDone'] && isNaN(numLogEntries) )
+                {
+                    state = states['unsupported'];
+                    alert('It would appear your particular honeywell panel does not support this');
+                }
+            }
+        });
+
         $('#test_decoder').on('click', function() {
             $('#decoder_detail').show();
             var spinner = '<img src="{{url_for('static', filename='img/spinner.gif')}}"/>';
@@ -97,6 +142,14 @@
             $('table#test_results tr#test-recv').children('td:eq(2)').html('');
             
             decoder.emit('test');
+        });
+        $('#startEventQuery').on('click', function() {
+            state = states['queryLog'];
+            queryLog();
+        });
+        $('#btnCopy').on('click', function() {
+            $('#textLogEntries').select();
+            document.execCommand('copy');
         });
     });
 </script>
