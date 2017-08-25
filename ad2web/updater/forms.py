@@ -14,3 +14,9 @@ class UpdateFirmwareForm(Form):
 
     submit = SubmitField(u'Upload')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings'")
+
+class UpdateFirmwareJSONForm(Form):
+    firmware_file_json = SelectField(u'Firmware File', coerce=str)
+
+    json_submit = SubmitField(u'Upload')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings'")

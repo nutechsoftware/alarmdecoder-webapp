@@ -1,0 +1,351 @@
+{% from "macros/_form.html" import render_form %}
+
+{% extends 'settings/layout.html' %}
+
+{% set page_title = 'AlarmDecoder Firmware Update' %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datatables.min.css')}}"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}">
+<style>
+
+.upload-error {
+    color: red !important;
+}
+
+.ui-progressbar-value {
+    background: #78aee6 none 50% 50% repeat-x !important;
+}
+#progress_label {
+    position: absolute;
+    bottom: 15%;
+}
+
+#progress_bar {
+    position: absolute;
+    bottom: 0;
+    width: 90%;
+}
+
+.progress_label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #3b3b3b;
+}
+</style>
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+firmwareuploading = false;
+function makelink(str, desc)
+{
+    return '<a href="' + str + '">' + desc + '</a>';
+}
+
+function update_table(new_version)
+{
+    var table = $('#firmware-table').DataTable();
+    var version = '';
+    var notes = '';
+    var tag = '';
+    var file = '';
+    var panels = '';
+
+    table.clear();
+    {% if firmwarejson %}
+        {% for key, value in firmwarejson.iteritems() %}
+            {% for v in value %}
+                if( "{{ v['version'] }}" == new_version )
+                    version = "{{ v['version'] }}" + " (<span id='current_version2' style='color: green;'>Installed</span>)";
+                else
+                    version = "{{ v['version'] }}";
+
+                notes = makelink("{{ v['notes'] }}", "Link");
+                tag = "{{ v['tag'] }}";
+                file = makelink("{{ v['file'] }}", "Download");
+                panels = "{{ v['panel_support'] }}";
+                table.row.add( [ version, notes, tag, panels, file ] );
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+    table.draw();
+}
+
+function parse_version(str)
+{
+    strings = str.split('V');
+    if( strings[1] !== undefined )
+    {
+        version = strings[1].split('.');
+        end_version = version[0].replace(/_/g, '.');
+        return end_version;
+    }
+    version = strings[0].replace('_', '.');
+    return version;
+}
+
+    $(document).ready(function() {
+        var upload_label = $('#progress_label');
+        var upload_progressbar = $('#progress_bar');
+
+        $.fn.spin.presets.flower = {
+            lines: 13,
+            length: 30,
+            width: 10,
+            radius: 30,
+            className: 'spinner',
+        }
+
+        $('#uploader_manual').submit(function(e) {
+            e.preventDefault();
+            if( firmwareuploading === true )
+            {
+                $.alert('There is already a firmware upload in progress.');
+                return false;
+            }
+
+            var file = $('#firmware_file').val();
+            if( file == "")
+            {
+                $.alert('Please select a file.');
+            }
+            else if( !file.endsWith('.hex') )
+            {
+                $.alert(file + ' is not a valid hex file');
+            }
+            else
+            {
+                var file = $('#firmware_file')[0].files[0];
+                var form_data = new FormData();
+                form_data.append('file', file);
+                var url = "{{ url_for('update.update_firmware') }}";
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: form_data,
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    success: function(data) {
+                        $('#loading').stop();
+                        $('#loading').hide();
+                        $('#downloading').hide();
+                        if(data['uploading'] !== undefined )
+                        {
+                            var uploaded_file = data['uploading'];
+                            uploaded_file = parse_version(uploaded_file);
+                            $('#dialog').dialog({
+                                title: 'Uploading Firmware',
+                                height: 450,
+                                width: 450,
+                                buttons: {
+                                    'retry': {
+                                        text: 'Retry',
+                                        id: 'btn-retry',
+                                        click: function() {
+                                            upload_label.removeClass('upload-error');
+                                            upload_progressbar.progressbar({ value: false });
+                                            $('#btn-retry').button("disable");
+                                            decoder.emit('firmwareupload');
+                                        }
+                                    }
+                                },
+                                close: function() {
+                                    upload_label.removeClass('upload-error');
+                                    upload_progressbar.progressbar({ value: false });
+                                    $('#firmwarefile').empty();
+                                    update_table(uploaded_file);
+                                    $('#current_version').text(uploaded_file);
+                                }
+                            });
+                            $('#firmwarefile').text("Writing: " + data['uploading']);
+                            decoder.emit('firmwareupload');
+                            $('#btn-retry').button("disable");
+                            $('#btn-retry').hide();
+                        }
+                        else
+                        {
+                            var error = 'Did not get expected response from server.  Not proceeding, try again.';
+                            if( data['error'] !== undefined )
+                            {
+                                if( data['error'] === "NOFILE" )
+                                    error = 'Uploaded file was not able to be read.';
+                            }
+
+                            $.alert(error);
+                        }
+                    },
+                    error: function(data) {
+                        $.alert('There was some error during upload of your file.');
+                    }
+                });
+            }
+        });
+        $('#uploader_json').submit(function(e) {
+            e.preventDefault();
+
+            if( firmwareuploading === true )
+            {
+                $.alert('There is already firmware uploading.');
+                return false;
+            }
+            var text_version = $('#firmware_file_json').children("option").filter(":selected").text();
+            var url = "{{ url_for('update.update_firmware') }}";
+            $('#loading').show();
+            $('#downloading').show();
+            $('#loading').spin('flower');
+            $('#downloading').text("Downloading firmware from server...");
+            $.ajax({
+                type: "POST",
+                data: $('#uploader_json').serialize(),
+                url: url,
+                success: function(data) {
+                    $('#loading').stop();
+                    $('#loading').hide();
+                    $('#downloading').hide();
+                    if(data['uploading'] !== undefined )
+                    {
+                        $('#dialog').dialog({
+                            title: 'Uploading Firmware',
+                            height: 450,
+                            width: 450,
+                            buttons: {
+                                'retry': {
+                                    text: 'Retry',
+                                    id: 'btn-retry',
+                                    click: function() {
+                                        upload_label.removeClass('upload-error');
+                                        upload_progressbar.progressbar({ value: false });
+                                        $('#btn-retry').button("disable");
+                                        decoder.emit('firmwareupload');
+                                    }
+                                }
+                            },
+                            close: function() {
+                                upload_label.removeClass('upload-error');
+                                upload_progressbar.progressbar({ value: false });
+                                $('#firmwarefile').empty();
+                                $('#current_version').text(text_version);
+                                update_table(text_version);
+                            }
+                        });
+                        $('#firmwarefile').text("Writing: " + data['uploading']);
+                        decoder.emit('firmwareupload');
+                        $('#btn-retry').button("disable");
+                        $('#btn-retry').hide();
+                    }
+                },
+                error: function(data) {
+                    $.alert('There was some error processing the file.');
+                }
+            });
+        });
+
+        PubSub.subscribe('firmwareupload', function(type, msg) {
+            var stage = msg.stage;
+            firmwareuploading = true;
+            if (stage == "STAGE_START") {
+                upload_label.text("Starting upload..");
+            }
+            else if (stage == "STAGE_WAITING") {
+                upload_label.text("Waiting for device..");
+            }
+            else if (stage == "STAGE_BOOT") {
+                upload_label.text("Rebooting device..");
+            }
+            else if (stage == "STAGE_LOAD") {
+                upload_label.text("Waiting for boot loader..");
+            }
+            else if (stage == "STAGE_UPLOADING") {
+                upload_label.text("Uploading firmware: " + msg.percent + "%");
+                upload_progressbar.progressbar({ value: msg.percent });
+            }
+            else if (stage == "STAGE_DONE") {
+                upload_label.text("Firmware upload complete!");
+                $('#btn-retry').button("disable");
+                $('#btn-retry').hide();
+                upload_progressbar.progressbar({ value: 100 });
+            }
+            else if (stage == "STAGE_CONFIGURE") {
+                upload_label.text("Reconfiguring device..");
+            }
+            else if (stage == "STAGE_FINISHED") {
+                upload_label.text("Complete!");
+                firmwareuploading = false;
+            }
+            else if (stage == "STAGE_ERROR") {
+                console.log(msg.error);
+                upload_label.text(msg.error);
+                upload_label.addClass('upload-error');
+                upload_progressbar.progressbar({ value: -1 });
+                $('btn-retry').button("enable");
+                $('#btn-retry').show();
+                firmwareuploading = false;
+            }
+        });
+        $('#firmware-table').DataTable({
+            "order": [[2, "desc" ]]
+        });
+
+        if( {{ all_ok }} == false )
+        {
+            $('#head').hide();
+            $('#uploader_json').hide();
+        }
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="settings_wrapper">
+    <h3>Firmware (<span id="current_version" style="color: green;">{{ current_firmware }}</span>)</h3>
+    {% if firmwarejson %}
+    {% for key, value in firmwarejson.iteritems() %}
+        <table id="firmware-table" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Version</th><th>Release Notes</th><th>Type</th><th>Panels</th><th>File</th>
+                </tr>
+            </thead>
+            <tbody>
+        {% for v in value %}
+            <tr>
+                {% set v_check = ['V', v['version']] %}
+                {% set check = v_check|join %}
+                {% if check == current_firmware %}
+                    <td>{{ v['version'] }} (<span id="installed" style="color: green;">Installed</span>)</td>
+                {% else %}
+                    <td>{{ v['version'] }}</td>
+                {% endif %}
+                <td><a href="{{ v['notes'] }}" target="_blank">Link</a></td><td>{{ v['tag'] }}</td><td>{{ v['panel_support'] }}<td><a href="{{ v['file'] }}">Download</a></td>
+            </tr>
+        {% endfor%}
+            </tbody>
+        </table>
+    {% endfor %}
+    {% endif %}
+    <br/>
+    <h4 id="head">Download and Install Firmware from the AlarmDecoder website</h4>
+    {{ render_form(url_for('update.update_firmware'), form, formid='uploader_json') }}
+    <br/>
+    <h4>Specify a Firmware File</h4>
+    {{ render_form(url_for('update.update_firmware'), form2, formid='uploader_manual') }}
+</div>
+<div id="loading"></div>
+<div id="downloading"></div>
+<div id="dialog" style="display: none;">
+    <div id="firmwarefile"></div>
+    <div id="progress_label" class="progress_label">Starting...</div>
+    <div id="progress_bar"></div>
+</div>
+{% endblock %}
+
+{% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/datatables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery-confirm.min.js') }}"></script>
+{% endblock %}

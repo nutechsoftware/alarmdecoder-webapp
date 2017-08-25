@@ -104,7 +104,7 @@ span#buttons-cancel-group, span#cancel-group {
     margin-bottom: 0;
 }
 
-span#buttons-submit-group, span#submit-group {
+span#buttons-submit-group, span#submit-group, span#json_submit-group {
     margin-top: 5px;
     float: right;
     margin-bottom: 0;

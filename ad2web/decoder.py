@@ -30,6 +30,7 @@ from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SocketDevice, SerialDevice
 from alarmdecoder.util import NoDeviceError, CommError
 
+from flask import flash
 from .extensions import db, mail
 from .notifications import NotificationSystem, NotificationThread
 from .settings.models import Setting
@@ -567,6 +568,9 @@ class VersionChecker(threading.Thread):
                     self.last_check_time = time.time()
                     version_checker_last_check_time = Setting.get_by_name('version_checker_last_check_time')
                     version_checker_last_check_time.value = self.last_check_time
+
+                    if self._updater.check_firmware() is True:
+                        flash("Firmware update available!  <a href='/update/update_firmware'>Click Here</a>", 'success')
 
                     db.session.add(version_checker_last_check_time)
                     db.session.commit()
