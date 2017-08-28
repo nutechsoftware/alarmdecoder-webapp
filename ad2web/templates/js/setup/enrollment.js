@@ -75,7 +75,11 @@ async function setConfigBits()
 {
     state = states['setConfigBits'];
     decoder.emit('keypress', 'CCONFIGBITS=FF05\r\n');
-    
+    await sleep(500);
+    decoder.emit('keypress', 'K01|006e6b0e4543f531\r\n');
+    await sleep(500);
+    decoder.emit('keypress', 'K18\r\n'); 
+    await sleep(500);
     state = states['setConfigBitsDone'];
 }
 
@@ -89,7 +93,7 @@ async function programmingMode()
     state = states['programmingMode'];
     if( iCode != '' && panelType != '' )
     {
-        sendString = "K16" + iCode + '800';
+        sendString = "K01" + iCode + '800';
         decoder.emit('keypress', sendString);
         decoder.emit('keypress', "K18\r\n");
 //        await sleep(2500);
@@ -101,13 +105,13 @@ async function tryUnlock(address)
     state = states['tryUnlock'];
     if( inProgrammingMode === false )
     {
-        $.alert('Unable to get into programming mode.  Please check your main keypad has been removed.');
+        $.alert('Unable to get into programming mode.  Please check your AUI keypad has been removed.');
         state = states['unlockFail'];
     }
     else
     {
         await sleep(1000);
-        sendString = "K16" + address + '10';
+        sendString = "K01" + address + '10';
         decoder.emit('keypress', sendString);
         await sleep(1000);
         decoder.emit('keypress', '*99');

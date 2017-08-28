@@ -437,7 +437,7 @@
                                     $('.progress_label').hide();
                                     $('#progressbar').hide();
                                     $.confirm({
-                                        content: "Try to unlock and set address " + new_address + "?  You may have to unplug your main keypad to avoid command collisions.",
+                                        content: "Try to unlock and set address " + new_address + "?  Please make sure AUI keypads (TuxedoTouch etc) are unplugged to avoid command collisions.",
                                         title: "Enroll Attempt",
                                         confirm: function(button) {
                                             $('#info_dialog').dialog("close");
