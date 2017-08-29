@@ -284,8 +284,8 @@
                 if( aui_retries > 2 )
                 {
         		    state = states['unsupported'];
-        		    $('#info_dialog').dialog("close");
-        		    $('#loading').stop();
+                    $('#info_dialog').dialog("close");
+                    $('#loading').stop();
                     $('#loading').hide();
                     $.alert('Seems we are not supporting AUI commands at this time.  Does your panel support AUI?  Is AUI enabled?  If not, proceed with manual setup.');
                 }
@@ -306,6 +306,7 @@
                             state = states['programmingModeDone'];
                         }
                         programmingModeRetries++;
+                        wait2seconds();
                     }
                 }
             }
@@ -358,7 +359,7 @@
                 }
                 if( state == states['getCode'] && prefix == '0d' ) //(81)
                 {
-        		    $('#loading').stop();
+                    $('#loading').stop();
                     $('#loading').hide();
                     $('#getDeviceInfo').button("disable");
                     ascii = parseAUIMessage(prefix, value);
@@ -501,8 +502,8 @@
         });
 
         $('#getPanelInfo').on('click', function() {
-	    $('#loading').show();
-	    $('#loading').spin('flower');
+            $('#loading').show();
+            $('#loading').spin('flower');
             $('#info_dialog').dialog({
                 title: "Panel Information",
                 modal: false,
@@ -536,7 +537,7 @@
                     $('#devices').empty();
                     addresses = [];
                     $('#getPanelInfo').prop("disabled", false);
-        		    $('#loading').stop();
+                    $('#loading').stop();
                 }
             });
             $('#getDeviceInfo').button("disable");
