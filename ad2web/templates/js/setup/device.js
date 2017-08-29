@@ -2,6 +2,7 @@
 <script type="text/javascript">
     addresses = [];
     new_address = 18;
+    aui_retries = 0;
 
     //detect if mobile
     function isMobile()
@@ -277,6 +278,18 @@
         $('#getDeviceInfo').button("disable");
         PubSub.subscribe('message', function(type, msg) 
         {
+            if( state == states['getCode'] && msg.message_type != "aui" )
+            {
+                aui_retries++;
+                if( aui_retries > 2 )
+                {
+        		    state = states['unsupported'];
+        		    $('#info_dialog').dialog("close");
+        		    $('#loading').stop();
+                    $('#loading').hide();
+                    $.alert('Seems we are not supporting AUI commands at this time.  Does your panel support AUI?  Is AUI enabled?  If not, proceed with manual setup.');
+                }
+            }
             if( msg.message_type == "panel" )
             {
                 if( state == states['programmingMode'] )
@@ -321,6 +334,7 @@
             }
             if( msg.message_type == "aui" )
             {
+        		aui_retries = 0;
                 prefix = getAUIPrefix(msg.value);
                 value = msg.value.trim();
 
@@ -344,6 +358,8 @@
                 }
                 if( state == states['getCode'] && prefix == '0d' ) //(81)
                 {
+        		    $('#loading').stop();
+                    $('#loading').hide();
                     $('#getDeviceInfo').button("disable");
                     ascii = parseAUIMessage(prefix, value);
                     $('#asciicode').css("font-weight", "Bold");
@@ -485,6 +501,8 @@
         });
 
         $('#getPanelInfo').on('click', function() {
+	    $('#loading').show();
+	    $('#loading').spin('flower');
             $('#info_dialog').dialog({
                 title: "Panel Information",
                 modal: false,
@@ -518,6 +536,7 @@
                     $('#devices').empty();
                     addresses = [];
                     $('#getPanelInfo').prop("disabled", false);
+        		    $('#loading').stop();
                 }
             });
             $('#getDeviceInfo').button("disable");
