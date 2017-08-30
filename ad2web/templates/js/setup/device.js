@@ -307,6 +307,7 @@
                         }
                         programmingModeRetries++;
                         wait2seconds();
+                        wait2seconds();
                     }
                 }
             }

@@ -96,6 +96,7 @@ async function programmingMode()
         sendString = "K01" + iCode + '800';
         decoder.emit('keypress', sendString);
         decoder.emit('keypress', "K18\r\n");
+        await sleep(2000);
     }
 }
 
