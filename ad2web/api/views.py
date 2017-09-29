@@ -12,6 +12,7 @@ from httplib import OK, CREATED, ACCEPTED, NO_CONTENT, UNAUTHORIZED, NOT_FOUND, 
 from flask import Blueprint, current_app, request, jsonify, abort, Response, render_template, redirect, url_for
 from flask.ext.login import login_user, current_user, logout_user, login_required
 
+from alarmdecoder import AlarmDecoder
 from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
 from alarmdecoder.zonetracking import Zone as ADZone
 
@@ -204,19 +205,19 @@ def alarmdecoder_send():
         return jsonify(build_error(ERROR_MISSING_FIELD, "Missing 'keys' in request.")), UNPROCESSABLE_ENTITY
 
     #replace special keys with 3 press representation
-    keys = keys.replace("<F1>", unichr(1) + unichr(1) + unichr(1))
-    keys = keys.replace("<F2>", unichr(2) + unichr(2) + unichr(2))
-    keys = keys.replace("<F3>", unichr(3) + unichr(3) + unichr(3))
-    keys = keys.replace("<F4>", unichr(4) + unichr(4) + unichr(4))
-    keys = keys.replace("<PANIC>", unichr(2) + unichr(2) + unichr(2))
-    keys = keys.replace("<S1>", unichr(1) + unichr(1) + unichr(1))
-    keys = keys.replace("<S2>", unichr(2) + unichr(2) + unichr(2))
-    keys = keys.replace("<S3>", unichr(3) + unichr(3) + unichr(3))
-    keys = keys.replace("<S4>", unichr(4) + unichr(4) + unichr(4))
-    keys = keys.replace("<S5>", unichr(5) + unichr(5) + unichr(5))
-    keys = keys.replace("<S6>", unichr(6) + unichr(6) + unichr(6))
-    keys = keys.replace("<S7>", unichr(7) + unichr(7) + unichr(7))
-    keys = keys.replace("<S8>", unichr(8) + unichr(8) + unichr(8))
+    keys = keys.replace("<F1>", AlarmDecoder.KEY_F1 )
+    keys = keys.replace("<F2>", AlarmDecoder.KEY_F2 )
+    keys = keys.replace("<F3>", AlarmDecoder.KEY_F3 )
+    keys = keys.replace("<F4>", AlarmDecoder.KEY_F4 )
+    keys = keys.replace("<PANIC>", AlarmDecoder.KEY_PANIC )
+    keys = keys.replace("<S1>", AlarmDecoder.KEY_S1 )
+    keys = keys.replace("<S2>", AlarmDecoder.KEY_S2 )
+    keys = keys.replace("<S3>", AlarmDecoder.KEY_S3 )
+    keys = keys.replace("<S4>", AlarmDecoder.KEY_S4 )
+    keys = keys.replace("<S5>", AlarmDecoder.KEY_S5 )
+    keys = keys.replace("<S6>", AlarmDecoder.KEY_S6 )
+    keys = keys.replace("<S7>", AlarmDecoder.KEY_S7 )
+    keys = keys.replace("<S8>", AlarmDecoder.KEY_S8 )
 
     current_app.decoder.device.send(keys)
 
