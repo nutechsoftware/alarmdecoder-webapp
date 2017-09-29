@@ -294,14 +294,14 @@
             {
                 if( state == states['programmingMode'] )
                 {
-                    if( msg.programming_mode && programmingModeRetries < 4)
+                    if( msg.programming_mode && programmingModeRetries <= 4)
                     {
                         inProgrammingMode = true;
                         state = states['programmingModeDone'];
                     }
                     else
                     {
-                        if( programmingModeRetries >= 4 )
+                        if( programmingModeRetries > 4 )
                         {
                             state = states['programmingModeDone'];
                         }
