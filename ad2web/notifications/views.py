@@ -23,7 +23,7 @@ from .constants import (EVENT_TYPES, NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS,
 
 NOTIFICATION_TYPE_DETAILS = {
     'email': (EMAIL, EmailNotificationForm),
-    'googletalk': (GOOGLETALK, GoogleTalkNotificationForm),
+#    'googletalk': (GOOGLETALK, GoogleTalkNotificationForm),
     'pushover': (PUSHOVER, PushoverNotificationForm),
     'twilio': (TWILIO, TwilioNotificationForm),
     'NMA': (NMA, NMANotificationForm),
