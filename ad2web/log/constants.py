@@ -14,20 +14,22 @@ LOW_BATTERY = 10
 PANIC = 11
 RELAY_CHANGED = 12
 ALARM_RESTORED = 13
+LRR = 14
 
 EVENT_TYPES = {
-    ARM: 'arm',
-    DISARM: 'disarm',
-    POWER_CHANGED: 'power changed',
-    ALARM: 'alarm',
-    FIRE: 'fire',
-    BYPASS: 'bypass',
-    BOOT: 'boot',
-    CONFIG_RECEIVED: 'config received',
-    ZONE_FAULT: 'zone fault',
-    ZONE_RESTORE: 'zone restore',
-    LOW_BATTERY: 'low battery',
-    PANIC: 'panic',
-    RELAY_CHANGED: 'relay changed',
-    ALARM_RESTORED: 'alarm restored'
+    ARM: 'ARM',
+    DISARM: 'DISARM',
+    POWER_CHANGED: 'POWER CHANGED',
+    ALARM: 'ALARM',
+    FIRE: 'FIRE',
+    BYPASS: 'BYPASS',
+    BOOT: 'BOOT',
+    CONFIG_RECEIVED: 'CONFIG RECEIVED',
+    ZONE_FAULT: 'ZONE FAULT',
+    ZONE_RESTORE: 'ZONE RESTORE',
+    LOW_BATTERY: 'LOW BATTERY',
+    PANIC: 'PANIC',
+    RELAY_CHANGED: 'RELAY CHANGED',
+    ALARM_RESTORED: 'ALARM RESTORED',
+    LRR: 'LRR'
 }
