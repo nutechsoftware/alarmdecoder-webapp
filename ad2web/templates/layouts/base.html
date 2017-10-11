@@ -66,6 +66,9 @@
                     {% if update_available and current_user.is_admin() %}
                     <li><a href="{{ url_for('update.index') }}" style="color: #86D47F;">Update Available!</a></li>
                     {% endif %}
+                    {% if firmware_update_available and current_user.is_admin() %}
+                    <li><a href="{{ url_for('update.update_firmware') }}" style="color: #86D47F;">Firmware Update Available!</a></li>
+                    {% endif %}
                     <li><a href="{{ url_for('keypad.index') }}">Keypad</a></li>
                     {% if cameras is defined and cameras != 0 %}
                     <li><a href="{{ url_for('cameras.index') }}">Cameras</a></li>

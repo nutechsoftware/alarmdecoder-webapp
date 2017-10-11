@@ -30,6 +30,7 @@ from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SocketDevice, SerialDevice
 from alarmdecoder.util import NoDeviceError, CommError
 
+from flask import flash
 from .extensions import db, mail
 from .notifications import NotificationSystem, NotificationThread
 from .settings.models import Setting
@@ -564,6 +565,7 @@ class VersionChecker(threading.Thread):
                             update_available = not all(not needs_update for component, (needs_update, branch, revision, new_revision, status, project_url) in self._decoder.updates.iteritems())
 
                             current_app.jinja_env.globals['update_available'] = update_available
+                            current_app.jinja_env.globals['firmware_update_available'] = self._updater.check_firmware()
 
                             self.last_check_time = check_time
                             version_checker_last_check_time = Setting.get_by_name('version_checker_last_check_time')
@@ -571,6 +573,7 @@ class VersionChecker(threading.Thread):
 
                             db.session.add(version_checker_last_check_time)
                             db.session.commit()
+
 
                     except Exception, err:
                         self._decoder.app.logger.error('Error in VersionChecker: {0}'.format(err), exc_info=True)
@@ -827,6 +830,8 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
                         self._alarmdecoder.broadcast('firmwareupload', { 'stage': 'STAGE_CONFIGURE' });
                         time.sleep(10)
                         self._alarmdecoder.device.send("C{0}\r".format(orig_config_string))
+                        time.sleep(5)
+                        current_app.jinja_env.globals['firmware_update_available'] = False
 
                     self._alarmdecoder.broadcast('firmwareupload', { 'stage': 'STAGE_FINISHED' });
 

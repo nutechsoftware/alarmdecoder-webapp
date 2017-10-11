@@ -2,6 +2,8 @@ import os
 import sys
 import logging
 import shutil
+import json
+import urllib
 
 import sh
 import sqlalchemy.exc
@@ -13,6 +15,8 @@ from alembic.script import ScriptDirectory
 from flask import current_app
 
 from alarmdecoder.util import Firmware
+
+from .constants import FIRMWARE_JSON_URL
 
 try:
     current_app._get_current_object()
@@ -60,6 +64,26 @@ class Updater(object):
             status[name] = (component.needs_update, component.branch, component.local_revision, component.remote_revision, component.status, component.project_url)
 
         return status
+
+    def check_firmware(self):
+        version = current_app.decoder.device.version_number
+
+        if version is not None and version is not '':
+            data = None
+            version = version[1:]
+            try:
+                response = urllib.urlopen(FIRMWARE_JSON_URL)
+                data = json.loads(response.read())
+                for firmware in data['firmware']:
+                    if firmware['tag'] == "Stable":
+                        if version != firmware['version']:
+                            return True
+
+                return False
+            except IOError:
+                return False
+
+        return False
 
     def update(self, component_name=None):
         """
