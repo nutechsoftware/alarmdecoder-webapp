@@ -328,15 +328,20 @@ class EmailNotification(BaseNotification):
         self.authentication_required = obj.get_setting('authentication_required', default=False)
         self.username = obj.get_setting('username')
         self.password = obj.get_setting('password')
+        self.suppress_timestamp = obj.get_setting('suppress_timestamp',default=False)
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
-        text = text + "\r\n\r\nMessage sent at " + message_timestamp + "."
+        if self.suppress_timestamp is False:
+            text = text + "\r\n\r\nMessage sent at " + message_timestamp + "."
 
         if check_time_restriction(self.starttime, self.endtime):
             msg = MIMEText(text)
 
-            msg['Subject'] = self.subject + " (" + message_timestamp + ")"
+            if self.suppress_timestamp is False:
+                self.subject = self.subject + " ( " + message_timestamp + ")"
+
+            msg['Subject'] = self.subject
             msg['From'] = self.source
             recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
             msg['To'] = ', '.join(recipients)
@@ -365,12 +370,16 @@ class GoogleTalkNotification(BaseNotification):
         self.source = obj.get_setting('source')
         self.password = obj.get_setting('password')
         self.destination = obj.get_setting('destination')
+        self.suppress_timestamp = obj.get_setting('suppress_timestamp',default=False)
         self.client = None
 
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
-        self.msg_to_send = text + " Message Sent at: " + message_timestamp
+        if self.suppress_timestamp is False:
+            self.msg_to_send = text + " Message Sent at: " + message_timestamp
+        else:
+            self.msg_to_send = text
 
         if check_time_restriction(self.starttime, self.endtime):
             self.client = sleekxmpp.ClientXMPP(self.source, self.password)
@@ -438,13 +447,17 @@ class TwilioNotification(BaseNotification):
         self.auth_token = obj.get_setting('auth_token')
         self.number_to = obj.get_setting('number_to')
         self.number_from = obj.get_setting('number_from')
+        self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
 
         if check_time_restriction(self.starttime, self.endtime):
-            self.msg_to_send = text + " Message Sent at: " + message_timestamp
+            if self.suppress_timestamp is False:
+                self.msg_to_send = text + " Message Sent at: " + message_timestamp
+            else:
+                self.msg_to_send = text
 
             if have_twilio == False:
                 raise Exception('Missing Twilio library: twilio - install using pip')
@@ -492,13 +505,18 @@ class NMANotification(BaseNotification):
         self.api_key = obj.get_setting('api_key')
         self.app_name = obj.get_setting('app_name')
         self.priority = obj.get_setting('nma_priority')
+        self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
 
         if check_time_restriction(self.starttime, self.endtime):
-            self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
+            if self.suppress_timestamp is False:
+                self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
+            else:
+                self.msg_to_send = text[:10000].encode('utf8')
+
             self.event = NMA_EVENT.encode('utf8')
             self.content_type = NMA_CONTENT_TYPE
 
@@ -566,13 +584,17 @@ class ProwlNotification(BaseNotification):
             'User-Agent': PROWL_USER_AGENT,
             'Content-type': PROWL_HEADER_CONTENT_TYPE
         }
+        self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
 
         if check_time_restriction(self.starttime, self.endtime):
-            self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
+            if self.suppress_timestamp is False:
+                self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
+            else:
+                self.msg_to_send = text[:10000].encode('utf8')
 
             notify_data = {
                 'apikey': self.api_key,
@@ -623,12 +645,17 @@ class GrowlNotification(BaseNotification):
         else:
             self.growl = None
 
+        self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
+
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
 
         if check_time_restriction(self.starttime, self.endtime):
-            self.msg_to_send = text + " Message Sent at: " + message_timestamp
+            if self.suppress_timestamp is False:
+                self.msg_to_send = text + " Message Sent at: " + message_timestamp
+            else:
+                self.msg_to_send = text
 
             if not have_gntp:
                 raise Exception('Missing Growl library: gntp - install using pip')
