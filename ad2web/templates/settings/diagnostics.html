@@ -3,6 +3,7 @@
 {% extends 'settings/layout.html' %}
 
 {% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/smoothness/jquery-ui-1.10.4.custom.css') }}">
 {% endblock %}
 
 {% block pagejs %}
@@ -19,6 +20,11 @@
         </div>
     </div>
     <br/>
+    {% if settings['mode'] == 'ADEMCO' %}
+    <div id="queryEventLog">
+        <button type="button" class="btn btn-primary" id="startEventQuery">Panel Event Log</button>
+    </div>
+    {% endif %}
     <div id="device_settings">
         <h3>AlarmDecoder device settings:</h3>
         <table id="decoder_settings" class="table table-striped table-bordered table-condensed table-responsive" cellspacing="0">
@@ -87,9 +93,16 @@
         </div>
     </div>
 </div>
+<div id="dialog" style="Display: none;" title="Panel Event Log">
+    <div id="numDevices" style="font-weight: Bold;"></div>
+    <div id="logEntries">
+        <textarea id="textLogEntries" style="width: 450; height: 350;"></textarea><br/><button name="btnCopy" id="btnCopy" class="btn btn-primary">Copy to Clipboard</button>
+    </div>
+</div>
 {% endblock %}
 
 {% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.4.custom.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
 {% endblock %}

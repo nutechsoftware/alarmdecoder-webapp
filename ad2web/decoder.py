@@ -110,7 +110,6 @@ class Decoder(object):
             self._device_type = None
             self._device_location = None
             self._event_thread = DecoderThread(self)
-            self._version_thread = VersionChecker(self)
             self._discovery_thread = None
             self._notification_thread = None
             self._notifier_system = None
@@ -239,6 +238,7 @@ class Decoder(object):
             self._discovery_thread = DiscoveryServer(self)
             self._notification_thread = NotificationThread(self)
             self._exporter_thread = ExportChecker(self)
+            self._version_thread = VersionChecker(self)
 
             if has_upnp:
                 self._upnp_thread = UPNPThread(self)
@@ -316,6 +316,7 @@ class Decoder(object):
         self.device.on_message += build_message_handler('panel')
         self.device.on_lrr_message += build_message_handler('lrr')
         self.device.on_rfx_message += build_message_handler('rfx')
+        self.device.on_aui_message += build_message_handler('aui')
         self.device.on_expander_message += build_message_handler('exp')
 
         self.device.on_open += self._on_device_open
