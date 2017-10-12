@@ -434,6 +434,7 @@ def device():
         else:
             # Try to open the AlarmDecoder in order to allow for Get Panel Info to work.
             try:
+                current_app.decoder.close()
                 current_app.decoder.open()
             except ex as Exception:
                 pass

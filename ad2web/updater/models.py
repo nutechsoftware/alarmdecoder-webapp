@@ -66,7 +66,12 @@ class Updater(object):
         return status
 
     def check_firmware(self):
-        version = current_app.decoder.device.version_number
+        
+        version = None
+        if current_app.decoder.device:
+            version = current_app.decoder.device.version_number
+
+        ret = False
 
         if version is not None and version is not '':
             data = None
@@ -77,13 +82,15 @@ class Updater(object):
                 for firmware in data['firmware']:
                     if firmware['tag'] == "Stable":
                         if version != firmware['version']:
-                            return True
+                            ret = True
+                        else:
+                            ret = False
+                            break
 
-                return False
             except IOError:
-                return False
+                ret = False
 
-        return False
+        return ret
 
     def update(self, component_name=None):
         """
