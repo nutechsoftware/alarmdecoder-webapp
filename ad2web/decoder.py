@@ -318,7 +318,11 @@ class Decoder(object):
         self.device.on_message += build_message_handler('panel')
         self.device.on_lrr_message += build_message_handler('lrr')
         self.device.on_rfx_message += build_message_handler('rfx')
-        self.device.on_aui_message += build_message_handler('aui')
+        try:
+            self.device.on_aui_message += build_message_handler('aui')
+        except AttributeError, ex:
+            self.app.logger.warning('Could not bind event "on_aui_message": alarmdecoder library is probably out of date.')
+
         self.device.on_expander_message += build_message_handler('exp')
 
         self.device.on_open += self._on_device_open
@@ -340,7 +344,11 @@ class Decoder(object):
         self.device.on_message.clear()
         self.device.on_lrr_message.clear()
         self.device.on_rfx_message.clear()
-        self.device.on_aui_message.clear()
+        try:
+            self.device.on_aui_message.clear()
+        except AttributeError, ex:
+            self.app.logger.warning('Could not remove event "on_aui_message": alarmdecoder library is probably out of date.')
+
         self.device.on_expander_message.clear()
 
         self.device.on_open.clear()
