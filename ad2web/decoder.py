@@ -110,7 +110,6 @@ class Decoder(object):
             self._device_type = None
             self._device_location = None
             self._event_thread = DecoderThread(self)
-            self._version_thread = VersionChecker(self)
             self._discovery_thread = None
             self._notification_thread = None
             self._notifier_system = None
@@ -239,6 +238,7 @@ class Decoder(object):
             self._discovery_thread = DiscoveryServer(self)
             self._notification_thread = NotificationThread(self)
             self._exporter_thread = ExportChecker(self)
+            self._version_thread = VersionChecker(self)
 
             if has_upnp:
                 self._upnp_thread = UPNPThread(self)

@@ -150,7 +150,6 @@
         mobile = isMobile();
         tablet = isTablet();
 
-        setConfigBits();
         $(function() {
             FastClick.attach(document.body);
         });
@@ -503,49 +502,62 @@
         });
 
         $('#getPanelInfo').on('click', function() {
-            $('#loading').show();
-            $('#loading').spin('flower');
-            $('#info_dialog').dialog({
-                title: "Panel Information",
-                modal: false,
-                minWidth: 450,
-                maxWidth: 450,
-                height: 450,
-                position: ['center', 80],
-                buttons: {
-                    "getDeviceInfo": {
-                        text: "Get Device Info",
-                        id: "getDeviceInfo",
-                        click: function() {
-                            $('.progress_label').show();
-                            $('#progressbar').show();
-                            $('#progressbar').progressbar({
-                                change: function() {
-                                    $('.progress_label').text("Current Progress: " + $('#progressbar').progressbar("value") + "%" );
+$.confirm({
+                content: "WARNING: This can have adverse effects on some panels, specifically DSC panels.  Do you wish to continue?",
+                title: "Get Panel Info Confirmation",
+                confirm: function(button) {
+                    $('#loading').show();
+                    $('#loading').spin('flower');
+                    $('#info_dialog').dialog({
+                        title: "Panel Information",
+                        modal: false,
+                        minWidth: 450,
+                        maxWidth: 450,
+                        height: 450,
+                        position: ['center', 80],
+                        buttons: {
+                            "getDeviceInfo": {
+                                text: "Get Device Info",
+                                id: "getDeviceInfo",
+                                click: function() {
+                                    $('.progress_label').show();
+                                    $('#progressbar').show();
+                                    $('#progressbar').progressbar({
+                                        change: function() {
+                                            $('.progress_label').text("Current Progress: " + $('#progressbar').progressbar("value") + "%" );
+                                        }
+                                    });
+                                    $('#progressbar').progressbar('option', 'value', 0);
+                                    getDeviceCount();
                                 }
-                            });
-                            $('#progressbar').progressbar('option', 'value', 0);
-                            getDeviceCount();
+                            }
+                        },
+                        close: function() {
+                            $('#info_dialog').hide();
+                            $('#panel_version').empty();
+                            $('#panel_firmware').empty();
+                            $('#asciicode').empty();
+                            $('#numdevices').empty();
+                            $('#devices').empty();
+                            addresses = [];
+                            $('#getPanelInfo').prop("disabled", false);
+                            $('#loading').stop();
+                            $('#loading').hide();
                         }
-                    }
+                    });
+                    $('#getDeviceInfo').button("disable");
+                    $('#info_dialog').show();
+                    retries = 0;
+                    $('#getPanelInfo').prop("disabled", true);
+                    setConfigBits();
+                    getCode();
                 },
-                close: function() {
-                    $('#info_dialog').hide();
-                    $('#panel_version').empty();
-                    $('#panel_firmware').empty();
-                    $('#asciicode').empty();
-                    $('#numdevices').empty();
-                    $('#devices').empty();
-                    addresses = [];
-                    $('#getPanelInfo').prop("disabled", false);
-                    $('#loading').stop();
-                }
+                cancel: function(button) {
+                },
+                confirmButton: "Yes",
+                cancelButton: "No",
+                post: false,
             });
-            $('#getDeviceInfo').button("disable");
-            $('#info_dialog').show();
-            retries = 0;
-            $('#getPanelInfo').prop("disabled", true);
-            getCode();
         });
         var form = document.getElementsByTagName("form");
         $(form).change(function() {

@@ -432,6 +432,12 @@ def device():
             form.zone_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_zone)]
             form.relay_expanders.data = [str(idx + 1) if value == True else None for idx, value in enumerate(current_app.decoder.device.emulate_relay)]
         else:
+            # Try to open the AlarmDecoder in order to allow for Get Panel Info to work.
+            try:
+                current_app.decoder.open()
+            except ex as Exception:
+                pass
+
             panel_mode = Setting.get_by_name('panel_mode').value
             if panel_mode is not None:
                 form.panel_mode.data = panel_mode
