@@ -341,28 +341,31 @@ class Decoder(object):
         """
         Clear the internal event handlers so that we don't run into any issues.
         """
-        self.device.on_message.clear()
-        self.device.on_lrr_message.clear()
-        self.device.on_rfx_message.clear()
         try:
-            self.device.on_aui_message.clear()
-        except AttributeError, ex:
-            self.app.logger.warning('Could not remove event "on_aui_message": alarmdecoder library is probably out of date.')
-
-        self.device.on_expander_message.clear()
-
-        self.device.on_open.clear()
-        self.device.on_close.clear()
-
-        # Clear mapped events.
-        for event, device_event_name in EVENT_MAP.iteritems():
+            self.device.on_message.clear()
+            self.device.on_lrr_message.clear()
+            self.device.on_rfx_message.clear()
             try:
-                device_handler = getattr(self.device, device_event_name)
-                device_handler.clear()
-
+                self.device.on_aui_message.clear()
             except AttributeError, ex:
-                self.app.logger.warning('Could not clear event "%s": alarmdecoder library is probably out of date.', device_event_name)
-
+                self.app.logger.warning('Could not remove event "on_aui_message": alarmdecoder library is probably out of date.')
+    
+            self.device.on_expander_message.clear()
+    
+            self.device.on_open.clear()
+            self.device.on_close.clear()
+    
+            # Clear mapped events.
+            for event, device_event_name in EVENT_MAP.iteritems():
+                try:
+                    device_handler = getattr(self.device, device_event_name)
+                    device_handler.clear()
+    
+                except AttributeError, ex:
+                    self.app.logger.warning('Could not clear event "%s": alarmdecoder library is probably out of date.', device_event_name)
+    
+        except AttributeError, ex:
+            self.app.logger.warning("Could not clear events: alarmdecoder library is probably out of date.")
 
     def refresh_notifier(self, id):
         self._notifier_system.refresh_notifier(id)
