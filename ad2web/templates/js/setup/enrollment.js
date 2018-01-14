@@ -397,6 +397,11 @@ function parseAUIMessage(prefix, value)
                 arr = hexVal.split("00");
                 if( arr.length < 3 )
                     return null;
+                
+                if (arr.length > 0 && arr[0].length % 2){
+                    arr[0] = hexVal.substring(0, arr[0].length +1);
+                    arr[1] = arr[1].substring(1, arr[1].length);
+                }
 
                 address = hexToAscii(arr[0]);
                 zone_type = hexToAscii(arr[1]);
