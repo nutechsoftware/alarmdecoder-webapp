@@ -332,14 +332,14 @@ class EmailNotification(BaseNotification):
 
     def send(self, type, text):
         message_timestamp = time.ctime(time.time())
-        if self.suppress_timestamp is False:
+        if self.suppress_timestamp == False:
             text = text + "\r\n\r\nMessage sent at " + message_timestamp + "."
 
         if check_time_restriction(self.starttime, self.endtime):
             msg = MIMEText(text)
 
-            if self.suppress_timestamp is False:
-                self.subject = self.subject + " ( " + message_timestamp + ")"
+            if self.suppress_timestamp == False:
+                self.subject = self.subject + " (" + message_timestamp + ")"
 
             msg['Subject'] = self.subject
             msg['From'] = self.source
@@ -376,7 +376,7 @@ class GoogleTalkNotification(BaseNotification):
     def send(self, type, text):
         message_time = time.time()
         message_timestamp = time.ctime(message_time)
-        if self.suppress_timestamp is False:
+        if self.suppress_timestamp == False:
             self.msg_to_send = text + " Message Sent at: " + message_timestamp
         else:
             self.msg_to_send = text
@@ -454,7 +454,7 @@ class TwilioNotification(BaseNotification):
         message_timestamp = time.ctime(message_time)
 
         if check_time_restriction(self.starttime, self.endtime):
-            if self.suppress_timestamp is False:
+            if self.suppress_timestamp == False:
                 self.msg_to_send = text + " Message Sent at: " + message_timestamp
             else:
                 self.msg_to_send = text
@@ -512,7 +512,7 @@ class NMANotification(BaseNotification):
         message_timestamp = time.ctime(message_time)
 
         if check_time_restriction(self.starttime, self.endtime):
-            if self.suppress_timestamp is False:
+            if self.suppress_timestamp == False:
                 self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
             else:
                 self.msg_to_send = text[:10000].encode('utf8')
@@ -591,7 +591,7 @@ class ProwlNotification(BaseNotification):
         message_timestamp = time.ctime(message_time)
 
         if check_time_restriction(self.starttime, self.endtime):
-            if self.suppress_timestamp is False:
+            if self.suppress_timestamp == False:
                 self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
             else:
                 self.msg_to_send = text[:10000].encode('utf8')
@@ -652,7 +652,7 @@ class GrowlNotification(BaseNotification):
         message_timestamp = time.ctime(message_time)
 
         if check_time_restriction(self.starttime, self.endtime):
-            if self.suppress_timestamp is False:
+            if self.suppress_timestamp == False:
                 self.msg_to_send = text + " Message Sent at: " + message_timestamp
             else:
                 self.msg_to_send = text
