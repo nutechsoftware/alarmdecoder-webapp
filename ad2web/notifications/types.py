@@ -339,9 +339,10 @@ class EmailNotification(BaseNotification):
             msg = MIMEText(text)
 
             if self.suppress_timestamp == False:
-                self.subject = self.subject + " (" + message_timestamp + ")"
+                msg['Subject'] = self.subject + " (" + message_timestamp + ")"
+            else:
+                msg['Subject'] = self.subject
 
-            msg['Subject'] = self.subject
             msg['From'] = self.source
             recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
             msg['To'] = ', '.join(recipients)
