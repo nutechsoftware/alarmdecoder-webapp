@@ -216,7 +216,7 @@ async function getZoneData()
         for( j = 0; j < 30; j++ )
         {
             await sleep(1500);
-            decoder.emit('keypress', 'K01|006f620c4549f5' + partition + 'fb4543f5' + asciiToHex(String.fromCharCode(30 + j)) + 'fb436c\r\n');
+            decoder.emit('keypress', 'K01|006f620c4549f5' + partition + 'fb4543f5' + decToHex(j) + 'fb436c\r\n');
         }
         progress(Math.floor(100/parseInt(partitionCount)));
     } 
@@ -240,21 +240,8 @@ async function checkDeviceLogs(numLogs)
     countLogEntries = 0;
     for( i = 1; i <= parseInt(numLogs); i++)
     {
-        strHex = '';
-        if( i < 10 )
-        {
-            strHex = asciiToHex("00" + i.toString());
-        }
-        else if( i > 10 && i < 100)
-        {
-            strHex = asciiToHex("0" + i.toString());
-        }
-        else
-        {
-            strHex = asciiToHex(i.toString());
-        }
         countLogEntries++;
-        decoder.emit('keypress', 'K01|00696b094549f530fb454af53134fb4543f5' + strHex + 'fb436c\r\n');
+        decoder.emit('keypress', 'K01|00696b094549f530fb454af53134fb4543f5' + decToHex(i) + 'fb436c\r\n');
         await sleep(1500);
     }
 }
@@ -265,6 +252,7 @@ async function checkDevices(numDevices)
     percent = 0;
     for( i = 1; i <= parseInt(numDevices); i++ )
     {
+        //TODO: might be a bug here (not tested). May want to replace strHex with decToHex(i) if # of devices > 9
         strHex = '';
 
         if( i < 10 )
@@ -292,6 +280,23 @@ function hexToAscii(str)
         ret += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
     }
 
+    return ret;
+}
+
+function decToHex(num){
+    var ret = '';
+    if( num < 10 )
+    {
+        ret = asciiToHex("00" + num.toString());
+    }
+    else if( num > 10 && num < 100)
+    {
+        ret = asciiToHex("0" + num.toString());
+    }
+    else
+    {
+        ret = asciiToHex(num.toString());
+    }
     return ret;
 }
 
@@ -397,6 +402,11 @@ function parseAUIMessage(prefix, value)
                 arr = hexVal.split("00");
                 if( arr.length < 3 )
                     return null;
+                
+                if (arr.length > 0 && arr[0].length % 2){
+                    arr[0] = hexVal.substring(0, arr[0].length +1);
+                    arr[1] = arr[1].substring(1, arr[1].length);
+                }
 
                 address = hexToAscii(arr[0]);
                 zone_type = hexToAscii(arr[1]);

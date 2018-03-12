@@ -76,7 +76,7 @@ decodersocket = Blueprint('sock', __name__, url_prefix='/socket.io')
 def create_decoder_socket(app):
     debugged_app = SocketIODebugger(app, namespace=DecoderNamespace)
 
-    return SocketIOServer(('', 5000), debugged_app, resource="socket.io")
+    return SocketIOServer(('', int(os.getenv('AD_LISTENER_PORT', '5000'))), debugged_app, resource="socket.io")
 
 class Decoder(object):
     """

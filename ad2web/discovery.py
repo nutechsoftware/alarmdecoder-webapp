@@ -1,3 +1,4 @@
+import os
 import socket
 import struct
 import sys
@@ -60,7 +61,7 @@ class DiscoveryServer(threading.Thread):
 
         self._socket = sock
         self._expiration_time = 600
-        self._current_port = 5000
+        self._current_port = int(os.getenv('AD_LISTENER_PORT', '5000'))
         self._current_ip_address = self._get_ip_address()
         self._device_uuid = self._get_device_uuid()
         self._announcement_timestamp = 0
