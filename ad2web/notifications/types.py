@@ -389,7 +389,6 @@ class UPNPPushNotification(BaseNotification):
             for k, v in subscribers.items():
                     current_app.logger.info('_notify_subscribers each: {0}:{1}'.format(str(k),str(v)))
                     response =  XML_EVENT_TEMPLATE.format(text, panelState)
-                    #response =  XML_EVENT_TEMPLATE.format(text)
                     current_app.logger.info('_notify_subscribers response: {0}'.format(response))
                     self._send_notify_event(k, v['callback'], response)
 
@@ -422,8 +421,8 @@ class UPNPPushNotification(BaseNotification):
         ret = {
             'panel_type': mode,
             'panel_powered': current_app.decoder.device._power_status,
-            'panel_ready': current_app.decoder.device._ready_status,
             'panel_alarming': current_app.decoder.device._alarm_status,
+            #FIXME 'panel_ready': current_app.decoder.device._ready_status,
             'panel_bypassed': current_app.decoder.device._bypass_status,
             'panel_armed': current_app.decoder.device._armed_status,
             'panel_fire_detected': current_app.decoder.device._fire_status[0],
