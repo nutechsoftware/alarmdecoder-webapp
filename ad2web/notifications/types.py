@@ -450,11 +450,9 @@ class UPNPPushNotification(BaseNotification):
         """
         Send out notify event to subscriber and return a response.
         """
-        current_app.logger.info('_send_notify_event: A')
         # Remove <> that surround the real unicode url if they exist...
         notify_url = notify_url.translate({ord(k): u"" for k in "<>"})
         parsed_url = urlparse(notify_url)
-        current_app.logger.info('_send_notify_event: B')
 
         headers = {
             'HOST': parsed_url.netloc,
@@ -466,23 +464,17 @@ class UPNPPushNotification(BaseNotification):
         }
 
         http_handler = HTTPConnection(parsed_url.netloc)
-        current_app.logger.info('_send_notify_event: C')
 
         http_handler.request('NOTIFY', parsed_url.path, notify_message, headers)
         http_response = http_handler.getresponse()
-        current_app.logger.info('_send_notify_event: D')
 
         current_app.logger.info('_send_notify_event: status:{0} reason:{1}'.format(http_response.status,http_response.reason))
-        current_app.logger.info('_send_notify_event: E')
 
         if http_response.status != 200:
             error_msg = 'UPNPPush Notification failed: ({0}: {1})'.format(http_response.status, http_response.read())
 
             current_app.logger.warning(error_msg)
             raise Exception(error_msg)
-
-        current_app.logger.info('_send_notify_event: F')
-
 
 
 class SmartThingsNotification(BaseNotification):
