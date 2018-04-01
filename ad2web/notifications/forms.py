@@ -556,7 +556,7 @@ class SmartThingsNotificationForm(Form):
         return ret
 
 class UPNPPushNotificationInternalForm(Form):
-    token = TextField(u'Token', [Required(), Length(max=255)], description=u'Currently not used leave blank')
+    token = TextField(u'Token', [Length(max=255)], description=u'Currently not used leave blank')
 
     def __init__(self, *args, **kwargs):
         kwargs['csrf_enabled'] = False
