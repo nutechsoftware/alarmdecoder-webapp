@@ -13,6 +13,11 @@ import re
 import ssl
 import sys
 import base64
+import uuid
+
+from alarmdecoder import AlarmDecoder
+from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
+from alarmdecoder.zonetracking import Zone as ADZone
 
 try:
     from chump import Application
@@ -62,7 +67,8 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
-                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM, DISARM, ALARM, PANIC, FIRE, SMARTTHINGS)
+                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM, DISARM, ALARM, PANIC, FIRE, SMARTTHINGS,
+                        UPNPPUSH, LRR, TIME_MULTIPLIER, XML_EVENT_TEMPLATE)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -78,6 +84,15 @@ class NotificationSystem(object):
         self._wait_list = []
 
         self._init_notifiers()
+
+        '''
+        subscribers to UPNPPushNotification
+
+        FIXME: Is this the best place to keep this?
+        I need a static class that is accessable from
+        the UPNPPushNotification and the rest api classes.
+        '''
+        self._subscribers = {}
 
     def send(self, type, **kwargs):
         errors = []
@@ -128,6 +143,66 @@ class NotificationSystem(object):
             return str(err)
         else:
             return None
+
+    def add_subscriber(self, host, callback, timeout):
+        """
+        FIXME: Is this the best place to keep this?
+        I need a static class that is accessable from
+        the UPNPPushNotification and the rest api classes.
+
+        Add subscriber callback to our dictionary
+
+        ---- example subscriber request headers ----
+        SUBSCRIBE /api/v1/alarmdecoder/event?apikey=FOOBARKEY HTTP/1.1
+        Accept: */*
+        User-Agent: Linux UPnP/1.0 SmartThings
+        HOST: XXX.XXX.XXX.XXX:5000
+        CALLBACK: <http://XXX.XXX.XXX.XXX:39500/notify>
+        NT: upnp:event
+        TIMEOUT: Second-28800
+        """
+
+        sub_uuid = None
+
+        try:
+            # if we find the host:callback in _subscribers then
+            # updated it and return the same subscription ID back.
+            for k, v in self._subscribers.items():
+                if v['host'] == host and v['callback'] == callback:
+                    sub_uuid = k
+                    break
+
+            # did we find an existing sid? if not make a new one.
+            if sub_uuid is None:
+                sub_uuid = str(uuid.uuid1())
+
+            # set the expireation time
+            tmultiplier, tval = timeout.split("-", 1)
+            tlength = TIME_MULTIPLIER.get(tmultiplier,1) * int(tval)
+            self._subscribers.update({sub_uuid: {'host':host, 'callback':callback, 'timeout':time.time()+tlength}})
+
+            current_app.logger.info('add_subscriber: {0}'.format(sub_uuid))
+
+        except Exception, err:
+            current_app.logger.error('Error adding subscriber for host:{0} callback:{1} timeout:{2} err: {3}'.format(host, callback, timeout, str(err)))
+
+        return sub_uuid
+
+    def remove_subscriber(self, host, subuuid):
+        """
+        find the subscriber and remove it.
+
+        FIXME: Is this the best place to keep this?
+        Remove subscriber if found our our dictionary
+        """
+        found = self._subscribers.pop(subuudi, None)
+        if found:
+            current_app.logger.info('remove_subscriber: found {0}'.format(subuuid))
+        else:
+            current_app.logger.info('remove_subscriber: not found {0}'.format(subuuid))
+
+    def get_subscribers(self):
+        return self._subscribers
 
     def _init_notifiers(self):
         self._notifiers = {-1: LogNotification()}   # Force LogNotification to always be present
@@ -283,6 +358,134 @@ class LogNotification(object):
         db.session.add(EventLogEntry(type=type, message=text))
         db.session.commit()
 
+class UPNPPushNotification(BaseNotification):
+    def __init__(self, obj):
+        BaseNotification.__init__(self, obj)
+
+        # FIXME ADD additional types EX. RFX, REL, EXP
+        #  Make this user configurable.
+        self._events = [LRR, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE]
+        self.description = 'UPNPPush'
+        self.api_token = obj.get_setting('token')
+        self.api_endpoint = obj.get_setting('url')
+
+    def subscribes_to(self, type, **kwargs):
+        return (type in self._events)
+
+    def send(self, type, text):
+        with current_app.app_context():
+            if type is None or type in self._events:
+                self._notify_subscribers(text)
+
+    def _notify_subscribers(self, text):
+
+        try:
+            panelState = self._build_panel_state()
+            current_app.logger.info("_notify_subscribers: " + panelState)
+
+            # if we find the host:callback in _subscribers then
+            # updated it and return the same subscription ID back.
+            subscribers = current_app.decoder._notifier_system.get_subscribers()
+            for k, v in subscribers.items():
+                    current_app.logger.info('_notify_subscribers each: {0}:{1}'.format(str(k),str(v)))
+                    response =  XML_EVENT_TEMPLATE.format(text, panelState)
+                    #response =  XML_EVENT_TEMPLATE.format(text)
+                    current_app.logger.info('_notify_subscribers response: {0}'.format(response))
+                    self._send_notify_event(k, v['callback'], response)
+
+        except Exception as e:
+            current_app.logger.info('Event UPNPPush Notification Failed: {0}'.format(str(e)))
+            raise Exception('UPNPPushNotification Failed: {0}' . format(str(e)))
+
+    def _build_panel_state(self):
+        mode = current_app.decoder.device.mode
+        if mode == ADEMCO:
+            mode = 'ADEMCO'
+        elif mode == DSC:
+            mode = 'DSC'
+        else:
+            mode = 'UNKNOWN'
+
+        relay_status = []
+        for (address, channel), value in current_app.decoder.device._relay_status.items():  # TODO: test this.
+            relay_status.append({
+                'address': address,
+                'channel': channel,
+                'value': value
+            })
+
+        faulted_zones = []
+        for zid, z in current_app.decoder.device._zonetracker.zones.iteritems():
+            if z.status != ADZone.CLEAR:
+                faulted_zones.append(z.zone)
+
+        ret = {
+            'panel_type': mode,
+            'panel_powered': current_app.decoder.device._power_status,
+            'panel_ready': current_app.decoder.device._ready_status,
+            'panel_alarming': current_app.decoder.device._alarm_status,
+            'panel_bypassed': current_app.decoder.device._bypass_status,
+            'panel_armed': current_app.decoder.device._armed_status,
+            'panel_fire_detected': current_app.decoder.device._fire_status[0],
+            'panel_on_battery': current_app.decoder.device._battery_status[0],
+            'panel_panicked': current_app.decoder.device._panic_status,
+            'panel_relay_status': relay_status,
+            'panel_zones_faulted': faulted_zones,
+            'last_message_received': current_app.decoder.last_message_received
+        }
+
+        if hasattr(current_app.decoder.device, '_armed_stay'):
+            ret['panel_armed_stay'] = current_app.decoder.device._armed_stay
+
+        # convert to XML
+        el = Element("panelstate")
+        for key, val in ret.items():
+            child = Element(key)
+            child.text = str(val)
+            el.append(child)
+
+        return tostring(el)
+
+
+    def _send_notify_event(self, uuid, notify_url, notify_message):
+        """
+        Send out notify event to subscriber and return a response.
+        """
+        current_app.logger.info('_send_notify_event: A')
+        # Remove <> that surround the real unicode url if they exist...
+        notify_url = notify_url.translate({ord(k): u"" for k in "<>"})
+        parsed_url = urlparse(notify_url)
+        current_app.logger.info('_send_notify_event: B')
+
+        headers = {
+            'HOST': parsed_url.netloc,
+            'Content-Type': 'text/xml',
+            'SID': 'uuid:' + uuid,
+            'Content-Length': len(notify_message),
+            'NT': 'upnp:event',
+            'NTS': 'upnp:propchange'
+        }
+
+        http_handler = HTTPConnection(parsed_url.netloc)
+        current_app.logger.info('_send_notify_event: C')
+
+        http_handler.request('NOTIFY', parsed_url.path, notify_message, headers)
+        http_response = http_handler.getresponse()
+        current_app.logger.info('_send_notify_event: D')
+
+        current_app.logger.info('_send_notify_event: status:{0} reason:{1}'.format(http_response.status,http_response.reason))
+        current_app.logger.info('_send_notify_event: E')
+
+        if http_response.status != 200:
+            error_msg = 'UPNPPush Notification failed: ({0}: {1})'.format(http_response.status, http_response.read())
+
+            current_app.logger.warning(error_msg)
+            raise Exception(error_msg)
+
+        current_app.logger.info('_send_notify_event: F')
+
+
+
 class SmartThingsNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
@@ -309,8 +512,7 @@ class SmartThingsNotification(BaseNotification):
         http_response = http_handler.getresponse()
 
         if http_response.status != 200:
-            error_msg = 'SmartThings Notification failed: ({0}: {1})'.format(http_response.status, http_response.read())
-
+            error_msg = 'SmartThings Notification failed: ({0} {1})({2}: {3})'.format(self.api_token, parsed_url, http_response.status, http_response.read())
             current_app.logger.warning(error_msg)
             raise Exception(error_msg)
 
@@ -809,5 +1011,6 @@ TYPE_MAP = {
     GROWL: GrowlNotification,
     CUSTOM: CustomNotification,
     TWIML: TwiMLNotification,
+    UPNPPUSH: UPNPPushNotification,
     SMARTTHINGS: SmartThingsNotification
 }

@@ -14,6 +14,13 @@
     <modelURL>https://github.com/nutechsoftware/alarmdecoder-webapp</modelURL>
     <UDN>uuid:2a7953e0-d4ab-11e7-8f1a-0800200c9a66</UDN>
     <serviceList>
+      <service>
+        <serviceType>urn:schemas-upnp-org:service:AlarmDecoder:1</serviceType>
+        <serviceId>urn:upnp-org:serviceId:AlarmDecoder:1</serviceId>
+        <SCPDURL>/static/AlarmDecoder.xml</SCPDURL>
+        <eventSubURL>/api/v1/alarmdecoder/event</eventSubURL>
+        <controlURL>/api/v1/alarmdecoder</controlURL>
+      </service>
     </serviceList>
   </device>
 </root>

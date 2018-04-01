@@ -40,9 +40,9 @@ from .updater.models import FirmwareUpdater
 
 from .notifications.models import NotificationMessage
 from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_RESTORED,
-                                        FIRE, BYPASS, BOOT, CONFIG_RECEIVED, ZONE_FAULT,
+                                        FIRE, BYPASS, BOOT, LRR, CONFIG_RECEIVED, ZONE_FAULT,
                                         ZONE_RESTORE, LOW_BATTERY, PANIC, RELAY_CHANGED,
-                                        DEFAULT_EVENT_MESSAGES)
+                                        LRR, DEFAULT_EVENT_MESSAGES)
 
 from .cameras import CameraSystem
 from .cameras.models import Camera
@@ -64,6 +64,7 @@ EVENT_MAP = {
     FIRE: 'on_fire',
     BYPASS: 'on_bypass',
     BOOT: 'on_boot',
+    LRR: 'on_lrr_message',
     CONFIG_RECEIVED: 'on_config_received',
     ZONE_FAULT: 'on_zone_fault',
     ZONE_RESTORE: 'on_zone_restore',
