@@ -34,6 +34,7 @@ except ImportError:
 
 from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Comment
 from xml.etree.ElementTree import tostring
 import ast
 
@@ -429,8 +430,7 @@ class UPNPPushNotification(BaseNotification):
             'panel_on_battery': current_app.decoder.device._battery_status[0],
             'panel_panicked': current_app.decoder.device._panic_status,
             'panel_relay_status': relay_status,
-            'panel_zones_faulted': faulted_zones,
-            'last_message_received': current_app.decoder.last_message_received
+            'panel_zones_faulted': faulted_zones
         }
 
         if hasattr(current_app.decoder.device, '_armed_stay'):
@@ -442,6 +442,11 @@ class UPNPPushNotification(BaseNotification):
             child = Element(key)
             child.text = str(val)
             el.append(child)
+
+        # HACK: do not allow parsing of last_message_received as XML it is cdata
+        cdel = Element("last_message_received")
+        cdel.append(Comment(' --><![CDATA[' + current_app.decoder.last_message_received + ']]><!-- '))
+        el.append(cdel)
 
         return tostring(el)
 

@@ -212,7 +212,7 @@ TIME_MULTIPLIER = {
 
 XML_EVENT_TEMPLATE = """<e:propertyset xmlns:e="urn:schemas-upnp-org:service:AlarmDecoder:1">
   <e:property>
-    <eventmessage>{0}</eventmessage>
+    <eventmessage><![CDATA[{0}]]></eventmessage>
   </e:property>
   <e:property>
     {1}
