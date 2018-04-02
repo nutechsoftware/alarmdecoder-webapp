@@ -34,6 +34,7 @@ except ImportError:
 
 from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import SubElement
 from xml.etree.ElementTree import Comment
 from xml.etree.ElementTree import tostring
 import ast
@@ -406,31 +407,31 @@ class UPNPPushNotification(BaseNotification):
         else:
             mode = 'UNKNOWN'
 
-        relay_status = []
-        for (address, channel), value in current_app.decoder.device._relay_status.items():  # TODO: test this.
-            relay_status.append({
-                'address': address,
-                'channel': channel,
-                'value': value
-            })
+        relay_status = Element("panel_relay_status")
+        for (address, channel), value in current_app.decoder.device._relay_status.items():
+            child = Element("r") # keep it small
+            SubElement(child,"a").text = str(address)
+            SubElement(child,"c").text = str(channel)
+            SubElement(child,"v").text = str(value)
+            relay_status.append(child)
 
-        faulted_zones = []
+        faulted_zones = Element("panel_zones_faulted")
         for zid, z in current_app.decoder.device._zonetracker.zones.iteritems():
             if z.status != ADZone.CLEAR:
-                faulted_zones.append(z.zone)
+                child = Element("z") # keep it small
+                child.text = str(val)
+                faulted_zones.append(child)
 
         ret = {
             'panel_type': mode,
             'panel_powered': current_app.decoder.device._power_status,
             'panel_alarming': current_app.decoder.device._alarm_status,
-            #FIXME 'panel_ready': current_app.decoder.device._ready_status,
+            'panel_ready': True, #FIXME: current_app.decoder.device._ready_status,
             'panel_bypassed': current_app.decoder.device._bypass_status,
             'panel_armed': current_app.decoder.device._armed_status,
             'panel_fire_detected': current_app.decoder.device._fire_status[0],
             'panel_on_battery': current_app.decoder.device._battery_status[0],
             'panel_panicked': current_app.decoder.device._panic_status,
-            'panel_relay_status': relay_status,
-            'panel_zones_faulted': faulted_zones
         }
 
         if hasattr(current_app.decoder.device, '_armed_stay'):
@@ -442,6 +443,12 @@ class UPNPPushNotification(BaseNotification):
             child = Element(key)
             child.text = str(val)
             el.append(child)
+
+        # add faulted zones
+        el.append(relay_status)
+
+        # add faulted zones
+        el.append(faulted_zones)
 
         # HACK: do not allow parsing of last_message_received as XML it is cdata
         cdel = Element("last_message_received")
