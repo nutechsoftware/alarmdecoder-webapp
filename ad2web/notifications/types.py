@@ -419,7 +419,7 @@ class UPNPPushNotification(BaseNotification):
         for zid, z in current_app.decoder.device._zonetracker.zones.iteritems():
             if z.status != ADZone.CLEAR:
                 child = Element("z") # keep it small
-                child.text = str(val)
+                child.text = str(z.zone)
                 faulted_zones.append(child)
 
         ret = {
