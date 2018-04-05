@@ -179,7 +179,7 @@ def alarmdecoder():
     ret = {
         'panel_type': mode,
         'panel_powered': current_app.decoder.device._power_status,
-        'panel_ready': True, #FIXME: current_app.decoder.device._ready_status,
+        'panel_ready': getattr(current_app.decoder.device, "_ready_status", True),
         'panel_alarming': current_app.decoder.device._alarm_status,
         'panel_bypassed': current_app.decoder.device._bypass_status,
         'panel_armed': current_app.decoder.device._armed_status,
