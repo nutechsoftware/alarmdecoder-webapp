@@ -17,6 +17,7 @@ PANIC = 11
 RELAY_CHANGED = 12
 ALARM_RESTORED = 13
 LRR = 14
+READY = 15
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
@@ -27,7 +28,7 @@ DEFAULT_EVENT_MESSAGES = {
     POWER_CHANGED: 'Power status has changed to {status}.',
     ALARM: 'The alarm system has been triggered on zone {zone_name} ({zone})!',
     ALARM_RESTORED: 'The alarm system has stopped signaling the alarm for zone {zone_name} ({zone}).',
-    FIRE: 'There is a fire!',
+    FIRE: 'Fire status has changed to {status}',
     BYPASS: 'A zone has been bypassed.',
     BOOT: 'The AlarmDecoder has finished booting.',
     #CONFIG_RECEIVED: 'AlarmDecoder has been configured.',
@@ -36,6 +37,7 @@ DEFAULT_EVENT_MESSAGES = {
     LOW_BATTERY: 'Low battery detected.',
     PANIC: 'Panic!',
     LRR: '{message}',
+    READY: 'Ready status has changed to {status}',
     RELAY_CHANGED: 'A relay has changed.'
 }
 
@@ -54,6 +56,7 @@ EVENT_TYPES = {
     PANIC: 'panic',
     RELAY_CHANGED: 'relay changed',
     LRR: 'lrr',
+    READY: 'ready changed',
     ALARM_RESTORED: 'alarm restored'
 }
 
@@ -114,6 +117,7 @@ SUBSCRIPTIONS = OrderedDict([
     (BOOT, 'The AlarmDecoder has rebooted'),
     (RELAY_CHANGED, 'A relay has been changed'),
     (LRR, 'A LRR event was detected'),
+    (READY, 'A READY event was detected'),
 ])
 
 PUSHOVER_URL = "api.pushover.net:443"

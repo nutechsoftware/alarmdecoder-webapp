@@ -42,7 +42,7 @@ from .notifications.models import NotificationMessage
 from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_RESTORED,
                                         FIRE, BYPASS, BOOT, LRR, CONFIG_RECEIVED, ZONE_FAULT,
                                         ZONE_RESTORE, LOW_BATTERY, PANIC, RELAY_CHANGED,
-                                        LRR, DEFAULT_EVENT_MESSAGES)
+                                        LRR, READY, DEFAULT_EVENT_MESSAGES)
 
 from .cameras import CameraSystem
 from .cameras.models import Camera
@@ -65,6 +65,7 @@ EVENT_MAP = {
     BYPASS: 'on_bypass',
     BOOT: 'on_boot',
     LRR: 'on_lrr_message',
+    READY: 'on_ready_changed',
     CONFIG_RECEIVED: 'on_config_received',
     ZONE_FAULT: 'on_zone_fault',
     ZONE_RESTORE: 'on_zone_restore',
@@ -318,6 +319,7 @@ class Decoder(object):
 
         self.device.on_message += build_message_handler('panel')
         self.device.on_lrr_message += build_message_handler('lrr')
+        self.device.on_ready_changed += build_message_handler('ready')
         self.device.on_rfx_message += build_message_handler('rfx')
         try:
             self.device.on_aui_message += build_message_handler('aui')
@@ -345,6 +347,7 @@ class Decoder(object):
         try:
             self.device.on_message.clear()
             self.device.on_lrr_message.clear()
+            self.device.on_ready_changed.clear()
             self.device.on_rfx_message.clear()
             try:
                 self.device.on_aui_message.clear()

@@ -183,7 +183,7 @@ def alarmdecoder():
         'panel_alarming': current_app.decoder.device._alarm_status,
         'panel_bypassed': current_app.decoder.device._bypass_status,
         'panel_armed': current_app.decoder.device._armed_status,
-        'panel_fire_detected': current_app.decoder.device._fire_status[0],
+        'panel_fire_detected': current_app.decoder.device._fire_status,
         'panel_on_battery': current_app.decoder.device._battery_status[0],
         'panel_panicked': current_app.decoder.device._panic_status,
         'panel_relay_status': relay_status,
