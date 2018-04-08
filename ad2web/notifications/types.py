@@ -905,7 +905,8 @@ class CustomNotification(BaseNotification):
         }
 
         if self.require_auth:
-            auth_string = base64.encodestring('%s:%s', (self.auth_username, self.auth_password)).replace('\n', '')
+            auth_string = self.auth_username + ':' + self.auth_password
+            auth_string = base64.encodestring(auth_string)
             self.headers['Authentication'] = "Basic: " + auth_string
 
     def _dict_to_xml(self,tag, d):
