@@ -895,6 +895,8 @@ class CustomNotification(BaseNotification):
         self.require_auth = obj.get_setting('require_auth')
         self.auth_username = obj.get_setting('auth_username')
         self.auth_password = obj.get_setting('auth_password')
+        self.auth_username = self.auth_username.replace('\n', '')
+        self.auth_password = self.auth_password.replace('\n', '')
         self.custom_values = obj.get_setting('custom_values')
         self.content_type = CUSTOM_CONTENT_TYPES[self.post_type]
         self.method = obj.get_setting('method')
