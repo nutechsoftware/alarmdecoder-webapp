@@ -61,7 +61,7 @@ class SpecialButtonFormDSC(Form):
     special_7 = SelectField(u'Special Button 7', choices=[(FIRE, u'Fire'), (POLICE, u'Police'), (MEDICAL, u'Medical'), (STAY, u'Stay'), (AWAY, u'Away'), (CHIME, u'Chime'), (RESET, u'Reset'), (EXIT, u'Exit')], default=RESET, coerce=int)
     special_7_key = TextField(u'Key Code', [Optional(), Length(max=5)], default=chr(7) + chr(7) + chr(7))
 
-    special_8 = SelectField(u'Special Button 3', choices=[(FIRE, u'Fire'), (POLICE, u'Police'), (MEDICAL, u'Medical'), (STAY, u'Stay'), (AWAY, u'Away'), (CHIME, u'Chime'), (RESET, u'Reset'), (EXIT, u'Exit')], default=EXIT, coerce=int)
+    special_8 = SelectField(u'Special Button 8', choices=[(FIRE, u'Fire'), (POLICE, u'Police'), (MEDICAL, u'Medical'), (STAY, u'Stay'), (AWAY, u'Away'), (CHIME, u'Chime'), (RESET, u'Reset'), (EXIT, u'Exit')], default=EXIT, coerce=int)
     special_8_key = TextField(u'Key Code', [Optional(), Length(max=5)], default=chr(8) + chr(8) + chr(8))
 
     submit = SubmitField(u'Save')
