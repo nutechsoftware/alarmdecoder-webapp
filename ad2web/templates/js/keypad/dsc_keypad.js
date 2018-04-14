@@ -485,29 +485,29 @@
                 $('#button-F3').attr("src", specialImageList[4] );
 
             if( {{special_buttons['special_4']}} != keypadSpecials.SPECIAL_CUSTOM )
-                $('#button-F4').attr("src", special_image_defaults[{{special_buttons['special_4']}}]);
+                $('#button-stay').attr("src", special_image_defaults[{{special_buttons['special_4']}}]);
             else
-                $('#button-F4').attr("src", specialImageList[6]);
+                $('#button-stay').attr("src", specialImageList[6]);
 
             if( {{special_buttons['special_5']}} != keypadSpecials.SPECIAL_CUSTOM )
-                $('#button-stay').attr("src", special_image_defaults[{{special_buttons['special_5']}}]);
+                $('#button-away').attr("src", special_image_defaults[{{special_buttons['special_5']}}]);
             else
-                $('#button-stay').attr("src", specialImageList[8]);
+                $('#button-away').attr("src", specialImageList[8]);
 
             if( {{special_buttons['special_6']}} != keypadSpecials.SPECIAL_CUSTOM )
-                $('#button-away').attr("src", special_image_defaults[{{special_buttons['special_6']}}]);
+                $('#button-chime').attr("src", special_image_defaults[{{special_buttons['special_6']}}]);
             else
-                $('#button-away').attr("src", specialImageList[10]);
+                $('#button-chime').attr("src", specialImageList[10]);
 
             if( {{special_buttons['special_7']}} != keypadSpecials.SPECIAL_CUSTOM )
-                $('#button-chime').attr("src", special_image_defaults[{{special_buttons['special_7']}}]);
+                $('#button-reset').attr("src", special_image_defaults[{{special_buttons['special_7']}}]);
             else
-                $('#button-chime').attr("src", specialImageList[12]);
+                $('#button-reset').attr("src", specialImageList[12]);
 
             if( {{special_buttons['special_8']}} != keypadSpecials.SPECIAL_CUSTOM )
-                $('#button-reset').attr("src", special_image_defaults[{{special_buttons['special_8']}}]);
+                $('#button-exit').attr("src", special_image_defaults[{{special_buttons['special_8']}}]);
             else
-                $('#button-reset').attr("src", specialImageList[14]);
+                $('#button-exit').attr("src", specialImageList[14]);
 
             $('#button-left').attr("src", buttonImageListSmall[36]);
             $('#button-right').attr("src", buttonImageListSmall[37]);

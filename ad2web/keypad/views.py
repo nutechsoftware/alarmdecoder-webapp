@@ -46,8 +46,6 @@ def get_special_buttons():
     special_3 = get_special_setting('special_3', MEDICAL)
     special_3_key = get_special_setting('special_3_key', SPECIAL_KEY_MAP[MEDICAL])
 
-    special_4 = get_special_setting('special_4', SPECIAL_4)
-    special_4_key = get_special_setting('special_4_key', SPECIAL_KEY_MAP[SPECIAL_4])
 
     special_buttons['special_1'] = special_1
     special_buttons['special_1_key'] = special_1_key
@@ -55,10 +53,16 @@ def get_special_buttons():
     special_buttons['special_2_key'] = special_2_key
     special_buttons['special_3'] = special_3
     special_buttons['special_3_key'] = special_3_key
-    special_buttons['special_4'] = special_4
-    special_buttons['special_4_key'] = special_4_key
 
-    if panel_mode == DSC:
+    if panel_mode == ADEMCO:
+        special_4 = get_special_setting('special_4', SPECIAL_4)
+        special_4_key = get_special_setting('special_4_key', SPECIAL_KEY_MAP[SPECIAL_4])
+        special_buttons['special_4'] = special_4
+        special_buttons['special_4_key'] = special_4_key
+    else:
+        special_4 = get_special_setting('special_4', STAY)
+        special_4_key = get_special_setting('special_4_key', SPECIAL_KEY_MAP[STAY])
+
         special_5 = get_special_setting('special_5',AWAY)
         special_5_key = get_special_setting('special_5_key', SPECIAL_KEY_MAP[AWAY])
 
@@ -71,6 +75,8 @@ def get_special_buttons():
         special_8 = get_special_setting('special_8',EXIT)
         special_8_key = get_special_setting('special_8_key', SPECIAL_KEY_MAP[EXIT])
 
+        special_buttons['special_4'] = special_4
+        special_buttons['special_4_key'] = special_4_key
         special_buttons['special_5'] = special_5
         special_buttons['special_5_key'] = special_5_key
         special_buttons['special_6'] = special_6
@@ -95,7 +101,7 @@ def interpret_key(button_data):
     if button_data == "<S3>" or button_data == AlarmDecoder.KEY_F3:
         return AlarmDecoder.KEY_F3
     if button_data == "<S4>" or button_data == AlarmDecoder.KEY_F4:
-        return AlarmDecoder.KEY_F5
+        return AlarmDecoder.KEY_F4
     if button_data == "<S5>" or button_data == five:
         return five
     if button_data == "<S6>" or button_data == six:

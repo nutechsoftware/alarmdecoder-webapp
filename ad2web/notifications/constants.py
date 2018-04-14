@@ -16,6 +16,8 @@ LOW_BATTERY = 10
 PANIC = 11
 RELAY_CHANGED = 12
 ALARM_RESTORED = 13
+LRR = 14
+READY = 15
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
@@ -26,7 +28,7 @@ DEFAULT_EVENT_MESSAGES = {
     POWER_CHANGED: 'Power status has changed to {status}.',
     ALARM: 'The alarm system has been triggered on zone {zone_name} ({zone})!',
     ALARM_RESTORED: 'The alarm system has stopped signaling the alarm for zone {zone_name} ({zone}).',
-    FIRE: 'There is a fire!',
+    FIRE: 'Fire status has changed to {status}',
     BYPASS: 'A zone has been bypassed.',
     BOOT: 'The AlarmDecoder has finished booting.',
     #CONFIG_RECEIVED: 'AlarmDecoder has been configured.',
@@ -34,6 +36,8 @@ DEFAULT_EVENT_MESSAGES = {
     ZONE_RESTORE: 'Zone {zone_name} ({zone}) has been restored.',
     LOW_BATTERY: 'Low battery detected.',
     PANIC: 'Panic!',
+    LRR: '{message}',
+    READY: 'Ready status has changed to {status}',
     RELAY_CHANGED: 'A relay has changed.'
 }
 
@@ -42,7 +46,7 @@ EVENT_TYPES = {
     DISARM: 'disarm',
     POWER_CHANGED: 'power changed',
     ALARM: 'alarm',
-    FIRE: 'fire',
+    FIRE: 'fire changed',
     BYPASS: 'bypass',
     BOOT: 'boot',
     CONFIG_RECEIVED: 'config received',
@@ -51,6 +55,8 @@ EVENT_TYPES = {
     LOW_BATTERY: 'low battery',
     PANIC: 'panic',
     RELAY_CHANGED: 'relay changed',
+    LRR: 'lrr',
+    READY: 'ready changed',
     ALARM_RESTORED: 'alarm restored'
 }
 
@@ -64,6 +70,7 @@ GROWL = 6
 CUSTOM = 7
 TWIML = 8
 SMARTTHINGS = 9
+UPNPPUSH = 10
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
@@ -75,6 +82,7 @@ NOTIFICATION_TYPES = {
     GROWL: 'growl',
     CUSTOM: 'custom',
     TWIML: 'twiml',
+    UPNPPUSH: 'upnppush',
     SMARTTHINGS: 'smartthings'
 }
 
@@ -88,6 +96,7 @@ NOTIFICATIONS = {
     GROWL: ('growl', u'Growl'),
     CUSTOM: ('custom', u'Custom'),
     TWIML: ('twiml', u'TwiML'),
+    UPNPPUSH: ('upnppush', u'UPNP Push'),
     SMARTTHINGS: ('smartthings', u'SmartThings Integration')
 }
 
@@ -97,7 +106,7 @@ SUBSCRIPTIONS = OrderedDict([
     (ALARM, 'Alarm system is triggered'),
     (ALARM_RESTORED, 'Alarm system stops signaling'),
     (PANIC, 'A panic has been detected'),
-    (FIRE, 'A fire is detected'),
+    (FIRE, 'The fire state has changed'),
     (ARM, 'Alarm system is armed'),
     (DISARM, 'Alarm system is disarmed'),
     (ZONE_FAULT, 'A zone has faulted'),
@@ -107,6 +116,8 @@ SUBSCRIPTIONS = OrderedDict([
     (LOW_BATTERY, 'A low battery has been detected'),
     (BOOT, 'The AlarmDecoder has rebooted'),
     (RELAY_CHANGED, 'A relay has been changed'),
+    (LRR, 'A LRR event was detected'),
+    (READY, 'A READY event was detected'),
 ])
 
 PUSHOVER_URL = "api.pushover.net:443"
@@ -195,3 +206,19 @@ CUSTOM_REPLACER_SEARCH = {
     CUSTOM_TIMESTAMP: "{{timestamp}}",
     CUSTOM_MESSAGE: "{{message}}"
 }
+
+TIME_MULTIPLIER = {
+    "Seconds": 1,
+    "Minutes": 60,
+    "Hours": 3600,
+    "Days": 86400
+}
+
+XML_EVENT_TEMPLATE = """<e:propertyset xmlns:e="urn:schemas-upnp-org:service:AlarmDecoder:1">
+  <e:property>
+    <eventmessage><![CDATA[{0}]]></eventmessage>
+  </e:property>
+  <e:property>
+    {1}
+  </e:property>
+</e:propertyset>\n\n"""

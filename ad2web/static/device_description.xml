@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+  <specVersion>
+    <major>1</major>
+    <minor>0</minor>
+  </specVersion>
+
+  <device>
+    <deviceType>urn:schemas-upnp-org:device:Basic:1</deviceType>
+    <friendlyName>AlarmDecoder Network Appliance</friendlyName>
+    <manufacturer>www.AlarmDecoder.com</manufacturer>
+    <modelName>AD2-WEBAPP</modelName>
+    <modelDescription>AlarmDecoder webapp</modelDescription>
+    <modelURL>https://github.com/nutechsoftware/alarmdecoder-webapp</modelURL>
+    <UDN>uuid:2a7953e0-d4ab-11e7-8f1a-0800200c9a66</UDN>
+    <serviceList>
+      <service>
+        <serviceType>urn:schemas-upnp-org:service:AlarmDecoder:1</serviceType>
+        <serviceId>urn:upnp-org:serviceId:AlarmDecoder:1</serviceId>
+        <SCPDURL>/static/AlarmDecoder.xml</SCPDURL>
+        <eventSubURL>/api/v1/alarmdecoder/event</eventSubURL>
+        <controlURL>/api/v1/alarmdecoder</controlURL>
+      </service>
+    </serviceList>
+  </device>
+</root>

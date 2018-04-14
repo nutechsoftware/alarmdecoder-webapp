@@ -126,7 +126,7 @@ class DiscoveryServer(threading.Thread):
         #     self._announcement_timestamp = time.time()
 
     def _create_discovery_response(self, request):
-        loc = 'http://{0}:{1}'.format(self._current_ip_address, self._current_port)
+        loc = 'http://{0}:{1}/static/device_description.xml'.format(self._current_ip_address, self._current_port)
         usn = 'uuid:{0}'.format(self._device_uuid)
 
         return self.RESPONSE_MESSAGE % dict(ST=request.headers['ST'], LOCATION=loc, USN=usn, CACHE_CONTROL=self._expiration_time)

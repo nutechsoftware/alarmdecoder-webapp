@@ -179,10 +179,11 @@ def alarmdecoder():
     ret = {
         'panel_type': mode,
         'panel_powered': current_app.decoder.device._power_status,
+        'panel_ready': getattr(current_app.decoder.device, "_ready_status", True),
         'panel_alarming': current_app.decoder.device._alarm_status,
         'panel_bypassed': current_app.decoder.device._bypass_status,
         'panel_armed': current_app.decoder.device._armed_status,
-        'panel_fire_detected': current_app.decoder.device._fire_status[0],
+        'panel_fire_detected': current_app.decoder.device._fire_status,
         'panel_on_battery': current_app.decoder.device._battery_status[0],
         'panel_panicked': current_app.decoder.device._panic_status,
         'panel_relay_status': relay_status,
@@ -222,6 +223,56 @@ def alarmdecoder_send():
     current_app.decoder.device.send(keys)
 
     return jsonify(), NO_CONTENT
+
+@api.route('/alarmdecoder/event', methods=['SUBSCRIBE','UNSUBSCRIBE'])
+@crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
+@api_authorized
+def alarmdecoder_events():
+    device = current_app.decoder.device
+
+    if request.method == 'SUBSCRIBE':
+        ret = _build_alarmdecoder_configuration_data(device)
+
+        # Get data we need
+        host = request.headers.get("HOST")
+        callback = request.headers.get("CALLBACK")
+        timeout = request.headers.get("TIMEOUT")
+
+        current_app.logger.info('SUBSCRIBE host:{0} callback: {1} timeout: {2}'.format(host, callback, timeout))
+
+        # Call notifier method to add to subscriber map/list
+        subid = current_app.decoder._notifier_system.add_subscriber(host, callback, timeout)
+
+        # If all went well adding then respond OK
+        # NOTE: Currently no way to Fail with 500.
+        resp = Response("", status=200)
+        resp.headers['SERVER'] = "Linux UPnP/1.0 AlarmDecoder"
+        resp.headers['X-User-Agent'] = "AD2WEB"
+        resp.headers['TIMEOUT'] = timeout
+        resp.headers['SID'] = "uuid:" + subid
+
+        return resp
+
+    if request.method == 'UNSUBSCRIBE':
+        ret = _build_alarmdecoder_configuration_data(device)
+
+        # Get data we need
+        host = request.headers.get("HOST")
+        sid = request.headers.get("SID")
+
+        current_app.logger.info('UNSUBSCRIBE host: {0} sid: {1}'.format(host, sid))
+
+        # Call notifier method to remove from subscriber map/list
+        current_app.decoder._notifier_system.remove_subscriber(host, sid)
+
+        # If all went well adding then respond OK
+        # NOTE: Currently no way to Fail with 500.
+        resp = Response("", status=200)
+        resp.headers['SERVER'] = "Linux UPnP/1.0 AlarmDecoder"
+        resp.headers['X-User-Agent'] = "AD2WEB"
+        resp.headers['SID'] = sid
+
+        return resp
 
 @api.route('/alarmdecoder/reboot', methods=['POST'])
 @crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])

@@ -15,7 +15,7 @@ from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
 from wtforms.widgets import ListWidget, CheckboxInput
 from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES,
                         NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES, GROWL, GROWL_PRIORITIES, GROWL_TITLE,
-                        URLENCODE, JSON, XML, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE)
+                        URLENCODE, JSON, XML, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE, UPNPPUSH)
 from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
 
@@ -555,6 +555,47 @@ class SmartThingsNotificationForm(Form):
 
         return ret
 
+class UPNPPushNotificationInternalForm(Form):
+    token = TextField(u'Token', [Length(max=255)], description=u'Currently not used leave blank')
+
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(UPNPPushNotificationInternalForm, self).__init__(*args, **kwargs)
+
+
+class UPNPPushNotificationForm(Form):
+    type = HiddenField()
+    subscriptions = HiddenField()
+    description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')
+    form_field = FormField(UPNPPushNotificationInternalForm)
+
+    submit = SubmitField(u'Next')
+    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
+
+    def populate_settings(self, settings, id=None):
+        settings['token'] = self.populate_setting('token', self.form_field.token.data)
+
+    def populate_from_settings(self, id):
+        self.form_field.token.data = self.populate_from_setting(id, 'token')
+
+    def populate_setting(self, name, value, id=None):
+        if id is not None:
+            setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
+        else:
+            setting = NotificationSetting(name=name)
+
+        setting.value = value
+
+        return setting
+
+    def populate_from_setting(self, id, name, default=None):
+        ret = default
+
+        setting = NotificationSetting.query.filter_by(notification_id=id, name=name).first()
+        if setting is not None:
+            ret = setting.value
+
+        return ret
 
 class ReviewNotificationForm(Form):
     buttons = FormField(NotificationButtonForm)
