@@ -452,7 +452,7 @@ class UPNPPushNotification(BaseNotification):
 
         # HACK: do not allow parsing of last_message_received as XML it is cdata
         cdel = Element("last_message_received")
-        cdel.append(Comment(' --><![CDATA[' + current_app.decoder.last_message_received + ']]><!-- '))
+        cdel.append(Comment(' --><![CDATA[' + current_app.decoder.last_message_received or "" + ']]><!-- '))
         el.append(cdel)
 
         return tostring(el)
