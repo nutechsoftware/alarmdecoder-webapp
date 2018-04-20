@@ -70,7 +70,8 @@ EVENT_MAP = {
     ZONE_FAULT: 'on_zone_fault',
     ZONE_RESTORE: 'on_zone_restore',
     LOW_BATTERY: 'on_low_battery',
-    PANIC: 'on_panic'
+    PANIC: 'on_panic',
+    RELAY_CHANGED: 'on_relay_changed'
 }
 
 decodersocket = Blueprint('sock', __name__, url_prefix='/socket.io')

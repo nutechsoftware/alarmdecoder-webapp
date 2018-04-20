@@ -70,7 +70,7 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
                         CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM, DISARM, ALARM, PANIC, FIRE, SMARTTHINGS,
-                        UPNPPUSH, LRR, READY, TIME_MULTIPLIER, XML_EVENT_TEMPLATE)
+                        UPNPPUSH, LRR, READY, TIME_MULTIPLIER, XML_EVENT_TEMPLATE, RELAY_CHANGED)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -232,6 +232,14 @@ class NotificationSystem(object):
         if type == ARM:
             status = kwargs.get('stay', False)
             kwargs['arm_type'] = 'STAY' if status else 'AWAY'
+
+        if type == RELAY_CHANGED:
+            message = kwargs.get('message', None)
+   
+            if message:
+                kwargs['address'] = message.address
+                kwargs['channel'] = message.channel
+                kwargs['status'] = 'OPEN' if not message.data else 'CLOSED'
 
         return kwargs
 

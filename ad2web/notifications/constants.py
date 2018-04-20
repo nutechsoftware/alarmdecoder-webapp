@@ -38,7 +38,7 @@ DEFAULT_EVENT_MESSAGES = {
     PANIC: 'Panic!',
     LRR: '{message}',
     READY: 'Ready status has changed to {status}',
-    RELAY_CHANGED: 'A relay has changed.'
+    RELAY_CHANGED: 'A relay at {address}:{channel} has changed to {status}.'
 }
 
 EVENT_TYPES = {
