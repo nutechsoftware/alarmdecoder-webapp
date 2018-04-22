@@ -36,7 +36,7 @@ DEFAULT_EVENT_MESSAGES = {
     ZONE_RESTORE: 'Zone {zone_name} ({zone}) has been restored.',
     LOW_BATTERY: 'Low battery detected.',
     PANIC: 'Panic!',
-    LRR: '{message}',
+    LRR: 'Received LRR / Contact ID event',
     READY: 'Ready status has changed to {status}',
     RELAY_CHANGED: 'A relay at {address}:{channel} has changed to {status}.'
 }
@@ -215,10 +215,10 @@ TIME_MULTIPLIER = {
 }
 
 XML_EVENT_TEMPLATE = """<e:propertyset xmlns:e="urn:schemas-upnp-org:service:AlarmDecoder:1">
-  <e:property>
-    <eventmessage><![CDATA[{0}]]></eventmessage>
+{0}{1}{2}{3}{4}
+</e:propertyset>"""
+
+XML_EVENT_PROPERTY = """  <e:property>
+    <{0}>{1}</{0}>
   </e:property>
-  <e:property>
-    {1}
-  </e:property>
-</e:propertyset>\n\n"""
+"""
