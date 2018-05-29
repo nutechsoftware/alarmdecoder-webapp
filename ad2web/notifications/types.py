@@ -70,7 +70,7 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
                         CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM, DISARM, ALARM, PANIC, FIRE, SMARTTHINGS,
-                        UPNPPUSH, LRR, READY, TIME_MULTIPLIER, XML_EVENT_TEMPLATE, XML_EVENT_PROPERTY, RELAY_CHANGED, EVENT_TYPES)
+                        UPNPPUSH, LRR, READY, CHIME, TIME_MULTIPLIER, XML_EVENT_TEMPLATE, XML_EVENT_PROPERTY, RELAY_CHANGED, EVENT_TYPES)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -379,7 +379,7 @@ class UPNPPushNotification(BaseNotification):
 
         # FIXME ADD additional types EX. RFX, REL, EXP
         #  Make this user configurable.
-        self._events = [LRR, READY, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, RELAY_CHANGED]
+        self._events = [LRR, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, RELAY_CHANGED]
         self.description = 'UPNPPush'
         self.api_token = obj.get_setting('token')
         self.api_endpoint = obj.get_setting('url')
@@ -445,7 +445,8 @@ class UPNPPushNotification(BaseNotification):
             'panel_powered': current_app.decoder.device._power_status,
             'panel_alarming': current_app.decoder.device._alarm_status,
             'panel_ready': getattr(current_app.decoder.device, "_ready_status", True),
-            'panel_bypassed': current_app.decoder.device._bypass_status,
+            'panel_chime': getattr(current_app.decoder.device, "_chime_status", False),
+            'panel_bypassed': None in current_app.decoder.device._bypass_status,
             'panel_armed': current_app.decoder.device._armed_status,
             'panel_fire_detected': current_app.decoder.device._fire_status,
             'panel_on_battery': current_app.decoder.device._battery_status[0],

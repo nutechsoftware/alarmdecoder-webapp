@@ -18,6 +18,7 @@ RELAY_CHANGED = 12
 ALARM_RESTORED = 13
 LRR = 14
 READY = 15
+CHIME = 16
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
@@ -38,6 +39,7 @@ DEFAULT_EVENT_MESSAGES = {
     PANIC: 'Panic!',
     LRR: 'Received LRR / Contact ID event',
     READY: 'Ready status has changed to {status}',
+    CHIME: 'Chime status has changed to {status}',
     RELAY_CHANGED: 'A relay at {address}:{channel} has changed to {status}.'
 }
 
@@ -57,6 +59,7 @@ EVENT_TYPES = {
     RELAY_CHANGED: 'relay changed',
     LRR: 'lrr',
     READY: 'ready changed',
+    CHIME: 'chime changed',
     ALARM_RESTORED: 'alarm restored'
 }
 
@@ -118,6 +121,7 @@ SUBSCRIPTIONS = OrderedDict([
     (RELAY_CHANGED, 'A relay has been changed'),
     (LRR, 'A LRR event was detected'),
     (READY, 'A READY event was detected'),
+    (CHIME, 'A CHIME event was detected'),
 ])
 
 PUSHOVER_URL = "api.pushover.net:443"
