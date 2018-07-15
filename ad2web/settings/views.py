@@ -465,10 +465,13 @@ def _get_system_uptime():
 
 #cpu temperature
 def _get_cpu_temperature():
-    with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
-        cpu_temperature = float(f.readline())
+    if os.path.isfile('/sys/class/thermal/thermal_zone0/temp'):
+        with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+            cpu_temperature = float(f.readline())
 	cpu_temperature_string = str(cpu_temperature / 1000)
-    return cpu_temperature_string
+        return cpu_temperature_string
+    else:
+        return 'not supported'
 
 @settings.route('/configure_exports', methods=['GET', 'POST'])
 @login_required
