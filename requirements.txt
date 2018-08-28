@@ -1,5 +1,5 @@
 Babel>=1.3
-Flask>=0.10.1
+Flask==0.12.4
 Flask-Babel>=0.9
 Flask-Cache>=0.12
 Flask-Login>=0.2.10
