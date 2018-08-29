@@ -436,7 +436,7 @@ def device():
             try:
                 current_app.decoder.close()
                 current_app.decoder.open()
-            except ex as Exception:
+            except:
                 pass
 
             panel_mode = Setting.get_by_name('panel_mode').value
