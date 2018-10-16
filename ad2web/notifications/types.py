@@ -6,6 +6,7 @@ import datetime
 import smtplib
 import threading
 from email.mime.text import MIMEText
+from email.utils import formatdate
 from urlparse import urlparse
 import sleekxmpp
 import json
@@ -580,6 +581,7 @@ class EmailNotification(BaseNotification):
             msg['From'] = self.source
             recipients = re.split('\s*;\s*|\s*,\s*', self.destination)
             msg['To'] = ', '.join(recipients)
+            msg['Date'] = formatdate(localtime=True)
 
             s = None
 
