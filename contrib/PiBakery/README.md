@@ -46,6 +46,6 @@ The process of building a new image can take several hours so we have made avail
 Select "Other" and "Reboot" and connect this block to the "Setup WiFi" block.
 * Click "Update" at the top Right menu and select the SD Card with the pre-loaded image you flashed earlier on it and click the "Update" button and select the uSD disk.
 
-
+![WiFi settings](pi-bakery-wifi-setup.png?raw=true "WiFi settings")
 
 Updates and more information on this project can be found on [the AlarmDecoder.com wiki](https://www.alarmdecoder.com/wiki/index.php/PiBakery).
