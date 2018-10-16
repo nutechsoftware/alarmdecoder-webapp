@@ -8,9 +8,9 @@ The process of building a new image can take several hours so we have made avail
 * Currently the binary distributions of 2.0 is old and broken. Download the source master branch on github and unzip it to your desktop or preferred workspace. https://github.com/davidferguson/pibakery/archive/v2.0.0.zip
 
 * Windows/macOS
- * download and install the latest nodjs from https://nodejs.org/en/download/
+  * download and install the latest nodjs from https://nodejs.org/en/download/
 * Linux
- * Install from your distributions repository ex. '''sudo apt-get install nodejs''' or per your distributions howto for nodejs.
+  * Install from your distributions repository ex. '''sudo apt-get install nodejs''' or per your distributions howto for nodejs.
 
 * Download Raspbian Stretch lite zip file and unzip the img file to your desktop or preferred workspace. https://www.raspberrypi.org/downloads/raspbian/ 2018-10-09-raspbian-stretch-lite.img
 
@@ -37,7 +37,7 @@ The process of building a new image can take several hours so we have made avail
 * Now you can power the Pi back up and it will be running all of the AlarmDecoder web services and ser2sock. To complete the appliance install see the quick start guide here https://www.alarmdecoder.com/wiki/index.php/Getting_Started .
 
 ## Modify PiBakery AlarmDecoder WebApp image
-* To add WiFi to an existing image made with PiBakery simply insert the pre-flashed uSD card into your workstation and run the PiBakery 2.0 app.
+* To add WiFi to an existing image made with PiBakery or Raspbian Stretch simply insert the pre-flashed uSD card into your workstation and run the PiBakery 2.0 app.
 * Click on "Startup"
   * Click once on "On First Boot" to add to your recipe.
 * Next click on "Network"
