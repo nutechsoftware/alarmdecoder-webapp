@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask.ext.wtf import Form
+from flask_wtf import Form
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,
         FileField, DecimalField, BooleanField, SelectField, FormField, FieldList)

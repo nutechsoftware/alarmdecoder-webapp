@@ -6,7 +6,7 @@ import platform
 
 from flask import Blueprint, render_template, abort, g, request, flash, Response, redirect, url_for
 from flask import current_app
-from flask.ext.login import login_required, current_user
+from flask_login import login_required, current_user
 
 from ..extensions import db
 from ..decorators import admin_required, admin_or_first_run_required

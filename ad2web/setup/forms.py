@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from flask import Markup
-from flask.ext.wtf import Form
-from flask.ext.wtf.html5 import URLField, EmailField, TelField
+from flask_wtf import Form
+from flask_wtf.html5 import URLField, EmailField, TelField
 import wtforms
 from wtforms import (Field, ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,

@@ -6,7 +6,7 @@ import sys
 
 import werkzeug.serving
 from werkzeug.debug import DebuggedApplication
-from flask.ext.script import Manager, Command
+from flask_script import Manager, Command
 
 from alarmdecoder.util import NoDeviceError
 from ad2web import create_app, init_app

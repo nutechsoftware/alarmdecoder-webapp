@@ -5,7 +5,7 @@
 import os
 
 from fabric.api import *
-from flask.ext.script import Manager
+from flask_script import Manager
 
 from ad2web import create_app
 from ad2web.extensions import db

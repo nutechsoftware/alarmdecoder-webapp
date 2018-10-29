@@ -8,8 +8,8 @@ import signal
 import jsonpickle
 
 from flask import Flask, request, render_template, g, redirect, url_for
-from flask.ext.babel import Babel
-from flask.ext.script import Manager
+from flask_babel import Babel
+from flask_script import Manager
 
 from alarmdecoder import AlarmDecoder
 from alarmdecoder.devices import SerialDevice

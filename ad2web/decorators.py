@@ -3,7 +3,7 @@
 from functools import wraps, update_wrapper
 
 from flask import abort, make_response, request, current_app
-from flask.ext.login import current_user
+from flask_login import current_user
 from datetime import timedelta
 from .settings.models import Setting
 from .utils import user_is_anonymous

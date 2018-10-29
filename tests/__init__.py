@@ -7,7 +7,7 @@
     Ref: http://packages.python.org/Flask-Testing/
 """
 
-from flask.ext.testing import TestCase as Base, Twill
+from flask_testing import TestCase as Base, Twill
 
 from ad2web import create_app
 from ad2web.user import User, UserDetail, ADMIN, USER, ACTIVE

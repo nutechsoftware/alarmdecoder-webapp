@@ -4,9 +4,9 @@ from uuid import uuid4
 
 from flask import (Blueprint, render_template, current_app, request,
                    flash, url_for, redirect, session, abort)
-from flask.ext.mail import Message
-from flask.ext.babel import gettext as _
-from flask.ext.login import login_required, login_user, current_user, logout_user, confirm_login, login_fresh
+from flask_mail import Message
+from flask_babel import gettext as _
+from flask_login import login_required, login_user, current_user, logout_user, confirm_login, login_fresh
 
 from ..user import User, UserDetail, UserHistory, FailedLogin
 from ..extensions import db, mail, login_manager, oid

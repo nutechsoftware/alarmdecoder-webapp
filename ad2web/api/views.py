@@ -10,7 +10,7 @@ from datetime import timedelta
 from httplib import OK, CREATED, ACCEPTED, NO_CONTENT, UNAUTHORIZED, NOT_FOUND, CONFLICT, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE
 
 from flask import Blueprint, current_app, request, jsonify, abort, Response, render_template, redirect, url_for
-from flask.ext.login import login_user, current_user, logout_user, login_required
+from flask_login import login_user, current_user, logout_user, login_required
 
 from alarmdecoder import AlarmDecoder
 from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES

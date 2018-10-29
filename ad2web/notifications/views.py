@@ -1,6 +1,6 @@
 from flask import (Blueprint, render_template, current_app, request, flash,
                     redirect, url_for, abort)
-from flask.ext.login import login_required, current_user
+from flask_login import login_required, current_user
 
 from wtforms import FormField, TextField
 from sqlalchemy.orm.session import make_transient

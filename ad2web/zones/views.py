@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from flask import Blueprint, render_template, current_app, request, flash, redirect, url_for, jsonify
-from flask.ext.login import login_required, current_user
+from flask_login import login_required, current_user
 
 from ..extensions import db
 from ..user import User

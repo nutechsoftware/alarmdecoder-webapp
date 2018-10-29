@@ -33,7 +33,7 @@ from compiler.visitor import ASTVisitor
 from datetime import datetime, timedelta
 
 from flask import Blueprint, render_template, current_app, request, flash, Response, url_for, redirect
-from flask.ext.login import login_required, current_user
+from flask_login import login_required, current_user
 
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.exc import SQLAlchemyError

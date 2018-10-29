@@ -2,8 +2,8 @@
 
 import re
 import json
-from flask.ext.wtf import Form
-from flask.ext.wtf.html5 import URLField, EmailField, TelField
+from flask_wtf import Form
+from flask_wtf.html5 import URLField, EmailField, TelField
 import wtforms
 import ast
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,

@@ -7,7 +7,7 @@ import zipfile
 
 from flask import Blueprint, render_template, abort, g, request, flash, Response, redirect, url_for, jsonify
 from flask import current_app as APP
-from flask.ext.login import login_required, current_user
+from flask_login import login_required, current_user
 
 from werkzeug import secure_filename
 
