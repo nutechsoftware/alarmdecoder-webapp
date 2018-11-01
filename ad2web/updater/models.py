@@ -436,7 +436,8 @@ class SourceUpdater(object):
             #
             for c in self._git.fetch('origin', _iter_noblock=True, _timeout=30):
                 pass
-
+        except sh.TimeoutException:
+            pass
         except sh.ErrorReturnCode:
             pass
 
