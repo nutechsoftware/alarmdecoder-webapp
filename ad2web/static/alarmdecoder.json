@@ -1675,7 +1675,7 @@
                 "panel_fire_detected": {
                     "type": "boolean"
                 },
-                "panel_on_battery": {
+                "panel_battery_trouble": {
                     "type": "boolean"
                 },
                 "panel_panicked": {
@@ -1727,7 +1727,7 @@
 		"panel_armed": false,
 		"panel_bypassed": false,
 		"panel_fire_detected": false,
-		"panel_on_battery": false,
+		"panel_on_battery_trouble": false,
 		"panel_panicked": false,
 		"panel_powered": false,
 		"panel_relay_status": [

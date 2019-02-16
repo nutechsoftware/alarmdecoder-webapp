@@ -451,7 +451,7 @@ class UPNPPushNotification(BaseNotification):
             'panel_bypassed': None in current_app.decoder.device._bypass_status,
             'panel_armed': current_app.decoder.device._armed_status,
             'panel_fire_detected': current_app.decoder.device._fire_status,
-            'panel_on_battery': current_app.decoder.device._battery_status[0],
+            'panel_battery_trouble': current_app.decoder.device._battery_status[0],
             'panel_panicked': current_app.decoder.device._panic_status,
             'panel_chime': getattr(current_app.decoder.device, "_chime_status", False),
             'panel_perimeter_only': getattr(current_app.decoder.device, "_perimeter_only_status", False),
