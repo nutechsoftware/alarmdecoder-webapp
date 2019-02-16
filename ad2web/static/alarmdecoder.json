@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "This is an AlarmDecoder WebApp server.  You can find out more about the AlarmDecoder WebApp at <a href=\"https://www.alarmdecoder.com\">https://www.alarmdecoder.com</a>.  Please use your user's API KEY to test.",
-        "version": "1.0",
+        "version": "1.1",
         "title": "AlarmDecoder WebApp API",
         "contact": {
             "url": "https://www.alarmdecoder.com",
@@ -1657,13 +1657,19 @@
         },
         "AlarmStatus": {
             "properties": {
+                "panel_powered": {
+                    "type": "boolean"
+                },
+                "panel_ready": {
+                    "type": "boolean"
+                },
                 "panel_alarming": {
                     "type": "boolean"
                 },
-                "panel_armed": {
+                "panel_bypassed": {
                     "type": "boolean"
                 },
-                "panel_bypassed": {
+                "panel_armed": {
                     "type": "boolean"
                 },
                 "panel_fire_detected": {
@@ -1675,7 +1681,13 @@
                 "panel_panicked": {
                     "type": "boolean"
                 },
-                "panel_powered": {
+                "panel_chime": {
+                    "type": "boolean"
+                },
+                "panel_perimeter_only": {
+                    "type": "boolean"
+                },
+                "panel_entry_delay_off": {
                     "type": "boolean"
                 },
                 "panel_relay_status": {

@@ -186,6 +186,9 @@ def alarmdecoder():
         'panel_fire_detected': current_app.decoder.device._fire_status,
         'panel_on_battery': current_app.decoder.device._battery_status[0],
         'panel_panicked': current_app.decoder.device._panic_status,
+        'panel_chime': getattr(current_app.decoder.device,"_chime_status", False),
+        'panel_perimeter_only': getattr(current_app.decoder.device, "_perimeter_only_status", False),
+        'panel_entry_delay_off': getattr(current_app.decoder.device,"_entry_delay_off_status", False),
         'panel_relay_status': relay_status,
         'panel_zones_faulted': faulted_zones,
         'last_message_received': current_app.decoder.last_message_received

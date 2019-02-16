@@ -13,13 +13,13 @@ from .forms import (CreateNotificationForm, EditNotificationForm,
                     EmailNotificationForm, GoogleTalkNotificationForm, PushoverNotificationForm,
                     TwilioNotificationForm, TwiMLNotificationForm, NMANotificationForm, ProwlNotificationForm,
                     GrowlNotificationForm, CustomPostForm, ZoneFilterForm, ReviewNotificationForm,
-                    SmartThingsNotificationForm, UPNPPushNotificationForm)
+                    MatrixNotificationForm, UPNPPushNotificationForm)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 
 from .constants import (EVENT_TYPES, NOTIFICATION_TYPES, DEFAULT_SUBSCRIPTIONS,
                         EMAIL, GOOGLETALK, PUSHOVER, TWILIO, NMA, PROWL, GROWL,
-                        CUSTOM, TWIML, SMARTTHINGS, ZONE_FAULT, ZONE_RESTORE,
+                        CUSTOM, TWIML, MATRIX, ZONE_FAULT, ZONE_RESTORE,
                         UPNPPUSH)
 
 NOTIFICATION_TYPE_DETAILS = {
@@ -33,7 +33,7 @@ NOTIFICATION_TYPE_DETAILS = {
     'custom': (CUSTOM, CustomPostForm),
     'twiml': (TWIML, TwiMLNotificationForm),
     'upnppush': (UPNPPUSH, UPNPPushNotificationForm),
-    'smartthings': (SMARTTHINGS, SmartThingsNotificationForm)
+    'matrix': (MATRIX, MatrixNotificationForm)
 }
 
 notifications = Blueprint('notifications',

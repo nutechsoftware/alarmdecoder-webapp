@@ -15,6 +15,7 @@ import ssl
 import sys
 import base64
 import uuid
+import traceback
 
 from alarmdecoder import AlarmDecoder
 from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
@@ -70,8 +71,9 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
-                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM, DISARM, ALARM, PANIC, FIRE, SMARTTHINGS,
-                        UPNPPUSH, LRR, READY, CHIME, TIME_MULTIPLIER, XML_EVENT_TEMPLATE, XML_EVENT_PROPERTY, RELAY_CHANGED, EVENT_TYPES)
+                        CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM, DISARM, ALARM, PANIC, FIRE, MATRIX,
+                        UPNPPUSH, LRR, READY, CHIME, TIME_MULTIPLIER, XML_EVENT_TEMPLATE, XML_EVENT_PROPERTY, RELAY_CHANGED, EVENT_TYPES,
+                        RAW_MESSAGE, EVENTID_MESSAGE, EVENTDESC_MESSAGE, POWER_CHANGED, BOOT, LOW_BATTERY)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -380,7 +382,7 @@ class UPNPPushNotification(BaseNotification):
 
         # FIXME ADD additional types EX. RFX, REL, EXP
         #  Make this user configurable.
-        self._events = [LRR, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, RELAY_CHANGED]
+        self._events = [LRR, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, RELAY_CHANGED, BOOT, POWER_CHANGED, LOW_BATTERY]
         self.description = 'UPNPPush'
         self.api_token = obj.get_setting('token')
         self.api_endpoint = obj.get_setting('url')
@@ -404,7 +406,7 @@ class UPNPPushNotification(BaseNotification):
 
             response =  XML_EVENT_TEMPLATE.format(
                 self._build_property("eventid", type, False),
-                self._build_property("eventdesc", EVENT_TYPES[type], False),
+                self._build_property("eventdesc", (EVENT_TYPES[type] if type is not None else "Testing"), False),
                 self._build_property("eventmessage", text, True),
                 self._build_property("rawmessage", raw, True),
                 panelState
@@ -415,7 +417,7 @@ class UPNPPushNotification(BaseNotification):
 
         except Exception as e:
             current_app.logger.info('Event UPNPPush Notification Failed: {0} line: {1}'.format(str(e),sys.exc_info()[-1].tb_lineno))
-            raise Exception('UPNPPushNotification Failed: {0}' . format(str(e)))
+            raise Exception('UPNPPushNotification Failed: {0} line: {1}' . format(str(e),sys.exc_info()[-1].tb_lineno))
 
     def _build_panel_state(self):
         mode = current_app.decoder.device.mode
@@ -444,14 +446,16 @@ class UPNPPushNotification(BaseNotification):
         ret = {
             'panel_type': mode,
             'panel_powered': current_app.decoder.device._power_status,
-            'panel_alarming': current_app.decoder.device._alarm_status,
             'panel_ready': getattr(current_app.decoder.device, "_ready_status", True),
-            'panel_chime': getattr(current_app.decoder.device, "_chime_status", False),
+            'panel_alarming': current_app.decoder.device._alarm_status,
             'panel_bypassed': None in current_app.decoder.device._bypass_status,
             'panel_armed': current_app.decoder.device._armed_status,
             'panel_fire_detected': current_app.decoder.device._fire_status,
             'panel_on_battery': current_app.decoder.device._battery_status[0],
             'panel_panicked': current_app.decoder.device._panic_status,
+            'panel_chime': getattr(current_app.decoder.device, "_chime_status", False),
+            'panel_perimeter_only': getattr(current_app.decoder.device, "_perimeter_only_status", False),
+            'panel_entry_delay_off': getattr(current_app.decoder.device,"_entry_delay_off_status", False),
         }
 
         if hasattr(current_app.decoder.device, '_armed_stay'):
@@ -503,7 +507,7 @@ class UPNPPushNotification(BaseNotification):
         http_handler.request('NOTIFY', parsed_url.path, notify_message, headers)
         http_response = http_handler.getresponse()
 
-        current_app.logger.info('_send_notify_event: status:{0} reason:{1}'.format(http_response.status,http_response.reason))
+        current_app.logger.info('_send_notify_event: status:{0} reason:{1} headers:{2}'.format(http_response.status,http_response.reason,headers))
 
         if http_response.status != 200:
             error_msg = 'UPNPPush Notification failed: ({0}: {1})'.format(http_response.status, http_response.read())
@@ -519,35 +523,87 @@ class UPNPPushNotification(BaseNotification):
             xmleventrawmessage = XML_EVENT_PROPERTY.format(name, value)
         return xmleventrawmessage
 
-class SmartThingsNotification(BaseNotification):
+class MatrixNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
-        self._events = [ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE]
+        self._events = [LRR, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, RELAY_CHANGED, BOOT, ]
 
+        self.api_endpoint = obj.get_setting('domain')
         self.api_token = obj.get_setting('token')
-        self.api_endpoint = obj.get_setting('url')
+        self.api_room_id = obj.get_setting('room_id')
+        self.custom_values = obj.get_setting('custom_values')
 
-    def subscribes_to(self, type, **kwargs):
-        return (type in self._events)
+        self.headers = {
+            'User-Agent': CUSTOM_USER_AGENT,
+            'Content-type': CUSTOM_CONTENT_TYPES[JSON]
+        }
 
     def send(self, type, text, raw):
-        with current_app.app_context():
-            if type is None or type in self._events:
-                self._force_update()
 
-    def _force_update(self):
-        parsed_url = urlparse(self.api_endpoint + "/update")
-        headers = { 'Authorization': "Bearer " + self.api_token }
+        try:
+            result = False
 
-        http_handler = HTTPSConnection(parsed_url.netloc)
-        http_handler.request("GET", parsed_url.path, headers=headers)
-        http_response = http_handler.getresponse()
+            if check_time_restriction(self.starttime, self.endtime):
+                notify_data = {'msgtype': 'm.text', 'body': text, 'eventid': type, 'eventdesc': (EVENT_TYPES[type] if type is not None else "Testing"), 'raw': raw}
 
-        if http_response.status != 200:
-            error_msg = 'SmartThings Notification failed: ({0} {1})({2}: {3})'.format(self.api_token, parsed_url, http_response.status, http_response.read())
-            current_app.logger.warning(error_msg)
-            raise Exception(error_msg)
+                if self.custom_values is not None:
+                    if self.custom_values:
+                        try:
+                            self.custom_values = ast.literal_eval(self.custom_values)
+                        except ValueError:
+                            pass
+
+                        notify_data.update(dict((str(i['custom_key']), i['custom_value']) for i in self.custom_values))
+
+
+                #replace placeholder values with actual values
+                for key,val in notify_data.items():
+                    if val == CUSTOM_REPLACER_SEARCH[CUSTOM_TIMESTAMP]:
+                        notify_data[key] = time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime(time.time())) # ex: 2016-12-02 10:33:19 PST
+                    if val == CUSTOM_REPLACER_SEARCH[CUSTOM_MESSAGE]:
+                        notify_data[key] = text
+                    if val == CUSTOM_REPLACER_SEARCH[RAW_MESSAGE]:
+                        notify_data[key] = raw or ""
+                    if val == CUSTOM_REPLACER_SEARCH[EVENTID_MESSAGE]:
+                        notify_data[key] = type
+                    if val == CUSTOM_REPLACER_SEARCH[EVENTDESC_MESSAGE]:
+                        notify_data[key] = EVENT_TYPES[type]
+
+                result = self._do_post(self._dict_to_json(notify_data) )
+
+        except Exception as e:
+            current_app.logger.info('Event Matrix Notification Failed: _send() {0} line: {1} test: {2}' . format(e, sys.exc_info()[-1].tb_lineno,notify_data))
+            raise Exception('Matrix Notification Failed: {0} line: {1}' . format(e,sys.exc_info()[-1].tb_lineno))
+
+        return result
+
+    def _do_post(self, data):
+        try:
+            parsed_url = urlparse("https://" + self.api_endpoint + "/_matrix/client/r0/rooms/" + self.api_room_id + "/send/m.room.message?access_token=" + self.api_token)
+
+            if sys.version_info >= (2,7,9):
+                http_handler = HTTPSConnection(parsed_url.netloc, context=ssl._create_unverified_context())
+            else:
+                http_handler = HTTPSConnection(parsed_url.netloc)
+
+            http_handler.request(CUSTOM_METHOD, parsed_url.path+"?"+parsed_url.query, headers=self.headers, body=data)
+            http_response = http_handler.getresponse()
+
+            if http_response.status == 200:
+                return True
+            else:
+                current_app.logger.info('Matrix Notification Failed (' + str(http_response.status) + ") " + http_response.reason)
+                raise Exception('Matrix Notification Failed (' + str(http_response.status) + ") " + http_response.reason)
+
+        except Exception as e:
+            tb = traceback.format_exc()
+            current_app.logger.info('Event Matrix Notification Failed: _do_post() {0} line: {1}' . format(tb, sys.exc_info()[-1].tb_lineno))
+            raise Exception('Matrix Notification Failed exception: _do_post {0} line: {1}' . format(e,sys.exc_info()[-1].tb_lineno))
+
+    def _dict_to_json(self, d):
+        return json.dumps(d)
+
 
 class EmailNotification(BaseNotification):
     def __init__(self, obj):
@@ -970,7 +1026,7 @@ class CustomNotification(BaseNotification):
             return True
         else:
             current_app.logger.info('Event Custom Notification Failed')
-            raise Exception('Custom Notification Failed')
+            raise Exception('Custom Notification Failed (' + str(http_response.status) + ") " + http_response.reason)
 
     def _do_get(self, data):
         if self.is_ssl:
@@ -1014,6 +1070,12 @@ class CustomNotification(BaseNotification):
                         notify_data[key] = time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime(time.time())) # ex: 2016-12-02 10:33:19 PST
                     if val == CUSTOM_REPLACER_SEARCH[CUSTOM_MESSAGE]:
                         notify_data[key] = self.msg_to_send
+                    if val == CUSTOM_REPLACER_SEARCH[RAW_MESSAGE]:
+                        notify_data[key] = raw or ""
+                    if val == CUSTOM_REPLACER_SEARCH[EVENTID_MESSAGE]:
+                        notify_data[key] = type
+                    if val == CUSTOM_REPLACER_SEARCH[EVENTDESC_MESSAGE]:
+                        notify_data[key] = EVENT_TYPES[type]
 
             if self.method == CUSTOM_METHOD_POST:
                 if self.post_type == URLENCODE:
@@ -1049,5 +1111,5 @@ TYPE_MAP = {
     CUSTOM: CustomNotification,
     TWIML: TwiMLNotification,
     UPNPPUSH: UPNPPushNotification,
-    SMARTTHINGS: SmartThingsNotification
+    MATRIX: MatrixNotification
 }

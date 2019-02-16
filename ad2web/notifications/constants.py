@@ -72,7 +72,7 @@ PROWL = 5
 GROWL = 6
 CUSTOM = 7
 TWIML = 8
-SMARTTHINGS = 9
+MATRIX = 9
 UPNPPUSH = 10
 
 NOTIFICATION_TYPES = {
@@ -85,8 +85,8 @@ NOTIFICATION_TYPES = {
     GROWL: 'growl',
     CUSTOM: 'custom',
     TWIML: 'twiml',
-    UPNPPUSH: 'upnppush',
-    SMARTTHINGS: 'smartthings'
+    MATRIX: 'matrix',
+    UPNPPUSH: 'upnppush'
 }
 
 NOTIFICATIONS = {
@@ -100,10 +100,10 @@ NOTIFICATIONS = {
     CUSTOM: ('custom', u'Custom'),
     TWIML: ('twiml', u'TwiML'),
     UPNPPUSH: ('upnppush', u'UPNP Push'),
-    SMARTTHINGS: ('smartthings', u'SmartThings Integration')
+    MATRIX: ('matrix', u'Matrix.org')
 }
 
-DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM]
+DEFAULT_SUBSCRIPTIONS = [ALARM, PANIC, FIRE, ARM, DISARM, LRR]
 
 SUBSCRIPTIONS = OrderedDict([
     (ALARM, 'Alarm system is triggered'),
@@ -112,9 +112,9 @@ SUBSCRIPTIONS = OrderedDict([
     (FIRE, 'The fire state has changed'),
     (ARM, 'Alarm system is armed'),
     (DISARM, 'Alarm system is disarmed'),
-    (ZONE_FAULT, 'A zone has faulted'),
-    (ZONE_RESTORE, 'A zone has been restored'),
-    (BYPASS, 'A zone has been bypassed'),
+    (ZONE_FAULT, 'A Zone Tracker zone has faulted'),
+    (ZONE_RESTORE, 'A Zone Tracker zone has been restored'),
+    (BYPASS, 'A Zone Tracker zone has been bypassed'),
     (POWER_CHANGED, 'Power status has changed'),
     (LOW_BATTERY, 'A low battery has been detected'),
     (BOOT, 'The AlarmDecoder has rebooted'),
@@ -205,10 +205,16 @@ CUSTOM_CONTENT_TYPES = {
 
 CUSTOM_TIMESTAMP = 0
 CUSTOM_MESSAGE = 1
+RAW_MESSAGE = 2
+EVENTID_MESSAGE = 3
+EVENTDESC_MESSAGE = 4
 
 CUSTOM_REPLACER_SEARCH = {
     CUSTOM_TIMESTAMP: "{{timestamp}}",
-    CUSTOM_MESSAGE: "{{message}}"
+    CUSTOM_MESSAGE: "{{message}}",
+    RAW_MESSAGE: "{{raw}}",
+    EVENTID_MESSAGE: "{{eventid}}",
+    EVENTDESC_MESSAGE: "{{eventdesc}}"
 }
 
 TIME_MULTIPLIER = {

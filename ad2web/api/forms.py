@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import string
-from flask_wtf import Form
-from flask_wtf.html5 import URLField, EmailField, TelField
+from flask_wtf import FlaskForm as Form
+from wtforms.fields.html5 import URLField, EmailField, TelField
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
         PasswordField, SubmitField, TextAreaField, IntegerField, RadioField,
         FileField, DecimalField, BooleanField, SelectField, FormField, FieldList)

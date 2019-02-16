@@ -2,8 +2,8 @@
 
 import re
 import json
-from flask_wtf import Form
-from flask_wtf.html5 import URLField, EmailField, TelField
+from flask_wtf import FlaskForm as Form
+from wtforms.fields.html5 import URLField, EmailField, TelField
 import wtforms
 import ast
 from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
@@ -70,8 +70,8 @@ class TimeValidator(object):
 class TimeSettingsInternalForm(Form):
     starttime =  TextField(u'Start Time', [InputRequired(), Length(max=8), TimeValidator()], default='00:00:00', description=u'Start time for this event notification (24hr format)')
     endtime =  TextField(u'End Time', [InputRequired(), Length(max=8), TimeValidator()], default='23:59:59', description=u'End time for this event notification (24hr format)')
-    delaytime = IntegerField(u'Notification Delay', [InputRequired(), NumberRange(min=0)], default=0, description=u'Time in minutes to delay sending notification')
-    suppress = BooleanField(u'Suppress Restore?', [Optional()], description=u'Suppress notification if restored before delay')
+    delaytime = IntegerField(u'Zone Tracker Notification Delay', [InputRequired(), NumberRange(min=0)], default=0, description=u'Time in minutes to delay sending Zone Tracker notification')
+    suppress = BooleanField(u'Suppress Zone Tracker Restore?', [Optional()], description=u'Suppress Zone Tracker notification if restored before delay')
 
     def __init__(self, *args, **kwargs):
         kwargs['csrf_enabled'] = False
@@ -417,7 +417,7 @@ class CustomValueForm(Form):
 
 class CustomPostInternalForm(Form):
     custom_url = TextField(u'URL', [Required(), Length(max=255)], description=u'URL to send data to (ex: www.alarmdecoder.com)')
-    custom_path = TextField(u'Path', [Required(), Length(max=255)], description=u'Path to send variables to (ex: /publicapi/add)')
+    custom_path = TextField(u'Path', [Required(), Length(max=400)], description=u'Path to send variables to (ex: /publicapi/add)')
     is_ssl = BooleanField(u'SSL?', default=False, description=u'Is the URL SSL or No?')
     method = RadioField(u'Method', choices=[(CUSTOM_METHOD_POST, 'POST'), (CUSTOM_METHOD_GET_TYPE, 'GET')], default=CUSTOM_METHOD_POST, coerce=int)
     post_type = RadioField(u'Type', choices=[(URLENCODE, 'urlencoded'), (JSON, 'JSON'), (XML, 'XML')], default=URLENCODE, coerce=int)
@@ -510,31 +510,62 @@ class ZoneFilterForm(Form):
         return ret
 
 
-class SmartThingsNotificationInternalForm(Form):
-    url = TextField(u'URL', [Required(), Length(max=255)], description=u'URL for the SmartThings API')
-    token = TextField(u'Token', [Required(), Length(max=255)], description=u'Authentication token')
+class MatrixNotificationInternalForm(Form):
+    domain = TextField(u'Domain', [Required(), Length(max=255)], description=u'Domain or IP of matrix server ex. matrix.org')
+    room_id = TextField(u'Room ID', [Required(), Length(max=300)], description=u'Room ID and domain ex. !DPNBnAVwxPMvNKTvvY:matrix.org')
+    token = TextField(u'Token', [Required(), Length(max=300)], description=u'The long device authentication token. ex. D0gMQowMDI.....')
+    custom_values = FieldList(FormField(CustomValueForm), validators=[Optional()], label=None)
+    add_field = ButtonField(u'Add Field', onclick='addField();')
 
     def __init__(self, *args, **kwargs):
         kwargs['csrf_enabled'] = False
-        super(SmartThingsNotificationInternalForm, self).__init__(*args, **kwargs)
+        super(MatrixNotificationInternalForm, self).__init__(*args, **kwargs)
 
 
-class SmartThingsNotificationForm(Form):
+class MatrixNotificationForm(Form):
     type = HiddenField()
-    subscriptions = HiddenField()
+
     description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')
-    form_field = FormField(SmartThingsNotificationInternalForm)
+    time_field = FormField(TimeSettingsInternalForm)
+    subscriptions = MultiCheckboxField(u'Notification Events', choices=[(str(k), v) for k, v in SUBSCRIPTIONS.iteritems()])
+    form_field = FormField(MatrixNotificationInternalForm)
 
     submit = SubmitField(u'Next')
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
 
     def populate_settings(self, settings, id=None):
-        settings['url'] = self.populate_setting('url', self.form_field.url.data)
+        settings['subscriptions'] = self.populate_setting('subscriptions', json.dumps({str(k): True for k in self.subscriptions.data}))
+
+        settings['starttime'] = self.populate_setting('starttime', self.time_field.starttime.data or '00:00:00')
+        settings['endtime'] = self.populate_setting('endtime', self.time_field.endtime.data or '23:59:59')
+        settings['delay'] = self.populate_setting('delay', self.time_field.delaytime.data)
+        settings['suppress'] = self.populate_setting('suppress', self.time_field.suppress.data)
+
+        settings['domain'] = self.populate_setting('domain', self.form_field.domain.data)
+        settings['room_id'] = self.populate_setting('room_id', self.form_field.room_id.data)
         settings['token'] = self.populate_setting('token', self.form_field.token.data)
+        settings['custom_values'] = self.populate_setting('custom_values', self.form_field.custom_values.data)
 
     def populate_from_settings(self, id):
-        self.form_field.url.data = self.populate_from_setting(id, 'url')
+        subscriptions = self.populate_from_setting(id, 'subscriptions')
+        if subscriptions:
+            self.subscriptions.data = [k if v == True else False for k, v in json.loads(subscriptions).iteritems()]
+
+        self.form_field.domain.data = self.populate_from_setting(id, 'domain')
+        self.form_field.room_id.data = self.populate_from_setting(id, 'room_id')
         self.form_field.token.data = self.populate_from_setting(id, 'token')
+        custom = self.populate_from_setting(id, 'custom_values')
+
+        if custom is not None:
+            custom = ast.literal_eval(custom)
+            custom = dict((str(i['custom_key']), i['custom_value']) for i in custom)
+
+            for key, value in custom.iteritems():
+                CVForm = CustomValueForm()
+                CVForm.custom_key = key
+                CVForm.custom_value = value
+
+                self.form_field.custom_values.append_entry(CVForm)
 
     def populate_setting(self, name, value, id=None):
         if id is not None:
