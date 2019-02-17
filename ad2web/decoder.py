@@ -42,7 +42,7 @@ from .notifications.models import NotificationMessage
 from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_RESTORED,
                                         FIRE, BYPASS, BOOT, LRR, CONFIG_RECEIVED, ZONE_FAULT,
                                         ZONE_RESTORE, LOW_BATTERY, PANIC, RELAY_CHANGED,
-                                        LRR, READY, CHIME, DEFAULT_EVENT_MESSAGES)
+                                        LRR, READY, CHIME, DEFAULT_EVENT_MESSAGES, EVMSG_VERSION)
 
 from .cameras import CameraSystem
 from .cameras.models import Camera
@@ -193,11 +193,16 @@ class Decoder(object):
         with self.app.app_context():
             device_type = Setting.get_by_name('device_type').value
 
-            # Add any default event messages that may be missing due to additions.
-            for event, message in DEFAULT_EVENT_MESSAGES.iteritems():
-                if not NotificationMessage.query.filter_by(id=event).first():
+            # Add/Update any default event messages that may be missing or changed due to additions.
+            dbevmsgver = NotificationMessage.query.filter_by(id=EVMSG_VERSION).first()
+            if dbevmsgver is None or dbevmsgver.text != DEFAULT_EVENT_MESSAGES[EVMSG_VERSION]:
+                current_app.logger.info('New EVENT message formats detected. Your customization will be lost.')
+                for event, message in DEFAULT_EVENT_MESSAGES.iteritems():
+                    old = NotificationMessage.query.filter_by(id=event).first()
+                    if old:
+                        db.session.delete(old)
                     db.session.add(NotificationMessage(id=event, text=message))
-            db.session.commit()
+                db.session.commit()
 
             current_app.config['MAIL_SERVER'] = Setting.get_by_name('system_email_server',default='localhost').value
             current_app.config['MAIL_PORT'] = Setting.get_by_name('system_email_port',default=25).value

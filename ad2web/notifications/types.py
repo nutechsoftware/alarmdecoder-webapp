@@ -125,7 +125,7 @@ class NotificationSystem(object):
                             n.send(type, message, rawmessage)
 
                 except Exception, err:
-                    errors.append('Error sending notification for {0}: {1}'.format(n.description, str(err)))
+                    errors.append('Error sending notification for {0}: line: {1} {2}'.format(n.description, sys.exc_info()[-1].tb_lineno, str(err)))
 
         return errors
 
@@ -240,6 +240,21 @@ class NotificationSystem(object):
         if type == ARM:
             status = kwargs.get('stay', False)
             kwargs['arm_type'] = 'STAY' if status else 'AWAY'
+
+        if type == LRR:
+            message = kwargs.get('message', None)
+
+            # If it has a dict method then the backend API is newer
+            if hasattr(message, "dict"):
+                message = message.dict()
+                vp = message.get('partition', -1)
+                ved = message.get('event_description', 'Unknown')
+                vs = 'Event' if message.get('event_status', 1) == 1 else 'Restore'
+                vedt = message.get('event_data_type', -1)
+                vd = message.get('event_data', -1)
+                kwargs['status'] = "Partition {0} {1} {2} {3}{4}".format(vp, ved, vs, vedt, vd)
+            else:
+                kwargs['status'] = message
 
         if type == RELAY_CHANGED:
             message = kwargs.get('message', None)
@@ -545,6 +560,10 @@ class MatrixNotification(BaseNotification):
             result = False
 
             if check_time_restriction(self.starttime, self.endtime):
+                message = NotificationMessage.query.filter_by(id=type).first()
+                if message:
+                    message = message.text
+
                 notify_data = {'msgtype': 'm.text', 'body': text, 'eventid': type, 'eventdesc': (EVENT_TYPES[type] if type is not None else "Testing"), 'raw': raw}
 
                 if self.custom_values is not None:

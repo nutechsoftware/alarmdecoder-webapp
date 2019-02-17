@@ -19,11 +19,13 @@ ALARM_RESTORED = 13
 LRR = 14
 READY = 15
 CHIME = 16
+EVMSG_VERSION = -1
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
 
 DEFAULT_EVENT_MESSAGES = {
+    EVMSG_VERSION: '1.1',
     ARM: 'The alarm system has been armed {arm_type}.',
     DISARM: 'The alarm system has been disarmed.',
     POWER_CHANGED: 'Power status has changed to {status}.',
@@ -37,7 +39,7 @@ DEFAULT_EVENT_MESSAGES = {
     ZONE_RESTORE: 'Zone {zone_name} ({zone}) has been restored.',
     LOW_BATTERY: 'Low battery detected.',
     PANIC: 'Panic!',
-    LRR: 'Received LRR / Contact ID event',
+    LRR: 'Contact ID event {status}',
     READY: 'Ready status has changed to {status}',
     CHIME: 'Chime status has changed to {status}',
     RELAY_CHANGED: 'A relay at {address}:{channel} has changed to {status}.'
