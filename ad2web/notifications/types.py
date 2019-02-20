@@ -361,7 +361,8 @@ class BaseNotification(object):
     def subscribes_to(self, type, **kwargs):
         if type in self._subscriptions.keys():
             if type in (ZONE_FAULT, ZONE_RESTORE, BYPASS):
-                if int(kwargs.get('zone', -1)) in self._zone_filters:
+                zone = kwargs.get('zone', -1)
+                if int(zone if zone else -1) in self._zone_filters:
                     return True
                 else:
                     return False
@@ -999,8 +1000,8 @@ class CustomNotification(BaseNotification):
         self.is_ssl = obj.get_setting('is_ssl')
         self.post_type = obj.get_setting('post_type')
         self.require_auth = obj.get_setting('require_auth')
-        self.auth_username = obj.get_setting('auth_username')
-        self.auth_password = obj.get_setting('auth_password')
+        self.auth_username = obj.get_setting('auth_username', default='')
+        self.auth_password = obj.get_setting('auth_password', default='')
         self.auth_username = self.auth_username.replace('\n', '')
         self.auth_password = self.auth_password.replace('\n', '')
         self.custom_values = obj.get_setting('custom_values')
