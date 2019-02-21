@@ -29,7 +29,7 @@ div[id*=" form_field-custom_values-"] > div.controls > div.control-group {
 
 {% block body %}
 <div class="settings_wrapper">
-    {{ render_form(url_for('notifications.create_by_type', type=type), form) }}
+    {{ render_form(url_for('notifications.create_by_type', type=type), form, legend=legend) }}
     <div id="custom_values_help" style="display: none;">
         <h4>Custom Value Text Replacements</h4>
         <h5>Use these as a custom value and it will be replaced on trigger of notification</h5>

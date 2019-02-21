@@ -523,6 +523,17 @@ class MatrixNotificationInternalForm(Form):
 
 
 class MatrixNotificationForm(Form):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "Matrix.org is a free open source distributed network that supports end-to-end encryption.<br/>"
+        "TODO: Add abilty to generate the <b>Room ID</b> and <b>Token</b> using a User ID and Pass<br/>"
+        "Notes: Create an account and a room on Riot.im that allows posts. You can get the room key from the Riot.im web client.<br/>"
+        "See: <a href=\"https://gist.github.com/RickCogley/69f430d4418ae5498e8febab44d241c9\" target=\"_blank\">https://gist.github.com/RickCogley/69f430d4418ae5498e8febab44d241c9</a> for curl commands to generate a <b>Token</b>.<br/>"
+        "See: <a href=\"https://matrix.org/\" target=\"_blank\">https://matrix.org</a> for more info on [Matrix]<br/>"
+        "See: <a href=\"https://riot.im/\" target=\"_blank\">https://riot.im</a> for an open source client for web and phone to create, manage and use [Matrix] and create rooms.<br/>"
+        "</div>"
+    )
+
     type = HiddenField()
 
     description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')
@@ -595,6 +606,15 @@ class UPNPPushNotificationInternalForm(Form):
 
 
 class UPNPPushNotificationForm(Form):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "UPNP Push subscriptions.<br/>"
+        "Enable UPNP Push subscriptions from clients on the local network using UPNP subscribe method.<br/>"
+        "See: <a href=\"https://github.com/nutechsoftware/alarmdecoder-smartthings\" target=\"_blank\">https://github.com/nutechsoftware/alarmdecoder-smartthings</a><br/>"
+        "<strong><font color=\"red\">Warning!</font></strong> Only enable one UPNP notification."
+        "</div>"
+    )
+
     type = HiddenField()
     subscriptions = HiddenField()
     description = TextField(u'Description', [Required(), Length(max=255)], description=u'Brief description of this notification')

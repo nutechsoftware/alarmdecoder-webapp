@@ -29,7 +29,7 @@ div[id*=" form_field-custom_values-"] > div.controls > div.control-group {
 
 {% block body %}
 <div class="settings_wrapper">
-    {{ render_form(url_for('notifications.edit', id=id), form) }}
+    {{ render_form(url_for('notifications.edit', id=id), form, legend=legend) }}
 </div>
 
 <div id="notification-type-wrapper" style="display: none;">
