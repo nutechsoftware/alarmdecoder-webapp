@@ -97,7 +97,7 @@ def edit(id):
                             id=id,
                             notification=notification,
                             active='notifications',
-                            ssl=use_ssl)
+                            ssl=use_ssl, legend=form.legend)
 
 @notifications.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -152,7 +152,7 @@ def create_by_type(type):
                             form=form,
                             type=type,
                             active='notifications',
-                            ssl=use_ssl)
+                            ssl=use_ssl, legend=form.legend)
 
 def build_zone_list():
     zone_list = [(str(i), "Zone {0:02d}".format(i)) for i in range(1, 100)]
