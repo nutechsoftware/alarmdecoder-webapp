@@ -147,6 +147,10 @@ class EmailNotificationInternalForm(Form):
 
 
 class EmailNotificationForm(EditNotificationForm):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "</div>"
+    )
     form_field = FormField(EmailNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -193,6 +197,10 @@ class GoogleTalkNotificationInternalForm(Form):
 
 
 class GoogleTalkNotificationForm(EditNotificationForm):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "</div>"
+    )
     form_field = FormField(GoogleTalkNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -224,6 +232,10 @@ class PushoverNotificationInternalForm(Form):
 
 
 class PushoverNotificationForm(EditNotificationForm):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "</div>"
+    )
     form_field = FormField(PushoverNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -256,6 +268,10 @@ class TwilioNotificationInternalForm(Form):
 
 
 class TwilioNotificationForm(EditNotificationForm):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "</div>"
+    )
     form_field = FormField(TwilioNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -288,6 +304,10 @@ class TwiMLNotificationInternalForm(Form):
         super(TwiMLNotificationInternalForm, self).__init__(*args, **kwargs)
 
 class TwiMLNotificationForm(EditNotificationForm):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "</div>"
+    )
     form_field = FormField(TwiMLNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -320,6 +340,10 @@ class NMANotificationInternalForm(Form):
 
 
 class NMANotificationForm(EditNotificationForm):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "</div>"
+    )
     form_field = FormField(NMANotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -349,6 +373,10 @@ class ProwlNotificationInternalForm(Form):
 
 
 class ProwlNotificationForm(EditNotificationForm):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "</div>"
+    )
     form_field = FormField(ProwlNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -382,6 +410,10 @@ class GrowlNotificationInternalForm(Form):
 
 
 class GrowlNotificationForm(EditNotificationForm):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "</div>"
+    )
     form_field = FormField(GrowlNotificationInternalForm)
 
     submit = SubmitField(u'Next')
@@ -434,6 +466,10 @@ class CustomPostInternalForm(Form):
 
 
 class CustomPostForm(EditNotificationForm):
+    legend = (
+        "<div style=\"font-size: 16px;\">"
+        "</div>"
+    )
     form_field = FormField(CustomPostInternalForm)
 
     submit = SubmitField(u'Next')
