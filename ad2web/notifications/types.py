@@ -29,8 +29,23 @@ except ImportError:
 
 try:
     import twilio
-    from twilio.rest import TwilioRestClient
-    have_twilio = True
+
+    # Old API ~5.6.0
+    try:
+        from twilio.rest import TwilioRestClient
+        from twilio.TwilioRestException import TwilioRestException
+        have_twilio = True
+    except ImportError:
+        have_twilio = False
+
+    # New API 6.0+
+    try:
+        from twilio.rest import Client as TwilioRestClient
+        from twilio.base.exceptions import TwilioRestException
+        have_twilio = True
+    except ImportError:
+        have_twilio = False
+
 except ImportError:
     have_twilio = False
 
@@ -778,7 +793,7 @@ class TwilioNotification(BaseNotification):
             try:
                 client = TwilioRestClient(self.account_sid, self.auth_token)
                 message = client.messages.create(to=self.number_to, from_=self.number_from, body=self.msg_to_send)
-            except twilio.TwilioRestException as e:
+            except TwilioRestException as e:
                 current_app.logger.info('Event Twilio Notification Failed: {0}' . format(e))
                 raise Exception('Twilio Notification Failed: {0}' . format(e))
 
@@ -807,7 +822,7 @@ class TwiMLNotification(BaseNotification):
             call = client.calls.create(to="+" + self.number_to,
                                        from_="+" + self.number_from,
                                        url=self.url + "?" + query + "=" + message_to_send)
-        except twilio.TwilioRestException as e:
+        except TwilioRestException as e:
             current_app.logger.info('Event TwiML Notification Failed: {0}' . format(e))
             raise Exception('TwiML Notification Failed: {0}' . format(e))
 
