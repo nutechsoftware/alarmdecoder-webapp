@@ -967,7 +967,7 @@ class CustomNotification(BaseNotification):
         http_handler.request(CUSTOM_METHOD, self.path, headers=self.headers, body=data)
         http_response = http_handler.getresponse()
 
-        if http_response.status == 200:
+        if http_response.status >= 200 and http_response.status <= 299:
             return True
         else:
             current_app.logger.info('Event Custom Notification Failed')
