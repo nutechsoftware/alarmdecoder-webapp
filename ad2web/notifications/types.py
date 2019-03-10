@@ -36,15 +36,13 @@ try:
         from twilio.TwilioRestException import TwilioRestException
         have_twilio = True
     except ImportError:
-        have_twilio = False
-
-    # New API 6.0+
-    try:
-        from twilio.rest import Client as TwilioRestClient
-        from twilio.base.exceptions import TwilioRestException
-        have_twilio = True
-    except ImportError:
-        have_twilio = False
+        # New API 6.0+
+        try:
+            from twilio.rest import Client as TwilioRestClient
+            from twilio.base.exceptions import TwilioRestException
+            have_twilio = True
+        except ImportError:
+            have_twilio = False
 
 except ImportError:
     have_twilio = False
