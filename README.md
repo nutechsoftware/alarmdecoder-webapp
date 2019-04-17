@@ -82,7 +82,11 @@ sudo apt-get update
 ```
 * Install packages
 ```
-sudo apt-get install build-essential,autoconf,automake,cmake,cmake-data,cmake,libffi-dev,libssl-dev,libpcre3-dev,libssl-dev,libpcre++-dev,zlib1g-dev,libcurl4-openssl-dev,python2.7-dev,python-dev,sqlite3,screen,sendmail,minicom,telnet,vim,nginx,gunicorn,git,python-pip,miniupnpc,python-virtualenv, python-opencv, python-httplib2
+sudo apt-get install build-essential autoconf automake cmake cmake-data cmake libffi-dev libssl-dev libpcre3-dev libssl-dev libpcre++-dev zlib1g-dev libcurl4-openssl-dev python2.7-dev python-dev sqlite3 screen sendmail minicom telnet vim nginx gunicorn git python-pip miniupnpc python-virtualenv python-opencv python-httplib2
+```
+* Update pip
+```
+sudo pip install --upgrade pip
 ```
 * Update pip setuptools
 ```
@@ -94,7 +98,7 @@ sudo pip uninstall python-cryptography && pip install python-cryptography
 ```
 * Create needed directories and set permissions for updates
 ```
-sudo mkdir -p /opt/alarmdecoder2 /opt/alarmdecoder-webapp2 && chown pi:pi /opt/alarmdecoder /opt/alarmdecoder-webapp
+sudo mkdir -p /opt/alarmdecoder /opt/alarmdecoder-webapp && sudo chown pi:pi /opt/alarmdecoder /opt/alarmdecoder-webapp
 ``` 
 * Grab the latest master branch of the AlarmDecoder Python API
 ```
@@ -102,16 +106,16 @@ cd /opt && git clone https://github.com/nutechsoftware/alarmdecoder.git
 ```
 * Grab the latest master branch of the AlarmDecoder web services app
 ```
-cd /opt/ && git clone https://github.com/nutechsoftware/alarmdecoder-webapp.git
+cd /opt && git clone https://github.com/nutechsoftware/alarmdecoder-webapp.git
 ```
 * Add Python requirements to the entire system as root
 ```
-sudo cd /opt/alarmdecoder-webapp/ && pip install -r requirements.txt
+cd /opt/alarmdecoder-webapp/ && sudo pip install -r requirements.txt
 ```
 * Add ser2sock
 ```
-sudo cd /opt/ && git clone https://github.com/nutechsoftware/ser2sock.git
-sudo cd /opt/ser2sock/ && ./configure && make && cp ./ser2sock /usr/local/bin/
+cd /opt && sudo git clone https://github.com/nutechsoftware/ser2sock.git
+cd /opt/ser2sock/ && sudo ./configure && sudo make && sudo cp ./ser2sock /usr/local/bin/
 ```
 * Allow pi user to have r/w access to serial ports and a few key files for the WEB services to udpate by adding them to the same group and adding +w on that group
 ```
@@ -121,9 +125,9 @@ sudo chmod g+w /etc/hosts /etc/hostname
 ```
 * Create a ser2sock config folder owned by pi in etc and add config and update it
 ```
-sudo mkdir -p /etc/ser2sock && cp /opt/ser2sock/etc/ser2sock/ser2sock.conf /etc/ser2sock/ && && chown -R pi:pi /etc/ser2sock
-sed -i 's/raw_device_mode = 0/raw_device_mode = 1/g' /etc/ser2sock/ser2sock.conf
-sed -i 's/device = \/dev\/ttyAMA0/device = \/dev\/serial0/g' /etc/ser2sock/ser2sock.conf
+sudo mkdir -p /etc/ser2sock && sudo cp /opt/ser2sock/etc/ser2sock/ser2sock.conf /etc/ser2sock/ && sudo chown -R pi:pi /etc/ser2sock
+sudo sed -i 's/raw_device_mode = 0/raw_device_mode = 1/g' /etc/ser2sock/ser2sock.conf
+sudo sed -i 's/device = \/dev\/ttyAMA0/device = \/dev\/serial0/g' /etc/ser2sock/ser2sock.conf
 ```
 * Set ser2sock to start at boot as user pi
 ```
@@ -134,7 +138,7 @@ sudo update-rc.d ser2sock defaults
 ```  
 * Enable the avahi service
 ```
-sudo echo -e '<?xml version="1.0" standalone="no"?>\n<!DOCTYPE service-group SYSTEM "avahi-service.dtd">\n<service-group>\n\t<name replace-wildcards="yes">%h</name>\n\t<service>\n\t\t<type>_device-info._tcp</type>\n\t\t<port>0</port>\n\t\t<txt-record>model=AlarmDecoder</txt-record>\n\t</service>\n\t<service>\n\t\t<type>_ssh._tcp</type>\n\t\t<port>22</port>\n\t</service>\n</service-group>' > /etc/avahi/services/alarmdecoder.service
+echo -e '<?xml version="1.0" standalone="no"?>\n<!DOCTYPE service-group SYSTEM "avahi-service.dtd">\n<service-group>\n\t<name replace-wildcards="yes">%h</name>\n\t<service>\n\t\t<type>_device-info._tcp</type>\n\t\t<port>0</port>\n\t\t<txt-record>model=AlarmDecoder</txt-record>\n\t</service>\n\t<service>\n\t\t<type>_ssh._tcp</type>\n\t\t<port>22</port>\n\t</service>\n</service-group>' | sudo tee /etc/avahi/services/alarmdecoder.service > /dev/null
 ```
 * Create nginx ssl folder
 ```
@@ -146,7 +150,7 @@ sudo rm -r /var/www/html/
 ```
 * Enable gunicorn service and tuning for Alarmdecoder webapp
 ```
-sudo echo -e '[Unit]\nDescription=gunicorn daemon\nAfter=network.target\n\n[Service]\nPIDFile=/run/gunicorn/pid\nUser=pi\nGroup=dialout\nWorkingDirectory=/opt/alarmdecoder-webapp\nExecStart=/usr/bin/gunicorn --worker-class=socketio.sgunicorn.GeventSocketIOWorker --timeout=120 --env=POLICY_SERVER=0 --log-level=debug wsgi:application\nExecReload=/bin/kill -s HUP $MAINPID\nExecStop=/bin/kill -s TERM $MAINPID\nPrivateTmp=true\n\n[Install]\nWantedBy=multi-user.target\n' > /etc/systemd/user/gunicorn.service
+echo -e '[Unit]\nDescription=gunicorn daemon\nAfter=network.target\n\n[Service]\nPIDFile=/run/gunicorn/pid\nUser=pi\nGroup=dialout\nWorkingDirectory=/opt/alarmdecoder-webapp\nExecStart=/usr/bin/gunicorn --worker-class=socketio.sgunicorn.GeventSocketIOWorker --timeout=120 --env=POLICY_SERVER=0 --log-level=debug wsgi:application\nExecReload=/bin/kill -s HUP $MAINPID\nExecStop=/bin/kill -s TERM $MAINPID\nPrivateTmp=true\n\n[Install]\nWantedBy=multi-user.target\n' | sudo tee /etc/systemd/user/gunicorn.service > /dev/null
 ```
 * Enable gunicorn server and set to start at boot
 ```
@@ -155,8 +159,8 @@ sudo ln -s /etc/systemd/user/gunicorn.service /etc/systemd/system/gunicorn.servi
 ```
 * Enable log rotate for webapp and gunicorn
 ```
-sudo echo -e '/opt/alarmdecoder-webapp/instance/logs/*.log {\nweekly\nmissingok\nrotate 5\ncompress\ndelaycompress\nnotifempty\ncreate 0640 pi pi\nsharedscripts\n\ }' > /etc/logrotate.d/alarmdecoder
-sudo echo -e '/var/log/gunicorn/*.log {\nweekly\nmissingok\nrotate 5\ncompress\ndelaycompress\nnotifempty\ncreate 0640 www-data www-data\nsharedscripts\npostrotate\n[ -s /run/gunicorn/alarmdecoder.pid ] && kill -USR1 `cat /run/gunicorn/alarmdecoder.pid`\nendscript\n}' > /etc/logrotate.d/gunicorn
+echo -e '/opt/alarmdecoder-webapp/instance/logs/*.log {\nweekly\nmissingok\nrotate 5\ncompress\ndelaycompress\nnotifempty\ncreate 0640 pi pi\nsharedscripts\n\ }' > /etc/logrotate.d/alarmdecoder
+sudo echo -e '/var/log/gunicorn/*.log {\nweekly\nmissingok\nrotate 5\ncompress\ndelaycompress\nnotifempty\ncreate 0640 www-data www-data\nsharedscripts\npostrotate\n[ -s /run/gunicorn/alarmdecoder.pid ] && kill -USR1 `cat /run/gunicorn/alarmdecoder.pid`\nendscript\n}' | sudo tee /etc/logrotate.d/gunicorn > /dev/null
 ```
 * Create gunicorn app config directory and add our app configuration
 ```
@@ -179,7 +183,7 @@ sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
 ```
 * Init the AD2Web database as pi user
 ```
-cd /opt/alarmdecoder-webapp/ && python manage.py initdbs
+cd /opt/alarmdecoder-webapp/ && python manage.py initdb
 ```
 
 ## Support
