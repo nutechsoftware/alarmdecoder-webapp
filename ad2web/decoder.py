@@ -41,8 +41,9 @@ from .updater.models import FirmwareUpdater
 from .notifications.models import NotificationMessage
 from .notifications.constants import (ARM, DISARM, POWER_CHANGED, ALARM, ALARM_RESTORED,
                                         FIRE, BYPASS, BOOT, LRR, CONFIG_RECEIVED, ZONE_FAULT,
-                                        ZONE_RESTORE, LOW_BATTERY, PANIC, RELAY_CHANGED,
-                                        LRR, READY, CHIME, DEFAULT_EVENT_MESSAGES, EVMSG_VERSION)
+                                        ZONE_RESTORE, LOW_BATTERY, PANIC,
+                                        READY, CHIME, DEFAULT_EVENT_MESSAGES, EVMSG_VERSION,
+                                        RFX, EXP, AUI)
 
 from .cameras import CameraSystem
 from .cameras.models import Camera
@@ -72,7 +73,9 @@ EVENT_MAP = {
     ZONE_RESTORE: 'on_zone_restore',
     LOW_BATTERY: 'on_low_battery',
     PANIC: 'on_panic',
-    RELAY_CHANGED: 'on_relay_changed'
+    RFX: 'on_rfx_message',
+    EXP: 'on_expander_message',
+    AUI: 'on_aui_message'
 }
 
 decodersocket = Blueprint('sock', __name__, url_prefix='/socket.io')

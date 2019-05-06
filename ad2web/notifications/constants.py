@@ -14,18 +14,22 @@ ZONE_FAULT = 8
 ZONE_RESTORE = 9
 LOW_BATTERY = 10
 PANIC = 11
-RELAY_CHANGED = 12
+
 ALARM_RESTORED = 13
 LRR = 14
 READY = 15
 CHIME = 16
+RFX = 17
+EXP = 18
+AUI = 19
+
 EVMSG_VERSION = -1
 
 CRITICAL_EVENTS = [POWER_CHANGED, ALARM, BYPASS, ARM, DISARM, ZONE_FAULT, \
                     ZONE_RESTORE, FIRE, PANIC]
 
 DEFAULT_EVENT_MESSAGES = {
-    EVMSG_VERSION: '1.1',
+    EVMSG_VERSION: '1.2',
     ARM: 'The alarm system has been armed {arm_type}.',
     DISARM: 'The alarm system has been disarmed.',
     POWER_CHANGED: 'Power status has changed to {status}.',
@@ -42,7 +46,9 @@ DEFAULT_EVENT_MESSAGES = {
     LRR: 'Contact ID event {status}',
     READY: 'Ready status has changed to {status}',
     CHIME: 'Chime status has changed to {status}',
-    RELAY_CHANGED: 'A relay at {address}:{channel} has changed to {status}.'
+    RFX: '{sn}:{bat}:{supv}:{loop0}:{loop1}:{loop2}:{loop3}',
+    EXP: '{type}:{address}:{channel}:{value}',
+    AUI: '{value}'
 }
 
 EVENT_TYPES = {
@@ -58,11 +64,13 @@ EVENT_TYPES = {
     ZONE_RESTORE: 'zone restore',
     LOW_BATTERY: 'low battery',
     PANIC: 'panic',
-    RELAY_CHANGED: 'relay changed',
     LRR: 'lrr',
     READY: 'ready changed',
     CHIME: 'chime changed',
-    ALARM_RESTORED: 'alarm restored'
+    ALARM_RESTORED: 'alarm restored',
+    RFX: 'rfx',
+    EXP: 'exp',
+    AUI: 'aui'
 }
 
 EMAIL = 0
@@ -120,10 +128,12 @@ SUBSCRIPTIONS = OrderedDict([
     (POWER_CHANGED, 'Power status has changed'),
     (LOW_BATTERY, 'A low battery has been detected'),
     (BOOT, 'The AlarmDecoder has rebooted'),
-    (RELAY_CHANGED, 'A relay has been changed'),
     (LRR, 'A LRR event was detected'),
     (READY, 'A READY event was detected'),
     (CHIME, 'A CHIME event was detected'),
+    (RFX, 'A RFX event was detected'),
+    (EXP, 'A EXP event was detected'),
+    (AUI, 'A AUI event was detected')
 ])
 
 PUSHOVER_URL = "api.pushover.net:443"

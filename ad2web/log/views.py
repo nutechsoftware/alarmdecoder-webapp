@@ -12,7 +12,7 @@ from ..extensions import db
 from ..decorators import admin_required
 from .constants import ARM, DISARM, POWER_CHANGED, ALARM, FIRE, BYPASS, BOOT, \
                         CONFIG_RECEIVED, ZONE_FAULT, ZONE_RESTORE, LOW_BATTERY, \
-                        PANIC, RELAY_CHANGED, EVENT_TYPES, LRR, READY
+                        PANIC, EVENT_TYPES, LRR, READY, CHIME, RFX, EXP, AUI
 from .models import EventLogEntry
 from ..logwatch import LogWatcher
 from ..utils import INSTANCE_FOLDER_PATH
@@ -38,9 +38,11 @@ def log_context_processor():
         'ZONE_RESTORE': ZONE_RESTORE,
         'LOW_BATTERY': LOW_BATTERY,
         'PANIC': PANIC,
-        'RELAY_CHANGED': RELAY_CHANGED,
         'LRR': LRR,
         'READY': READY,
+        'EXP': EXP,
+        'RFX': RFX,
+        'AUI': AUI,
         'TYPES': EVENT_TYPES
     }
 

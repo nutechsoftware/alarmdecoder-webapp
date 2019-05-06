@@ -85,8 +85,8 @@ from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWI
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
                         CUSTOM_TIMESTAMP, CUSTOM_MESSAGE, CUSTOM_REPLACER_SEARCH, TWIML, ARM, DISARM, ALARM, PANIC, FIRE, MATRIX,
-                        UPNPPUSH, LRR, READY, CHIME, TIME_MULTIPLIER, XML_EVENT_TEMPLATE, XML_EVENT_PROPERTY, RELAY_CHANGED, EVENT_TYPES,
-                        RAW_MESSAGE, EVENTID_MESSAGE, EVENTDESC_MESSAGE, POWER_CHANGED, BOOT, LOW_BATTERY)
+                        UPNPPUSH, LRR, READY, CHIME, TIME_MULTIPLIER, XML_EVENT_TEMPLATE, XML_EVENT_PROPERTY, EVENT_TYPES,
+                        RAW_MESSAGE, EVENTID_MESSAGE, EVENTDESC_MESSAGE, POWER_CHANGED, BOOT, LOW_BATTERY, RFX, EXP, AUI)
 
 from .models import Notification, NotificationSetting, NotificationMessage
 from ..extensions import db
@@ -269,13 +269,32 @@ class NotificationSystem(object):
             else:
                 kwargs['status'] = message
 
-        if type == RELAY_CHANGED:
+        if type == AUI:
             message = kwargs.get('message', None)
+            if hasattr(message, "dict"):
+                message = message.dict()
+                kwargs['value'] = message.get('value')
 
-            if message:
-                kwargs['address'] = message.address
-                kwargs['channel'] = message.channel
-                kwargs['status'] = 'OPEN' if not message.value else 'CLOSED'
+        if type == EXP:
+            message = kwargs.get('message', None)
+            if hasattr(message, "dict"):
+                expmessage = message.dict()
+                kwargs['type'] = "ZONE" if message.type == 0 else "RELAY"
+                kwargs['address'] = expmessage.get('address')
+                kwargs['channel'] = expmessage.get('channel')
+                kwargs['value'] = expmessage.get('value')
+
+        if type == RFX:
+            message = kwargs.get('message', None)
+            if hasattr(message, "dict"):
+                rfxmessage = message.dict()
+                kwargs['sn'] = rfxmessage.get('serial_number')
+                kwargs['bat'] = int(rfxmessage.get('battery'))
+                kwargs['supv'] = int(rfxmessage.get('supervision'))
+                kwargs['loop0'] = int(message.loop[0]) # Not added to dict? Ok
+                kwargs['loop1'] = int(message.loop[1])
+                kwargs['loop2'] = int(message.loop[2])
+                kwargs['loop3'] = int(message.loop[3])
 
         return kwargs
 
@@ -409,9 +428,9 @@ class UPNPPushNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
-        # FIXME ADD additional types EX. RFX, REL, EXP
-        #  Make this user configurable.
-        self._events = [LRR, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, RELAY_CHANGED, BOOT, POWER_CHANGED, LOW_BATTERY]
+        # FIXME Make this user configurable.
+        #
+        self._events = [LRR, RFX, EXP, AUI, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, BOOT, POWER_CHANGED, LOW_BATTERY]
         self.description = 'UPNPPush'
         self.api_token = obj.get_setting('token')
         self.api_endpoint = obj.get_setting('url')
@@ -556,7 +575,7 @@ class MatrixNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
-        self._events = [LRR, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, RELAY_CHANGED, BOOT, ]
+        self._events = [LRR, EXP, AUI, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, BOOT, ]
 
         self.api_endpoint = obj.get_setting('domain')
         self.api_token = obj.get_setting('token')
