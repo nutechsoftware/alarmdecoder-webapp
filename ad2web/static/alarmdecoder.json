@@ -1672,6 +1672,9 @@
                 "panel_armed": {
                     "type": "boolean"
                 },
+                "panel_armed_stay": {
+                    "type": "boolean"
+                },
                 "panel_fire_detected": {
                     "type": "boolean"
                 },
@@ -1688,6 +1691,9 @@
                     "type": "boolean"
                 },
                 "panel_entry_delay_off": {
+                    "type": "boolean"
+                },
+                "panel_exit": {
                     "type": "boolean"
                 },
                 "panel_relay_status": {

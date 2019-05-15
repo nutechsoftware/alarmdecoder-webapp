@@ -498,16 +498,15 @@ class UPNPPushNotification(BaseNotification):
             'panel_alarming': current_app.decoder.device._alarm_status,
             'panel_bypassed': None in current_app.decoder.device._bypass_status,
             'panel_armed': current_app.decoder.device._armed_status,
+            'panel_armed_stay': getattr(current_app.decoder.device, "_armed_stay", False),
             'panel_fire_detected': current_app.decoder.device._fire_status,
             'panel_battery_trouble': current_app.decoder.device._battery_status[0],
             'panel_panicked': current_app.decoder.device._panic_status,
             'panel_chime': getattr(current_app.decoder.device, "_chime_status", False),
             'panel_perimeter_only': getattr(current_app.decoder.device, "_perimeter_only_status", False),
-            'panel_entry_delay_off': getattr(current_app.decoder.device,"_entry_delay_off_status", False),
+            'panel_entry_delay_off': getattr(current_app.decoder.device, "_entry_delay_off_status", False),
+            'panel_exit': getattr(current_app.decoder.device, "_exit", False)
         }
-
-        if hasattr(current_app.decoder.device, '_armed_stay'):
-            ret['panel_armed_stay'] = current_app.decoder.device._armed_stay
 
         # convert to XML
         el = Element("panelstate")
