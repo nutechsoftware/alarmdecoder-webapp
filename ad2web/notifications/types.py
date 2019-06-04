@@ -807,7 +807,7 @@ class TwilioNotification(BaseNotification):
                 raise Exception('Missing Twilio library: twilio - install using pip')
 
             try:
-                client = Client(self.account_sid, self.auth_token)
+                client = TwilioRestClient(self.account_sid, self.auth_token)
                 message = client.messages.create(to=self.number_to, from_=self.number_from, body=self.msg_to_send)
             except TwilioRestException as e:
                 current_app.logger.info('Event Twilio Notification Failed: {0}' . format(e))
@@ -829,7 +829,7 @@ class TwiMLNotification(BaseNotification):
             raise Exception('Missing Twilio library: twilio - install using pip')
 
         try:
-            client = Client(self.account_sid, self.auth_token)
+            client = TwilioRestClient(self.account_sid, self.auth_token)
 
             message_to_send = quote(text)
 
