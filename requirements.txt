@@ -49,6 +49,6 @@ wsgiref>=0.1.2
 netifaces>=0.10.4
 numpy>=1.9.2
 chump>=1.5.1
-twilio>=6.19.0
+twilio>=6.8.2
 gntp>=1.0.2
 miniupnpc==1.9
