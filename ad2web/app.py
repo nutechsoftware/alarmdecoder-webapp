@@ -30,7 +30,8 @@ from .zones import zones
 from .settings.models import Setting
 from .setup.constants import SETUP_COMPLETE, SETUP_STAGE_ENDPOINT, SETUP_ENDPOINT_STAGE
 from .setup import setup
-from .extensions import db, mail, cache, login_manager, oid
+from .extensions import db, mail, login_manager, oid
+from flask_caching import Cache
 from .utils import INSTANCE_FOLDER_PATH
 from .cameras import cameras
 
@@ -198,6 +199,7 @@ def configure_extensions(app):
     mail.init_app(app)
 
     # flask-cache
+    cache = Cache()
     cache.init_app(app)
 
     # flask-babel
