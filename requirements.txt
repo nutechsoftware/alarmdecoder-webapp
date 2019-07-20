@@ -26,7 +26,7 @@ cffi>=0.8.2
 cryptography>=0.4
 distribute>=0.6.24
 docutils>=0.11
-gevent>=1.1b4
+gevent==1.1b4
 gevent-socketio>=0.3.6
 gevent-websocket>=0.9.3
 gitdb>=0.5.4
