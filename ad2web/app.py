@@ -30,10 +30,19 @@ from .zones import zones
 from .settings.models import Setting
 from .setup.constants import SETUP_COMPLETE, SETUP_STAGE_ENDPOINT, SETUP_ENDPOINT_STAGE
 from .setup import setup
-from .extensions import db, mail, cache, login_manager, oid
+from .extensions import db, mail, login_manager, oid
 from .utils import INSTANCE_FOLDER_PATH
 from .cameras import cameras
 
+# Load older cache extension if new caching  module is not available.
+# Flash Cache is EOL and is being replaced with caching
+try:
+    ## New
+    from flask_caching import Cache
+except ImportError:
+    ## Old remove 2022?
+    from flask_cache import Cache
+cache = Cache()
 
 # For import *
 __all__ = ['create_app']

@@ -19,6 +19,11 @@ BASE_DIR = os.path.join(os.path.dirname(__file__))
 if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 
+# Add /opt/alarmdecoder to the module search path.
+# so we can maintain using git and the web interface
+# this folder needs to be writable by the app.
+sys.path.insert(0,"/opt/alarmdecoder")
+
 # give wsgi the "application"
 
 from ad2web import create_app, init_app

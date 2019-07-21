@@ -224,7 +224,7 @@ def alarmdecoder_send():
 
     current_app.decoder.device.send(keys)
 
-    return jsonify(), NO_CONTENT
+    return "", NO_CONTENT
 
 @api.route('/alarmdecoder/event', methods=['SUBSCRIBE','UNSUBSCRIBE'])
 @crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
@@ -285,7 +285,7 @@ def alarmdecoder_reboot():
 
     current_app.decoder.device.reboot()
 
-    return jsonify(), NO_CONTENT
+    return "", NO_CONTENT
 
 def _build_alarmdecoder_configuration_data(device, short=False):
     if not device:
@@ -465,7 +465,7 @@ def zones_by_id(id):
         db.session.delete(zone)
         db.session.commit()
 
-        return jsonify(), NO_CONTENT
+        return "", NO_CONTENT
 
 @api.route('/zones/<int:id>/fault', methods=['POST'])
 @crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
@@ -481,7 +481,7 @@ def zones_fault(id):
     # TODO: Make a note in docs.. only supported for emulated zones.
     current_app.decoder.device.send("L{0}1\r".format(id))
 
-    return jsonify(), NO_CONTENT
+    return "", NO_CONTENT
 
 @api.route('/zones/<int:id>/restore', methods=['POST'])
 @crossdomain(origin="*", headers=['Content-type', 'api_key', 'Authorization'])
@@ -497,7 +497,7 @@ def zones_restore(id):
     # TODO: Make a note in docs.. only supported for emulated zones.
     current_app.decoder.device.send("L{0}0\r".format(id))
 
-    return jsonify(), NO_CONTENT
+    return "", NO_CONTENT
 
 ##### Notification routes
 def _build_notification_data(notification, short=False):
@@ -659,7 +659,7 @@ def notifications_by_id(id):
         db.session.delete(notification)
         db.session.commit()
 
-        return jsonify(), NO_CONTENT
+        return "", NO_CONTENT
 
 ##### Camera routes
 def _build_camera_data(camera, short=False):
@@ -775,7 +775,7 @@ def cameras_by_id(id):
         db.session.delete(camera)
         db.session.commit()
 
-        return jsonify(), NO_CONTENT
+        return "", NO_CONTENT
 
 ##### User routes
 def _build_user_data(user, short=False):
@@ -919,7 +919,7 @@ def users_by_id(id):
         db.session.delete(user)
         db.session.commit()
 
-        return jsonify(), NO_CONTENT
+        return "", NO_CONTENT
 
 ##### System routes
 @api.route('/system', methods=['GET'])
