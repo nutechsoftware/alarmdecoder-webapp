@@ -191,8 +191,34 @@ systemctl --user enable gunicorn
 ```
 * Enable log rotate for webapp and gunicorn
 ```
-echo -e '/opt/alarmdecoder-webapp/instance/logs/*.log {\nweekly\nmissingok\nrotate 5\ncompress\ndelaycompress\nnotifempty\ncreate 0640 pi pi\nsharedscripts\n\ }' > /etc/logrotate.d/alarmdecoder
-sudo echo -e '/var/log/gunicorn/*.log {\nweekly\nmissingok\nrotate 5\ncompress\ndelaycompress\nnotifempty\ncreate 0640 www-data www-data\nsharedscripts\npostrotate\n[ -s /run/gunicorn/alarmdecoder.pid ] && kill -USR1 `cat /run/gunicorn/alarmdecoder.pid`\nendscript\n}' | sudo tee /etc/logrotate.d/gunicorn > /dev/null
+cat <<EOF | sudo tee /etc/logrotate.d/alarmdecoder > /dev/null
+/opt/alarmdecoder-webapp/instance/logs/*.log {
+  weekly
+  missingok
+  rotate 5
+  compress
+  delaycompress
+  notifempty
+  create 0640 pi pi
+  sharedscripts
+}
+EOF
+
+cat <<'EOF' | sudo tee /etc/logrotate.d/gunicorn > /dev/null
+/var/log/gunicorn/*.log {
+  weekly
+  missingok
+  rotate 5
+  compress
+  delaycompress
+  notifempty
+  create 0640 www-data www-data
+  sharedscripts
+  postrotate
+    [ -s /run/gunicorn/alarmdecoder.pid ] && kill -USR1 `cat /run/gunicorn/alarmdecoder.pid`
+  endscript
+}
+EOF
 ```
 * Create gunicorn app config directory and add our app configuration
 ```
