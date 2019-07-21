@@ -39,10 +39,10 @@ from .cameras import cameras
 try:
     ## New
     from flask_caching import Cache
-    cache = Cache()
 except ImportError:
     ## Old remove 2022?
-    from .extensions import cache
+    from flask_cache import Cache
+cache = Cache()
 
 # For import *
 __all__ = ['create_app']

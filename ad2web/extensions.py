@@ -11,10 +11,10 @@ mail = Mail()
 try:
     ## New
     from flask_caching import Cache
-    cache = Cache()
 except ImportError:
     ## Old remove 2022?
-    from .extensions import cache
+    from flask_cache import Cache
+cache = Cache()
 
 from flask_login import LoginManager
 login_manager = LoginManager()
