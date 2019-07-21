@@ -119,10 +119,6 @@ sudo pip install --upgrade pip
 ```
 sudo pip install --upgrade setuptools
 ```
-* Remove old version 1.7.1 of python-cryptography and install a new version using pip.
-```
-sudo pip uninstall python-cryptography && pip install python-cryptography
-```
 * Create needed directories and set permissions for updates
 ```
 sudo mkdir -p /opt/alarmdecoder /opt/alarmdecoder-webapp && sudo chown pi:pi /opt/alarmdecoder /opt/alarmdecoder-webapp
