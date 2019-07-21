@@ -165,8 +165,26 @@ sudo rm -r /var/www/html/
 ```
 * Enable gunicorn service and tuning for Alarmdecoder webapp
 ```
-echo -e '[Unit]\nDescription=gunicorn daemon\nAfter=network.target\n\n[Service]\nPIDFile=/run/gunicorn/pid\nUser=pi\nGroup=dialout\nWorkingDirectory=/opt/alarmdecoder-webapp\nExecStart=/usr/bin/gunicorn --worker-class=socketio.sgunicorn.GeventSocketIOWorker --timeout=120 --env=POLICY_SERVER=0 --log-level=debug wsgi:application\nExecReload=/bin/kill -s HUP $MAINPID\nExecStop=/bin/kill -s TERM $MAINPID\nPrivateTmp=true\n\n[Install]\nWantedBy=multi-user.target\n' | sudo tee /etc/systemd/user/gunicorn.service > /dev/null
+cat <<EOF | sudo tee /etc/systemd/user/gunicorn.service > /dev/null
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+PIDFile=/run/gunicorn/pid
+User=pi
+Group=dialout
+WorkingDirectory=/opt/alarmdecoder-webapp
+ExecStart=/usr/bin/gunicorn --worker-class=socketio.sgunicorn.GeventSocketIOWorker --timeout=120 --env=POLICY_SERVER=0 --log-level=debug wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
 ```
+
 * Enable gunicorn server and set to start at boot
 ```
 sudo ln -s /etc/systemd/user/gunicorn.service /etc/systemd/system/multi-user.target.wants/gunicorn.service
