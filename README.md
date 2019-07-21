@@ -184,11 +184,10 @@ PrivateTmp=true
 WantedBy=multi-user.target
 EOF
 ```
-
 * Enable gunicorn server and set to start at boot
 ```
-sudo ln -s /etc/systemd/user/gunicorn.service /etc/systemd/system/multi-user.target.wants/gunicorn.service
-sudo ln -s /etc/systemd/user/gunicorn.service /etc/systemd/system/gunicorn.service
+sudo systemctl daemon-reload
+systemctl --user enable gunicorn
 ```
 * Enable log rotate for webapp and gunicorn
 ```
