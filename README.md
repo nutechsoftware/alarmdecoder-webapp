@@ -193,6 +193,10 @@ sudo rm /etc/nginx/sites-enabled/default
 sudo cp /opt/alarmdecoder-webapp/contrib/nginx/alarmdecoder /etc/nginx/sites-available/
 sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
 ```
+* Enable `nginx` service
+```
+sudo systemctl enable nginx
+```
 * Init the AD2Web database as pi user
 ```
 cd /opt/alarmdecoder-webapp/ && python manage.py initdb
