@@ -119,10 +119,6 @@ sudo pip install --upgrade pip
 ```
 sudo pip install --upgrade setuptools
 ```
-* Remove old version 1.7.1 of python-cryptography and install a new version using pip.
-```
-sudo pip uninstall python-cryptography && pip install python-cryptography
-```
 * Create needed directories and set permissions for updates
 ```
 sudo mkdir -p /opt/alarmdecoder /opt/alarmdecoder-webapp && sudo chown pi:pi /opt/alarmdecoder /opt/alarmdecoder-webapp
@@ -165,7 +161,22 @@ sudo update-rc.d ser2sock defaults
 ```  
 * Enable the avahi service
 ```
-echo -e '<?xml version="1.0" standalone="no"?>\n<!DOCTYPE service-group SYSTEM "avahi-service.dtd">\n<service-group>\n\t<name replace-wildcards="yes">%h</name>\n\t<service>\n\t\t<type>_device-info._tcp</type>\n\t\t<port>0</port>\n\t\t<txt-record>model=AlarmDecoder</txt-record>\n\t</service>\n\t<service>\n\t\t<type>_ssh._tcp</type>\n\t\t<port>22</port>\n\t</service>\n</service-group>' | sudo tee /etc/avahi/services/alarmdecoder.service > /dev/null
+cat <<EOF | sudo tee /etc/avahi/services/alarmdecoder.service
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+        <name replace-wildcards="yes">%h</name>
+        <service>
+                <type>_device-info._tcp</type>
+                <port>0</port>
+                <txt-record>model=AlarmDecoder</txt-record>
+        </service>
+        <service>
+                <type>_ssh._tcp</type>
+                <port>22</port>
+        </service>
+</service-group>
+EOF
 ```
 * Create nginx ssl folder
 ```
