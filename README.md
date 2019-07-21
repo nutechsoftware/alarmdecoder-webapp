@@ -82,7 +82,34 @@ sudo apt-get update
 ```
 * Install packages
 ```
-sudo apt-get install build-essential autoconf automake cmake cmake-data cmake libffi-dev libssl-dev libpcre3-dev libssl-dev libpcre++-dev zlib1g-dev libcurl4-openssl-dev python2.7-dev python-dev sqlite3 screen sendmail minicom telnet vim nginx gunicorn git python-pip miniupnpc python-virtualenv python-opencv python-httplib2
+sudo apt-get install \
+  autoconf \
+  automake \
+  build-essential \
+  cmake \
+  cmake-data \
+  git \
+  gunicorn \
+  libcurl4-openssl-dev \
+  libffi-dev \
+  libpcre3-dev \
+  libpcre++-dev \
+  libssl-dev \
+  minicom \
+  miniupnpc \
+  nginx \
+  python2.7-dev \
+  python-dev \
+  python-httplib2 \
+  python-opencv \
+  python-pip \
+  python-virtualenv \
+  screen \
+  sendmail \
+  sqlite3 \
+  telnet \
+  vim \
+  zlib1g-dev
 ```
 * Update pip
 ```
