@@ -180,7 +180,12 @@ sudo cp /opt/alarmdecoder-webapp/contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d
 ```
 * Generate an ssl certificate for the webapp
 ```
-sudo openssl req -x509 -nodes -sha256 -days 3650 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt -subj '/CN=AlarmDecoder.local/O=AlarmDecoder.com/C=US'
+sudo mkdir -p /etc/nginx/ssl
+sudo openssl req \
+  -x509 -nodes -sha256 -days 3650 -newkey rsa:4096 \
+  -keyout /etc/nginx/ssl/alarmdecoder.key \
+  -out /etc/nginx/ssl/alarmdecoder.crt \
+  -subj '/CN=AlarmDecoder.local/O=AlarmDecoder.com/C=US'
 ```
 * Remove the default site and add the alarmdecoder nginx site configuration and enable it
 ```
