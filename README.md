@@ -165,7 +165,7 @@ sudo rm -r /var/www/html/
 ```
 * Enable gunicorn service and tuning for Alarmdecoder webapp
 ```
-cat <<EOF | sudo tee /etc/systemd/user/gunicorn.service > /dev/null
+cat <<EOF | sudo tee /etc/systemd/system/gunicorn.service > /dev/null
 [Unit]
 Description=gunicorn daemon
 After=network.target
@@ -187,7 +187,7 @@ EOF
 * Enable gunicorn server and set to start at boot
 ```
 sudo systemctl daemon-reload
-systemctl --user enable gunicorn
+sudo systemctl enable gunicorn
 ```
 * Enable log rotate for webapp and gunicorn
 ```
