@@ -169,7 +169,6 @@ sudo cp /opt/alarmdecoder-webapp/contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d
 ```
 * Generate an ssl certificate for the webapp
 ```
-sudo mkdir -p /etc/nginx/ssl
 sudo openssl req \
   -x509 -nodes -sha256 -days 3650 -newkey rsa:4096 \
   -keyout /etc/nginx/ssl/alarmdecoder.key \
