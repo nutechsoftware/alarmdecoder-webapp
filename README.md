@@ -207,17 +207,21 @@ sudo cp /opt/alarmdecoder-webapp/contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d
 ```
 * Generate an ssl certificate for the webapp
 ```
-sudo openssl req -x509 -nodes -sha256 -days 3650 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt -subj '/CN=AlarmDecoder.local/O=AlarmDecoder.com/C=US'
-```
-* Add nginx service configuration for the webapp
-```
-sudo cp /opt/alarmdecoder-webapp/contrib/nginx/nginx.service /lib/systemd/system/nginx.service
+sudo openssl req \
+  -x509 -nodes -sha256 -days 3650 -newkey rsa:4096 \
+  -keyout /etc/nginx/ssl/alarmdecoder.key \
+  -out /etc/nginx/ssl/alarmdecoder.crt \
+  -subj '/CN=AlarmDecoder.local/O=AlarmDecoder.com/C=US'
 ```
 * Remove the default site and add the alarmdecoder nginx site configuration and enable it
 ```
 sudo rm /etc/nginx/sites-enabled/default
 sudo cp /opt/alarmdecoder-webapp/contrib/nginx/alarmdecoder /etc/nginx/sites-available/
 sudo ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
+```
+* Enable `nginx` service
+```
+sudo systemctl enable nginx
 ```
 * Init the AD2Web database as pi user
 ```
