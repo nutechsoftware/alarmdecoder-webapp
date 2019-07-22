@@ -188,17 +188,60 @@ sudo rm -r /var/www/html/
 ```
 * Enable gunicorn service and tuning for Alarmdecoder webapp
 ```
-echo -e '[Unit]\nDescription=gunicorn daemon\nAfter=network.target\n\n[Service]\nPIDFile=/run/gunicorn/pid\nUser=pi\nGroup=dialout\nWorkingDirectory=/opt/alarmdecoder-webapp\nExecStart=/usr/bin/gunicorn --worker-class=socketio.sgunicorn.GeventSocketIOWorker --timeout=120 --env=POLICY_SERVER=0 --log-level=debug wsgi:application\nExecReload=/bin/kill -s HUP $MAINPID\nExecStop=/bin/kill -s TERM $MAINPID\nPrivateTmp=true\n\n[Install]\nWantedBy=multi-user.target\n' | sudo tee /etc/systemd/user/gunicorn.service > /dev/null
+cat <<EOF | sudo tee /etc/systemd/system/gunicorn.service > /dev/null
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+PIDFile=/run/gunicorn/pid
+User=pi
+Group=dialout
+WorkingDirectory=/opt/alarmdecoder-webapp
+ExecStart=/usr/bin/gunicorn --worker-class=socketio.sgunicorn.GeventSocketIOWorker --timeout=120 --env=POLICY_SERVER=0 --log-level=debug wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
 ```
 * Enable gunicorn server and set to start at boot
 ```
-sudo ln -s /etc/systemd/user/gunicorn.service /etc/systemd/system/multi-user.target.wants/gunicorn.service
-sudo ln -s /etc/systemd/user/gunicorn.service /etc/systemd/system/gunicorn.service
+sudo systemctl daemon-reload
+sudo systemctl enable gunicorn
 ```
 * Enable log rotate for webapp and gunicorn
 ```
-echo -e '/opt/alarmdecoder-webapp/instance/logs/*.log {\nweekly\nmissingok\nrotate 5\ncompress\ndelaycompress\nnotifempty\ncreate 0640 pi pi\nsharedscripts\n\ }' > /etc/logrotate.d/alarmdecoder
-sudo echo -e '/var/log/gunicorn/*.log {\nweekly\nmissingok\nrotate 5\ncompress\ndelaycompress\nnotifempty\ncreate 0640 www-data www-data\nsharedscripts\npostrotate\n[ -s /run/gunicorn/alarmdecoder.pid ] && kill -USR1 `cat /run/gunicorn/alarmdecoder.pid`\nendscript\n}' | sudo tee /etc/logrotate.d/gunicorn > /dev/null
+cat <<EOF | sudo tee /etc/logrotate.d/alarmdecoder > /dev/null
+/opt/alarmdecoder-webapp/instance/logs/*.log {
+  weekly
+  missingok
+  rotate 5
+  compress
+  delaycompress
+  notifempty
+  create 0640 pi pi
+  sharedscripts
+}
+EOF
+
+cat <<'EOF' | sudo tee /etc/logrotate.d/gunicorn > /dev/null
+/var/log/gunicorn/*.log {
+  weekly
+  missingok
+  rotate 5
+  compress
+  delaycompress
+  notifempty
+  create 0640 www-data www-data
+  sharedscripts
+  postrotate
+    [ -s /run/gunicorn/alarmdecoder.pid ] && kill -USR1 `cat /run/gunicorn/alarmdecoder.pid`
+  endscript
+}
+EOF
 ```
 * Create gunicorn app config directory and add our app configuration
 ```
