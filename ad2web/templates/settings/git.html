@@ -16,7 +16,8 @@
     <div style="color: red;">WARNING: This will replace all current code - you must restart after changing.</div>
     <br>
     <div>
-        <h4>Current Branch: {{current_branch}}</h4>
+        <h4>Current alarmdecoder-webapp origin/branch: {{current_remote_web}}/{{current_branch_web}}</h4>
+        <h4>Current alarmdecoder-api origin/branch: {{current_remote_api}}/{{current_branch_api}}</h4>
     </div>
     <div>
         {{ render_form(url_for('settings.switch_branch'), form) }}

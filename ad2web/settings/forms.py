@@ -99,8 +99,10 @@ class EthernetConfigureForm(Form):
     cancel = ButtonField(u'Cancel', onclick="location.href='/settings/host'")
 
 class SwitchBranchForm(Form):
-    remotes = SelectField(u'Remote', choices=[('origin', u'origin')], default='origin', coerce=str)
-    branches = SelectField(u'Branch', choices=[('master', u'master'), ('dev', u'dev')], default='master', coerce=str)
+    remotes_web = SelectField(u'Origin alarmdecoder-webapp', coerce=str)
+    branches_web = SelectField(u'Branch', coerce=str)
+    remotes_api = SelectField(u'Origin alarmdecoder api', coerce=str)
+    branches_api = SelectField(u'Branch', coerce=str)
     submit = SubmitField(u'Checkout')
 
 class EmailConfigureForm(Form):

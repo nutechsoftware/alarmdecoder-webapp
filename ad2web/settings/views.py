@@ -547,74 +547,180 @@ def export():
 @login_required
 @admin_required
 def switch_branch():
-    form = SwitchBranchForm()
-    cwd = os.getcwd()
 
-    current_branch = None
+    # Helper(s)
+    def build_remotes_list(dlist):
+        ## Map reduce remote lines group on origin, first(url), accumulate(types)
+        ##  original
+        ##   origin	https://github.com/nutechsoftware/alarmdecoder.git (fetch)
+        ##   origin	https://github.com/nutechsoftware/alarmdecoder.git (push)
+        ##   testing https://github.com/nutechsoftware/alarmdecoder-webapp.git (fetch)
+        ##   testing https://github.com/nutechsoftware/alarmdecoder-webapp.git (push)
+        ##  result
+        ##   origin https://github.com/nutechsoftware/alarmdecoder-webapp.git (fetch, push)
+        ##   testing https://github.com/nutechsoftware/alarmdecoder-webapp.git (fetch, push)
+        rlist = []
+        temp_remote_dict = {}
+        rtypes = []
+        lastkey = None
+        for i in dlist:
+            # split our line
+            rlsplit = dlist[i].split()
+            # Group on key
+            key = rlsplit[0]
+            if key != lastkey:
+                rtypes = []
+            lastkey = key
+
+            # get the url
+            url = rlsplit[1]
+
+            # get the type strip ()
+            type = rlsplit[2].strip("()")
+
+            # accumulate types
+            if type not in rtypes:
+                rtypes.append(type)
+
+            # keep replaceing the same key as we find more types. Not fast but it works.
+            rtypes.sort()
+            temp_remote_dict[key] = url + " (" + ", ".join(rtypes) + ")"
+
+        return [(k,"%s - %s" % (k,v)) for k,v in temp_remote_dict.items()]
+
+    # First gather data about the api and webapp git state
+    #
+    current_branch_web = None
+    current_branch_api = None
+    current_remote_web = None
+    current_remote_api = None
+
+    # get our cwd where the alarmdecoder-webapp exists.
+    cwd_web = os.getcwd()
+    # we require the alarmdecoder api folder we manage to be next to us in ../
+    cwd_api = os.path.normpath(os.path.join(os.getcwd(), '..'+os.path.sep+'alarmdecoder'))
+
+    # grab the current branch and remote for the api and webapp
     try:
-        git = sh.git.bake(_cwd=cwd)
-        status = str(git.status())
-        current_branch = git('rev-parse', '--abbrev-ref', 'HEAD')
+        git_web = sh.git.bake(_cwd=cwd_web, c='color.status=false')
+        git_api = sh.git.bake(_cwd=cwd_api, c='color.status=false')
+
+        # Ex. '## dev...origin/dev\nfoo\nbar\n'
+        status_web = str(git_web.status("-sb"))
+        status_web_split = status_web.splitlines()[0].split('...')
+        current_branch_web = status_web_split[0][3:]
+        current_remote_web = status_web_split[1].split("/")[0]
+
+        # Ex. '## dev...origin/dev\nfoo\nbar\n'
+        status_api = str(git_api.status("-sb"))
+        status_api_split = status_api.splitlines()[0].split('...')
+        current_branch_api = status_api_split[0][3:]
+        current_remote_api = status_api_split[1].split("/")[0]
+
     except sh.ErrorReturnCode_1:
         flash('Unable to access git command!', 'error')
         return redirect(url_for('settings.index'))
 
     #list all local branches
     try:
-        branches = git.branch("-l")
+        branches_web = git_web.branch("-l", "--no-color")
+        branches_api = git_api.branch("-l", "--no-color")
     except sh.ErrorReturnCode_1:
         flash('Error getting list of local branches!', 'error')
         return redirect(url_for('settings.index'))
 
-    branch_list = {}
-    remote_list = {}
+    branch_list_web = {}
+    remote_list_web = {}
+    branch_list_api = {}
+    remote_list_api = {}
     err = None
-    checked_out = True
+    checked_out_web = True
+    checked_out_api = True
     #store the sh.RunningCommand output in a dictionary, replace all special characters from git bash output
-    for line in branches:
+    for line in branches_web:
         line = line.replace("*", "")
-        line = line.replace("\x1b[32m", "")
-        line = line.replace("\x1b[m", "")
-        line = line.replace("\n", "")
-        line = line.replace(" ", "")
-        line = line.replace("\x1b[31m", "")
-        branch_list[line] = line
+        branch_list_web[line] = line.strip()
 
+    for line in branches_api:
+        line = line.replace("*", "")
+        branch_list_api[line] = line.strip()
 
     try:
-        remotes = git.remote()
-        for line in remotes:
-            remote_list[line] = line.replace("\n", "")
+        #
+        # origin	https://github.com/nutechsoftware/alarmdecoder.git (fetch)
+        remotes_web = git_web.remote('-v')
+        for line in remotes_web:
+            remote_list_web[line] = line.strip()
+        remotes_api = git_api.remote('-v')
+        for line in remotes_api:
+            remote_list_api[line] = line.strip()
     except sh.ErrorReturnCode_1:
         flash('Error getting list of git remotes!', 'error')
         return redirect(url_for('settings.index'))
 
-    #assign all branches to the dropdown
-    form.branches.choices = [(branch_list[i], branch_list[i]) for i in branch_list]
-    form.remotes.choices = [(remote_list[i], remote_list[i]) for i in remote_list]
+    # If the form was submitted then process changes
+    #
+    form = SwitchBranchForm()
+    # Show the current state fill form with live data and set defaults to current values.
+    # add dynamic list of branches and remotes to the SelectField objects in the form.
+    form.branches_web.choices = [(branch_list_web[i], branch_list_web[i]) for i in branch_list_web]
+    form.remotes_web.choices = build_remotes_list(remote_list_web)
 
-    use_ssl = Setting.get_by_name('use_ssl', default=False).value
+    form.branches_api.choices = [(branch_list_api[i], branch_list_api[i]) for i in branch_list_api]
+    form.remotes_api.choices = build_remotes_list(remote_list_api)
 
     if form.validate_on_submit():
-        branch = form.branches.data
-        remote = form.remotes.data
+        branch_web = form.branches_web.data
+        remote_web = form.remotes_web.data
+        branch_api = form.branches_api.data
+        remote_api = form.remotes_api.data
 
-        try:
-            git.checkout(branch)
-        except sh.ErrorReturnCode_1:
-            err = "You may have local changes - commit or stash them before you can switch branches."
-            flash('Error switching branches! ' + err, 'error')
-            checked_out = False
-
-        if checked_out:
+        # Attempt to switch branches/remotes if they differ from current
+        if branch_web != current_branch_web or remote_web != current_remote_web:
             try:
-                git.pull(remote, branch)
+                git_web.checkout(branch_web)
             except sh.ErrorReturnCode_1:
-                flash('Error pulling code from remote: ' + remote + ' branch: ' + branch, 'error')
+                err = "You may have local changes in '%s' - commit or stash them before you can switch branches." % cwd_web
+                flash('Error switching branches for the AlarmDecoder-webapp! ' + err, 'error')
+                checked_out_web = False
 
+            if checked_out_web:
+                try:
+                    git_web.pull(remote_web, branch_web)
+                except sh.ErrorReturnCode_1:
+                    flash('Error pulling code from remote: ' + remote_web + ' branch: ' + branch_web, 'error')
+
+        # Attempt to switch branches/remotes if they differ from current
+        if branch_api != current_branch_api or remote_api != current_remote_api:
+            try:
+                git_api.checkout(branch_api)
+            except sh.ErrorReturnCode_1:
+                err = "You may have local changes in '%s' - commit or stash them before you can switch branches." % cwd_api
+                flash('Error switching branches for the AlarmDecoder API! ' + err, 'error')
+                checked_out_api = False
+
+            if checked_out_api:
+                try:
+                    git_api.pull(remote_api, branch_api)
+                except sh.ErrorReturnCode_1:
+                    flash('Error pulling code from remote: ' + remote_api + ' branch: ' + branch_api, 'error')
+
+        # Send back to the page where it will reload the current state
+        # and show the results of the changes.
         return redirect(url_for('settings.switch_branch'))
 
-    return render_template('settings/git.html', form=form, ssl=use_ssl, current_branch=current_branch)
+    form.branches_web.default = current_branch_web
+    form.branches_api.default = current_branch_api
+    form.remotes_web.default = current_remote_web
+    form.remotes_api.default = current_remote_api
+    form.process()
+
+    return render_template('settings/git.html',
+                            form=form,
+                            current_branch_web=current_branch_web,
+                            current_branch_api=current_branch_api,
+                            current_remote_web=current_remote_web,
+                            current_remote_api=current_remote_api)
 
 @settings.route('/import', methods=['GET', 'POST'], endpoint='import')
 @login_required
