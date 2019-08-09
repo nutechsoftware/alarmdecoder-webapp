@@ -3,17 +3,15 @@
 {% extends 'settings/layout.html' %}
 
 {% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-confirm.min.css') }}">
 {% endblock %}
 
 {% block pagejs %}
-<script type="text/javascript">
-</script>
+{% include 'js/settings/git.js' %}
 {% endblock %}
 {% block body %}
 <div class="settings_wrapper">
     <h3>Switch Code Branch</h3>
-
-    <div style="color: red;">WARNING: This will replace all current code - you must restart after changing.</div>
     <br>
     <div>
         <h4>Current alarmdecoder-webapp origin/branch: {{current_remote_web}}/{{current_branch_web}}</h4>
@@ -22,9 +20,19 @@
     <div>
         {{ render_form(url_for('settings.switch_branch'), form) }}
     </div>
+    <div style="color: red;">WARNING: This will replace all current code - you must restart after changing.</div>
+    <div style="float: left;">
+        <span id="app_running"><span style="color:green">&#10004;</span> Application is running.</span>
+    </div>
+    <br>
+    <div id="restart">
+        <button type="button" name="restartbutton" id="restartbutton" class="btn btn-primary">Restart</button>
+    </div>
 </div>
 {% endblock %}
 
 {% block js_btm %}
+<script src="{{ url_for('static', filename='js/vendor/spin.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery.spin.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor/jquery-confirm.min.js') }}"></script>
 {% endblock %}
-
