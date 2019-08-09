@@ -16,10 +16,17 @@ import sys
 import base64
 import uuid
 import traceback
-
+import functools
 from alarmdecoder import AlarmDecoder
 from alarmdecoder.panels import ADEMCO, DSC, PANEL_TYPES
 from alarmdecoder.zonetracking import Zone as ADZone
+
+try:
+    from concurrent.futures import ThreadPoolExecutor
+    from concurrent.futures import as_completed
+    have_threadpoolexecutor = True
+except ImportError:
+    have_threadpoolexecutor = False
 
 try:
     from chump import Application
@@ -54,7 +61,7 @@ from xml.etree.ElementTree import Comment
 from xml.etree.ElementTree import tostring
 import ast
 
-#https connection support - used for nma and prowl, also future POST to custom url
+#https connection support - used for prowl, Matrix, custom post notifiation, etc.
 try:
     from http.client import HTTPSConnection
 except ImportError:
@@ -79,8 +86,7 @@ try:
 except ImportError:
     have_gntp = False
 
-from .constants import (EMAIL, GOOGLETALK, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, NMA, NMA_URL, NMA_PATH, NMA_EVENT, NMA_METHOD,
-                        NMA_CONTENT_TYPE, NMA_HEADER_CONTENT_TYPE, NMA_USER_AGENT, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
+from .constants import (EMAIL, DEFAULT_EVENT_MESSAGES, PUSHOVER, TWILIO, PROWL, PROWL_URL, PROWL_PATH, PROWL_EVENT, PROWL_METHOD,
                         PROWL_CONTENT_TYPE, PROWL_HEADER_CONTENT_TYPE, PROWL_USER_AGENT, GROWL_APP_NAME, GROWL_DEFAULT_NOTIFICATIONS,
                         GROWL_PRIORITIES, GROWL, CUSTOM, URLENCODE, JSON, XML, CUSTOM_CONTENT_TYPES, CUSTOM_USER_AGENT, CUSTOM_METHOD,
                         ZONE_FAULT, ZONE_RESTORE, BYPASS, CUSTOM_METHOD_GET, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE,
@@ -94,23 +100,91 @@ from ..log.models import EventLogEntry
 from ..zones import Zone
 from ..utils import user_is_authenticated
 from .util import check_time_restriction
+from ..settings import Setting
+
+'''
+Decorator for better logging of notification task exceptions.
+'''
+def raise_with_stack(func):
+
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            tb = traceback.format_exc(e).splitlines()
+            # Grab error and line number
+            raise StandardError("%s %s" % (repr(e), tb[3].split(",")[1].strip()))
+
+    return wrapped
+
+'''
+ Decorator for adding functions to a green thread pooling. This is more
+ efficient for tasks that have a large amount of IO wait time such as
+ sending an email.
+
+ You can access local self values but avoid looking at any alarm states
+ inside of the AD as they will changed since the time the thread was created.
+
+ To use for example in SomeNotification.send() create a sub function that
+ receives this Decorator. Then inside of send() gather the current alarm state
+ and then pass it to the sub function _send() that has this Decorator.
+'''
+def threaded(func):
+    def wrapper(*args, **kwargs):
+        fcname = "%s.%s()" % (args[0].__class__.__name__, func.__name__)
+
+        # If we have it use it.
+        if have_threadpoolexecutor:
+            notifier = current_app.decoder._notifier_system
+
+            # pass in current app as var. Better way?
+            myapp = current_app._get_current_object()
+            future = notifier._tpool.submit(func, *args, app=myapp, **kwargs)
+            future.fcname = fcname
+
+            with notifier._lock:
+                notifier._futures.append(future)
+
+            myapp.logger.info('Background notification function {0} starting.'.format(future.fcname))
+
+        else:
+            # No threading so block and run it synchronously.
+            return func(*args, **kwargs)
+
+        return
+    return wrapper
+
 
 class NotificationSystem(object):
     def __init__(self):
         self._notifiers = {}
         self._messages = DEFAULT_EVENT_MESSAGES
         self._wait_list = []
-
+        self._tpool = None
+        self._lock = threading.Lock()
+        self._futures = []
         self._init_notifiers()
 
         '''
         subscribers to UPNPPushNotification
-
-        FIXME: Is this the best place to keep this?
-        I need a static class that is accessable from
-        the UPNPPushNotification and the rest api classes.
         '''
         self._subscribers = {}
+
+        '''
+        if we have ThreadPoolExecutor and workers > 0 then init ThreadPoolExecutor
+        '''
+        if have_threadpoolexecutor:
+            current_app.logger.info('Library concurrent.futures.ThreadPoolExecutor found and loaded.')
+            # enabled by default with 5 threads.
+            workers = Setting.get_by_name('max_notification_workers',default=5).value
+            if workers:
+                current_app.logger.info('ThreadPoolExecutor enabled for notifications with max_workders {0}.'.format(workers))
+                self._tpool = ThreadPoolExecutor(max_workers=workers)
+            else:
+                current_app.logger.info('ThreadPoolExecutor for notifications disabled.')
+        else:
+            current_app.logger.info('Library concurrent.futures.ThreadPoolExecutor not found. Use "sudo apt-get install python-concurrent.futures" to enable Threaded notifications.')
 
     def send(self, type, **kwargs):
         errors = []
@@ -138,7 +212,7 @@ class NotificationSystem(object):
                             n.send(type, message, rawmessage)
 
                 except Exception, err:
-                    errors.append('Error sending notification for {0}: line: {1} {2}'.format(n.description, sys.exc_info()[-1].tb_lineno, str(err)))
+                    errors.append('Exception in notification {0}.send(): {1}'.format(n.__class__.__name__,str(err)))
 
         return errors
 
@@ -165,10 +239,6 @@ class NotificationSystem(object):
 
     def add_subscriber(self, host, callback, timeout):
         """
-        FIXME: Is this the best place to keep this?
-        I need a static class that is accessable from
-        the UPNPPushNotification and the rest api classes.
-
         Add subscriber callback to our dictionary
 
         ---- example subscriber request headers ----
@@ -211,7 +281,6 @@ class NotificationSystem(object):
         """
         find the subscriber and remove it.
 
-        FIXME: Is this the best place to keep this?
         Remove subscriber if found our our dictionary
         """
         found = self._subscribers.pop(subuudi, None)
@@ -358,7 +427,37 @@ class NotificationThread(threading.Thread):
     def run(self):
         self._running = True
 
+        notifier = self._decoder._notifier_system
         while self._running:
+            # This could be moved down to reduce lock time.
+            # Easy button for now is keep it at the top level of this code.
+            with notifier._lock:
+                ncount = len(notifier._futures)
+                if ncount > 0:
+                    with self._decoder.app.app_context():
+                        current_app.logger.info('Background notification functions running {0}.'.format(ncount))
+
+                    remove = []
+                    data = ""
+                    for i in range(ncount):
+                        f = notifier._futures[i]
+                        if f.done():
+                            extra_msg = ""
+                            try:
+                                date = f.result()
+                            except Exception as exc:
+                                extra_msg = exc
+                            else:
+                                extra_msg = 'no exceptions'
+
+                            with self._decoder.app.app_context():
+                                current_app.logger.info('Background notification function {0} finished with {1}.'.format(f.fcname, extra_msg))
+
+                            remove.append(f);
+
+                    for f in remove:
+                        notifier._futures.remove(f)
+
             with self._decoder.app.app_context():
                 errors = self._decoder._notifier_system.process_wait_list()
                 for e in errors:
@@ -428,6 +527,7 @@ class UPNPPushNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
+        self.notification_description = obj.description
         # FIXME Make this user configurable.
         #
         self._events = [LRR, RFX, EXP, AUI, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, BOOT, POWER_CHANGED, LOW_BATTERY]
@@ -438,34 +538,27 @@ class UPNPPushNotification(BaseNotification):
     def subscribes_to(self, type, **kwargs):
         return (type in self._events)
 
+    @raise_with_stack
     def send(self, type, text, raw):
-        with current_app.app_context():
-            if type is None or type in self._events:
-                self._notify_subscribers(type, text, raw)
+        if type is None or type in self._events:
+            self._notify_subscribers(type, text, raw)
 
     def _notify_subscribers(self, type, text, raw):
-        current_app.logger.info("_notify_subscribers")
-        try:
-            panelState = self._build_panel_state()
+        panelState = self._build_panel_state()
 
-            # if we find the host:callback in _subscribers then
-            # updated it and return the same subscription ID back.
-            subscribers = current_app.decoder._notifier_system.get_subscribers()
+        # if we find the host:callback in _subscribers then
+        # updated it and return the same subscription ID back.
+        subscribers = current_app.decoder._notifier_system.get_subscribers()
 
-            response =  XML_EVENT_TEMPLATE.format(
-                self._build_property("eventid", type, False),
-                self._build_property("eventdesc", (EVENT_TYPES[type] if type is not None else "Testing"), False),
-                self._build_property("eventmessage", text, True),
-                self._build_property("rawmessage", raw, True),
-                panelState
-            )
-            current_app.logger.info('_notify_subscribers: {0}\n{1}'.format(subscribers,response))
-            for k, v in subscribers.items():
-                    self._send_notify_event(k, v['callback'], response)
-
-        except Exception as e:
-            current_app.logger.info('Event UPNPPush Notification Failed: {0} line: {1}'.format(str(e),sys.exc_info()[-1].tb_lineno))
-            raise Exception('UPNPPushNotification Failed: {0} line: {1}' . format(str(e),sys.exc_info()[-1].tb_lineno))
+        response =  XML_EVENT_TEMPLATE.format(
+            self._build_property("eventid", type, False),
+            self._build_property("eventdesc", (EVENT_TYPES[type] if type is not None else "Testing"), False),
+            self._build_property("eventmessage", text, True),
+            self._build_property("rawmessage", raw, True),
+            panelState
+        )
+        for k, v in subscribers.items():
+            self._send_notify_event(k, v['callback'], response)
 
     def _build_panel_state(self):
         mode = current_app.decoder.device.mode
@@ -531,11 +624,20 @@ class UPNPPushNotification(BaseNotification):
 
         return tostring(ep)
 
-
-    def _send_notify_event(self, uuid, notify_url, notify_message):
+    # Warning: Threaded so it may be sent later and state may change.
+    # Never access any AD2* state vars in a threaded function.
+    @threaded
+    @raise_with_stack
+    def _send_notify_event(self, uuid, notify_url, notify_message, app=None):
         """
         Send out notify event to subscriber and return a response.
         """
+
+        # If threaded app will be valid if not it will be None.
+        # We need app to send logs and access static values only.
+        if app is None:
+            app = current_app
+
         # Remove <> that surround the real unicode url if they exist...
         notify_url = notify_url.translate({ord(k): u"" for k in "<>"})
         parsed_url = urlparse(notify_url)
@@ -554,12 +656,12 @@ class UPNPPushNotification(BaseNotification):
         http_handler.request('NOTIFY', parsed_url.path, notify_message, headers)
         http_response = http_handler.getresponse()
 
-        current_app.logger.info('_send_notify_event: status:{0} reason:{1} headers:{2}'.format(http_response.status,http_response.reason,headers))
+        app.logger.info('{0}_send_notify_event: status:{1} reason:{2} headers:{3}'.format(self.description, http_response.status, http_response.reason, headers))
 
         if http_response.status != 200:
-            error_msg = 'UPNPPush Notification failed: ({0}: {1})'.format(http_response.status, http_response.read())
+            error_msg = '{0} Notification failed: ({1}: {2})'.format(self.description, http_response.status, http_response.read())
 
-            current_app.logger.warning(error_msg)
+            app.logger.warning(error_msg)
             raise Exception(error_msg)
 
     def _build_property(self, name, value, cdatatag):
@@ -574,6 +676,7 @@ class MatrixNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
+        self.notification_description = obj.description
         self._events = [LRR, EXP, AUI, READY, CHIME, ARM, DISARM, ALARM, PANIC, FIRE, BYPASS, ZONE_FAULT, ZONE_RESTORE, BOOT, ]
 
         self.api_endpoint = obj.get_setting('domain')
@@ -596,7 +699,14 @@ class MatrixNotification(BaseNotification):
                 if message:
                     message = message.text
 
-                notify_data = {'msgtype': 'm.text', 'body': text, 'eventid': type, 'eventdesc': (EVENT_TYPES[type] if type is not None else "Testing"), 'raw': raw}
+                notify_data = {
+                    'msgtype': 'm.text',
+                    'body': "From %s: %s" % (self.notification_description, text),
+                    'notifier': self.notification_description,
+                    'eventid': type,
+                    'eventdesc': (EVENT_TYPES[type] if type is not None else "Testing"),
+                    'raw': raw
+                }
 
                 if self.custom_values is not None:
                     if self.custom_values:
@@ -624,33 +734,35 @@ class MatrixNotification(BaseNotification):
                 result = self._do_post(self._dict_to_json(notify_data) )
 
         except Exception as e:
-            current_app.logger.info('Event Matrix Notification Failed: _send() {0} line: {1} test: {2}' . format(e, sys.exc_info()[-1].tb_lineno,notify_data))
             raise Exception('Matrix Notification Failed: {0} line: {1}' . format(e,sys.exc_info()[-1].tb_lineno))
 
         return result
 
-    def _do_post(self, data):
-        try:
-            parsed_url = urlparse("https://" + self.api_endpoint + "/_matrix/client/r0/rooms/" + self.api_room_id + "/send/m.room.message?access_token=" + self.api_token)
+    # Warning: Threaded so it may be sent later and state may change.
+    # Never access any AD2* state vars in a threaded function.
+    @threaded
+    @raise_with_stack
+    def _do_post(self, data, app=None):
 
-            if sys.version_info >= (2,7,9):
-                http_handler = HTTPSConnection(parsed_url.netloc, context=ssl._create_unverified_context())
-            else:
-                http_handler = HTTPSConnection(parsed_url.netloc)
+        # If threaded app will be valid if not it will be None.
+        # We need app to send logs and access static values only.
+        if app is None:
+            app = current_app
 
-            http_handler.request(CUSTOM_METHOD, parsed_url.path+"?"+parsed_url.query, headers=self.headers, body=data)
-            http_response = http_handler.getresponse()
+        parsed_url = urlparse("https://" + self.api_endpoint + "/_matrix/client/r0/rooms/" + self.api_room_id + "/send/m.room.message?access_token=" + self.api_token)
 
-            if http_response.status == 200:
-                return True
-            else:
-                current_app.logger.info('Matrix Notification Failed (' + str(http_response.status) + ") " + http_response.reason)
-                raise Exception('Matrix Notification Failed (' + str(http_response.status) + ") " + http_response.reason)
+        if sys.version_info >= (2,7,9):
+            http_handler = HTTPSConnection(parsed_url.netloc, context=ssl._create_unverified_context())
+        else:
+            http_handler = HTTPSConnection(parsed_url.netloc)
 
-        except Exception as e:
-            tb = traceback.format_exc()
-            current_app.logger.info('Event Matrix Notification Failed: _do_post() {0} line: {1}' . format(tb, sys.exc_info()[-1].tb_lineno))
-            raise Exception('Matrix Notification Failed exception: _do_post {0} line: {1}' . format(e,sys.exc_info()[-1].tb_lineno))
+        http_handler.request(CUSTOM_METHOD, parsed_url.path+"?"+parsed_url.query, headers=self.headers, body=data)
+        http_response = http_handler.getresponse()
+
+        if http_response.status == 200:
+            return True
+        else:
+            raise Exception('response fail (' + str(http_response.status) + ") " + http_response.reason)
 
     def _dict_to_json(self, d):
         return json.dumps(d)
@@ -660,6 +772,7 @@ class EmailNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
+        self.notification_description = obj.description
         self.source = obj.get_setting('source')
         self.destination = obj.get_setting('destination')
         self.subject = obj.get_setting('subject')
@@ -673,14 +786,11 @@ class EmailNotification(BaseNotification):
         self.suppress_timestamp = obj.get_setting('suppress_timestamp',default=False)
 
     def send(self, type, text, raw):
-        message_timestamp = time.ctime(time.time())
-        if self.suppress_timestamp == False:
-            text = text + "\r\n\r\nMessage sent at " + message_timestamp + "."
-
         if check_time_restriction(self.starttime, self.endtime):
             msg = MIMEText(text)
 
             if self.suppress_timestamp == False:
+                message_timestamp = time.ctime(time.time())
                 msg['Subject'] = self.subject + " (" + message_timestamp + ")"
             else:
                 msg['Subject'] = self.subject
@@ -690,72 +800,45 @@ class EmailNotification(BaseNotification):
             msg['To'] = ', '.join(recipients)
             msg['Date'] = formatdate(localtime=True)
 
-            s = None
+            # Call function with static values and push into thread if possible.
+            self._send(recipients, msg)
 
-            if self.ssl:
-                s = smtplib.SMTP_SSL(self.server, self.port)
-            else:
-                s = smtplib.SMTP(self.server, self.port)
-
-            if self.tls and not self.ssl:
-                s.starttls()
-
-            if self.authentication_required:
-                s.login(str(self.username), str(self.password))
-
-            s.sendmail(self.source, recipients, msg.as_string())
-            s.quit()
-
-
-class GoogleTalkNotification(BaseNotification):
-    def __init__(self, obj):
-        BaseNotification.__init__(self, obj)
-
-        self.source = obj.get_setting('source')
-        self.password = obj.get_setting('password')
-        self.destination = obj.get_setting('destination')
-        self.suppress_timestamp = obj.get_setting('suppress_timestamp',default=False)
-        self.client = None
-
-    def send(self, type, text, raw):
-        message_time = time.time()
-        message_timestamp = time.ctime(message_time)
-        if self.suppress_timestamp == False:
-            self.msg_to_send = text + " Message Sent at: " + message_timestamp
+    # Warning: Threaded so it may be sent later and state may change.
+    # Never access any AD2* state vars in a threaded function.
+    @threaded
+    @raise_with_stack
+    def _send(self, recipients, msg, app=None):
+        s = None
+        if self.ssl:
+            s = smtplib.SMTP_SSL(self.server, self.port)
         else:
-            self.msg_to_send = text
+            s = smtplib.SMTP(self.server, self.port)
 
-        if check_time_restriction(self.starttime, self.endtime):
-            self.client = sleekxmpp.ClientXMPP(self.source, self.password)
-            self.client.add_event_handler("session_start", self._send)
+        if self.tls and not self.ssl:
+            s.starttls()
 
-            self.client.connect(('talk.google.com', 5222))
-            self.client.process(block=True)
+        if self.authentication_required:
+            s.login(str(self.username), str(self.password))
 
-    def _send(self, event):
-        self.client.send_presence()
-        self.client.get_roster()
-
-        self.client.send_message(mto=self.destination, mbody=self.msg_to_send)
-        self.client.disconnect(wait=True)
+        s.sendmail(self.source, recipients, msg.as_string())
+        s.quit()
 
 
 class PushoverNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
+        self.notification_description = obj.description
         self.token = obj.get_setting('token')
         self.user_key = obj.get_setting('user_key')
         self.priority = obj.get_setting('priority')
         self.title = obj.get_setting('title')
 
     def send(self, type, text, raw):
-        self.msg_to_send = text
+        if not have_chump:
+            raise Exception('Missing Pushover library: chump - install using pip')
 
         if check_time_restriction(self.starttime, self.endtime):
-            if not have_chump:
-                raise Exception('Missing Pushover library: chump - install using pip')
-
             app = Application(self.token)
             if app.is_authenticated:
                 user = app.get_user(self.user_key)
@@ -763,7 +846,7 @@ class PushoverNotification(BaseNotification):
                 if user_is_authenticated(user):
                     message = user.create_message(
                         title=self.title,
-                        message=self.msg_to_send,
+                        message=text,
                         html=True,
                         priority=self.priority,
                         timestamp=int(time.time())
@@ -787,138 +870,109 @@ class TwilioNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
+        self.notification_description = obj.description
         self.account_sid = obj.get_setting('account_sid')
         self.auth_token = obj.get_setting('auth_token')
         self.number_to = obj.get_setting('number_to')
         self.number_from = obj.get_setting('number_from')
         self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
+    @raise_with_stack
     def send(self, type, text, raw):
-        message_time = time.time()
-        message_timestamp = time.ctime(message_time)
+        if have_twilio == False:
+            raise Exception('Missing Twilio library: twilio - install using pip')
+
+        text = " From " + self.notification_description + ". " + text
 
         if check_time_restriction(self.starttime, self.endtime):
             if self.suppress_timestamp == False:
-                self.msg_to_send = text + " Message Sent at: " + message_timestamp
+                message_timestamp = time.ctime(time.time())
+                msg_to_send = text + " Message Sent at: " + message_timestamp
             else:
-                self.msg_to_send = text
+                msg_to_send = text
 
-            if have_twilio == False:
-                raise Exception('Missing Twilio library: twilio - install using pip')
+            # Call function with static values and push into thread if possible.
+            self._send(msg_to_send)
 
-            try:
-                client = TwilioRestClient(self.account_sid, self.auth_token)
-                message = client.messages.create(to=self.number_to, from_=self.number_from, body=self.msg_to_send)
-            except TwilioRestException as e:
-                current_app.logger.info('Event Twilio Notification Failed: {0}' . format(e))
-                raise Exception('Twilio Notification Failed: {0}' . format(e))
+    # Warning: Threaded so it may be sent later and state may change.
+    # Never access any AD2* state vars in a threaded function.
+    @threaded
+    @raise_with_stack
+    def _send(self, twbody, app=None):
+
+        # If threaded app will be valid if not it will be None.
+        # We need app to send logs and access static values only.
+        if app is None:
+            app = current_app
+
+        try:
+            client = TwilioRestClient(self.account_sid, self.auth_token)
+            message = client.messages.create(
+                to=self.number_to,
+                from_=self.number_from,
+                body=twbody
+                )
+        except TwilioRestException as e:
+            app.logger.info('Event Twilio Notification Failed: {0}' . format(e))
+            raise Exception('Twilio Notification Failed: {0}' . format(e))
 
 
 class TwiMLNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
+        self.notification_description = obj.description
         self.account_sid = obj.get_setting('account_sid')
         self.auth_token = obj.get_setting('auth_token')
         self.number_to = obj.get_setting('number_to')
         self.number_from = obj.get_setting('number_from')
         self.url = obj.get_setting('twimlet_url')
+        self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
+    @raise_with_stack
     def send(self, type, text, raw):
-        if have_twilio == False:
-            raise Exception('Missing Twilio library: twilio - install using pip')
+        text = " From " + self.notification_description + ". " + text
+        if check_time_restriction(self.starttime, self.endtime):
+            if self.suppress_timestamp == False:
+                message_timestamp = time.ctime(time.time())
+                self.msg_to_send = text + " Message Sent at: " + message_timestamp + "."
+            else:
+                self.msg_to_send = text
+
+            if have_twilio == False:
+                raise Exception('Missing Twilio library: twilio - install using pip')
+
+            # Call function with static values and push into thread if possible.
+            url = self.url + "?" + quote("Message[0]") + "=" + quote(self.msg_to_send)
+            self._send(url)
+
+    # Warning: Threaded so it may be sent later and state may change.
+    # Never access any AD2* state vars in a threaded function.
+    @threaded
+    @raise_with_stack
+    def _send(self, twurl, app=None):
+        # If threaded app will be valid if not it will be None.
+        # We need app to send logs and access static values only.
+        if app is None:
+            app = current_app
 
         try:
             client = TwilioRestClient(self.account_sid, self.auth_token)
-
-            message_to_send = quote(text)
-
-            query = quote("Message[0]")
-
-            call = client.calls.create(to="+" + self.number_to,
-                                       from_="+" + self.number_from,
-                                       url=self.url + "?" + query + "=" + message_to_send)
+            call = client.calls.create(
+                to="+" + self.number_to,
+                from_="+" + self.number_from,
+                url=twurl
+                )
         except TwilioRestException as e:
-            current_app.logger.info('Event TwiML Notification Failed: {0}' . format(e))
-            raise Exception('TwiML Notification Failed: {0}' . format(e))
-
-class NMANotification(BaseNotification):
-    def __init__(self, obj):
-        BaseNotification.__init__(self, obj)
-
-        self.api_key = obj.get_setting('api_key')
-        self.app_name = obj.get_setting('app_name')
-        self.priority = obj.get_setting('nma_priority')
-        self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
-
-    def send(self, type, text, raw):
-        message_time = time.time()
-        message_timestamp = time.ctime(message_time)
-
-        if check_time_restriction(self.starttime, self.endtime):
-            if self.suppress_timestamp == False:
-                self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
-            else:
-                self.msg_to_send = text[:10000].encode('utf8')
-
-            self.event = NMA_EVENT.encode('utf8')
-            self.content_type = NMA_CONTENT_TYPE
-
-            notify_data = {
-                'application': self.app_name,
-                'description': self.msg_to_send,
-                'event': self.event,
-                'priority': self.priority,
-                'content-type': self.content_type,
-                'apikey': self.api_key
-            }
-
-            headers = { 'User-Agent': NMA_USER_AGENT }
-            headers['Content-type'] = NMA_HEADER_CONTENT_TYPE
-            if sys.version_info >= (2, 7, 9):
-                http_handler = HTTPSConnection(NMA_URL, context=ssl._create_unverified_context())
-            else:
-                http_handler = HTTPSConnection(NMA_URL)
-
-            http_handler.request(NMA_METHOD, NMA_PATH, urlencode(notify_data), headers)
-
-            http_response = http_handler.getresponse()
-
-            try:
-                res = self._parse_response(http_response.read())
-            except Exception as e:
-                res = {
-                    'type': 'NMA Notify Error',
-                    'code': 800,
-                    'message': str(e)
-                }
-                current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(str(e)))
-                raise Exception('NotifyMyAndroid Failed: {0}' . format(str(e)))
-
-    def _parse_response(self, response):
-        root = parseString(response).firstChild
-
-        for elem in root.childNodes:
-            if elem.nodeType == elem.TEXT_NODE: continue
-            if elem.tagName == 'success':
-                res = dict(list(elem.attributes.items()))
-                res['message'] = ""
-                res['type'] = elem.tagName
-
-                return res
-
-            if elem.tagName == 'error':
-                res = dict(list(elem.attributes.items()))
-                res['message'] = elem.firstChild.nodeValue
-                res['type'] = elem.tagName
-                current_app.logger.info('Event NotifyMyAndroid Notification Failed: {0}'.format(res['message']))
-                raise Exception(res['message'])
+            app.logger.info('Event TWwiML Notification Failed: {0}' . format(e))
+            raise Exception('TWwiML Notification Failed: {0}' . format(e))
 
 
 class ProwlNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
+        self.notification_description = obj.description
         self.api_key = obj.get_setting('prowl_api_key')
         self.app_name = obj.get_setting('prowl_app_name')[:256].encode('utf8')
         self.priority = obj.get_setting('prowl_priority')
@@ -931,11 +985,9 @@ class ProwlNotification(BaseNotification):
         self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
     def send(self, type, text, raw):
-        message_time = time.time()
-        message_timestamp = time.ctime(message_time)
-
         if check_time_restriction(self.starttime, self.endtime):
             if self.suppress_timestamp == False:
+                message_timestamp = time.ctime(time.time())
                 self.msg_to_send = text[:10000].encode('utf8') + " Message Sent at: " + message_timestamp
             else:
                 self.msg_to_send = text[:10000].encode('utf8')
@@ -947,6 +999,8 @@ class ProwlNotification(BaseNotification):
                 'description': self.msg_to_send,
                 'priority': self.priority
             }
+
+            self.msg_to_send = text + " From " + self.notification_description + "."
 
             if sys.version_info >= (2,7,9):
                 http_handler = HTTPSConnection(PROWL_URL, context=ssl._create_unverified_context())
@@ -968,6 +1022,7 @@ class GrowlNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
+        self.notification_description = obj.description
         self.priority = obj.get_setting('growl_priority')
         self.hostname = obj.get_setting('growl_hostname')
         self.port = obj.get_setting('growl_port')
@@ -992,17 +1047,15 @@ class GrowlNotification(BaseNotification):
         self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
     def send(self, type, text, raw):
-        message_time = time.time()
-        message_timestamp = time.ctime(message_time)
+        if not have_gntp:
+            raise Exception('Missing Growl library: gntp - install using pip')
 
         if check_time_restriction(self.starttime, self.endtime):
             if self.suppress_timestamp == False:
+                message_timestamp = time.ctime(time.time())
                 self.msg_to_send = text + " Message Sent at: " + message_timestamp
             else:
                 self.msg_to_send = text
-
-            if not have_gntp:
-                raise Exception('Missing Growl library: gntp - install using pip')
 
             growl_status = self.growl.register()
             if growl_status == True:
@@ -1026,6 +1079,7 @@ class CustomNotification(BaseNotification):
     def __init__(self, obj):
         BaseNotification.__init__(self, obj)
 
+        self.notification_description = obj.description
         self.url = obj.get_setting('custom_url')
         self.path = obj.get_setting('custom_path')
         self.is_ssl = obj.get_setting('is_ssl')
@@ -1061,14 +1115,24 @@ class CustomNotification(BaseNotification):
     def _dict_to_json(self, d):
         return json.dumps(d)
 
-    def _do_post(self, data):
+    # Warning: Threaded so it may be sent later and state may change.
+    # Never access any AD2* state vars in a threaded function.
+    @threaded
+    @raise_with_stack
+    def _do_post(self, data, app=None):
+
+        # If threaded app will be valid if not it will be None.
+        # We need app to send logs and access static values only.
+        if app is None:
+            app = current_app
+
         if self.is_ssl:
             if sys.version_info >= (2,7,9):
-                http_handler = HTTPSConnection(self.url, context=ssl._create_unverified_context())
+                http_handler = HTTPSConnection(self.url, context=ssl._create_unverified_context(), timeout=10)
             else:
-                http_handler = HTTPSConnection(self.url)
+                http_handler = HTTPSConnection(self.url, timeout=10)
         else:
-            http_handler = HTTPConnection(self.url)
+            http_handler = HTTPConnection(self.url, timeout=10)
 
         http_handler.request(CUSTOM_METHOD, self.path, headers=self.headers, body=data)
         http_response = http_handler.getresponse()
@@ -1076,10 +1140,20 @@ class CustomNotification(BaseNotification):
         if http_response.status >= 200 and http_response.status <= 299:
             return True
         else:
-            current_app.logger.info('Event Custom Notification Failed')
+            app.logger.info('Event Custom Notification Failed')
             raise Exception('Custom Notification Failed (' + str(http_response.status) + ") " + http_response.reason)
 
-    def _do_get(self, data):
+    # Warning: Threaded so it may be sent later and state may change.
+    # Never access any AD2* state vars in a threaded function.
+    @threaded
+    @raise_with_stack
+    def _do_get(self, data, app=None):
+
+        # If threaded app will be valid if not it will be None.
+        # We need app to send logs and access static values only.
+        if app is None:
+            app = current_app
+
         if self.is_ssl:
             if sys.version_info >= (2,7,9):
                 http_handler = HTTPSConnection(self.url, context=ssl._create_unverified_context())
@@ -1095,9 +1169,10 @@ class CustomNotification(BaseNotification):
         if http_response.status == 200:
             return True
         else:
-            current_app.logger.info('Event Custom Notification Failed on GET method')
+            app.logger.info('Event Custom Notification Failed on GET method')
             raise Exception('Custom Notification Failed')
 
+    @raise_with_stack
     def send(self, type, text, raw):
         self.msg_to_send = text
 
@@ -1153,10 +1228,8 @@ class CustomNotification(BaseNotification):
 
 TYPE_MAP = {
     EMAIL: EmailNotification,
-    GOOGLETALK: GoogleTalkNotification,
     PUSHOVER: PushoverNotification,
     TWILIO: TwilioNotification,
-    NMA: NMANotification,
     PROWL: ProwlNotification,
     GROWL: GrowlNotification,
     CUSTOM: CustomNotification,

@@ -13,8 +13,8 @@ from wtforms import (ValidationError, HiddenField, TextField, HiddenField,
 from wtforms.validators import (Required, Length, EqualTo, Email, NumberRange,
         URL, AnyOf, Optional, InputRequired)
 from wtforms.widgets import ListWidget, CheckboxInput
-from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, GOOGLETALK, PUSHOVER, PUSHOVER_PRIORITIES,
-                        NMA_PRIORITIES, LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES, GROWL, GROWL_PRIORITIES, GROWL_TITLE,
+from .constants import (NOTIFICATIONS, NOTIFICATION_TYPES, SUBSCRIPTIONS, DEFAULT_SUBSCRIPTIONS, EMAIL, PUSHOVER, PUSHOVER_PRIORITIES,
+                        LOWEST, LOW, NORMAL, HIGH, EMERGENCY, PROWL_PRIORITIES, GROWL, GROWL_PRIORITIES, GROWL_TITLE,
                         URLENCODE, JSON, XML, CUSTOM_METHOD_POST, CUSTOM_METHOD_GET_TYPE, UPNPPUSH)
 from .models import NotificationSetting
 from ..widgets import ButtonField, MultiCheckboxField
@@ -186,40 +186,6 @@ class EmailNotificationForm(EditNotificationForm):
         self.form_field.password.data = self.populate_from_setting(id, 'password')
 
 
-class GoogleTalkNotificationInternalForm(Form):
-    source = TextField(u'Source Address', [Required(), Length(max=255)], default='youremail@example.com', description=u'Messages will originate from this address')
-    password = PasswordField(u'Password', [Required(), Length(max=255)], description=u'Password for the source account')
-    destination = TextField(u'Destination Address', [Required(), Length(max=255)], description=u'Messages will be sent to this address')
-
-    def __init__(self, *args, **kwargs):
-        kwargs['csrf_enabled'] = False
-        super(GoogleTalkNotificationInternalForm, self).__init__(*args, **kwargs)
-
-
-class GoogleTalkNotificationForm(EditNotificationForm):
-    legend = (
-        "<div style=\"font-size: 16px;\">"
-        "</div>"
-    )
-    form_field = FormField(GoogleTalkNotificationInternalForm)
-
-    submit = SubmitField(u'Next')
-    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
-
-    def populate_settings(self, settings, id=None):
-        EditNotificationForm.populate_settings(self, settings, id)
-        settings['source'] = self.populate_setting('source', self.form_field.source.data)
-        settings['password'] = self.populate_setting('password', self.form_field.password.data)
-        settings['destination'] = self.populate_setting('destination', self.form_field.destination.data)
-
-    def populate_from_settings(self, id):
-        EditNotificationForm.populate_from_settings(self, id)
-        self.form_field.source.data = self.populate_from_setting(id, 'source')
-        self.form_field.password.widget.hide_value = False
-        self.form_field.password.data = self.populate_from_setting(id, 'password')
-        self.form_field.destination.data = self.populate_from_setting(id, 'destination')
-
-
 class PushoverNotificationInternalForm(Form):
     token = TextField(u'API Token', [Required(), Length(max=30)], description=u'Your Application\'s API Token')
     user_key = TextField(u'User/Group Key', [Required(), Length(max=30)], description=u'Your user or group key')
@@ -328,39 +294,6 @@ class TwiMLNotificationForm(EditNotificationForm):
         self.form_field.number_to.data = self.populate_from_setting(id, 'number_to')
         self.form_field.number_from.data = self.populate_from_setting(id, 'number_from')
         self.form_field.twimlet_url.data = self.populate_from_setting(id, 'twimlet_url')
-
-class NMANotificationInternalForm(Form):
-    api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your NotifyMyAndroid API Key')
-    app_name = TextField(u'Application Name', [Required(), Length(max=256)], description=u'Application Name to Show in Notifications', default='AlarmDecoder')
-    nma_priority = SelectField(u'Message Priority', choices=[NMA_PRIORITIES[LOWEST], NMA_PRIORITIES[LOW], NMA_PRIORITIES[NORMAL], NMA_PRIORITIES[HIGH], NMA_PRIORITIES[EMERGENCY]], default=NMA_PRIORITIES[LOW], description='NotifyMyAndroid message priority', coerce=int)
-
-    def __init__(self, *args, **kwargs):
-        kwargs['csrf_enabled'] = False
-        super(NMANotificationInternalForm, self).__init__(*args, **kwargs)
-
-
-class NMANotificationForm(EditNotificationForm):
-    legend = (
-        "<div style=\"font-size: 16px;\">"
-        "</div>"
-    )
-    form_field = FormField(NMANotificationInternalForm)
-
-    submit = SubmitField(u'Next')
-    cancel = ButtonField(u'Cancel', onclick="location.href='/settings/notifications'")
-
-    def populate_settings(self, settings, id=None):
-        EditNotificationForm.populate_settings(self, settings, id)
-        settings['api_key'] = self.populate_setting('api_key', self.form_field.api_key.data)
-        settings['app_name'] = self.populate_setting('app_name', self.form_field.app_name.data)
-        settings['nma_priority'] = self.populate_setting('nma_priority', self.form_field.nma_priority.data)
-
-    def populate_from_settings(self, id):
-        EditNotificationForm.populate_from_settings(self, id)
-        self.form_field.api_key.data = self.populate_from_setting(id, 'api_key')
-        self.form_field.app_name.data = self.populate_from_setting(id, 'app_name')
-        self.form_field.nma_priority.data = self.populate_from_setting(id, 'nma_priority')
-
 
 class ProwlNotificationInternalForm(Form):
     prowl_api_key = TextField(u'API Key', [Required(), Length(max=50)], description=u'Your Prowl API Key')
@@ -562,7 +495,7 @@ class MatrixNotificationForm(Form):
     legend = (
         "<div style=\"font-size: 16px;\">"
         "Matrix.org is a free open source distributed network that supports end-to-end encryption.<br/>"
-        "TODO: Add abilty to generate the <b>Room ID</b> and <b>Token</b> using a User ID and Pass<br/>"
+        "TODO: Add ability to generate the <b>Room ID</b> and <b>Token</b> using a User ID and Pass<br/>"
         "Notes: Create an account and a room on Riot.im that allows posts. You can get the room key from the Riot.im web client.<br/>"
         "See: <a href=\"https://gist.github.com/RickCogley/69f430d4418ae5498e8febab44d241c9\" target=\"_blank\">https://gist.github.com/RickCogley/69f430d4418ae5498e8febab44d241c9</a> for curl commands to generate a <b>Token</b>.<br/>"
         "See: <a href=\"https://matrix.org/\" target=\"_blank\">https://matrix.org</a> for more info on [Matrix]<br/>"

@@ -74,10 +74,10 @@ EVENT_TYPES = {
 }
 
 EMAIL = 0
-GOOGLETALK = 1
+#DONOTUSE = 1 #was TMA and may be in users settings for eternity.
 PUSHOVER = 2
 TWILIO = 3
-NMA = 4
+#DONOTUSE = 4 #was TMA and may be in users settings for eternity.
 PROWL = 5
 GROWL = 6
 CUSTOM = 7
@@ -87,10 +87,8 @@ UPNPPUSH = 10
 
 NOTIFICATION_TYPES = {
     EMAIL: 'email',
-#    GOOGLETALK: 'googletalk',
     PUSHOVER: 'pushover',
     TWILIO: 'twilio',
-    NMA: 'NMA',
     PROWL: 'prowl',
     GROWL: 'growl',
     CUSTOM: 'custom',
@@ -101,10 +99,8 @@ NOTIFICATION_TYPES = {
 
 NOTIFICATIONS = {
     EMAIL: ('email', u'Email'),
-#    GOOGLETALK: ('googletalk', u'Google Talk'),
     PUSHOVER: ('pushover', u'Pushover.net'),
     TWILIO: ('twilio', u'Twilio'),
-    NMA: ('NMA', u'NotifyMyAndroid'),
     PROWL: ('prowl', u'Prowl'),
     GROWL: ('growl', u'Growl'),
     CUSTOM: ('custom', u'Custom'),
@@ -148,23 +144,6 @@ EMERGENCY = 4
 PUSHOVER_PRIORITIES = {
     LOWEST: (-2, u'LOWEST'),
     LOW: (-1, u'LOW'),
-    NORMAL: (0, u'NORMAL'),
-    HIGH: (1, u'HIGH'),
-    EMERGENCY: (2, u'EMERGENCY')
-}
-
-NMA_URL = "www.notifymyandroid.com"
-NMA_PATH = "/publicapi/notify"
-
-NMA_USER_AGENT = "NMA/v1.0"
-NMA_EVENT = "AlarmDecoder: Alarm Event"
-NMA_METHOD = "POST"
-NMA_CONTENT_TYPE = "text/html"
-NMA_HEADER_CONTENT_TYPE = "application/x-www-form-urlencoded"
-
-NMA_PRIORITIES = {
-    LOWEST: (-2, u'VERY LOW'),
-    LOW: (-1, u'MODERATE'),
     NORMAL: (0, u'NORMAL'),
     HIGH: (1, u'HIGH'),
     EMERGENCY: (2, u'EMERGENCY')
