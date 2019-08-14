@@ -58,7 +58,7 @@ sudo raspi-config nonint do_wifi_country US
 * Set TZ (user option) (user option)
 ```
 sudo raspi-config nonint do_change_timezone America/Los_Angeles
-``` 
+```
 * Set the Keyboard layout and language (user option)
 ```
 sudo raspi-config nonint do_configure_keyboard US pc101
@@ -122,7 +122,7 @@ sudo pip install --upgrade setuptools
 * Create needed directories and set permissions for updates
 ```
 sudo mkdir -p /opt/alarmdecoder /opt/alarmdecoder-webapp && sudo chown pi:pi /opt/alarmdecoder /opt/alarmdecoder-webapp
-``` 
+```
 * Grab the latest master branch of the AlarmDecoder Python API
 ```
 cd /opt && git clone https://github.com/nutechsoftware/alarmdecoder.git
@@ -198,6 +198,7 @@ PIDFile=/run/gunicorn/pid
 User=pi
 Group=dialout
 WorkingDirectory=/opt/alarmdecoder-webapp
+Environment="TERM=vt100"
 ExecStart=/usr/bin/gunicorn --worker-class=socketio.sgunicorn.GeventSocketIOWorker --timeout=120 --env=POLICY_SERVER=0 --log-level=debug wsgi:application
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
