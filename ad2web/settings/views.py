@@ -549,6 +549,15 @@ def export():
 def switch_branch():
 
     # Helper(s)
+    def strip_ansi(line):
+        # git!! STOP with the human readable stuff! Tried to turn it off via switches.
+        # Maybe it works maybe not but if not lets strip it out :(
+        rc = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
+        line = rc.sub('', line)
+        rc = re.compile(r'\x1B[=><A-Z]')
+        line = rc.sub('', line)
+        return line.strip()
+
     def build_remotes_list(dlist):
         ## Map reduce remote lines group on origin, first(url), accumulate(types)
         ##  original
@@ -623,8 +632,8 @@ def switch_branch():
 
     #list all local branches
     try:
-        branches_web = git_web.branch("-l", "--no-color")
-        branches_api = git_api.branch("-l", "--no-color")
+        branches_web = strip_ansi(git_web.branch("-la", "--no-color").stdout).splitlines()
+        branches_api = strip_ansi(git_api.branch("-la", "--no-color").stdout).splitlines()
     except sh.ErrorReturnCode_1:
         flash('Error getting list of local branches!', 'error')
         return redirect(url_for('settings.index'))
@@ -639,11 +648,17 @@ def switch_branch():
     #store the sh.RunningCommand output in a dictionary, replace all special characters from git bash output
     for line in branches_web:
         line = line.replace("*", "")
-        branch_list_web[line] = line.strip()
+        line = line.strip()
+        if not ( "HEAD" ) in line:
+            branch = line.split('/')[-1]
+            branch_list_web[branch] = branch
 
     for line in branches_api:
         line = line.replace("*", "")
-        branch_list_api[line] = line.strip()
+        line = line.strip()
+        if not ( "HEAD" ) in line:
+            branch = line.split('/')[-1]
+            branch_list_api[branch] = branch
 
     try:
         #
