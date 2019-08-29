@@ -10,12 +10,7 @@
             "email": "alarmdecoder@support.nutech.com"
         }
     },
-    "host": "alarmdecoder.local:5000",
     "basePath": "/api/v1",
-    "schemes": [
-        "http",
-        "https"
-    ],
     "tags": [
         {
             "name": "alarmdecoder",
