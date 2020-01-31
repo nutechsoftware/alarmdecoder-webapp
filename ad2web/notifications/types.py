@@ -114,6 +114,9 @@ def raise_with_stack(func):
         except Exception as e:
             tb = traceback.format_exc(e).splitlines()
             # Grab error and line number
+            #FIXME: testing thread lock bug in live envrionment.
+            with self._decoder.app.app_context():
+                current_app.logger.info("notification exception: %s %s" % (repr(e), tb[3].split(",")[1].strip()))
             raise StandardError("%s %s" % (repr(e), tb[3].split(",")[1].strip()))
 
     return wrapped
@@ -441,6 +444,9 @@ class NotificationThread(threading.Thread):
                     data = ""
                     for i in range(ncount):
                         f = notifier._futures[i]
+                        #FIXME: testing thread lock bug in live envrionment.
+                        with self._decoder.app.app_context():
+                            current_app.logger.info('ID#: {0} DN:{1} RU:{2} CA:{3}.'.format(i, f.done(),f.running(),f.cancelled()))
                         if f.done():
                             extra_msg = ""
                             try:
