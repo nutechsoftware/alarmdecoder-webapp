@@ -10,41 +10,61 @@
 
 # NOTE: If you want to transfer files between chroot and host
 # userpatches/overlay directory on host is bind-mounted to /tmp/overlay in chroot
-LPREFIX="**** AD2 ****"
+LPREFIX="**** AD2 **** "
 RELEASE=$1
 LINUXFAMILY=$2
 BOARD=$3
 BUILD_DESKTOP=$4
+
 #
 # settings
+## AlarmDecoder webapp github branch
 WEBAPP_BRANCH="nocache"
 
 # Start processing
-echo "Installing AlarmDecoder appliance on Release: $1 Family: $2 Board: $3 Desktop: $4"
+echo "Installing AlarmDecoder appliance on Armbian Release: $1 Family: $2 Board: $3 Desktop: $4"
+
 # Add ad2 user
-echo "$LPREFIX adding user ad2"
-adduser --quiet --disabled-password --gecos "" ad2
-# add user to dialout group for access to serial ports
+echo "$LPREFIX Adding user 'ad2' with a default password of 'alarmdecoder'"
+adduser --quiet --disabled-password ad2
+echo "$LPREFIX Setting default ad2 user password"
+echo -e "alarmdecoder\nalarmdecoder" | (passwd ad2)
+echo "$LPREFIX Adding user 'ad2' to sudo group"
+usermod -aG sudo ad2
 echo "$LPREFIX add ad2 user to dialout group"
 usermod -a -G dialout ad2
-# change permissions of hosts and hostname so webapp can change it
+echo "$LPREFIX TODO: force password change on next login for user 'ad2'"
+
+# Disable create new user prompt in Armbian
+echo "$LPREFIX Disable default Armbian new user prompt"
+rm -f /root/.not_logged_in_yet
+
+# remove password from root prevent direct login unless user changes password.
+echo "$LPREFIX FIXME: no login for root unless password set"
+sudo passwd -d root
+
+# Change permissions of hosts and hostname so webapp can change it
 echo "$LPREFIX change permissions on /etc/hostname and /etc/hosts"
 chgrp dialout /etc/hosts /etc/hostname
 chmod g+w /etc/hosts /etc/hostname
+
 # Update pip and setuptools
 echo "$LPREFIX update pip and setup tools"
 pip install --upgrade pip
 pip install --upgrade setuptools
+
 # No package for flask_mail and missing from requirements.txt Should be deprecated as the module is deprecated.
-echo "$LPREFIX Fix missing flask_mail. TODO deprecate usage of flask_mail."
+echo "$LPREFIX Fix missing flask_mail. TODO deprecate usage of flask_mail"
 pip install flask_mail
+
 # TODO investigate these were missing also
-echo "$LPREFIX Add missing flask packages using pip."
+echo "$LPREFIX Add missing flask packages using pip"
 pip install Flask-Caching
 pip install flask_login
 pip install miniupnpc
 pip install chump
 #pip install pyftdi # failed missing for python 2
+
 # create app folders and set permissions
 echo "$LPREFIX create webapp and api folders"
 mkdir -p /opt/alarmdecoder
@@ -52,23 +72,30 @@ mkdir -p /opt/alarmdecoder-webapp
 echo "$LPREFIX set app folder permissions"
 chown ad2:ad2 /opt/alarmdecoder
 chown ad2:ad2 /opt/alarmdecoder-webapp
-# git clone alarmdecoder python library
+
+# Clone alarmdecoder python library from github
 echo "$LPREFIX fetch alarmdecoder api from github"
 su -c "cd /opt && git clone https://github.com/nutechsoftware/alarmdecoder.git" ad2
-# add alarmdecoder api to python path
-export PYTHONPATH="${PYTHONPATH}:/opt/alarmdecoder"
-# git clone alarmdecoder-webapp
+
+# Clone alarmdecoder-webapp from github
 echo "$LPREFIX fetch alarmdecoder webapp from github"
 su -c "cd /opt/ && git clone https://github.com/nutechsoftware/alarmdecoder-webapp.git" ad2
-# add requirements if not already satisfied
+
+# Add requirements if not already satisfied
 echo "$LPREFIX checking out webapp branch $WEBAPP_BRANCH"
 su -c "cd /opt/alarmdecoder-webapp/ && git checkout $WEBAPP_BRANCH" ad2
 echo "$LPREFIX install webapp python requirements if not already satisfied"
-su -c "cd /opt/alarmdecoder-webapp/ && pip install -r requirements.txt" ad2
-# git clone ser2sock
+cd /opt/alarmdecoder-webapp/ && pip install -r requirements.txt
+
+# FIXME: temp fix for issues with flask and  werkzeug
+pip install --upgrade Flask
+pip install --upgrade werkzeug==0.16.1
+
+# Clone ser2sock from github
 echo "$LPREFIX fetch ser2sock from github"
 cd /opt/ && git clone https://github.com/nutechsoftware/ser2sock.git
-# build and install and configure ser2sock
+
+# Build and install and configure ser2sock
 echo "$LPREFIX build ser2sock"
 cd /opt/ser2sock/ && ./configure && make && cp ./ser2sock /usr/local/bin/
 echo "$LPREFIX install ser2sock"
@@ -83,12 +110,12 @@ cp /opt/ser2sock/init/ser2sock /etc/init.d/
 update-rc.d ser2sock defaults
 chown -R ad2:ad2 /etc/ser2sock
 
-# force /dev/ttyS1 to be /dev/serial0 our expected device name.
+# Force /dev/ttyS1 to be /dev/serial0 our expected device name.
 cat << EOF > /etc/udev/rules.d/alarmdecoder.rules
 SUBSYSTEM=="tty" KERNEL=="ttyS1", SYMLINK+="serial0"
 EOF
 
-# configure avahi services
+# Configure avahi services
 cat << EOF > /etc/avahi/services/alarmdecoder.service
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
@@ -106,13 +133,15 @@ cat << EOF > /etc/avahi/services/alarmdecoder.service
 </service-group>
 EOF
 
-# build ssl keys for web app
+# Build ssl keys for web app
 echo "$LPREFIX FIXME: build nginx ssl keys"
 mkdir -p /etc/nginx/ssl
-# remove sample page prep html folder for webapp
+
+# Remove sample page prep html folder for webapp
 echo "$LPREFIX remove sample html"
 rm -r /var/www/html/
-# create gunicorn service config and enable it
+
+# Create gunicorn service config and enable it
 cat << EOF > /etc/systemd/user/gunicorn.service
 [Unit]
 Description=gunicorn daemon
@@ -133,6 +162,7 @@ EOF
 ln -s /etc/systemd/user/gunicorn.service /etc/systemd/system/multi-user.target.wants/gunicorn.service
 ln -s /etc/systemd/user/gunicorn.service /etc/systemd/system/gunicorn.service
 
+# Enable log rotation for webapp
 cat << EOF > /etc/logrotate.d/alarmdecoder
 /opt/alarmdecoder-webapp/instance/logs/*.log {
 weekly
@@ -146,6 +176,7 @@ sharedscripts
 }
 EOF
 
+# Enable log rotation for gunicorn
 cat << EOF > /etc/logrotate.d/gunicorn
 /var/log/gunicorn/*.log {
 weekly
@@ -162,15 +193,23 @@ endscript
 }
 EOF
 
+# Enable gunicorn and nginx services
 mkdir -p /etc/gunicorn.d/
 cp /opt/alarmdecoder-webapp/contrib/gunicorn.d/alarmdecoder /etc/gunicorn.d/
 cp /opt/alarmdecoder-webapp/contrib/nginx/nginx.service /lib/systemd/system/nginx.service
+
+# Enable nginx site
 cp /opt/alarmdecoder-webapp/contrib/nginx/alarmdecoder /etc/nginx/sites-available/
 ln -s /etc/nginx/sites-available/alarmdecoder /etc/nginx/sites-enabled/
+
+# Remove sample html
 rm /etc/nginx/sites-enabled/default
-su -c "cd /opt/alarmdecoder-webapp/ && python manage.py initdb" ad2
-#FIXME build keys etc
-echo "$LPREFIX FIXME: build keys and stuff on first boot"
+
+# Initialize the webapp databasee
+su -c "cd /opt/alarmdecoder-webapp/ && PYTHONPATH=${PYTHONPATH}:/opt/alarmdecocer python manage.py initdb" ad2
+
+# Force new keys on first boot
+echo "$LPREFIX enabling build keys and stuff on first boot"
 touch /boot/newkeys.txt
 
 # Create /etc/systemd/user/alarmdecoder-earlyboot.service
@@ -197,14 +236,23 @@ EOF
 # Create /usr/local/bin/alarmdecoder-earlyboot.sh
 cat << EOF > /usr/local/bin/alarmdecoder-earlyboot.sh
 #!/bin/bash
-if [ -e /boot/newkeys.txt ]; then 
-/bin/rm -r /etc/mail/tls/sendmail-*
-/bin/rm -v usr/share/sendmail/update_tls
-/bin/rm -v /etc/ssh/ssh_host_*
-# FIXME: did not create new keys?
-dpkg-reconfigure openssh-server 
-/bin/rm /boot/newkeys.txt
-openssl req -x509 -nodes -sha256 -days 3650 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt -subj '/CN=AlarmDecoder.local/O=AlarmDecoder.com/C=US' -reqexts SAN -extensions SAN -config <(cat /etc/ssl/openssl.cnf  <(printf "\n[SAN]\nsubjectAltName=DNS:alarmdecoder,DNS:alarmdecoder.local"))
+if [[ -f /boot/newkeys.txt ]]; then
+  ## SSH server keys
+   echo "$LPREFIX Building new personal keys for SSH"
+   /bin/rm -v /etc/ssh/ssh_host_*
+   /usr/sbin/dpkg-reconfigure openssh-server
+  ## sendmail keys
+   ### /etc/mail/tls/is emtpy already auto build on first boot.
+   #/bin/rm -r /etc/mail/tls/sendmail-....
+  ## Build keys for nginx
+   echo "$LPREFIX Building new personal keys for HTTPS with nginx"
+   /usr/bin/openssl req -x509 -nodes -sha256 -days 3650 -newkey rsa:4096 -keyout /etc/nginx/ssl/alarmdecoder.key -out /etc/nginx/ssl/alarmdecoder.crt -subj '/CN=AlarmDecoder.local/O=AlarmDecoder.com/C=US' -reqexts SAN -extensions SAN -config <(cat /etc/ssl/openssl.cnf  <(printf "\n[SAN]\nsubjectAltName=DNS:alarmdecoder,DNS:alarmdecoder.local"))
+   /usr/sbin/service nginx restart
+  ## cleanup state trigger
+   echo "$LPREFIX removing /boot/newkeys.txt state file"
+   /bin/rm /boot/newkeys.txt
+  ## FIXME: Kick everyone off reboot after we are all done with this
+  ## /sbin/reboot
 fi
 EOF
 chmod +x /usr/local/bin/alarmdecoder-earlyboot.sh

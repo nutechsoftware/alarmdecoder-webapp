@@ -2,7 +2,7 @@
 
 ## Summary
 
-These files are used to build Armbian Bionic LTS disk image with the AlarmDecoder services pre installed to create an *AlarmDecoder webapp appliance* using an [odroid-c4](https://www.hardkernel.com/shop/odroid-c4/) board. 
+These files are used to build Armbian Bionic LTS disk image with the AlarmDecoder services pre installed to create an *AlarmDecoder webapp appliance* using an [odroid-c4](https://www.hardkernel.com/shop/odroid-c4/) board.
 
 ![Keypad Screenshot](http://github.com/nutechsoftware/alarmdecoder-webapp/raw/master/screenshot.png "Keypad Screenshot")
 
