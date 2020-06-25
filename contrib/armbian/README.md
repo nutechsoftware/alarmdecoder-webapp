@@ -22,7 +22,7 @@ The odroid-c4 has several advantages over the Raspberry Pi.
 First prepare a build environment per this document.
  [Armbian: Developer-Guide Build Preperation](https://docs.armbian.com/Developer-Guide_Build-Preparation/)
 
-Next place the files "customize-image.sh" and "config-alarmdecoder-webapp.conf" into the userpatches folder "./build/userpatches/".
+Next place the files "customize-image.sh", "lib.config" and "config-alarmdecoder-webapp.conf" into the userpatches folder "./build/userpatches/".
 
 To build the Armbian image from the ./build folder run this command. This can take several hours especially the first time it is run.
 > ./compile.sh alarmdecoder-webapp
