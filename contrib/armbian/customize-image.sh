@@ -19,7 +19,7 @@ BUILD_DESKTOP=$4
 #
 # settings
 ## AlarmDecoder webapp github branch
-WEBAPP_BRANCH="nocache"
+WEBAPP_BRANCH="master"
 
 # Start processing
 echo "Installing AlarmDecoder appliance on Armbian Release: $1 Family: $2 Board: $3 Desktop: $4"
