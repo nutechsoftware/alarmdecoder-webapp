@@ -1208,7 +1208,7 @@ class CustomNotification(BaseNotification):
                         notify_data[key] = type
                     if val == CUSTOM_REPLACER_SEARCH[EVENTDESC_MESSAGE]:
                         notify_data[key] = EVENT_TYPES[type]
-                    if val == CUSTOM_REPLACER_SEARCH[ZONE_MESSAGE]
+                    if val == CUSTOM_REPLACER_SEARCH[ZONE_MESSAGE]:
                         notify_data[key] = zone
             if self.method == CUSTOM_METHOD_POST:
                 if self.post_type == URLENCODE:
