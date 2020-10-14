@@ -199,13 +199,15 @@ CUSTOM_MESSAGE = 1
 RAW_MESSAGE = 2
 EVENTID_MESSAGE = 3
 EVENTDESC_MESSAGE = 4
+ZONE_MESSAGE = 5
 
 CUSTOM_REPLACER_SEARCH = {
     CUSTOM_TIMESTAMP: "{{timestamp}}",
     CUSTOM_MESSAGE: "{{message}}",
     RAW_MESSAGE: "{{raw}}",
     EVENTID_MESSAGE: "{{eventid}}",
-    EVENTDESC_MESSAGE: "{{eventdesc}}"
+    EVENTDESC_MESSAGE: "{{eventdesc}}",
+    ZONE_MESSAGE: "{{zone}}"
 }
 
 TIME_MULTIPLIER = {
