@@ -1179,7 +1179,7 @@ class CustomNotification(BaseNotification):
             raise Exception('Custom Notification Failed')
 
     @raise_with_stack
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
         self.msg_to_send = text
 
         result = False
@@ -1209,7 +1209,7 @@ class CustomNotification(BaseNotification):
                     if val == CUSTOM_REPLACER_SEARCH[EVENTDESC_MESSAGE]:
                         notify_data[key] = EVENT_TYPES[type]
                     if val == CUSTOM_REPLACER_SEARCH[ZONE_MESSAGE]
-                        notify_data[key] = notify['zone']
+                        notify_data[key] = zone
             if self.method == CUSTOM_METHOD_POST:
                 if self.post_type == URLENCODE:
                    result =  self._do_post(urlencode(notify_data))
