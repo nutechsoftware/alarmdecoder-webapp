@@ -212,7 +212,7 @@ class NotificationSystem(object):
                             if notify not in self._wait_list:
                                 self._wait_list.append(notify)
                         else:
-                            n.send(type, message, rawmessage)
+                            n.send(type, message, rawmessage, int(kwargs.get('zone', -1))
 
                 except Exception, err:
                     errors.append('Exception in notification {0}.send(): {1}'.format(n.__class__.__name__,str(err)))
@@ -384,7 +384,7 @@ class NotificationSystem(object):
         for notifier in self._wait_list:
             try:
                 if time.time() >= notifier['message_send_time']:
-                    notifier['notification'].send(notifier['type'], notifier['message'], notifier['raw'])
+                    notifier['notification'].send(notifier['type'], notifier['message'], notifier['raw'], notifier['zone'])
                     self._wait_list.remove(notifier)
 
             except Exception, err:
@@ -519,7 +519,7 @@ class LogNotification(object):
     def subscribes_to(self, type, **kwargs):
         return True
 
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
         with current_app.app_context():
             if type == ZONE_RESTORE or type == ZONE_FAULT or type == BYPASS:
                 current_app.logger.debug('Event: {0}'.format(text))
@@ -545,7 +545,7 @@ class UPNPPushNotification(BaseNotification):
         return (type in self._events)
 
     @raise_with_stack
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
         if type is None or type in self._events:
             self._notify_subscribers(type, text, raw)
 
@@ -695,7 +695,7 @@ class MatrixNotification(BaseNotification):
             'Content-type': CUSTOM_CONTENT_TYPES[JSON]
         }
 
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
 
         try:
             result = False
@@ -791,7 +791,7 @@ class EmailNotification(BaseNotification):
         self.password = obj.get_setting('password')
         self.suppress_timestamp = obj.get_setting('suppress_timestamp',default=False)
 
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
         if check_time_restriction(self.starttime, self.endtime):
             msg = MIMEText(text)
 
@@ -840,7 +840,7 @@ class PushoverNotification(BaseNotification):
         self.priority = obj.get_setting('priority')
         self.title = obj.get_setting('title')
 
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
         if not have_chump:
             raise Exception('Missing Pushover library: chump - install using pip')
 
@@ -884,7 +884,7 @@ class TwilioNotification(BaseNotification):
         self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
     @raise_with_stack
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
         if have_twilio == False:
             raise Exception('Missing Twilio library: twilio - install using pip')
 
@@ -936,7 +936,7 @@ class TwiMLNotification(BaseNotification):
         self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
     @raise_with_stack
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
         text = " From " + self.notification_description + ". " + text
         if check_time_restriction(self.starttime, self.endtime):
             if self.suppress_timestamp == False:
@@ -990,7 +990,7 @@ class ProwlNotification(BaseNotification):
         }
         self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
         if check_time_restriction(self.starttime, self.endtime):
             if self.suppress_timestamp == False:
                 message_timestamp = time.ctime(time.time())
@@ -1052,7 +1052,7 @@ class GrowlNotification(BaseNotification):
 
         self.suppress_timestamp = obj.get_setting('suppress_timestamp', default=False)
 
-    def send(self, type, text, raw):
+    def send(self, type, text, raw, zone):
         if not have_gntp:
             raise Exception('Missing Growl library: gntp - install using pip')
 
@@ -1208,7 +1208,8 @@ class CustomNotification(BaseNotification):
                         notify_data[key] = type
                     if val == CUSTOM_REPLACER_SEARCH[EVENTDESC_MESSAGE]:
                         notify_data[key] = EVENT_TYPES[type]
-
+                    if val == CUSTOM_REPLACER_SEARCH[ZONE_MESSAGE]
+                        notify_data[key] = notify['zone']
             if self.method == CUSTOM_METHOD_POST:
                 if self.post_type == URLENCODE:
                    result =  self._do_post(urlencode(notify_data))
