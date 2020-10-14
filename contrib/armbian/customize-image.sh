@@ -88,6 +88,7 @@ echo "$LPREFIX install webapp python requirements if not already satisfied"
 cd /opt/alarmdecoder-webapp/ && pip install -r requirements.txt
 
 # FIXME: temp fix for issues with flask and  werkzeug
+echo "$LPREFIX FIXME upgrading flask and werkzeug."
 pip install --upgrade Flask
 pip install --upgrade werkzeug==0.16.1
 
