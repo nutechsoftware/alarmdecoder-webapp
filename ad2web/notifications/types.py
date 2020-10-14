@@ -212,7 +212,7 @@ class NotificationSystem(object):
                             if notify not in self._wait_list:
                                 self._wait_list.append(notify)
                         else:
-                            n.send(type, message, rawmessage, int(kwargs.get('zone', -1))
+                            n.send(type, message, rawmessage, int(kwargs.get('zone', -1)))
 
                 except Exception, err:
                     errors.append('Exception in notification {0}.send(): {1}'.format(n.__class__.__name__,str(err)))
