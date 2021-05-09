@@ -3,7 +3,7 @@ type wget > /dev/null 2>&1 || { echo >&2 "wget command not found. Aborting."; ex
 type unzip > /dev/null 2>&1 || { echo >&2 "unzip command not found. Aborting."; exit 1; }
 type make > /dev/null 2>&1 || { echo >&2 "make command not found. Aborting."; exit 1; }
 
-version="$(wget -q -O - http://sourceforge.net/projects/opencvlibrary/files/opencv-unix | egrep -m1 -o '\"[0-9](\.[0-9]+\-*[a-z0-9]*)+' | cut -c2-)"
+version="$(wget -q -O - http://sourceforge.net/projects/opencvlibrary/files/opencv-unix | egrep -m1 -o 'opencv-unix/[0-9](\.[0-9]+\-*[a-z0-9]*)+' | cut -c13-)"
 echo "Installing OpenCV" $version
 echo "Installing Dependencies"
 sudo apt-get update
