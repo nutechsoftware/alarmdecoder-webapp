@@ -821,7 +821,7 @@ class DecoderNamespace(BaseNamespace, BroadcastMixin):
 
                     session_interface = self._alarmdecoder.app.session_interface
                     session = session_interface.open_session(self._alarmdecoder.app, self._request)
-                    user_id = session.get('user_id', None)
+                    user_id = session.get('_user_id', None)
 
                     # check setup complete
                     setup_stage = Setting.get_by_name('setup_stage').value
